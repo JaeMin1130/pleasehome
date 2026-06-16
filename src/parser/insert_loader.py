@@ -3,6 +3,17 @@ import os
 import sys
 import json
 import sqlite3
+import re
+
+def clean_address(address):
+    if not address:
+        return address
+    # 끝에 붙은 ' 일원', ' 일대' 제거
+    address = re.sub(r'\s+(일원|일대)$', '', address.strip())
+    # 끝에 붙은 ' 외 N필지', ' 외' 등 제거
+    address = re.sub(r'\s+외\s*\d*필지.*$', '', address)
+    address = re.sub(r'\s+외\s*$', '', address)
+    return address.strip()
 
 def load_json_to_db(json_data, dest_json_path=None, source_path=None):
     """
@@ -92,12 +103,13 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
         # 7. complexes 및 housing_units 테이블 적재 (단지명 매핑 포함)
         complex_name_to_id = {}
         for comp in json_data.get("complexes", []):
+            cleaned_addr = clean_address(comp["address"])
             cursor.execute(
                 """
                 INSERT INTO complexes (announcement_id, name, address, heating_type, has_elevator, parking_info)
                 VALUES (?, ?, ?, ?, ?, ?);
                 """,
-                (ann_id, comp["name"], comp["address"], comp["heating_type"], comp["has_elevator"], comp["parking_info"])
+                (ann_id, comp["name"], cleaned_addr, comp["heating_type"], comp["has_elevator"], comp["parking_info"])
             )
             complex_name_to_id[comp["name"]] = cursor.lastrowid
             
