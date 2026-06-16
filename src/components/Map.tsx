@@ -10,62 +10,7 @@ declare global {
   }
 }
 
-// Fallback Cache 매핑 (단지 키워드 기반)
-const KEYWORD_COORDINATES: { [key: string]: [number, number] } = {
-  '수락리버시티': [37.6843, 127.0549],
-  '마고정': [37.6321, 126.9192],
-  '박석고개': [37.6324, 126.9213],
-  '우물골': [37.6358, 126.9248],
-  '구파발': [37.6375, 126.9189],
-  '엘리프 미아역': [37.6264, 127.0261],
-  '힐스테이트 동작': [37.4913, 126.9734],
-  '동작 보라매역': [37.4988, 126.9212],
-  '세곡2지구': [37.4674, 127.1032],
-  '마곡엠밸리': [37.5683, 126.8184],
-  '중계센트럴파크': [37.6475, 127.0722],
-  '왕십리 모노퍼스': [37.5615, 127.0345],
-  '래미안그레이튼': [37.4939, 127.0505],
-  '래미안도곡카운티': [37.4937, 127.0527],
-  '래미안신사': [37.5244, 127.0225],
-  '강동헤리티지자이': [37.5385, 127.1422],
-  '고덕아이파크': [37.5583, 127.1555],
-  '강서센트레빌': [37.5501, 126.8322],
-  '마곡푸르지오': [37.5714, 126.8242],
-  '래미안프리미어팰리스': [37.5372, 127.0851],
-  '롯데캐슬 이스트폴': [37.5358, 127.0872],
-  '개봉푸르지오': [37.4918, 126.8529],
-  '고척마젤란': [37.5025, 126.8615],
-  '구로경남아너스빌': [37.4975, 126.8924],
-  '신영지웰에스테이트': [37.4952, 126.8587],
-  '온수힐스테이트': [37.4918, 126.8288],
-  '금천롯데캐슬': [37.4589, 126.8973],
-  '청량리 메트로블': [37.5796, 127.0378],
-  '남성두산위브': [37.4851, 126.9723],
-  '상도효성해링턴': [37.5029, 126.9472],
-  '공덕SK리더스': [37.5441, 126.9507],
-  '두산위브트레지움': [37.4842, 126.9744],
-  '래미안서초에스티지': [37.4927, 127.0264],
-  '반포자이': [37.5042, 127.0186],
-  '서초교대': [37.4947, 127.0177],
-  '서울숲아이파크': [37.5649, 127.0392],
-  '잠실르엘': [37.5183, 127.1009],
-  '동원데자뷰': [37.5303, 126.8647],
-  '목동센트럴': [37.5265, 126.8742],
-  '문래동모아미래도': [37.5173, 126.8922],
-  '신길 AK': [37.5044, 126.9067],
-  'e편한세상화랑대': [37.6192, 127.0864],
-  '서초포레스타': [37.4542, 127.0655],
-  '성지빌라': [37.5312, 127.1325],
-  '신림로': [37.4722, 126.9325],
-  '자양에스하임': [37.5332, 127.0782],
-  '더 엘': [37.5415, 127.0855],
-  '연남하이츠': [37.5642, 126.9234],
-  '정목빌': [37.6082, 127.0452],
-  '씨티하우스오금': [37.5021, 127.1352],
-  '백제고분로': [37.5085, 127.1142],
-  '남양파크빌': [37.4922, 126.9012],
-  '다산지금': [37.6010, 127.1530]
-};
+
 
 // 자치구별 중심 좌표 폴백
 const REGION_COORDINATES: { [key: string]: [number, number] } = {
@@ -159,28 +104,21 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
       // 병렬 지오코딩 프로미스 배열 생성
       const promises = complexes.map(async (c, i) => {
         const addr = c.address;
-        const name = c.name;
+
+        // 괄호 및 전각 괄호 기호와 그 뒤에 오는 부가 텍스트 제거하여 순수 행정 주소로 정제
+        const cleanAddr = addr.split(/[([\uFF08\u3010]/)[0].trim();
 
         // A. 인메모리 캐시 우선 확인
-        if (GEOCODE_CACHE[addr]) {
-          const [lat, lng] = GEOCODE_CACHE[addr];
+        if (GEOCODE_CACHE[cleanAddr]) {
+          const [lat, lng] = GEOCODE_CACHE[cleanAddr];
           return { ...c, lat, lng };
         }
 
-        // B. 키워드 캐시 확인
-        for (const key of Object.keys(KEYWORD_COORDINATES)) {
-          if (name.includes(key) || addr.includes(key)) {
-            const [lat, lng] = KEYWORD_COORDINATES[key];
-            GEOCODE_CACHE[addr] = [lat, lng];
-            return { ...c, lat, lng };
-          }
-        }
-
-        // C. 네이버 지오코딩 API 시도
+        // B. 네이버 지오코딩 API 시도 (정제된 순수 주소 쿼리 사용)
         if (window.naver?.maps?.Service?.geocode) {
           try {
             const coords = await new Promise<[number, number] | null>((resolve) => {
-              window.naver.maps.Service.geocode({ query: addr }, (status: any, response: any) => {
+              window.naver.maps.Service.geocode({ query: cleanAddr }, (status: any, response: any) => {
                 if (status === window.naver.maps.Service.Status.OK && response.v2.addresses.length > 0) {
                   const item = response.v2.addresses[0];
                   resolve([parseFloat(item.y), parseFloat(item.x)]);
@@ -190,7 +128,7 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
               });
             });
             if (coords) {
-              GEOCODE_CACHE[addr] = coords;
+              GEOCODE_CACHE[cleanAddr] = coords;
               return { ...c, lat: coords[0], lng: coords[1] };
             }
           } catch (e) {
@@ -198,23 +136,23 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
           }
         }
 
-        // D. 자치구 중심점 기반 분산 폴백
+        // C. 자치구 중심점 기반 분산 폴백
         for (const region of Object.keys(REGION_COORDINATES)) {
-          if (addr.includes(region)) {
+          if (cleanAddr.includes(region) || addr.includes(region)) {
             const base = REGION_COORDINATES[region];
             const offsetLat = ((i % 7) - 3) * 0.0015;
             const offsetLng = ((Math.floor(i / 7) % 7) - 3) * 0.0015;
             const lat = base[0] + offsetLat;
             const lng = base[1] + offsetLng;
-            GEOCODE_CACHE[addr] = [lat, lng];
+            GEOCODE_CACHE[cleanAddr] = [lat, lng];
             return { ...c, lat, lng };
           }
         }
 
-        // E. 서울 시청 중심점 기반 최종 분산 폴백
+        // D. 서울 시청 중심점 기반 최종 분산 폴백
         const lat = 37.5665 + ((i % 11) - 5) * 0.003;
         const lng = 126.9780 + ((Math.floor(i / 11) % 11) - 5) * 0.003;
-        GEOCODE_CACHE[addr] = [lat, lng];
+        GEOCODE_CACHE[cleanAddr] = [lat, lng];
         return { ...c, lat, lng };
       });
 

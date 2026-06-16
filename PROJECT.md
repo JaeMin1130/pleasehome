@@ -21,7 +21,7 @@
   * 실행 시 반드시 가상 환경의 파이썬 인터프리터(`./venv/bin/python`)를 사용합니다.
 * **설치된 주요 라이브러리:**
   * **Python:** `opendataloader-pdf`
-  * **Node.js:** `next`, `react`, `react-dom`, `better-sqlite3`, `leaflet`, `react-leaflet`, `@types/better-sqlite3`, `@types/leaflet`, `tailwindcss`, `@tailwindcss/postcss`
+  * **Node.js:** `next`, `react`, `react-dom`, `better-sqlite3`, `@types/better-sqlite3`, `tailwindcss`, `@tailwindcss/postcss`
 
 
 ---
@@ -295,3 +295,14 @@ npm run start
 4. **정제 데이터 물리 보관 및 이식성 보장**: 서브에이전트가 추출한 JSON 형태의 정제 데이터는 임시 경로에 두지 않고, 각 공고 마크다운 폴더 하위인 `doc/md/{공고_폴더}/data.json`에 물리적인 파일로 보존하여 관리합니다. 또한, 데이터베이스 적재 시 파일 시스템의 절대 경로가 하드코딩되지 않도록 프로젝트 루트 기준 가변 상대 경로로 변환하여 저장함으로써 환경 이식성을 보장합니다.
 5. **50년 공공임대 예외 처리**: 모집 공고 중 '50년 공공임대' 유형은 표준 청약 분류 표준 사전에 정의된 `공공임대`로 강제 매핑하여 일관성 있게 데이터베이스에 적재합니다.
 6. **Next.js Hydration 경고 방지**: 클라이언트 브라우저 확장 프로그램 등에 의해 HTML `body` 태그의 속성이 임의 변조(예: `cz-shortcut-listen="true"`)되는 경우 Next.js SSR과 CSR 간 마크업 불일치(Hydration mismatch) 에러가 발생할 수 있습니다. 이를 방지하기 위해 최상위 레이아웃 파일([src/app/layout.tsx](file:///home/iru/project03/src/app/layout.tsx))의 `<html>` 태그에 `suppressHydrationWarning` 속성을 필수 적용합니다.
+
+---
+
+### 대시보드 UI 및 필터링 구현 규약 (Dashboard UI & Filtering Conventions)
+
+1. **지상 오버레이 필터 UI 미니멀리즘**: 지도의 오버레이 필터 패널은 지도를 넓게 볼 수 있도록 접기/펼치기 기능을 탑재하고, 접었을 때 가로 폭은 `175px` 내외로 간소화합니다. 이때 가독성을 해치고 투박한 한글 글자("접기", "필터 열기")는 배제하고 심플하게 방향 표시 화살표 아이콘(`▲` / `▼`)만 노출합니다.
+2. **필터 슬라이더 범위 동적 연동**: 전용면적, 임대보증금, 월 임대료 등 필터 슬라이더를 구현할 때 하드코딩된 임의의 한계값을 사용하지 않고, 선택된 공고 주택 목록의 실제 최솟값과 최댓값을 동적으로 추출하여 슬라이더의 양 끝단(min, max)으로 연동시킵니다.
+3. **월 임대료 정수 표기 표준화**: 월 임대료 표기 시 소수점 단위 환산 표기("만 원")를 배제하고, 소수점 없이 정밀한 **정수 원화 단위**(예: `320,000원`)로 포맷팅하여 렌더링합니다.
+4. **상호전환 조건의 단일 소스화 (SSOT)**: 청약 공고의 상호전환 이율 및 한도 조건은 개별 주택 유닛 테이블(`housing_units`)에 중복 적재하지 않고, 부모 공고 테이블(`announcements`)에 단일 메타데이터 컬럼으로 설계하여 화면 계산식에 활용합니다. (1안 설계 방향에 따름)
+5. **데이터 타입 런타임 호환성 보장**: SQLite DB에서 넘어오는 정수형 데이터(`0` 또는 `1`)와 TypeScript의 엄격한 boolean 타입(`true`/`false`) 간 비교 시 strict 비교문(`!==`, `===`)을 쓰면 필터 오작동이 일어납니다. 이를 방지하기 위해 type assertion(`as any` 캐스팅 등)을 적용하여 런타임 형 변환을 거쳐 안전하게 비교하도록 구현합니다.
+

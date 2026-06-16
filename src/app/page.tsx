@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import Sidebar from '@/components/Sidebar';
 import DetailPanel from '@/components/DetailPanel';
 
-// Leaflet 지도는 window 객체를 필요로 하므로 Next.js SSR을 피하기 위해 dynamic 클라이언트 로딩 적용
+// 네이버 지도 API는 window 객체를 필요로 하므로 Next.js SSR을 피하기 위해 dynamic 클라이언트 로딩 적용
 const Map = dynamic(() => import('@/components/Map'), {
   ssr: false,
   loading: () => (
