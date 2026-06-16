@@ -82,6 +82,11 @@ export default function Sidebar({ announcements, activeAnnId, onSelectAnnounceme
   // 개별 아코디언 확장 상태를 기록 (섹션별 아코디언 키: announcementId-sectionName)
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
 
+  // 실제 데이터에 존재하는 청약 유형(subscription_type)만 중복 없이 추출
+  const uniqueTypes = Array.from(
+    new Set(announcements.map(ann => ann.subscription_type))
+  ).filter(Boolean);
+
   const toggleSection = (key: string) => {
     setExpandedSections(prev => ({
       ...prev,
@@ -103,14 +108,7 @@ export default function Sidebar({ announcements, activeAnnId, onSelectAnnounceme
       ann.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
       ann.institution.toLowerCase().includes(searchTerm.toLowerCase());
     
-    let matchesTab = true;
-    if (activeTab === 'HAPPY') {
-      matchesTab = ann.subscription_type.includes('행복주택');
-    } else if (activeTab === 'JEONSE') {
-      matchesTab = ann.subscription_type.includes('전세임대') || ann.subscription_type.includes('든든전세');
-    } else if (activeTab === 'BUY') {
-      matchesTab = ann.subscription_type.includes('매입임대');
-    }
+    const matchesTab = activeTab === 'ALL' || ann.subscription_type === activeTab;
     
     return matchesSearch && matchesTab;
   });
@@ -133,24 +131,15 @@ export default function Sidebar({ announcements, activeAnnId, onSelectAnnounceme
           >
             전체 ({announcements.length})
           </span>
-          <span 
-            className={`filter-tag ${activeTab === 'HAPPY' ? 'active' : ''}`}
-            onClick={() => setActiveTab('HAPPY')}
-          >
-            행복주택
-          </span>
-          <span 
-            className={`filter-tag ${activeTab === 'JEONSE' ? 'active' : ''}`}
-            onClick={() => setActiveTab('JEONSE')}
-          >
-            전세/든든전세
-          </span>
-          <span 
-            className={`filter-tag ${activeTab === 'BUY' ? 'active' : ''}`}
-            onClick={() => setActiveTab('BUY')}
-          >
-            매입임대
-          </span>
+          {uniqueTypes.map(type => (
+            <span 
+              key={type}
+              className={`filter-tag ${activeTab === type ? 'active' : ''}`}
+              onClick={() => setActiveTab(type)}
+            >
+              {type}
+            </span>
+          ))}
         </div>
       </div>
 
