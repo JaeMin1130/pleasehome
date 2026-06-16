@@ -124,11 +124,22 @@ export default function Sidebar({ announcements, activeAnnId, onSelectAnnounceme
     return announcements.filter(ann => getAnnouncementStatus(ann) === status).length;
   };
 
-  const toggleSection = (key: string) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
+  const toggleSection = (key: string, annId: number) => {
+    setExpandedSections(prev => {
+      const nextState = !prev[key];
+      if (nextState) {
+        setTimeout(() => {
+          const cardEl = document.getElementById(`ann-card-${annId}`);
+          if (cardEl) {
+            cardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }, 100);
+      }
+      return {
+        ...prev,
+        [key]: nextState
+      };
+    });
   };
 
   const handleCardClick = (annId: number) => {
@@ -136,6 +147,12 @@ export default function Sidebar({ announcements, activeAnnId, onSelectAnnounceme
       onSelectAnnouncement(null); // 토글식 닫기
     } else {
       onSelectAnnouncement(annId);
+      setTimeout(() => {
+        const cardEl = document.getElementById(`ann-card-${annId}`);
+        if (cardEl) {
+          cardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 100);
     }
   };
 
@@ -197,6 +214,7 @@ export default function Sidebar({ announcements, activeAnnId, onSelectAnnounceme
             return (
               <div 
                 key={ann.id} 
+                id={`ann-card-${ann.id}`}
                 className={`announcement-card ${isActive ? 'active' : ''}`}
                 onClick={() => handleCardClick(ann.id)}
               >
@@ -216,7 +234,7 @@ export default function Sidebar({ announcements, activeAnnId, onSelectAnnounceme
                       <div className="accordion-section">
                         <div 
                           className="section-header" 
-                          onClick={() => toggleSection(`${ann.id}-schedule`)}
+                          onClick={() => toggleSection(`${ann.id}-schedule`, ann.id)}
                         >
                           <span>📅 청약 일정 안내</span>
                           <span>{expandedSections[`${ann.id}-schedule`] ? '▲' : '▼'}</span>
@@ -248,7 +266,7 @@ export default function Sidebar({ announcements, activeAnnId, onSelectAnnounceme
                       <div className="accordion-section">
                         <div 
                           className="section-header" 
-                          onClick={() => toggleSection(`${ann.id}-limits`)}
+                          onClick={() => toggleSection(`${ann.id}-limits`, ann.id)}
                         >
                           <span>💰 보증금 및 지원한도</span>
                           <span>{expandedSections[`${ann.id}-limits`] ? '▲' : '▼'}</span>
@@ -289,7 +307,7 @@ export default function Sidebar({ announcements, activeAnnId, onSelectAnnounceme
                       <div className="accordion-section">
                         <div 
                           className="section-header" 
-                          onClick={() => toggleSection(`${ann.id}-details`)}
+                          onClick={() => toggleSection(`${ann.id}-details`, ann.id)}
                         >
                           <span>💡 상세 안내 가이드</span>
                           <span>{expandedSections[`${ann.id}-details`] ? '▲' : '▼'}</span>

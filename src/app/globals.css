@@ -140,6 +140,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .search-input {
@@ -209,6 +210,7 @@ body {
   box-shadow: var(--shadow-sm);
   position: relative;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .announcement-card::before {
