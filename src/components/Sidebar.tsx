@@ -75,21 +75,53 @@ const formatInterestRate = (rate: number | null): string => {
   return `${rate.toFixed(1)}%`;
 };
 
+type ApplicationStatus = 'UPCOMING' | 'ONGOING' | 'CLOSED';
+
 export default function Sidebar({ announcements, activeAnnId, onSelectAnnouncement }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<string>('ALL');
+  const [activeTab, setActiveTab] = useState<ApplicationStatus>('ONGOING');
   
   // 개별 아코디언 확장 상태를 기록 (섹션별 아코디언 키: announcementId-sectionName)
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
 
-  // 실제 데이터에 존재하는 청약 유형(subscription_type)만 중복 없이 추출
-  const uniqueTypes = Array.from(
-    new Set(announcements.map(ann => ann.subscription_type))
-  ).filter(Boolean);
+  // 청약 접수 일정을 기준으로 각 공고의 현재 청약 상태를 계산하는 헬퍼 함수
+  const getAnnouncementStatus = (ann: Announcement): ApplicationStatus => {
+    const applySchedules = ann.schedules.filter(s => s.schedule_type === '신청접수');
+    if (applySchedules.length === 0) return 'CLOSED';
 
-  // 각 청약 유형별 원본 공고 개수를 집계하는 헬퍼 함수
-  const getTypeCount = (type: string) => {
-    return announcements.filter(ann => ann.subscription_type === type).length;
+    let minStart: Date | null = null;
+    let maxEnd: Date | null = null;
+
+    for (const s of applySchedules) {
+      if (s.start_date) {
+        const start = new Date(s.start_date);
+        if (!isNaN(start.getTime())) {
+          if (!minStart || start < minStart) minStart = start;
+        }
+      }
+      if (s.end_date) {
+        const end = new Date(s.end_date);
+        if (!isNaN(end.getTime())) {
+          if (!maxEnd || end > maxEnd) maxEnd = end;
+        }
+      }
+    }
+
+    if (!minStart || !maxEnd) return 'CLOSED';
+
+    const now = new Date();
+    if (now < minStart) {
+      return 'UPCOMING';
+    } else if (now >= minStart && now <= maxEnd) {
+      return 'ONGOING';
+    } else {
+      return 'CLOSED';
+    }
+  };
+
+  // 각 접수 상태별 전체 공고 개수를 집계하는 헬퍼 함수
+  const getStatusCount = (status: ApplicationStatus): number => {
+    return announcements.filter(ann => getAnnouncementStatus(ann) === status).length;
   };
 
   const toggleSection = (key: string) => {
@@ -113,7 +145,7 @@ export default function Sidebar({ announcements, activeAnnId, onSelectAnnounceme
       ann.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
       ann.institution.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesTab = activeTab === 'ALL' || ann.subscription_type === activeTab;
+    const matchesTab = getAnnouncementStatus(ann) === activeTab;
     
     return matchesSearch && matchesTab;
   });
@@ -131,20 +163,23 @@ export default function Sidebar({ announcements, activeAnnId, onSelectAnnounceme
         />
         <div className="filter-tags">
           <span 
-            className={`filter-tag ${activeTab === 'ALL' ? 'active' : ''}`}
-            onClick={() => setActiveTab('ALL')}
+            className={`filter-tag ${activeTab === 'ONGOING' ? 'active' : ''}`}
+            onClick={() => setActiveTab('ONGOING')}
           >
-            전체 ({announcements.length})
+            접수 중 ({getStatusCount('ONGOING')})
           </span>
-          {uniqueTypes.map(type => (
-            <span 
-              key={type}
-              className={`filter-tag ${activeTab === type ? 'active' : ''}`}
-              onClick={() => setActiveTab(type)}
-            >
-              {type} ({getTypeCount(type)})
-            </span>
-          ))}
+          <span 
+            className={`filter-tag ${activeTab === 'UPCOMING' ? 'active' : ''}`}
+            onClick={() => setActiveTab('UPCOMING')}
+          >
+            접수 예정 ({getStatusCount('UPCOMING')})
+          </span>
+          <span 
+            className={`filter-tag ${activeTab === 'CLOSED' ? 'active' : ''}`}
+            onClick={() => setActiveTab('CLOSED')}
+          >
+            마감 ({getStatusCount('CLOSED')})
+          </span>
         </div>
       </div>
 
