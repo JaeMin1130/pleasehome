@@ -104,7 +104,7 @@ export default function Home() {
   // 공고 선택 시 단지 필터링
   const displayComplexes = activeAnnId 
     ? allComplexes.filter(c => c.announcement_id === activeAnnId)
-    : allComplexes;
+    : [];
 
   // 선택된 공고 정보 객체
   const activeAnn = announcements.find(a => a.id === activeAnnId);

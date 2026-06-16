@@ -163,16 +163,16 @@ export default function Sidebar({ announcements, activeAnnId, onSelectAnnounceme
         />
         <div className="filter-tags">
           <span 
-            className={`filter-tag ${activeTab === 'ONGOING' ? 'active' : ''}`}
-            onClick={() => setActiveTab('ONGOING')}
-          >
-            접수 중 ({getStatusCount('ONGOING')})
-          </span>
-          <span 
             className={`filter-tag ${activeTab === 'UPCOMING' ? 'active' : ''}`}
             onClick={() => setActiveTab('UPCOMING')}
           >
             접수 예정 ({getStatusCount('UPCOMING')})
+          </span>
+          <span 
+            className={`filter-tag ${activeTab === 'ONGOING' ? 'active' : ''}`}
+            onClick={() => setActiveTab('ONGOING')}
+          >
+            접수 중 ({getStatusCount('ONGOING')})
           </span>
           <span 
             className={`filter-tag ${activeTab === 'CLOSED' ? 'active' : ''}`}
