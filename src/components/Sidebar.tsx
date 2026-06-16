@@ -87,6 +87,11 @@ export default function Sidebar({ announcements, activeAnnId, onSelectAnnounceme
     new Set(announcements.map(ann => ann.subscription_type))
   ).filter(Boolean);
 
+  // 각 청약 유형별 원본 공고 개수를 집계하는 헬퍼 함수
+  const getTypeCount = (type: string) => {
+    return announcements.filter(ann => ann.subscription_type === type).length;
+  };
+
   const toggleSection = (key: string) => {
     setExpandedSections(prev => ({
       ...prev,
@@ -137,7 +142,7 @@ export default function Sidebar({ announcements, activeAnnId, onSelectAnnounceme
               className={`filter-tag ${activeTab === type ? 'active' : ''}`}
               onClick={() => setActiveTab(type)}
             >
-              {type}
+              {type} ({getTypeCount(type)})
             </span>
           ))}
         </div>
