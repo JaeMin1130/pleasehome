@@ -135,11 +135,7 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
       zoom: 11,
       minZoom: 6,
       maxZoom: 19,
-      zoomControl: true,
-      zoomControlOptions: {
-        position: window.naver.maps.Position.TOP_RIGHT,
-        style: window.naver.maps.ZoomControlStyle.SMALL
-      }
+      zoomControl: false
     };
 
     const map = new window.naver.maps.Map(mapRef.current, mapOptions);
@@ -230,7 +226,7 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
 
       const newMarkers: any[] = [];
 
-      // 매핑된 주택 좌표 목록 기반으로 마커 및 정보창 고속 생성
+      // 매핑된 주택 좌표 목록 기반으로 마커 고속 생성
       results.forEach((mapped) => {
         const isActive = mapped.id === activeComplexId;
         const marker = new window.naver.maps.Marker({
@@ -248,38 +244,12 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
           }
         });
 
-        const infoWindow = new window.naver.maps.InfoWindow({
-          content: `
-            <div class="naver-popup-wrapper" style="padding: 12px 14px; min-width: 220px; font-family: 'Inter', sans-serif; background: #1e293b; color: #f8fafc; border: 1px solid #334155; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);">
-              <h4 style="margin: 0 0 6px 0; font-size: 14px; font-weight: 700; color: #2dd4bf;">${mapped.name}</h4>
-              <p style="margin: 0 0 12px 0; font-size: 11px; color: #94a3b8; line-height: 1.4;">${mapped.address}</p>
-              <button id="btn-popup-${mapped.id}" style="background: #0f766e; hover:background: #115e59; color: #f8fafc; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; width: 100%; transition: background 0.2s;">
-                상세 정보 보기
-              </button>
-            </div>
-          `,
-          borderWidth: 0,
-          backgroundColor: "transparent",
-          disableAnchor: true
-        });
-
-        // 마커 클릭 시 정보창 로드 및 이벤트 바인딩
+        // 마커 클릭 시 즉시 우측 상세 정보 패널 활성화
         window.naver.maps.Event.addListener(marker, 'click', () => {
-          infoWindow.open(naverMap, marker);
-          
-          // 정보창 엘리먼트 렌더링 이후 버튼 이벤트 바인딩 (타임아웃 안전 장치)
-          setTimeout(() => {
-            const btn = document.getElementById(`btn-popup-${mapped.id}`);
-            if (btn) {
-              btn.addEventListener('click', () => {
-                onSelectComplex(mapped);
-                infoWindow.close();
-              });
-            }
-          }, 50);
+          onSelectComplex(mapped);
         });
 
-        newMarkers.push({ id: mapped.id, marker, infoWindow });
+        newMarkers.push({ id: mapped.id, marker });
       });
 
       if (isMounted) {
@@ -295,18 +265,12 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
     };
   }, [complexes, mapLoaded, naverMap]);
 
-  // 3. 외부 활성화 단지 변경 시 카메라 초점 및 마커 상태 동기화
+  // 3. 외부 활성화 단지 변경 시 마커 상태 동기화
   useEffect(() => {
     if (!naverMap || markers.length === 0 || !activeComplexId) return;
 
     const target = markers.find(m => m.id === activeComplexId);
     if (target) {
-      const position = target.marker.getPosition();
-      
-      // 해당 단지로 카메라 이동 및 정보창 활성화
-      naverMap.panTo(position);
-      target.infoWindow.open(naverMap, target.marker);
-
       // 마커 엘리먼트의 CSS 클래스 강제 토글 (active 디자인 적용)
       markers.forEach(m => {
         const el = m.marker.getElement();
