@@ -63,10 +63,23 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
             
         cursor.execute(
             """
-            INSERT INTO announcements (title, institution, subscription_type, doc_path)
-            VALUES (?, ?, ?, ?);
+            INSERT INTO announcements (
+                title, institution, subscription_type, doc_path,
+                deposit_increase_rate, deposit_decrease_rate,
+                deposit_increase_limit_rate, deposit_decrease_limit_rate
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?);
             """,
-            (ann_info["title"], ann_info["institution"], ann_info["subscription_type"], relative_doc_path)
+            (
+                ann_info["title"],
+                ann_info["institution"],
+                ann_info["subscription_type"],
+                relative_doc_path,
+                ann_info.get("deposit_increase_rate"),
+                ann_info.get("deposit_decrease_rate"),
+                ann_info.get("deposit_increase_limit_rate"),
+                ann_info.get("deposit_decrease_limit_rate")
+            )
         )
         ann_id = cursor.lastrowid
         

@@ -23,7 +23,7 @@ def parse_metadata(pdf_path):
         order = "하반기"
     elif "특화형" in filename:
         order = "특화형"
-    elif "공임50년" in filename:
+    elif "공임50년" in filename or "50년공공임대" in filename:
         order = "50년"
     else:
         order_match = re.search(r"제?(\d+)차", filename)
@@ -64,9 +64,27 @@ def parse_metadata(pdf_path):
         category = "희망하우징"
     elif "공공임대" in filename:
         category = "공공임대"
-        
-    # 만약 파일명에서 유형을 못 찾았다면 텍스트 기반 분석 수행
-    if not category:
+
+    # 4. 기관명 1차 추출 (LH, SH, GH, iH, HUG)
+    institution = None
+    if "LH" in filename or "한국토지주택공사" in filename:
+        institution = "LH"
+    elif "SH" in filename or "서울주택도시공사" in filename:
+        institution = "SH"
+    elif "GH" in filename or "경기주택도시공사" in filename or "경기도시공사" in filename:
+        institution = "GH"
+    elif "iH" in filename or "인천도시공사" in filename:
+        institution = "iH"
+    elif "HUG" in filename or "주택도시보증공사" in filename:
+        institution = "HUG"
+    else:
+        # 파일명에서 지자체명/조합명 등 감지 시도 (백업)
+        agency_match = re.search(r"\(?[a-zA-Z0-9_]*\)?([가-힣\w]+(?:도시공사|주택공사|협동조합|시|군|구))", filename)
+        if agency_match:
+            institution = agency_match.group(1)
+
+    # 5. 본문 텍스트 분석 기반 보정 (기관명이 표준 5대 기관이 아니거나 유형을 감지 못한 경우 강제 구동)
+    if not category or institution not in ["LH", "SH", "GH", "iH", "HUG"]:
         try:
             import opendataloader_pdf
             with tempfile.TemporaryDirectory() as temp_dir:
@@ -78,38 +96,54 @@ def parse_metadata(pdf_path):
                 md_files = [f for f in os.listdir(temp_dir) if f.endswith(".md")]
                 if md_files:
                     with open(os.path.join(temp_dir, md_files[0]), "r", encoding="utf-8") as f:
-                        text = f.read(3000)  # 첫 3000자 분석
+                        text = f.read(5000)  # 첫 5000자 분석
                     
-                    if "행복주택" in text:
-                        category = "행복주택"
-                    elif "장기전세" in text:
-                        if "장기전세주택2" in text or "미리내집" in text:
-                            category = "장기전세2"
-                        else:
-                            category = "장기전세"
-                    elif "든든전세" in text or "든든주택" in text:
-                        category = "든든전세"
-                    elif "국민임대" in text:
-                        category = "국민임대"
-                    elif "영구임대" in text:
-                        category = "영구임대"
-                    elif "통합공공임대" in text:
-                        category = "통합공공임대"
-                    elif "매입임대" in text:
-                        category = "매입임대"
-                    elif "전세임대" in text:
-                        category = "전세임대"
-                    elif "청년안심" in text:
-                        category = "청년안심"
-                    elif "장기안심" in text:
-                        category = "장기안심"
+                    if not category:
+                        if "행복주택" in text:
+                            category = "행복주택"
+                        elif "장기전세" in text:
+                            if "장기전세주택2" in text or "미리내집" in text:
+                                category = "장기전세2"
+                            else:
+                                category = "장기전세"
+                        elif "든든전세" in text or "든든주택" in text:
+                            category = "든든전세"
+                        elif "국민임대" in text:
+                            category = "국민임대"
+                        elif "영구임대" in text:
+                            category = "영구임대"
+                        elif "통합공공임대" in text:
+                            category = "통합공공임대"
+                        elif "매입임대" in text:
+                            category = "매입임대"
+                        elif "전세임대" in text:
+                            category = "전세임대"
+                        elif "청년안심" in text:
+                            category = "청년안심"
+                        elif "장기안심" in text:
+                            category = "장기안심"
+                    
+                    # 기관명 재검증 및 강제 보정
+                    if "한국토지주택공사" in text or "LH" in text or "L.H" in text:
+                        institution = "LH"
+                    elif "서울주택도시공사" in text or "SH" in text:
+                        institution = "SH"
+                    elif "경기주택도시공사" in text or "GH" in text or "경기도시공사" in text:
+                        institution = "GH"
+                    elif "인천도시공사" in text or "iH" in text:
+                        institution = "iH"
+                    elif "주택도시보증공사" in text or "HUG" in text:
+                        institution = "HUG"
         except Exception as e:
             pass
 
+    # 최종 기본값 세팅
+    if not institution:
+        institution = "LH"
     if not category:
         category = "공공임대"
         
-    return year, order, category
+    return year, order, category, institution
 
 def convert_single_pdf(pdf_path, output_dir, folder_name):
     # opendataloader-pdf 로드
@@ -194,29 +228,40 @@ def run_auto_scan():
         print(f"자동 감지 및 처리 중: {pdf_name}")
         
         # 가. 메타데이터 파싱
-        year, order, category = parse_metadata(pdf_path)
-        std_folder_name = f"{year}_{order}_{category}"
+        year, order, category, institution = parse_metadata(pdf_path)
+        
+        # 나. 시퀀스 번호 결정 (동일 조합 존재 시 자동 증가)
+        prefix = f"{year}_{order}_{category}_{institution}_"
+        existing_seqs = []
+        for d in os.listdir(base_pdf_dir):
+            if os.path.isdir(os.path.join(base_pdf_dir, d)) and d.startswith(prefix):
+                try:
+                    seq_str = d[len(prefix):]
+                    existing_seqs.append(int(seq_str))
+                except ValueError:
+                    pass
+        
+        if existing_seqs:
+            next_seq = max(existing_seqs) + 1
+        else:
+            next_seq = 1
+            
+        std_folder_name = f"{year}_{order}_{category}_{institution}_{next_seq:02d}"
         print(f"-> 판정된 표준 공고명: {std_folder_name}")
         
         target_folder = os.path.join(base_pdf_dir, std_folder_name)
-        target_pdf_path = os.path.join(target_folder, "origin.pdf")
+        # 원본 PDF 파일명 유지 (유저 규칙 #1)
+        target_pdf_path = os.path.join(target_folder, pdf_name)
         
-        # 나. 폴더 생성 및 이동
+        # 다. 폴더 생성 및 이동
         os.makedirs(target_folder, exist_ok=True)
         
         if os.path.exists(target_pdf_path):
-            if os.path.getsize(pdf_path) == os.path.getsize(target_pdf_path):
-                print(f"-> 중복 파일 감지: 이미 동일한 origin.pdf가 존재합니다. 원본 파일 삭제 처리.")
-                os.remove(pdf_path)
-                continue
-            else:
-                print(f"-> 동일 공고의 다른 버전 감지: 백업 후 덮어씁니다.")
-                shutil.move(pdf_path, target_pdf_path)
-        else:
-            shutil.move(pdf_path, target_pdf_path)
-            print(f"-> 표준 폴더로 이동 완료: {target_pdf_path}")
+            print(f"-> 동일 파일이 이미 타겟 폴더에 존재하여 덮어씁니다.")
+        shutil.move(pdf_path, target_pdf_path)
+        print(f"-> 표준 폴더로 이동 완료: {target_pdf_path}")
             
-        # 다. 변환 실행
+        # 라. 변환 실행
         output_dir = os.path.join(base_md_dir, std_folder_name)
         try:
             convert_single_pdf(target_pdf_path, output_dir, std_folder_name)
@@ -248,7 +293,15 @@ def main():
     
     target = args.target
     if not os.path.exists(target) and not os.path.isabs(target):
-        pdf_path = os.path.join(base_pdf_dir, target, "origin.pdf")
+        folder_pdf_dir = os.path.join(base_pdf_dir, target)
+        if os.path.isdir(folder_pdf_dir):
+            pdfs = [f for f in os.listdir(folder_pdf_dir) if f.lower().endswith(".pdf")]
+            if pdfs:
+                pdf_path = os.path.join(folder_pdf_dir, pdfs[0])
+            else:
+                pdf_path = os.path.join(folder_pdf_dir, "origin.pdf")  # fallback
+        else:
+            pdf_path = os.path.join(base_pdf_dir, target)
         output_dir = os.path.join(base_md_dir, target)
         folder_name = target
     else:
