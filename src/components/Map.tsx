@@ -62,6 +62,14 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
     setMapLoaded(true);
   };
 
+  // 마운트 시점에 이미 naver 객체가 전역에 로드되어 있다면 즉시 지도 초기화 실행
+  // (Next.js 라우팅 전환으로 Script의 onLoad가 트리거되지 않는 예외 상황 처리)
+  useEffect(() => {
+    if (window.naver && window.naver.maps) {
+      initMap();
+    }
+  }, []);
+
   // 2. 주택 단지 주소 지오코딩 및 마커 생성
   useEffect(() => {
     // 네이버 지도 핵심 클래스(Marker, Service)가 확실히 로드 완료되었는지 2중 체크

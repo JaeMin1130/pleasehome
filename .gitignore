@@ -39,10 +39,7 @@ logs/
 Thumbs.db
 
 # Data & PDF/Markdown
-doc/pdf/*
-!doc/pdf/.gitkeep
-doc/md/*
-!doc/md/.gitkeep
+doc/
 
 # IDEs and editors
 .idea/

@@ -1,0 +1,2 @@
+# Google AdSense ads.txt
+# 추후 승인 시 발급받은 'google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0' 형태로 내용을 채워주시면 됩니다.

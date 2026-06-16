@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# 추후 실제 도메인 주소로 변경해주시면 됩니다.
+Sitemap: https://your-domain.com/sitemap.xml

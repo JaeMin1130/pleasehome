@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import Link from 'next/link';
 
 interface Schedule {
   id: number;
@@ -335,6 +336,23 @@ export default function Sidebar({ announcements, activeAnnId, onSelectAnnounceme
             );
           })
         )}
+      </div>
+
+      {/* Sidebar Footer Link (구글 애드센스 심사용 필수 약관 링크) */}
+      <div className="sidebar-footer" style={{
+        padding: '16px',
+        borderTop: '1px solid hsl(var(--border))',
+        fontSize: '0.75rem',
+        textAlign: 'center',
+        color: 'hsl(var(--text-muted))',
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '12px',
+        flexShrink: 0
+      }}>
+        <Link href="/privacy" style={{ color: 'inherit', textDecoration: 'none' }}>개인정보처리방침</Link>
+        <span>|</span>
+        <Link href="/terms" style={{ color: 'inherit', textDecoration: 'none' }}>이용약관</Link>
       </div>
     </aside>
   );
