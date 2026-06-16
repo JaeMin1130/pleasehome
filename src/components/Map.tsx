@@ -95,6 +95,9 @@ const REGION_COORDINATES: { [key: string]: [number, number] } = {
   '서대문구': [37.5791, 126.9368]
 };
 
+// 2번 이슈: 주소 변환 레이턴시를 최소화하기 위한 인메모리 지오코딩 캐시
+const GEOCODE_CACHE: { [address: string]: [number, number] } = {};
+
 interface Complex {
   id: number;
   announcement_id: number;
@@ -155,94 +158,85 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
     let isMounted = true;
 
     const geocodeAll = async () => {
-      const results: MappedComplex[] = [];
-      const newMarkers: any[] = [];
-
-      for (let i = 0; i < complexes.length; i++) {
-        const c = complexes[i];
+      // 병렬 지오코딩 프로미스 배열 생성
+      const promises = complexes.map(async (c, i) => {
         const addr = c.address;
         const name = c.name;
 
-        let lat = 37.5665;
-        let lng = 126.9780;
-        let found = false;
+        // A. 인메모리 캐시 우선 확인
+        if (GEOCODE_CACHE[addr]) {
+          const [lat, lng] = GEOCODE_CACHE[addr];
+          return { ...c, lat, lng };
+        }
 
-        // A. 키워드 캐시 확인
+        // B. 키워드 캐시 확인
         for (const key of Object.keys(KEYWORD_COORDINATES)) {
           if (name.includes(key) || addr.includes(key)) {
-            [lat, lng] = KEYWORD_COORDINATES[key];
-            found = true;
-            break;
+            const [lat, lng] = KEYWORD_COORDINATES[key];
+            GEOCODE_CACHE[addr] = [lat, lng];
+            return { ...c, lat, lng };
           }
         }
 
-        // B. 네이버 지오코딩 API 시도 (가장 정확한 한국어 주소 파싱)
-        if (!found && window.naver?.maps?.Service?.geocode) {
+        // C. 네이버 지오코딩 API 시도
+        if (window.naver?.maps?.Service?.geocode) {
           try {
-            await new Promise<void>((resolve) => {
+            const coords = await new Promise<[number, number] | null>((resolve) => {
               window.naver.maps.Service.geocode({ query: addr }, (status: any, response: any) => {
                 if (status === window.naver.maps.Service.Status.OK && response.v2.addresses.length > 0) {
                   const item = response.v2.addresses[0];
-                  lat = parseFloat(item.y);
-                  lng = parseFloat(item.x);
-                  found = true;
+                  resolve([parseFloat(item.y), parseFloat(item.x)]);
+                } else {
+                  resolve(null);
                 }
-                resolve();
               });
             });
+            if (coords) {
+              GEOCODE_CACHE[addr] = coords;
+              return { ...c, lat: coords[0], lng: coords[1] };
+            }
           } catch (e) {
-            // 오류 시 무시하고 다음 폴백
+            // 실패 시 폴백 진행
           }
         }
 
-        // C. 국외 Nominatim 오픈소스 API 폴백
-        if (!found) {
-          try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(addr)}`);
-            const data = await res.json();
-            if (data && data.length > 0) {
-              lat = parseFloat(data[0].lat);
-              lng = parseFloat(data[0].lon);
-              found = true;
-            }
-          } catch (e) {}
-        }
-
         // D. 자치구 중심점 기반 분산 폴백
-        if (!found) {
-          for (const region of Object.keys(REGION_COORDINATES)) {
-            if (addr.includes(region)) {
-              const base = REGION_COORDINATES[region];
-              const offsetLat = ((i % 7) - 3) * 0.0015;
-              const offsetLng = ((Math.floor(i / 7) % 7) - 3) * 0.0015;
-              lat = base[0] + offsetLat;
-              lng = base[1] + offsetLng;
-              found = true;
-              break;
-            }
+        for (const region of Object.keys(REGION_COORDINATES)) {
+          if (addr.includes(region)) {
+            const base = REGION_COORDINATES[region];
+            const offsetLat = ((i % 7) - 3) * 0.0015;
+            const offsetLng = ((Math.floor(i / 7) % 7) - 3) * 0.0015;
+            const lat = base[0] + offsetLat;
+            const lng = base[1] + offsetLng;
+            GEOCODE_CACHE[addr] = [lat, lng];
+            return { ...c, lat, lng };
           }
         }
 
         // E. 서울 시청 중심점 기반 최종 분산 폴백
-        if (!found) {
-          lat = 37.5665 + ((i % 11) - 5) * 0.003;
-          lng = 126.9780 + ((Math.floor(i / 11) % 11) - 5) * 0.003;
-        }
+        const lat = 37.5665 + ((i % 11) - 5) * 0.003;
+        const lng = 126.9780 + ((Math.floor(i / 11) % 11) - 5) * 0.003;
+        GEOCODE_CACHE[addr] = [lat, lng];
+        return { ...c, lat, lng };
+      });
 
-        // 비동기 작업(await) 이후 네이버 객체가 여전히 메모리에 살아있는지 실시간 확인
-        if (!isMounted || !window.naver || !window.naver.maps || !window.naver.maps.Marker) {
-          break;
-        }
+      // 모든 주택 단지에 대해 병렬 지오코딩 처리 수행
+      const results = await Promise.all(promises);
 
-        const mapped = { ...c, lat, lng };
-        results.push(mapped);
+      // 비동기 완료 후 맵이 여전히 마운트되어 있고 유효한지 검사
+      if (!isMounted || !window.naver || !window.naver.maps || !window.naver.maps.Marker) {
+        return;
+      }
 
-        // 네이버 지도용 커스텀 HTML 마커 생성 (기존 CSS 스타일셋 바인딩)
-        const isActive = c.id === activeComplexId;
+      const newMarkers: any[] = [];
+
+      // 매핑된 주택 좌표 목록 기반으로 마커 및 정보창 고속 생성
+      results.forEach((mapped) => {
+        const isActive = mapped.id === activeComplexId;
         const marker = new window.naver.maps.Marker({
-          position: new window.naver.maps.LatLng(lat, lng),
+          position: new window.naver.maps.LatLng(mapped.lat, mapped.lng),
           map: naverMap,
-          title: name,
+          title: mapped.name,
           icon: {
             content: `
               <div class="custom-marker ${isActive ? 'active' : ''}" style="cursor: pointer;">
@@ -254,13 +248,12 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
           }
         });
 
-        // 네이버용 커스텀 정보창 생성
         const infoWindow = new window.naver.maps.InfoWindow({
           content: `
             <div class="naver-popup-wrapper" style="padding: 12px 14px; min-width: 220px; font-family: 'Inter', sans-serif; background: #1e293b; color: #f8fafc; border: 1px solid #334155; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);">
-              <h4 style="margin: 0 0 6px 0; font-size: 14px; font-weight: 700; color: #2dd4bf;">${name}</h4>
-              <p style="margin: 0 0 12px 0; font-size: 11px; color: #94a3b8; line-height: 1.4;">${addr}</p>
-              <button id="btn-popup-${c.id}" style="background: #0f766e; hover:background: #115e59; color: #f8fafc; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; width: 100%; transition: background 0.2s;">
+              <h4 style="margin: 0 0 6px 0; font-size: 14px; font-weight: 700; color: #2dd4bf;">${mapped.name}</h4>
+              <p style="margin: 0 0 12px 0; font-size: 11px; color: #94a3b8; line-height: 1.4;">${mapped.address}</p>
+              <button id="btn-popup-${mapped.id}" style="background: #0f766e; hover:background: #115e59; color: #f8fafc; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; width: 100%; transition: background 0.2s;">
                 상세 정보 보기
               </button>
             </div>
@@ -276,18 +269,18 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
           
           // 정보창 엘리먼트 렌더링 이후 버튼 이벤트 바인딩 (타임아웃 안전 장치)
           setTimeout(() => {
-            const btn = document.getElementById(`btn-popup-${c.id}`);
+            const btn = document.getElementById(`btn-popup-${mapped.id}`);
             if (btn) {
               btn.addEventListener('click', () => {
-                onSelectComplex(c);
+                onSelectComplex(mapped);
                 infoWindow.close();
               });
             }
           }, 50);
         });
 
-        newMarkers.push({ id: c.id, marker, infoWindow });
-      }
+        newMarkers.push({ id: mapped.id, marker, infoWindow });
+      });
 
       if (isMounted) {
         setMappedComplexes(results);
