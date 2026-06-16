@@ -59,7 +59,7 @@ project03/
 │   │   ├── layout.tsx              # SEO 정보 및 폰트 공통 설정 레이아웃
 │   │   └── page.tsx                # 웹 홈 화면 대시보드
 │   ├── components/                 # 프론트엔드 UI 컴포넌트
-│   │   ├── Map.tsx                 # Leaflet 지도 컴포넌트 (지오코딩 폴백 탑재)
+│   │   ├── Map.tsx                 # 네이버 지도 컴포넌트 (ncpKeyId 인증 방식 및 지오코딩 폴백 탑재)
 │   │   ├── Sidebar.tsx             # 검색/필터 및 상세 아코디언 컴포넌트
 │   │   └── DetailPanel.tsx         # 평형별 공급 조건 슬라이딩 상세 패널
 │   ├── db/
