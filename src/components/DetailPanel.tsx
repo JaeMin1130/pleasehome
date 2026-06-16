@@ -30,9 +30,21 @@ interface HousingUnit {
   attributes: string | null;
 }
 
+interface FilterState {
+  targetGroup: string;
+  minArea: number;
+  maxArea: number;
+  minDeposit: number;
+  maxDeposit: number;
+  minMonthlyRent: number;
+  maxMonthlyRent: number;
+  hasElevator: boolean | null;
+}
+
 interface DetailPanelProps {
   complex: Complex | null;
   isOpen: boolean;
+  filterState: FilterState;
   onClose: () => void;
 }
 
@@ -49,7 +61,12 @@ const formatMoney = (amount: number | null): string => {
   return `${amount.toLocaleString()}원`;
 };
 
-export default function DetailPanel({ complex, isOpen, onClose }: DetailPanelProps) {
+const formatRent = (amount: number | null): string => {
+  if (amount === null || amount === undefined) return '-';
+  return `${amount.toLocaleString()}원`;
+};
+
+export default function DetailPanel({ complex, isOpen, filterState, onClose }: DetailPanelProps) {
   const [units, setUnits] = useState<HousingUnit[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -68,6 +85,14 @@ export default function DetailPanel({ complex, isOpen, onClose }: DetailPanelPro
         setLoading(false);
       });
   }, [complex]);
+
+  const filteredUnits = units.filter((unit) => {
+    if (filterState.targetGroup !== 'ALL' && unit.target_group !== filterState.targetGroup) return false;
+    if (unit.exclusive_area < filterState.minArea || unit.exclusive_area > filterState.maxArea) return false;
+    if (unit.deposit < filterState.minDeposit || unit.deposit > filterState.maxDeposit) return false;
+    if (unit.monthly_rent < filterState.minMonthlyRent || unit.monthly_rent > filterState.maxMonthlyRent) return false;
+    return true;
+  });
 
   if (!complex) return null;
 
@@ -118,13 +143,13 @@ export default function DetailPanel({ complex, isOpen, onClose }: DetailPanelPro
             <div style={{ textAlign: 'center', padding: '24px', color: 'hsl(var(--text-muted))' }}>
               공급 정보를 불러오는 중입니다...
             </div>
-          ) : units.length === 0 ? (
+          ) : filteredUnits.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '24px', color: 'hsl(var(--text-muted))' }}>
-              등록된 공급 주택형이 없습니다.
+              조건에 맞는 공급 주택형이 없습니다.
             </div>
           ) : (
             <div className="units-container">
-              {units.map((unit) => (
+              {filteredUnits.map((unit) => (
                 <div key={unit.id} className="unit-card">
                   {/* 주택형 상단 */}
                   <div className="unit-header">
@@ -148,7 +173,7 @@ export default function DetailPanel({ complex, isOpen, onClose }: DetailPanelPro
                     <div className="price-item">
                       <span className="price-lbl">월 임대료</span>
                       <span className="price-val" style={{ color: 'hsl(var(--accent-hover))' }}>
-                        {formatMoney(unit.monthly_rent)}
+                        {formatRent(unit.monthly_rent)}
                       </span>
                     </div>
                   </div>
