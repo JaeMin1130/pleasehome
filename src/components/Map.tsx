@@ -12,35 +12,7 @@ declare global {
 
 
 
-// 자치구별 중심 좌표 폴백
-const REGION_COORDINATES: { [key: string]: [number, number] } = {
-  '은평구': [37.6027, 126.9291],
-  '의정부': [37.7381, 127.0337],
-  '강북구': [37.6396, 127.0257],
-  '동작구': [37.5124, 126.9397],
-  '강남구': [37.4959, 127.0664],
-  '강서구': [37.5509, 126.8497],
-  '노원구': [37.6542, 127.0565],
-  '성동구': [37.5635, 127.0368],
-  '강동구': [37.5302, 127.1237],
-  '광진구': [37.5385, 127.0823],
-  '구로구': [37.4954, 126.8874],
-  '금천구': [37.4573, 126.8954],
-  '동대문구': [37.5744, 127.0397],
-  '마포구': [37.5622, 126.9083],
-  '서초구': [37.4837, 127.0324],
-  '송파구': [37.5145, 127.1062],
-  '양천구': [37.5169, 126.8665],
-  '영등포구': [37.5264, 126.8962],
-  '중랑구': [37.6065, 127.0927],
-  '관악구': [37.4784, 126.9516],
-  '성북구': [37.5894, 127.0167],
-  '용산구': [37.5326, 126.9904],
-  '종로구': [37.5730, 126.9794],
-  '중구': [37.5638, 126.9976],
-  '서대문구': [37.5791, 126.9368],
-  '남양주': [37.6360, 127.2165]
-};
+
 
 // 2번 이슈: 주소 변환 레이턴시를 최소화하기 위한 인메모리 지오코딩 캐시
 const GEOCODE_CACHE: { [address: string]: [number, number] } = {};
@@ -136,24 +108,9 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
           }
         }
 
-        // C. 자치구 중심점 기반 분산 폴백
-        for (const region of Object.keys(REGION_COORDINATES)) {
-          if (cleanAddr.includes(region) || addr.includes(region)) {
-            const base = REGION_COORDINATES[region];
-            const offsetLat = ((i % 7) - 3) * 0.0015;
-            const offsetLng = ((Math.floor(i / 7) % 7) - 3) * 0.0015;
-            const lat = base[0] + offsetLat;
-            const lng = base[1] + offsetLng;
-            GEOCODE_CACHE[cleanAddr] = [lat, lng];
-            return { ...c, lat, lng };
-          }
-        }
-
-        // D. 서울 시청 중심점 기반 최종 분산 폴백
-        const lat = 37.5665 + ((i % 11) - 5) * 0.003;
-        const lng = 126.9780 + ((Math.floor(i / 11) % 11) - 5) * 0.003;
-        GEOCODE_CACHE[cleanAddr] = [lat, lng];
-        return { ...c, lat, lng };
+        // C. 지오코딩 실패 시 에러 로그를 콘솔에 기록하고 null 좌표 반환
+        console.error(`[Map Geocoding Failed] Address: "${addr}" (Cleaned: "${cleanAddr}")`);
+        return { ...c, lat: null as any, lng: null as any };
       });
 
       // 모든 주택 단지에 대해 병렬 지오코딩 처리 수행
@@ -166,8 +123,11 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
 
       const newMarkers: any[] = [];
 
-      // 매핑된 주택 좌표 목록 기반으로 마커 고속 생성
+      // 매핑된 주택 좌표 목록 기반으로 마커 고속 생성 (유효한 위경도 좌표가 있을 때만 생성)
       results.forEach((mapped) => {
+        if (mapped.lat === null || mapped.lng === null || isNaN(mapped.lat) || isNaN(mapped.lng)) {
+          return; // 지오코딩 실패한 단지는 마커를 렌더링하지 않음
+        }
         const isActive = mapped.id === activeComplexId;
         const marker = new window.naver.maps.Marker({
           position: new window.naver.maps.LatLng(mapped.lat, mapped.lng),
