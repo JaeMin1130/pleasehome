@@ -102,7 +102,7 @@ export default function Home() {
   const [activeComplexId, setActiveComplexId] = useState<number | null>(null);
   const [selectedComplex, setSelectedComplex] = useState<Complex | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [isFilterExpanded, setIsFilterExpanded] = useState(true);
+  const [isFilterExpanded, setIsFilterExpanded] = useState(false);
 
   // 필터 상태
   const [filterState, setFilterState] = useState<FilterState>({
