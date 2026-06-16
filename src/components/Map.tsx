@@ -95,6 +95,7 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
                   const item = response.v2.addresses[0];
                   resolve([parseFloat(item.y), parseFloat(item.x)]);
                 } else {
+                  console.error(`[Map Geocoding Failed Callback] Address: "${cleanAddr}", Status: ${status}`, response);
                   resolve(null);
                 }
               });
