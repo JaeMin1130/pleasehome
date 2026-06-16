@@ -63,3 +63,6 @@ doc/md/*
 # Agent local temp files
 .agents/**/*.log
 .agents/**/tmp/
+
+# etc
+errors/

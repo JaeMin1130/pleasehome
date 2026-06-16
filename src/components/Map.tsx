@@ -1,9 +1,14 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import { useEffect, useRef, useState } from 'react';
+import Script from 'next/script';
+
+// 전역 naver 객체 타입 정의
+declare global {
+  interface Window {
+    naver: any;
+  }
+}
 
 // Fallback Cache 매핑 (단지 키워드 기반)
 const KEYWORD_COORDINATES: { [key: string]: [number, number] } = {
@@ -111,38 +116,58 @@ interface MapProps {
   onSelectComplex: (complex: Complex) => void;
 }
 
-// 지도 제어용 컨트롤러 컴포넌트
-function MapController({ activeCoord }: { activeCoord: [number, number] | null }) {
-  const map = useMap();
-  useEffect(() => {
-    if (activeCoord) {
-      map.setView(activeCoord, 15, { animate: true, duration: 1 });
-    }
-  }, [activeCoord, map]);
-  return null;
-}
-
 export default function Map({ complexes, activeComplexId, onSelectComplex }: MapProps) {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [naverMap, setNaverMap] = useState<any>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
   const [mappedComplexes, setMappedComplexes] = useState<MappedComplex[]>([]);
-  const [activeCoord, setActiveCoord] = useState<[number, number] | null>(null);
+  const [markers, setMarkers] = useState<any[]>([]);
 
-  // 단지 주소 지오코딩 및 상태 관리
+  // 1. 네이버 지도 SDK 초기화
+  const initMap = () => {
+    if (!mapRef.current || !window.naver || !window.naver.maps) return;
+
+    const mapOptions = {
+      center: new window.naver.maps.LatLng(37.5665, 126.9780),
+      zoom: 11,
+      minZoom: 6,
+      maxZoom: 19,
+      zoomControl: true,
+      zoomControlOptions: {
+        position: window.naver.maps.Position.TOP_RIGHT,
+        style: window.naver.maps.ZoomControlStyle.SMALL
+      }
+    };
+
+    const map = new window.naver.maps.Map(mapRef.current, mapOptions);
+    setNaverMap(map);
+    setMapLoaded(true);
+  };
+
+  // 2. 주택 단지 주소 지오코딩 및 마커 생성
   useEffect(() => {
+    // 네이버 지도 핵심 클래스(Marker, Service)가 확실히 로드 완료되었는지 2중 체크
+    if (!mapLoaded || !naverMap || !window.naver || !window.naver.maps || !window.naver.maps.Marker) return;
+
+    // 기존 마커 전체 삭제 및 맵 연결 해제
+    markers.forEach(m => m.marker.setMap(null));
+
     let isMounted = true;
 
     const geocodeAll = async () => {
       const results: MappedComplex[] = [];
-      
+      const newMarkers: any[] = [];
+
       for (let i = 0; i < complexes.length; i++) {
         const c = complexes[i];
         const addr = c.address;
         const name = c.name;
-        
+
         let lat = 37.5665;
         let lng = 126.9780;
-        
-        // 1. 키워드 캐시 확인
         let found = false;
+
+        // A. 키워드 캐시 확인
         for (const key of Object.keys(KEYWORD_COORDINATES)) {
           if (name.includes(key) || addr.includes(key)) {
             [lat, lng] = KEYWORD_COORDINATES[key];
@@ -150,8 +175,27 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
             break;
           }
         }
-        
-        // 2. 매칭되지 않았으면 지오코딩 시도
+
+        // B. 네이버 지오코딩 API 시도 (가장 정확한 한국어 주소 파싱)
+        if (!found && window.naver?.maps?.Service?.geocode) {
+          try {
+            await new Promise<void>((resolve) => {
+              window.naver.maps.Service.geocode({ query: addr }, (status: any, response: any) => {
+                if (status === window.naver.maps.Service.Status.OK && response.v2.addresses.length > 0) {
+                  const item = response.v2.addresses[0];
+                  lat = parseFloat(item.y);
+                  lng = parseFloat(item.x);
+                  found = true;
+                }
+                resolve();
+              });
+            });
+          } catch (e) {
+            // 오류 시 무시하고 다음 폴백
+          }
+        }
+
+        // C. 국외 Nominatim 오픈소스 API 폴백
         if (!found) {
           try {
             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(addr)}`);
@@ -161,17 +205,14 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
               lng = parseFloat(data[0].lon);
               found = true;
             }
-          } catch (e) {
-            // 무시하고 다음 단계 진행
-          }
+          } catch (e) {}
         }
-        
-        // 3. 자치구 매핑 확인
+
+        // D. 자치구 중심점 기반 분산 폴백
         if (!found) {
           for (const region of Object.keys(REGION_COORDINATES)) {
             if (addr.includes(region)) {
               const base = REGION_COORDINATES[region];
-              // 마커가 겹치지 않게 인덱스 기반 분산
               const offsetLat = ((i % 7) - 3) * 0.0015;
               const offsetLng = ((Math.floor(i / 7) % 7) - 3) * 0.0015;
               lat = base[0] + offsetLat;
@@ -181,22 +222,76 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
             }
           }
         }
-        
-        // 4. 최종 폴백 (서울 내 임의 분산)
+
+        // E. 서울 시청 중심점 기반 최종 분산 폴백
         if (!found) {
           lat = 37.5665 + ((i % 11) - 5) * 0.003;
           lng = 126.9780 + ((Math.floor(i / 11) % 11) - 5) * 0.003;
         }
 
-        results.push({
-          ...c,
-          lat,
-          lng
+        // 비동기 작업(await) 이후 네이버 객체가 여전히 메모리에 살아있는지 실시간 확인
+        if (!isMounted || !window.naver || !window.naver.maps || !window.naver.maps.Marker) {
+          break;
+        }
+
+        const mapped = { ...c, lat, lng };
+        results.push(mapped);
+
+        // 네이버 지도용 커스텀 HTML 마커 생성 (기존 CSS 스타일셋 바인딩)
+        const isActive = c.id === activeComplexId;
+        const marker = new window.naver.maps.Marker({
+          position: new window.naver.maps.LatLng(lat, lng),
+          map: naverMap,
+          title: name,
+          icon: {
+            content: `
+              <div class="custom-marker ${isActive ? 'active' : ''}" style="cursor: pointer;">
+                <div class="marker-pin"></div>
+              </div>
+            `,
+            size: new window.naver.maps.Size(30, 30),
+            anchor: new window.naver.maps.Point(15, 30)
+          }
         });
+
+        // 네이버용 커스텀 정보창 생성
+        const infoWindow = new window.naver.maps.InfoWindow({
+          content: `
+            <div class="naver-popup-wrapper" style="padding: 12px 14px; min-width: 220px; font-family: 'Inter', sans-serif; background: #1e293b; color: #f8fafc; border: 1px solid #334155; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);">
+              <h4 style="margin: 0 0 6px 0; font-size: 14px; font-weight: 700; color: #2dd4bf;">${name}</h4>
+              <p style="margin: 0 0 12px 0; font-size: 11px; color: #94a3b8; line-height: 1.4;">${addr}</p>
+              <button id="btn-popup-${c.id}" style="background: #0f766e; hover:background: #115e59; color: #f8fafc; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; width: 100%; transition: background 0.2s;">
+                상세 정보 보기
+              </button>
+            </div>
+          `,
+          borderWidth: 0,
+          backgroundColor: "transparent",
+          disableAnchor: true
+        });
+
+        // 마커 클릭 시 정보창 로드 및 이벤트 바인딩
+        window.naver.maps.Event.addListener(marker, 'click', () => {
+          infoWindow.open(naverMap, marker);
+          
+          // 정보창 엘리먼트 렌더링 이후 버튼 이벤트 바인딩 (타임아웃 안전 장치)
+          setTimeout(() => {
+            const btn = document.getElementById(`btn-popup-${c.id}`);
+            if (btn) {
+              btn.addEventListener('click', () => {
+                onSelectComplex(c);
+                infoWindow.close();
+              });
+            }
+          }, 50);
+        });
+
+        newMarkers.push({ id: c.id, marker, infoWindow });
       }
 
       if (isMounted) {
         setMappedComplexes(results);
+        setMarkers(newMarkers);
       }
     };
 
@@ -205,66 +300,49 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
     return () => {
       isMounted = false;
     };
-  }, [complexes]);
+  }, [complexes, mapLoaded, naverMap]);
 
-  // 활성화된 단지의 위경도 좌표 설정
+  // 3. 외부 활성화 단지 변경 시 카메라 초점 및 마커 상태 동기화
   useEffect(() => {
-    if (activeComplexId) {
-      const active = mappedComplexes.find(c => c.id === activeComplexId);
-      if (active) {
-        setActiveCoord([active.lat, active.lng]);
-      }
-    }
-  }, [activeComplexId, mappedComplexes]);
+    if (!naverMap || markers.length === 0 || !activeComplexId) return;
 
-  // 커스텀 DIV 아이콘 생성 헬퍼
-  const createCustomIcon = (isActive: boolean) => {
-    return L.divIcon({
-      className: `custom-marker ${isActive ? 'active' : ''}`,
-      html: `<div class="marker-pin"></div>`,
-      iconSize: [30, 30],
-      iconAnchor: [15, 30],
-      popupAnchor: [0, -30]
-    });
-  };
+    const target = markers.find(m => m.id === activeComplexId);
+    if (target) {
+      const position = target.marker.getPosition();
+      
+      // 해당 단지로 카메라 이동 및 정보창 활성화
+      naverMap.panTo(position);
+      target.infoWindow.open(naverMap, target.marker);
+
+      // 마커 엘리먼트의 CSS 클래스 강제 토글 (active 디자인 적용)
+      markers.forEach(m => {
+        const el = m.marker.getElement();
+        if (el) {
+          const innerMarker = el.querySelector('.custom-marker');
+          if (m.id === activeComplexId) {
+            innerMarker?.classList.add('active');
+          } else {
+            innerMarker?.classList.remove('active');
+          }
+        }
+      });
+    }
+  }, [activeComplexId, markers, naverMap]);
+
+  const naverClientId = process.env.NEXT_PUBLIC_NAVER_CLIENT_ID;
 
   return (
-    <div className="map-wrapper">
-      <MapContainer 
-        center={[37.5665, 126.9780]} 
-        zoom={11} 
-        scrollWheelZoom={true}
-        zoomControl={true}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    <>
+      {naverClientId && (
+        <Script
+          src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverClientId}&submodules=geocoding`}
+          onLoad={initMap}
+          strategy="afterInteractive"
         />
-        
-        {mappedComplexes.map((c) => {
-          const isActive = c.id === activeComplexId;
-          return (
-            <Marker 
-              key={c.id} 
-              position={[c.lat, c.lng]} 
-              icon={createCustomIcon(isActive)}
-            >
-              <Popup>
-                <div className="popup-title">{c.name}</div>
-                <div className="popup-address">{c.address}</div>
-                <button 
-                  className="popup-btn" 
-                  onClick={() => onSelectComplex(c)}
-                >
-                  상세 정보 및 가격 보기
-                </button>
-              </Popup>
-            </Marker>
-          );
-        })}
-
-        <MapController activeCoord={activeCoord} />
-      </MapContainer>
-    </div>
+      )}
+      <div className="map-wrapper">
+        <div ref={mapRef} style={{ width: '100%', height: '100%', borderRadius: '12px' }} />
+      </div>
+    </>
   );
 }
