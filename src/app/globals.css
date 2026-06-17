@@ -131,7 +131,35 @@ body {
   height: 100%;
   z-index: 50;
   flex-shrink: 0;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* transition은 드래그 시 반응성을 위해 인라인에서 별도 제어하거나 끕니다 */
+}
+
+/* Sidebar Resizer Bar */
+.resizer-bar {
+  width: 4px;
+  height: 100%;
+  cursor: ew-resize;
+  background-color: transparent;
+  z-index: 100;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease, width 0.2s ease;
+  position: relative;
+}
+
+.resizer-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -2px;
+  right: -2px;
+  bottom: 0;
+  cursor: ew-resize;
+}
+
+.resizer-bar:hover,
+.resizer-bar.dragging {
+  background-color: hsl(var(--accent));
+  width: 4px;
 }
 
 .sidebar-search {

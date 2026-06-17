@@ -103,6 +103,37 @@ export default function Home() {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
 
+  // 사이드바 너비 조절 상태
+  const [sidebarWidth, setSidebarWidth] = useState(420);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // 드래그 마우스 이벤트 제어
+  const startResizing = (mouseDownEvent: React.MouseEvent) => {
+    mouseDownEvent.preventDefault();
+    setIsDragging(true);
+    
+    // 드래그 도중 글자 선택 등을 방지하도록 body 스타일 수정
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'ew-resize';
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      // 마우스의 절대 x좌표를 새로운 너비로 설정 (최소 280px ~ 최대 700px 범위 제어)
+      const newWidth = Math.max(280, Math.min(700, moveEvent.clientX));
+      setSidebarWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+  };
+
   // 필터 상태
   const [filterState, setFilterState] = useState<FilterState>({
     targetGroup: 'ALL',
@@ -304,6 +335,13 @@ export default function Home() {
           announcements={announcements} 
           activeAnnId={activeAnnId} 
           onSelectAnnouncement={handleSelectAnnouncement} 
+          width={sidebarWidth}
+        />
+
+        {/* Sidebar Resizer Bar */}
+        <div 
+          className={`resizer-bar ${isDragging ? 'dragging' : ''}`} 
+          onMouseDown={startResizing}
         />
 
         {/* Center Map Area */}

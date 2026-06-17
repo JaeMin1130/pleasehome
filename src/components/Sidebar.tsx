@@ -488,9 +488,16 @@ const renderMarkdown = (text: string): React.ReactNode => {
   );
 };
 
+interface SidebarProps {
+  announcements: Announcement[];
+  activeAnnId: number | null;
+  onSelectAnnouncement: (id: number | null) => void;
+  width?: number;
+}
+
 type ApplicationStatus = 'UPCOMING' | 'ONGOING' | 'CLOSED';
 
-export default function Sidebar({ announcements, activeAnnId, onSelectAnnouncement }: SidebarProps) {
+export default function Sidebar({ announcements, activeAnnId, onSelectAnnouncement, width }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<ApplicationStatus>('ONGOING');
   
@@ -581,7 +588,7 @@ export default function Sidebar({ announcements, activeAnnId, onSelectAnnounceme
   });
 
   return (
-    <aside className="app-sidebar">
+    <aside className="app-sidebar" style={{ width: width ? `${width}px` : undefined }}>
       {/* Search & Filter Header */}
       <div className="sidebar-search">
         <input 

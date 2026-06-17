@@ -181,7 +181,7 @@ project03/
 | `complex_id` | INTEGER | Y (FK) | 소속 단지 ID (`complexes.id` 참조, Cascade, 단지가 없는 경우 NULL) |
 | `room_number` | VARCHAR(50) | Y | 동/호수 등 특정 호실 지정 시 기록 |
 | `room_count` | INTEGER | Y | 방의 개수 |
-| `supply_type` | VARCHAR(100) | Y | 공급 구분 (예: `우선공급`, `일반공급`, `재공급`) |
+| `supply_type` | VARCHAR(100) | Y | 주택형 (예: `39형`, `59형`) |
 | `exclusive_area` | REAL | N | 주거전용면적 (제곱미터 ㎡ 단위) |
 | `contract_area` | REAL | Y | 계약면적 (제곱미터 ㎡ 단위) |
 | `target_group` | VARCHAR(100) | Y | 세부 청약 대상 계층 (예: `대학생`, `청년`, `신혼부부`, `고령자`) |
