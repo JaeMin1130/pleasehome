@@ -54,7 +54,8 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
       zoom: 11,
       minZoom: 6,
       maxZoom: 19,
-      zoomControl: false
+      zoomControl: false,
+      tileTransition: false
     };
 
     const map = new window.naver.maps.Map(mapRef.current, mapOptions);
@@ -165,41 +166,6 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
       if (isMounted) {
         setMappedComplexes(results);
         setMarkers(newMarkers);
-
-        // 지도의 시점을 유효한 단지가 보이도록 맞춤 (2번 이슈 대응)
-        if (validCoords.length > 0) {
-          const bounds = new window.naver.maps.LatLngBounds();
-          validCoords.forEach((coord) => {
-            bounds.extend(new window.naver.maps.LatLng(coord.lat, coord.lng));
-          });
-
-          // 현재 지도의 영역(Bounds) 가져오기
-          const currentBounds = naverMap.getBounds();
-          let allInView = true;
-
-          if (currentBounds) {
-            validCoords.forEach((coord) => {
-              const latLng = new window.naver.maps.LatLng(coord.lat, coord.lng);
-              if (!currentBounds.hasLatLng(latLng)) {
-                allInView = false;
-              }
-            });
-          } else {
-            allInView = false;
-          }
-
-          if (validCoords.length === 1) {
-            // 단지가 1개인 경우: 항상 줌 레벨 변경 없이 중심 좌표만 이동
-            naverMap.setCenter(bounds.getCenter());
-          } else if (allInView) {
-            // 단지가 여러 개이고 이미 모두 화면 내에 들어와 있는 경우: 줌 레벨 변경 없이 중심만 이동
-            naverMap.setCenter(bounds.getCenter());
-          } else {
-            // 단지가 여러 개이고 화면을 벗어난 단지가 있는 경우: 줌 레벨을 11으로 조정하고 중심 이동
-            naverMap.setZoom(11);
-            naverMap.setCenter(bounds.getCenter());
-          }
-        }
       }
     };
 
@@ -243,7 +209,7 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
         />
       )}
       <div className="map-wrapper">
-        <div ref={mapRef} style={{ width: '100%', height: '100%', borderRadius: '12px' }} />
+        <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
       </div>
     </>
   );

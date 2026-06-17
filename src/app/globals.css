@@ -377,6 +377,8 @@ body {
 .map-wrapper {
   width: 100%;
   height: 100%;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
 }
 
 
@@ -436,7 +438,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .marker-pin::after {
@@ -451,6 +453,7 @@ body {
 .custom-marker:hover .marker-pin {
   background: hsl(var(--accent-hover));
   transform: rotate(-45deg) scale(1.15);
+  transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 .custom-marker.active .marker-pin {
