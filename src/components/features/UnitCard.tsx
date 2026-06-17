@@ -67,7 +67,7 @@ export default function UnitCard({
       {hasConversion && unit.monthly_rent > 0 && (
         <div className={styles['conversion-slider-box']}>
           <div className={styles['conversion-slider-header']}>
-            <span className={styles['conversion-slider-title']}>🔄 보증금 ↔ 월세 전환</span>
+            <span className={styles['conversion-slider-title']}>보증금 ↔ 월세 전환</span>
             {sliderVal !== 0 && (
               <button
                 className={styles['conversion-reset-btn']}

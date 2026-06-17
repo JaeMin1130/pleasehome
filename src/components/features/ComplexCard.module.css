@@ -1,0 +1,29 @@
+.complex-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: var(--shadow-sm);
+}
+.complex-card:hover {
+  background-color: var(--bg-surface-hover);
+  border-color: var(--border-strong);
+}
+.complex-card.active {
+  border-color: var(--primary);
+  background-color: var(--primary-bg);
+}
+.complex-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.complex-address {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}

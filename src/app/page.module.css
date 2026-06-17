@@ -1,6 +1,6 @@
-.resizer-bar { width: 4px; height: 100%; cursor: ew-resize; background-color: var(--border-light); z-index: 100; position: relative; flex-shrink: 0; transition: background-color 0.1s ease; }
+.resizer-bar { width: 4px; height: 100%; cursor: ew-resize; background-color: var(--border-light); z-index: 101; position: absolute; top: 0; flex-shrink: 0; transition: background-color 0.1s ease; }
 .resizer-bar:hover, .resizer-bar.dragging { background-color: var(--primary); }
-.app-map-container { flex: 1; height: 100%; position: relative; background-color: #e5e3df; }
+.app-map-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background-color: #e5e3df; }
 .policy-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: var(--bg-surface); border: 1px solid var(--border-light); box-shadow: var(--shadow-lg); border-radius: 12px; padding: 40px 30px; width: 90%; max-width: 480px; text-align: center; z-index: 10; }
 .policy-icon { width: 56px; height: 56px; background-color: var(--primary-bg); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 20px; }
 .policy-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 12px; color: var(--text-primary); }

@@ -121,11 +121,16 @@ export default function Home() {
         <Sidebar 
           announcements={announcements} activeAnnId={activeAnnId} onSelectAnnouncement={handleSelectAnnouncement} 
           width={sidebarWidth} isCollapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          displayComplexes={filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex}
         />
 
-        <div className={`${styles['resizer-bar']} ${isDragging ? styles.dragging : ''}`} onMouseDown={startResizing} />
+        <div 
+          className={`${styles['resizer-bar']} ${isDragging ? styles.dragging : ''}`} 
+          onMouseDown={startResizing} 
+          style={{ left: isSidebarCollapsed ? 0 : sidebarWidth }} 
+        />
 
-        <DetailPanel complex={selectedComplex} isOpen={isPanelOpen} filterState={filterState} announcements={announcements} onClose={() => { setIsPanelOpen(false); setActiveComplexId(null); }} />
+        <DetailPanel complex={selectedComplex} isOpen={isPanelOpen} filterState={filterState} announcements={announcements} onClose={() => { setIsPanelOpen(false); setActiveComplexId(null); }} style={{ left: isSidebarCollapsed ? 0 : sidebarWidth }} />
 
         <div className={styles['app-map-container']}>
           <Map complexes={filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex} />
@@ -194,7 +199,7 @@ export default function Home() {
 
                   <div className={styles['filter-row-footer']}>
                     <button className={styles['filter-reset-btn']} onClick={() => setFilterState({ targetGroup: 'ALL', minArea: dynamicMinArea, maxArea: dynamicMaxArea, minDeposit: dynamicMinDeposit, maxDeposit: dynamicMaxDeposit, minMonthlyRent: dynamicMinRent, maxMonthlyRent: dynamicMaxRent })}>
-                      🔄 초기화
+                      초기화
                     </button>
                   </div>
                 </div>

@@ -11,9 +11,10 @@ interface DetailPanelProps {
   filterState: FilterState;
   announcements: Announcement[];
   onClose: () => void;
+  style?: React.CSSProperties;
 }
 
-export default function DetailPanel({ complex, isOpen, filterState, announcements, onClose }: DetailPanelProps) {
+export default function DetailPanel({ complex, isOpen, filterState, announcements, onClose, style }: DetailPanelProps) {
   const [units, setUnits] = useState<HousingUnit[]>([]);
   const [loading, setLoading] = useState(false);
   const [sliderValues, setSliderValues] = useState<Record<number, number>>({});
@@ -57,7 +58,7 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
   if (!complex) return null;
 
   return (
-    <div className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''}`}>
+    <div className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''}`} style={style}>
       <div className={styles['panel-header']}>
         <div className={styles['panel-title-container']}>
           <span className={styles['panel-title']}>{complex.name}</span>
