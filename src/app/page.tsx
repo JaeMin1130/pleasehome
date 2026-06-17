@@ -136,7 +136,10 @@ export default function Home() {
           <Map complexes={filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex} />
           
           {activeAnnId && !isPolicyOnly && (
-            <div className={`${styles['map-filter-overlay']} ${isFilterExpanded ? '' : styles.collapsed}`}>
+            <div 
+              className={`${styles['map-filter-overlay']} ${isFilterExpanded ? '' : styles.collapsed}`}
+              style={{ left: (isSidebarCollapsed ? 0 : sidebarWidth) + 20 }}
+            >
               <div className={styles['overlay-header']} onClick={() => setIsFilterExpanded(!isFilterExpanded)}>
                 <span className={styles['overlay-title']}>🔍 맞춤 조건 필터링</span>
                 <span className={styles['overlay-toggle-icon']}>{isFilterExpanded ? '▲' : '▼'}</span>
