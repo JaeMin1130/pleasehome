@@ -258,6 +258,45 @@ export default function Home() {
     setIsPanelOpen(true);
   };
 
+  // 슬라이더 트랙 클릭 시 더 가까운 썸(Thumb)을 이동시키는 핸들러
+  const handleSliderTrackClick = (
+    e: React.MouseEvent<HTMLDivElement>,
+    minVal: number,
+    maxVal: number,
+    dynamicMin: number,
+    dynamicMax: number,
+    setMin: (val: number) => void,
+    setMax: (val: number) => void,
+    step: number = 1
+  ) => {
+    // 썸(input) 자체를 클릭했을 때는 원래 브라우저 기본 드래그 동작을 유지함
+    if ((e.target as HTMLElement).tagName === 'INPUT') return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const width = rect.width;
+    
+    // 클릭된 가로 좌표의 비율 계산 (0 ~ 1)
+    let ratio = clickX / width;
+    ratio = Math.max(0, Math.min(1, ratio));
+    
+    // 비율에 맞는 실제 값 계산 및 step 단위 보정
+    let clickedVal = dynamicMin + ratio * (dynamicMax - dynamicMin);
+    clickedVal = Math.round(clickedVal / step) * step;
+    
+    // 최소값(min)과 최대값(max) 중 더 가까운 대상 찾기
+    const distToMin = Math.abs(clickedVal - minVal);
+    const distToMax = Math.abs(clickedVal - maxVal);
+    
+    if (distToMin < distToMax) {
+      // 최소 썸을 이동 (최대값보다 커지지 않도록 한계 제어)
+      setMin(Math.min(clickedVal, maxVal - step));
+    } else {
+      // 최대 썸을 이동 (최소값보다 작아지지 않도록 한계 제어)
+      setMax(Math.max(clickedVal, minVal + step));
+    }
+  };
+
   return (
     <div className="app-container">
       {/* Header */}
@@ -322,7 +361,20 @@ export default function Home() {
                         {filterState.minArea}㎡ ~ {filterState.maxArea}㎡ (약 {Math.round(filterState.minArea * 0.3025)}평 ~ {Math.round(filterState.maxArea * 0.3025)}평)
                       </span>
                     </div>
-                    <div className="double-slider-container">
+                    <div 
+                      className="double-slider-container"
+                      style={{ cursor: 'pointer' }}
+                      onClick={(e) => handleSliderTrackClick(
+                        e,
+                        filterState.minArea,
+                        filterState.maxArea,
+                        dynamicMinArea,
+                        dynamicMaxArea,
+                        (val) => setFilterState(prev => ({ ...prev, minArea: val })),
+                        (val) => setFilterState(prev => ({ ...prev, maxArea: val })),
+                        1
+                      )}
+                    >
                       <input
                         type="range"
                         min={dynamicMinArea}
@@ -366,7 +418,25 @@ export default function Home() {
                         {formatMoney(filterState.minDeposit)} ~ {formatMoney(filterState.maxDeposit)}
                       </span>
                     </div>
-                    <div className="double-slider-container">
+                    <div 
+                      className="double-slider-container"
+                      style={{ cursor: 'pointer' }}
+                      onClick={(e) => {
+                        const stepVal = dynamicMaxDeposit - dynamicMinDeposit > 10000000 
+                          ? Math.floor((dynamicMaxDeposit - dynamicMinDeposit) / 20) 
+                          : 1000000;
+                        handleSliderTrackClick(
+                          e,
+                          filterState.minDeposit,
+                          filterState.maxDeposit,
+                          dynamicMinDeposit,
+                          dynamicMaxDeposit,
+                          (val) => setFilterState(prev => ({ ...prev, minDeposit: val })),
+                          (val) => setFilterState(prev => ({ ...prev, maxDeposit: val })),
+                          stepVal
+                        );
+                      }}
+                    >
                       <input
                         type="range"
                         min={dynamicMinDeposit}
@@ -412,7 +482,25 @@ export default function Home() {
                         {formatRent(filterState.minMonthlyRent)} ~ {formatRent(filterState.maxMonthlyRent)}
                       </span>
                     </div>
-                    <div className="double-slider-container">
+                    <div 
+                      className="double-slider-container"
+                      style={{ cursor: 'pointer' }}
+                      onClick={(e) => {
+                        const stepVal = dynamicMaxRent - dynamicMinRent > 100000 
+                          ? Math.floor((dynamicMaxRent - dynamicMinRent) / 20) 
+                          : 10000;
+                        handleSliderTrackClick(
+                          e,
+                          filterState.minMonthlyRent,
+                          filterState.maxMonthlyRent,
+                          dynamicMinRent,
+                          dynamicMaxRent,
+                          (val) => setFilterState(prev => ({ ...prev, minMonthlyRent: val })),
+                          (val) => setFilterState(prev => ({ ...prev, maxMonthlyRent: val })),
+                          stepVal
+                        );
+                      }}
+                    >
                       <input
                         type="range"
                         min={dynamicMinRent}
