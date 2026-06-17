@@ -65,17 +65,18 @@ def parse_metadata(pdf_path):
     elif "공공임대" in filename:
         category = "공공임대"
 
-    # 4. 기관명 1차 추출 (LH, SH, GH, iH, HUG)
+    # 4. 기관명 1차 추출 (LH, SH, GH, iH, HUG) - 대소문자 무관 및 명칭 보완
     institution = None
-    if "LH" in filename or "한국토지주택공사" in filename:
+    filename_lower = filename.lower()
+    if "lh" in filename_lower or "한국토지주택" in filename_lower:
         institution = "LH"
-    elif "SH" in filename or "서울주택도시공사" in filename:
+    elif "sh" in filename_lower or "서울주택도시" in filename_lower:
         institution = "SH"
-    elif "GH" in filename or "경기주택도시공사" in filename or "경기도시공사" in filename:
+    elif "gh" in filename_lower or "경기주택도시" in filename_lower or "경기도시" in filename_lower:
         institution = "GH"
-    elif "iH" in filename or "인천도시공사" in filename:
+    elif "ih" in filename_lower or "인천도시" in filename_lower:
         institution = "iH"
-    elif "HUG" in filename or "주택도시보증공사" in filename:
+    elif "hug" in filename_lower or "주택도시보증" in filename_lower:
         institution = "HUG"
     else:
         # 파일명에서 지자체명/조합명 등 감지 시도 (백업)
@@ -123,16 +124,17 @@ def parse_metadata(pdf_path):
                         elif "장기안심" in text:
                             category = "장기안심"
                     
-                    # 기관명 재검증 및 강제 보정
-                    if "한국토지주택공사" in text or "LH" in text or "L.H" in text:
+                    # 기관명 재검증 및 강제 보정 - 대소문자 무관 및 명칭 보완
+                    text_lower = text.lower()
+                    if "한국토지주택" in text_lower or "lh" in text_lower or "l.h" in text_lower:
                         institution = "LH"
-                    elif "서울주택도시공사" in text or "SH" in text:
+                    elif "서울주택도시" in text_lower or "sh" in text_lower:
                         institution = "SH"
-                    elif "경기주택도시공사" in text or "GH" in text or "경기도시공사" in text:
+                    elif "경기주택도시" in text_lower or "gh" in text_lower or "경기도시" in text_lower:
                         institution = "GH"
-                    elif "인천도시공사" in text or "iH" in text:
+                    elif "인천도시" in text_lower or "ih" in text_lower:
                         institution = "iH"
-                    elif "주택도시보증공사" in text or "HUG" in text:
+                    elif "주택도시보증" in text_lower or "hug" in text_lower:
                         institution = "HUG"
         except Exception as e:
             pass
