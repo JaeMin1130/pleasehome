@@ -76,6 +76,116 @@ const formatInterestRate = (rate: number | null): string => {
   return `${rate.toFixed(1)}%`;
 };
 
+// 인라인 마크다운 (**볼드**) 파싱 헬퍼 함수
+const parseInlineMarkdown = (text: string): React.ReactNode[] => {
+  // **bold** 패턴 분할
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, idx) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      const boldText = part.slice(2, -2);
+      return <strong key={idx} style={{ fontWeight: '700', color: 'hsl(var(--text-primary))' }}>{boldText}</strong>;
+    }
+    return part;
+  });
+};
+
+// 블록 단위 마크다운 (제목, 불릿 목록, 문단) 파싱 및 렌더링 함수
+const renderMarkdown = (text: string): React.ReactNode => {
+  if (!text) return null;
+  
+  const lines = text.split('\n');
+  
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
+      {lines.map((line, idx) => {
+        const content = line.trim();
+        
+        // 1. Headers (### or ####)
+        const headerMatch = content.match(/^(#{1,6})\s+(.*)$/);
+        if (headerMatch) {
+          const level = headerMatch[1].length;
+          const titleText = headerMatch[2];
+          const parsedTitle = parseInlineMarkdown(titleText);
+          
+          if (level <= 3) {
+            return (
+              <h4 
+                key={idx} 
+                style={{ 
+                  fontSize: '0.8rem', 
+                  fontWeight: '700', 
+                  margin: '8px 0 2px 0', 
+                  color: 'hsl(var(--text-primary))',
+                  borderBottom: '1px solid hsl(var(--border))',
+                  paddingBottom: '4px'
+                }}
+              >
+                {parsedTitle}
+              </h4>
+            );
+          } else {
+            return (
+              <h5 
+                key={idx} 
+                style={{ 
+                  fontSize: '0.75rem', 
+                  fontWeight: '700', 
+                  margin: '6px 0 2px 0', 
+                  color: 'hsl(var(--text-primary))' 
+                }}
+              >
+                {parsedTitle}
+              </h5>
+            );
+          }
+        }
+        
+        // 2. Unordered lists (- or *)
+        const listMatch = content.match(/^[-*]\s+(.*)$/);
+        if (listMatch) {
+          const listText = listMatch[1];
+          return (
+            <div 
+              key={idx} 
+              style={{ 
+                display: 'flex', 
+                gap: '6px', 
+                paddingLeft: '4px', 
+                margin: '1px 0', 
+                fontSize: '0.75rem', 
+                lineHeight: '1.4' 
+              }}
+            >
+              <span style={{ color: 'hsl(var(--accent-hover))', userSelect: 'none' }}>•</span>
+              <div style={{ color: 'hsl(var(--text-secondary))' }}>{parseInlineMarkdown(listText)}</div>
+            </div>
+          );
+        }
+        
+        // 3. Empty lines
+        if (content === '') {
+          return <div key={idx} style={{ height: '4px' }} />;
+        }
+        
+        // 4. Regular paragraph
+        return (
+          <p 
+            key={idx} 
+            style={{ 
+              fontSize: '0.75rem', 
+              margin: '1px 0', 
+              lineHeight: '1.4', 
+              color: 'hsl(var(--text-secondary))' 
+            }}
+          >
+            {parseInlineMarkdown(content)}
+          </p>
+        );
+      })}
+    </div>
+  );
+};
+
 type ApplicationStatus = 'UPCOMING' | 'ONGOING' | 'CLOSED';
 
 export default function Sidebar({ announcements, activeAnnId, onSelectAnnouncement }: SidebarProps) {
@@ -320,8 +430,8 @@ export default function Sidebar({ announcements, activeAnnId, onSelectAnnounceme
                                 <div style={{ fontWeight: '600', fontSize: '0.75rem', color: 'hsl(var(--accent-hover))', marginBottom: '4px' }}>
                                   Q. {d.section_title}
                                 </div>
-                                <div style={{ fontSize: '0.75rem', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>
-                                  {d.section_content}
+                                <div style={{ fontSize: '0.75rem', lineHeight: '1.4' }}>
+                                  {renderMarkdown(d.section_content)}
                                 </div>
                               </div>
                             ))}

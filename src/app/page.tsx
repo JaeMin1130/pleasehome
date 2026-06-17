@@ -61,7 +61,6 @@ interface FilterState {
   maxDeposit: number;
   minMonthlyRent: number;
   maxMonthlyRent: number;
-  hasElevator: boolean | null;
 }
 
 interface Complex {
@@ -112,8 +111,7 @@ export default function Home() {
     minDeposit: 0,
     maxDeposit: 200000000,
     minMonthlyRent: 0,
-    maxMonthlyRent: 1500000,
-    hasElevator: null
+    maxMonthlyRent: 1500000
   });
 
   // 초기 공고 및 단지 로드
@@ -156,8 +154,7 @@ export default function Home() {
             minDeposit: minDep,
             maxDeposit: maxDep,
             minMonthlyRent: minRent,
-            maxMonthlyRent: maxRent,
-            hasElevator: null
+            maxMonthlyRent: maxRent
           });
         } else {
           setFilterState({
@@ -167,8 +164,7 @@ export default function Home() {
             minDeposit: 0,
             maxDeposit: 200000000,
             minMonthlyRent: 0,
-            maxMonthlyRent: 1500000,
-            hasElevator: null
+            maxMonthlyRent: 1500000
           });
         }
       })
@@ -207,15 +203,6 @@ export default function Home() {
 
   // 필터링 적용된 단지 목록
   const filteredComplexes = displayComplexes.filter(complex => {
-    // 엘리베이터 필터링
-    if (filterState.hasElevator !== null) {
-      const rawElev = complex.has_elevator as any;
-      const hasElev = rawElev === 1 || rawElev === true;
-      if (hasElev !== filterState.hasElevator) {
-        return false;
-      }
-    }
-
     const complexUnits = announcementUnits.filter(u => u.complex_id === complex.id);
     
     // 유닛 데이터 로드 전에는 단지를 임시 노출
@@ -538,21 +525,8 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* 5. 엘리베이터 및 초기화 */}
-                  <div className="filter-row-footer">
-                    <label className="checkbox-container">
-                      <input
-                        type="checkbox"
-                        className="checkbox-input"
-                        checked={filterState.hasElevator === true}
-                        onChange={(e) => setFilterState({ 
-                          ...filterState, 
-                          hasElevator: e.target.checked ? true : null 
-                        })}
-                      />
-                      <span className="checkbox-label">엘리베이터</span>
-                    </label>
-                    
+                  {/* 5. 초기화 */}
+                  <div className="filter-row-footer" style={{ justifyContent: 'flex-end' }}>
                     <button 
                       className="filter-reset-btn"
                       onClick={() => setFilterState({
@@ -562,8 +536,7 @@ export default function Home() {
                         minDeposit: dynamicMinDeposit,
                         maxDeposit: dynamicMaxDeposit,
                         minMonthlyRent: dynamicMinRent,
-                        maxMonthlyRent: dynamicMaxRent,
-                        hasElevator: null
+                        maxMonthlyRent: dynamicMaxRent
                       })}
                     >
                       🔄 초기화

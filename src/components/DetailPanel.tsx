@@ -38,7 +38,6 @@ interface FilterState {
   maxDeposit: number;
   minMonthlyRent: number;
   maxMonthlyRent: number;
-  hasElevator: boolean | null;
 }
 
 interface DetailPanelProps {
