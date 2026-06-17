@@ -209,8 +209,8 @@ def convert_single_pdf(pdf_path, output_dir, folder_name):
                 print("-> 마크다운 내 이미지 참조 링크 치환 완료.")
 
 def run_auto_scan():
-    base_pdf_dir = "/home/iru/project03/doc/pdf"
-    base_md_dir = "/home/iru/project03/doc/md"
+    base_pdf_dir = "/home/iru/project03/docs/pdf"
+    base_md_dir = "/home/iru/project03/docs/md"
     
     # 1. 미분류 PDF 파일 목록 가져오기
     pdf_files = [
@@ -219,7 +219,7 @@ def run_auto_scan():
     ]
     
     if not pdf_files:
-        print("정리할 미분류 PDF 파일이 doc/pdf/ 루트에 존재하지 않습니다.")
+        print("정리할 미분류 PDF 파일이 docs/pdf/ 루트에 존재하지 않습니다.")
         return
         
     print(f"미분류 PDF 파일 {len(pdf_files)}개를 감지했습니다.")
@@ -267,7 +267,7 @@ def run_auto_scan():
         output_dir = os.path.join(base_md_dir, std_folder_name)
         try:
             convert_single_pdf(target_pdf_path, output_dir, std_folder_name)
-            print(f"-> 변환 성공! 결과 경로: doc/md/{std_folder_name}/document.md")
+            print(f"-> 변환 성공! 결과 경로: docs/md/{std_folder_name}/document.md")
         except Exception as e:
             print(f"-> 변환 실패! 에러: {e}", file=sys.stderr)
 
@@ -290,8 +290,8 @@ def main():
         sys.exit(0)
         
     # 인자가 주어졌으면 단일 파일 변환 모드로 가동
-    base_pdf_dir = "/home/iru/project03/doc/pdf"
-    base_md_dir = "/home/iru/project03/doc/md"
+    base_pdf_dir = "/home/iru/project03/docs/pdf"
+    base_md_dir = "/home/iru/project03/docs/md"
     
     target = args.target
     if not os.path.exists(target) and not os.path.isabs(target):

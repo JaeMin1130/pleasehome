@@ -31,7 +31,7 @@
 ```text
 project03/
 ├── .agents/                # AI 에이전트 설정, 스크립트 및 스킬 정의
-├── doc/
+├── docs/
 │   ├── pdf/                # 원본 PDF 저장소
 │   └── md/                 # 변환된 Markdown 및 이미지 리소스 저장소
 ├── src/

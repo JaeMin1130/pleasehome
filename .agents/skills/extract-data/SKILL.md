@@ -20,16 +20,16 @@ description: 마크다운 공고문 문서들을 정밀 슬라이싱하여 서�
   - 공고문 후반부에 수록되는 개인정보 동의서, 위임장 양식 등 불필요한 별첨 텍스트는 슬라이싱 대상에서 원천 절단하여 제외합니다.
 
 ### 2단계: 서브에이전트 가동 및 data.json 파일 물리 저장 (서브에이전트)
-* **동작**: 부모 에이전트가 슬라이싱된 텍스트와 저장할 로컬 경로(`doc/md/{공고_폴더}/data.json`)를 인자로 전달하여 서브에이전트(`markdown_sql_parser`)를 구동합니다.
+* **동작**: 부모 에이전트가 슬라이싱된 텍스트와 저장할 로컬 경로(`docs/md/{공고_폴더}/data.json`)를 인자로 전달하여 서브에이전트(`markdown_sql_parser`)를 구동합니다.
 * **출력**: 서브에이전트는 제공받은 텍스트를 SQLite 테이블 명세에 맞춘 JSON 구조로 파싱하고, 지정된 경로에 `data.json` 파일로 직접 쓰기를 완료한 뒤 부모에게 성공 상태를 보고합니다.
 
 ### 3단계: 무컨펌 즉시 적재 및 이중 로깅 (부모 에이전트)
 * **적재**: `data.json` 저장이 확인되면 부모 에이전트는 대기 없이 곧바로 공통 적재 스크립트([insert_loader.py](file:///home/iru/project03/src/parser/insert_loader.py))를 실행하여 `public_housing.db`에 적재를 수행합니다.
 * **실행 명령어**:
   ```bash
-  ./venv/bin/python src/parser/insert_loader.py doc/md/{공고_폴더}/data.json doc/md/{공고_폴더}/data.json
+  ./venv/bin/python src/parser/insert_loader.py docs/md/{공고_폴더}/data.json docs/md/{공고_폴더}/data.json
   ```
-* **로깅**: 적재 결과는 SQLite 데이터베이스 내의 `data_load_logs` 테이블에 기록되며, 적재 세부 과정 및 에러 Traceback 정보는 해당 공고 폴더 하위인 `doc/md/{공고_폴절}/load.log` 텍스트 파일에 추가로 파일 보관(이중 로깅)합니다.
+* **로깅**: 적재 결과는 SQLite 데이터베이스 내의 `data_load_logs` 테이블에 기록되며, 적재 세부 과정 및 에러 Traceback 정보는 해당 공고 폴더 하위인 `docs/md/{공고_폴절}/load.log` 텍스트 파일에 추가로 파일 보관(이중 로깅)합니다.
 
 ### 4단계: 사후 요약 브리핑 및 자동 루프 반복
 * **결과 보고**: 적재가 끝난 직후 **"N번째 공고 적재 완료: (공고 ID, 등록 평형 수, 일정 수)"** 결과를 채팅창에 사후 요약 브리핑하고, 중간 사용자 컨펌 없이 9개 공고 전체를 완료할 때까지 루프를 순차적/자동으로 반복 수행합니다.

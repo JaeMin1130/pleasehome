@@ -39,7 +39,7 @@ logs/
 Thumbs.db
 
 # Data & PDF/Markdown
-doc/
+docs/
 
 # IDEs and editors
 .idea/
