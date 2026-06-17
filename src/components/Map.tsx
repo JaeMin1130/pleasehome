@@ -216,7 +216,7 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
           strategy="afterInteractive"
         />
       )}
-      <div className="map-wrapper">
+      <div style={{ width: '100%', height: '100%' }}>
         <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
       </div>
     </>
