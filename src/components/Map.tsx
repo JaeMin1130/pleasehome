@@ -147,11 +147,19 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
           icon: {
             content: `
               <div class="custom-marker ${isActive ? 'active' : ''}" style="cursor: pointer;">
-                <div class="marker-pin"></div>
+                <div class="marker-pin">
+                  <svg viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 3L3 10.5h2v10h14v-10h2L12 3z" fill="white" />
+                    <rect x="9" y="11" width="2.5" height="2.5" class="window-hole" />
+                    <rect x="12.5" y="11" width="2.5" height="2.5" class="window-hole" />
+                    <rect x="9" y="14.5" width="2.5" height="2.5" class="window-hole" />
+                    <rect x="12.5" y="14.5" width="2.5" height="2.5" class="window-hole" />
+                  </svg>
+                </div>
               </div>
             `,
-            size: new window.naver.maps.Size(30, 30),
-            anchor: new window.naver.maps.Point(15, 30)
+            size: new window.naver.maps.Size(24, 24),
+            anchor: new window.naver.maps.Point(12, 12)
           }
         });
 
