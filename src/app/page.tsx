@@ -48,6 +48,10 @@ interface Announcement {
   institution: string;
   subscription_type: string;
   doc_path: string;
+  deposit_increase_rate: number | null;
+  deposit_decrease_rate: number | null;
+  deposit_increase_limit_rate: number | null;
+  deposit_decrease_limit_rate: number | null;
   schedules: Schedule[];
   details: Detail[];
   limits: Limit[];
@@ -618,6 +622,7 @@ export default function Home() {
           complex={selectedComplex} 
           isOpen={isPanelOpen} 
           filterState={filterState}
+          announcements={announcements}
           onClose={() => {
             setIsPanelOpen(false);
             setActiveComplexId(null);

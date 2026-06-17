@@ -30,6 +30,18 @@ interface HousingUnit {
   attributes: string | null;
 }
 
+interface Announcement {
+  id: number;
+  title: string;
+  institution: string;
+  subscription_type: string;
+  doc_path: string;
+  deposit_increase_rate: number | null;
+  deposit_decrease_rate: number | null;
+  deposit_increase_limit_rate: number | null;
+  deposit_decrease_limit_rate: number | null;
+}
+
 interface FilterState {
   targetGroup: string;
   minArea: number;
@@ -44,6 +56,7 @@ interface DetailPanelProps {
   complex: Complex | null;
   isOpen: boolean;
   filterState: FilterState;
+  announcements: Announcement[];
   onClose: () => void;
 }
 
@@ -65,14 +78,64 @@ const formatRent = (amount: number | null): string => {
   return `${amount.toLocaleString()}원`;
 };
 
-export default function DetailPanel({ complex, isOpen, filterState, onClose }: DetailPanelProps) {
+/**
+ * 보증금 ↔ 월세 전환 계산 함수
+ * sliderValue: -100 (보증금 최대 감액) ~ 0 (기준) ~ +100 (보증금 최대 증액)
+ */
+function calcConversion(
+  baseDeposit: number,
+  baseRent: number,
+  sliderValue: number,
+  increaseRate: number | null,
+  decreaseRate: number | null,
+  increaseLimitRate: number | null,
+  decreaseLimitRate: number | null,
+): { deposit: number; rent: number } {
+  if (sliderValue === 0) {
+    return { deposit: baseDeposit, rent: baseRent };
+  }
+
+  if (sliderValue > 0 && increaseRate && increaseRate > 0) {
+    // 보증금 증액 (월세 → 보증금): 월세를 보증금으로 전환
+    const limitRate = (increaseLimitRate ?? 0) / 100;
+    const maxConvertibleRent = baseRent * limitRate;
+    const ratio = sliderValue / 100;
+    const convertRent = maxConvertibleRent * ratio;
+    const addDeposit = Math.round((convertRent * 12) / (increaseRate / 100));
+    return {
+      deposit: baseDeposit + addDeposit,
+      rent: Math.round(baseRent - convertRent),
+    };
+  }
+
+  if (sliderValue < 0 && decreaseRate && decreaseRate > 0) {
+    // 보증금 감액 (보증금 → 월세): 보증금을 월세로 전환
+    const limitRate = (decreaseLimitRate ?? 0) / 100;
+    const maxConvertibleDeposit = baseDeposit * limitRate;
+    const ratio = Math.abs(sliderValue) / 100;
+    const reduceDeposit = maxConvertibleDeposit * ratio;
+    const addRent = Math.floor((reduceDeposit * (decreaseRate / 100)) / 12 / 100) * 100;
+    return {
+      deposit: Math.round(baseDeposit - reduceDeposit),
+      rent: baseRent + addRent,
+    };
+  }
+
+  return { deposit: baseDeposit, rent: baseRent };
+}
+
+export default function DetailPanel({ complex, isOpen, filterState, announcements, onClose }: DetailPanelProps) {
   const [units, setUnits] = useState<HousingUnit[]>([]);
   const [loading, setLoading] = useState(false);
+  // 각 unit ID별 슬라이더 값 (-100 ~ +100)
+  const [sliderValues, setSliderValues] = useState<Record<number, number>>({});
 
   useEffect(() => {
     if (!complex) return;
 
     setLoading(true);
+    // 패널 전환 시 슬라이더 초기화
+    setSliderValues({});
     fetch(`/api/housing-units?complex_id=${complex.id}`)
       .then((res) => res.json())
       .then((data) => {
@@ -92,6 +155,27 @@ export default function DetailPanel({ complex, isOpen, filterState, onClose }: D
     if (unit.monthly_rent < filterState.minMonthlyRent || unit.monthly_rent > filterState.maxMonthlyRent) return false;
     return true;
   });
+
+  // 현재 단지가 속한 공고의 전환 이율 조회
+  const announcement = complex
+    ? announcements.find((a) => a.id === complex.announcement_id)
+    : null;
+
+  const hasConversion = announcement && (
+    announcement.deposit_increase_rate !== null ||
+    announcement.deposit_decrease_rate !== null
+  );
+
+  // 슬라이더의 활성 방향 결정
+  const canIncrease = !!(announcement?.deposit_increase_rate && announcement?.deposit_increase_limit_rate);
+  const canDecrease = !!(announcement?.deposit_decrease_rate && announcement?.deposit_decrease_limit_rate);
+
+  const getSliderMin = () => canDecrease ? -100 : 0;
+  const getSliderMax = () => canIncrease ? 100 : 0;
+
+  const handleSliderChange = (unitId: number, value: number) => {
+    setSliderValues((prev) => ({ ...prev, [unitId]: value }));
+  };
 
   if (!complex) return null;
 
@@ -148,68 +232,138 @@ export default function DetailPanel({ complex, isOpen, filterState, onClose }: D
             </div>
           ) : (
             <div className="units-container">
-              {filteredUnits.map((unit) => (
-                <div key={unit.id} className="unit-card">
-                  {/* 주택형 상단 */}
-                  <div className="unit-header">
-                    <span className="unit-supply-type">
-                      {unit.supply_type || `${unit.exclusive_area}형`} 
-                      <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: 'hsl(var(--text-secondary))', marginLeft: '6px' }}>
-                        ({unit.exclusive_area.toFixed(2)}㎡ / ~{Math.round(unit.exclusive_area * 0.3025)}평)
-                      </span>
-                    </span>
-                    {unit.target_group && (
-                      <span className="unit-target">{unit.target_group}</span>
-                    )}
-                  </div>
+              {filteredUnits.map((unit) => {
+                const sliderVal = sliderValues[unit.id] ?? 0;
+                const converted = hasConversion
+                  ? calcConversion(
+                      unit.deposit,
+                      unit.monthly_rent,
+                      sliderVal,
+                      announcement!.deposit_increase_rate,
+                      announcement!.deposit_decrease_rate,
+                      announcement!.deposit_increase_limit_rate,
+                      announcement!.deposit_decrease_limit_rate,
+                    )
+                  : null;
 
-                  {/* 임대 보증금 / 월세 */}
-                  <div className="unit-price-box">
-                    <div className="price-item">
-                      <span className="price-lbl">임대보증금</span>
-                      <span className="price-val">{formatMoney(unit.deposit)}</span>
-                    </div>
-                    <div className="price-item">
-                      <span className="price-lbl">월 임대료</span>
-                      <span className="price-val" style={{ color: 'hsl(var(--accent-hover))' }}>
-                        {formatRent(unit.monthly_rent)}
+                return (
+                  <div key={unit.id} className="unit-card">
+                    {/* 주택형 상단 */}
+                    <div className="unit-header">
+                      <span className="unit-supply-type">
+                        {unit.supply_type || `${unit.exclusive_area}형`} 
+                        <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: 'hsl(var(--text-secondary))', marginLeft: '6px' }}>
+                          ({unit.exclusive_area.toFixed(2)}㎡ / ~{Math.round(unit.exclusive_area * 0.3025)}평)
+                        </span>
                       </span>
+                      {unit.target_group && (
+                        <span className="unit-target">{unit.target_group}</span>
+                      )}
                     </div>
-                  </div>
 
-                  {/* 추가 데이터 */}
-                  <div className="unit-meta-list" style={{ borderTop: '1px dashed hsl(var(--border))', paddingTop: '8px', marginTop: '4px' }}>
-                    <div style={{ flex: '1 1 45%' }}>
-                      <span style={{ color: 'hsl(var(--text-muted))' }}>공급호수: </span>
-                      <span style={{ fontWeight: '600' }}>{unit.supply_count}호</span> 
-                      {unit.reserve_count > 0 && <span style={{ color: 'hsl(var(--text-muted))' }}> (예비 {unit.reserve_count}호)</span>}
+                    {/* 임대 보증금 / 월세 */}
+                    <div className="unit-price-box">
+                      <div className="price-item">
+                        <span className="price-lbl">임대보증금</span>
+                        <span className="price-val">
+                          {converted && sliderVal !== 0 ? formatMoney(converted.deposit) : formatMoney(unit.deposit)}
+                        </span>
+                      </div>
+                      <div className="price-item">
+                        <span className="price-lbl">월 임대료</span>
+                        <span className="price-val" style={{ color: 'hsl(var(--accent-hover))' }}>
+                          {converted && sliderVal !== 0 ? formatRent(converted.rent) : formatRent(unit.monthly_rent)}
+                        </span>
+                      </div>
                     </div>
-                    {unit.income_group && (
+
+                    {/* 보증금 ↔ 월세 전환 슬라이더 */}
+                    {hasConversion && unit.monthly_rent > 0 && (
+                      <div className="conversion-slider-box">
+                        <div className="conversion-slider-header">
+                          <span className="conversion-slider-icon">🔄</span>
+                          <span className="conversion-slider-title">보증금 ↔ 월세 전환</span>
+                          {sliderVal !== 0 && (
+                            <button
+                              className="conversion-reset-btn"
+                              onClick={() => handleSliderChange(unit.id, 0)}
+                            >
+                              초기화
+                            </button>
+                          )}
+                        </div>
+                        <div className="conversion-slider-track-wrap">
+                          <span className="conversion-slider-label left">보증금↓</span>
+                          <input
+                            type="range"
+                            className="conversion-slider"
+                            min={getSliderMin()}
+                            max={getSliderMax()}
+                            step={1}
+                            value={sliderVal}
+                            onChange={(e) => handleSliderChange(unit.id, parseInt(e.target.value, 10))}
+                          />
+                          <span className="conversion-slider-label right">보증금↑</span>
+                        </div>
+                        {sliderVal !== 0 && converted && (
+                          <div className="conversion-result">
+                            <div className="conversion-result-item">
+                              <span className="conversion-result-lbl">전환 후 보증금</span>
+                              <span className="conversion-result-val">
+                                {formatMoney(converted.deposit)}
+                                <span className={`conversion-diff ${sliderVal > 0 ? 'up' : 'down'}`}>
+                                  {sliderVal > 0 ? '▲' : '▼'} {formatMoney(Math.abs(converted.deposit - unit.deposit))}
+                                </span>
+                              </span>
+                            </div>
+                            <div className="conversion-result-item">
+                              <span className="conversion-result-lbl">전환 후 월 임대료</span>
+                              <span className="conversion-result-val rent">
+                                {formatRent(converted.rent)}
+                                <span className={`conversion-diff ${sliderVal > 0 ? 'down' : 'up'}`}>
+                                  {sliderVal > 0 ? '▼' : '▲'} {formatRent(Math.abs(converted.rent - unit.monthly_rent))}
+                                </span>
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* 추가 데이터 */}
+                    <div className="unit-meta-list" style={{ borderTop: '1px dashed hsl(var(--border))', paddingTop: '8px', marginTop: '4px' }}>
                       <div style={{ flex: '1 1 45%' }}>
-                        <span style={{ color: 'hsl(var(--text-muted))' }}>소득기준: </span>
-                        <span>{unit.income_group}</span>
+                        <span style={{ color: 'hsl(var(--text-muted))' }}>공급호수: </span>
+                        <span style={{ fontWeight: '600' }}>{unit.supply_count}호</span> 
+                        {unit.reserve_count > 0 && <span style={{ color: 'hsl(var(--text-muted))' }}> (예비 {unit.reserve_count}호)</span>}
                       </div>
-                    )}
-                    {unit.room_number && (
-                      <div style={{ flex: '1 1 45%' }}>
-                        <span style={{ color: 'hsl(var(--text-muted))' }}>동/호수: </span>
-                        <span>{unit.room_number}</span>
-                      </div>
-                    )}
-                    {unit.room_count && (
-                      <div style={{ flex: '1 1 45%' }}>
-                        <span style={{ color: 'hsl(var(--text-muted))' }}>방 개수: </span>
-                        <span>{unit.room_count}개</span>
-                      </div>
-                    )}
-                    {unit.attributes && (
-                      <div style={{ flex: '1 1 100%', fontSize: '0.7rem', color: 'hsl(var(--text-muted))', marginTop: '4px' }}>
-                        * {unit.attributes}
-                      </div>
-                    )}
+                      {unit.income_group && (
+                        <div style={{ flex: '1 1 45%' }}>
+                          <span style={{ color: 'hsl(var(--text-muted))' }}>소득기준: </span>
+                          <span>{unit.income_group}</span>
+                        </div>
+                      )}
+                      {unit.room_number && (
+                        <div style={{ flex: '1 1 45%' }}>
+                          <span style={{ color: 'hsl(var(--text-muted))' }}>동/호수: </span>
+                          <span>{unit.room_number}</span>
+                        </div>
+                      )}
+                      {unit.room_count && (
+                        <div style={{ flex: '1 1 45%' }}>
+                          <span style={{ color: 'hsl(var(--text-muted))' }}>방 개수: </span>
+                          <span>{unit.room_count}개</span>
+                        </div>
+                      )}
+                      {unit.attributes && (
+                        <div style={{ flex: '1 1 100%', fontSize: '0.7rem', color: 'hsl(var(--text-muted))', marginTop: '4px' }}>
+                          * {unit.attributes}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

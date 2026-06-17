@@ -670,6 +670,176 @@ body {
   color: hsl(var(--text-secondary));
 }
 
+/* ─── 보증금 ↔ 월세 전환 슬라이더 ─── */
+.conversion-slider-box {
+  border-top: 1px solid hsl(var(--border));
+  margin-top: 6px;
+  padding-top: 10px;
+}
+
+.conversion-slider-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.conversion-slider-icon {
+  font-size: 0.8rem;
+}
+
+.conversion-slider-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: hsl(var(--text-secondary));
+  flex: 1;
+}
+
+.conversion-reset-btn {
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--bg-tertiary));
+  color: hsl(var(--text-muted));
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.conversion-reset-btn:hover {
+  background: hsl(var(--accent-muted));
+  color: hsl(var(--accent-hover));
+  border-color: hsl(var(--accent-hover));
+}
+
+.conversion-slider-track-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.conversion-slider-label {
+  font-size: 0.65rem;
+  color: hsl(var(--text-muted));
+  white-space: nowrap;
+  min-width: 38px;
+}
+
+.conversion-slider-label.left {
+  text-align: right;
+}
+
+.conversion-slider-label.right {
+  text-align: left;
+}
+
+/* Range 슬라이더 커스텀 */
+.conversion-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    hsl(var(--accent-hover)) 0%,
+    hsl(var(--border-focus)) 50%,
+    hsl(210, 70%, 55%) 100%
+  );
+  outline: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.conversion-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: hsl(var(--accent-hover));
+  border: 2px solid hsl(var(--bg-primary));
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.conversion-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.conversion-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: hsl(var(--accent-hover));
+  border: 2px solid hsl(var(--bg-primary));
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+
+/* 전환 결과 표시 */
+.conversion-result {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
+  padding: 8px 10px;
+  background: hsl(var(--bg-tertiary));
+  border-radius: 8px;
+  border: 1px solid hsl(var(--border));
+  animation: fadeSlideIn 0.2s ease;
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.conversion-result-item {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.conversion-result-lbl {
+  font-size: 0.65rem;
+  color: hsl(var(--text-muted));
+  margin-bottom: 2px;
+}
+
+.conversion-result-val {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: hsl(var(--text-primary));
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.conversion-result-val.rent {
+  color: hsl(var(--accent-hover));
+}
+
+.conversion-diff {
+  font-size: 0.62rem;
+  font-weight: 500;
+}
+
+.conversion-diff.up {
+  color: hsl(0, 65%, 55%);
+}
+
+.conversion-diff.down {
+  color: hsl(210, 70%, 55%);
+}
+
 /* Policy Overlay Banner (For no-markers/Jeonse) */
 .policy-overlay {
   position: absolute;
