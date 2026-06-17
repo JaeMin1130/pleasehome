@@ -10,12 +10,12 @@
 .policy-limit-item:last-child { border-bottom: none; padding-bottom: 0; }
 .policy-limit-lbl { color: var(--text-secondary); }
 .policy-limit-val { font-weight: 600; color: var(--text-primary); }
-.map-filter-overlay { position: absolute; top: 20px; left: 20px; width: 360px; background-color: var(--bg-surface); border: 1px solid var(--border-strong); border-radius: 8px; box-shadow: var(--shadow-lg); z-index: 400; display: flex; flex-direction: column; overflow: hidden; }
-.map-filter-overlay.collapsed { width: 180px; }
-.overlay-header { padding: 12px 16px; background-color: var(--bg-surface); display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; border-bottom: 1px solid var(--border-light); }
-.overlay-title { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); }
-.overlay-toggle-icon { font-size: 0.8rem; color: var(--text-secondary); }
-.overlay-body { padding: 20px; display: flex; flex-direction: column; gap: 20px; max-height: calc(100vh - var(--header-height) - 100px); overflow-y: auto; background-color: var(--bg-surface); }
+.floating-filter-container { position: absolute; top: 20px; right: 20px; z-index: 500; display: flex; flex-direction: column; align-items: flex-end; }
+.floating-filter-btn { background: var(--bg-surface); border: 1px solid var(--border-strong); border-radius: 8px; padding: 10px 18px; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; transition: all 0.2s ease; box-shadow: var(--shadow-md); }
+.floating-filter-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-bg); box-shadow: var(--shadow-lg); }
+.floating-filter-dropdown { position: absolute; top: calc(100% + 12px); right: 0; width: 400px; background-color: var(--bg-surface); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: var(--shadow-lg); z-index: 1000; overflow: hidden; display: flex; flex-direction: column; animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+.overlay-body { padding: 24px; display: flex; flex-direction: column; gap: 24px; max-height: calc(100vh - 100px); overflow-y: auto; background-color: var(--bg-surface); }
 .filter-group { display: flex; flex-direction: column; gap: 10px; }
 .filter-label-row { display: flex; justify-content: space-between; align-items: center; }
 .filter-label { font-size: 0.85rem; color: var(--text-primary); font-weight: 700; }

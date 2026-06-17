@@ -112,40 +112,15 @@ export default function Home() {
 
   return (
     <div className="app-container">
-      <header className="app-header">
-        <div className="header-logo"><div className="logo-icon">🏢</div><h1 className="header-title">공공맵</h1></div>
-        <div className="header-meta"><span>공공청약 정보 연동 서비스</span></div>
-      </header>
-
       <main className="app-main">
-        <Sidebar 
-          announcements={announcements} activeAnnId={activeAnnId} onSelectAnnouncement={handleSelectAnnouncement} 
-          width={sidebarWidth} isCollapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          displayComplexes={filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex}
-        />
-
-        <div 
-          className={`${styles['resizer-bar']} ${isDragging ? styles.dragging : ''}`} 
-          onMouseDown={startResizing} 
-          style={{ left: isSidebarCollapsed ? 0 : sidebarWidth }} 
-        />
-
-        <DetailPanel complex={selectedComplex} isOpen={isPanelOpen} filterState={filterState} announcements={announcements} onClose={() => { setIsPanelOpen(false); setActiveComplexId(null); }} style={{ left: isSidebarCollapsed ? 0 : sidebarWidth }} />
-
-        <div className={styles['app-map-container']}>
-          <Map complexes={filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex} />
-          
-          {activeAnnId && !isPolicyOnly && (
-            <div 
-              className={`${styles['map-filter-overlay']} ${isFilterExpanded ? '' : styles.collapsed}`}
-              style={{ left: (isSidebarCollapsed ? 0 : sidebarWidth) + 20 }}
-            >
-              <div className={styles['overlay-header']} onClick={() => setIsFilterExpanded(!isFilterExpanded)}>
-                <span className={styles['overlay-title']}>🔍 맞춤 조건 필터링</span>
-                <span className={styles['overlay-toggle-icon']}>{isFilterExpanded ? '▲' : '▼'}</span>
-              </div>
-              
-              {isFilterExpanded && (
+        {activeAnnId && !isPolicyOnly && (
+          <div className={styles['floating-filter-container']}>
+            <button className={styles['floating-filter-btn']} onClick={() => setIsFilterExpanded(!isFilterExpanded)}>
+              <span style={{ marginRight: '6px' }}>🔍</span> 맞춤 상세 필터 {isFilterExpanded ? '▲' : '▼'}
+            </button>
+            
+            {isFilterExpanded && (
+              <div className={styles['floating-filter-dropdown']}>
                 <div className={styles['overlay-body']}>
                   <div className={styles['filter-group']}>
                     <span className={styles['filter-label']}>신청 대상</span>
@@ -206,9 +181,29 @@ export default function Home() {
                     </button>
                   </div>
                 </div>
-              )}
-            </div>
-          )}
+              </div>
+            )}
+          </div>
+        )}
+
+        <Sidebar 
+          announcements={announcements} activeAnnId={activeAnnId} onSelectAnnouncement={handleSelectAnnouncement} 
+          width={sidebarWidth} isCollapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          displayComplexes={filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex}
+        />
+
+        <div 
+          className={`${styles['resizer-bar']} ${isDragging ? styles.dragging : ''}`} 
+          onMouseDown={startResizing} 
+          style={{ left: isSidebarCollapsed ? 0 : sidebarWidth }} 
+        />
+
+        <DetailPanel complex={selectedComplex} isOpen={isPanelOpen} filterState={filterState} announcements={announcements} onClose={() => { setIsPanelOpen(false); setActiveComplexId(null); }} style={{ left: isSidebarCollapsed ? 0 : sidebarWidth }} />
+
+        <div className={styles['app-map-container']}>
+          <Map complexes={filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex} />
+          
+
           
           {isPolicyOnly && activeAnn && (
             <div className={styles['policy-overlay']}>

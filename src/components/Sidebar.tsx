@@ -75,9 +75,17 @@ export default function Sidebar({
     >
       {onToggleCollapse && (
         <button className={styles['sidebar-toggle-btn']} onClick={onToggleCollapse}>
-          {isCollapsed ? '〉' : '〈'}
+          {isCollapsed ? '▶' : '◀'}
         </button>
       )}
+
+      <div className={styles['sidebar-brand']}>
+        <div className={styles['brand-logo-wrap']}>
+          <span className={styles['brand-icon']}>🏢</span>
+          <h1 className={styles['brand-title']}>공공맵</h1>
+        </div>
+        <span className={styles['brand-desc']}>공공청약 연동 서비스</span>
+      </div>
 
       {/* 모드 1: 공고 목록 모드 */}
       {activeAnnId === null ? (

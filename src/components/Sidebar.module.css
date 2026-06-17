@@ -2,6 +2,11 @@
 .app-sidebar.collapsed { transform: translateX(-100%); }
 .sidebar-toggle-btn { position: absolute; top: 50%; right: -24px; transform: translateY(-50%); width: 24px; height: 50px; background: var(--bg-surface); border: 1px solid var(--border-light); border-left: none; border-radius: 0 8px 8px 0; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 2px 0 6px rgba(0,0,0,0.05); z-index: 130; font-size: 0.8rem; color: var(--text-secondary); }
 .sidebar-toggle-btn:hover { background: var(--bg-surface-hover); color: var(--text-primary); }
+.sidebar-brand { padding: 24px 20px; border-bottom: 1px solid var(--border-light); display: flex; align-items: baseline; gap: 12px; background-color: var(--bg-surface); flex-shrink: 0; }
+.brand-logo-wrap { display: flex; align-items: center; gap: 8px; }
+.brand-icon { font-size: 1.6rem; }
+.brand-title { font-size: 1.4rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em; }
+.brand-desc { font-size: 0.8rem; color: var(--text-secondary); }
 .sidebar-search { padding: 16px; border-bottom: 1px solid var(--border-light); display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
 .search-input { width: 100%; background-color: var(--bg-body); border: 1px solid var(--border-light); color: var(--text-primary); padding: 10px 14px; border-radius: 6px; font-size: 0.9rem; outline: none; transition: border-color 0.1s ease; }
 .search-input:focus { border-color: var(--primary); background-color: var(--bg-surface); }
