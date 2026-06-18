@@ -35,6 +35,23 @@ export default function UnitCard({
       )
     : null;
 
+  // 증액 한도 단계 (100만원 단위) 계산
+  let maxAddSteps = 0;
+  if (announcement?.deposit_increase_rate && announcement?.deposit_increase_rate > 0) {
+    const limitRate = (announcement.deposit_increase_limit_rate ?? 80.0) / 100;
+    const maxConvertibleRent = unit.monthly_rent * limitRate;
+    const maxConvertibleDeposit = (maxConvertibleRent * 12) / (announcement.deposit_increase_rate / 100);
+    maxAddSteps = Math.floor(maxConvertibleDeposit / 1000000);
+  }
+
+  // 감액 한도 단계 (100만원 단위) 계산
+  let maxReduceSteps = 0;
+  if (announcement?.deposit_decrease_rate && announcement?.deposit_decrease_rate > 0) {
+    const limitRate = (announcement.deposit_decrease_limit_rate ?? 0) / 100;
+    const maxConvertibleDeposit = unit.deposit * limitRate;
+    maxReduceSteps = Math.floor(maxConvertibleDeposit / 1000000);
+  }
+
   return (
     <div className={styles['unit-card']}>
       <div className={styles['unit-header']}>
@@ -66,8 +83,15 @@ export default function UnitCard({
 
       {hasConversion && unit.monthly_rent > 0 && (
         <div className={styles['conversion-slider-box']}>
-          <div className={styles['conversion-slider-header']}>
-            <span className={styles['conversion-slider-title']}>보증금 ↔ 월세 전환</span>
+          <div className={styles['conversion-slider-header']} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className={styles['conversion-slider-title']}>보증금 ↔ 월세 전환 (100만원 단위)</span>
+              {sliderVal !== 0 && (
+                <span style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--primary)' }}>
+                  ({sliderVal > 0 ? `+${sliderVal * 100}만원` : `${sliderVal * 100}만원`})
+                </span>
+              )}
+            </div>
             {sliderVal !== 0 && (
               <button
                 className={styles['conversion-reset-btn']}
@@ -78,17 +102,17 @@ export default function UnitCard({
             )}
           </div>
           <div className={styles['conversion-slider-track-wrap']}>
-            <span className={`${styles['conversion-slider-label']}`}>보증금↓</span>
+            <span className={`${styles['conversion-slider-label']}`} style={{ whiteSpace: 'nowrap' }}>보증금↓</span>
             <input
               type="range"
               className={styles['conversion-slider']}
-              min={sliderMin}
-              max={sliderMax}
+              min={-maxReduceSteps}
+              max={maxAddSteps}
               step={1}
               value={sliderVal}
               onChange={(e) => onSliderChange(unit.id, parseInt(e.target.value, 10))}
             />
-            <span className={`${styles['conversion-slider-label']}`}>보증금↑</span>
+            <span className={`${styles['conversion-slider-label']}`} style={{ whiteSpace: 'nowrap' }}>보증금↑</span>
           </div>
           {sliderVal !== 0 && converted && (
             <div className={styles['conversion-result']}>

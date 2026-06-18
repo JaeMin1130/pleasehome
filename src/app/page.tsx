@@ -32,6 +32,9 @@ export default function Home() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
+  const [panelWidth, setPanelWidth] = useState(400);
+  const [isPanelDragging, setIsPanelDragging] = useState(false);
+
   const startResizing = (mouseDownEvent: React.MouseEvent) => {
     mouseDownEvent.preventDefault();
     setIsDragging(true);
@@ -45,6 +48,30 @@ export default function Home() {
 
     const handleMouseUp = () => {
       setIsDragging(false);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+  };
+
+  const startResizingPanel = (mouseDownEvent: React.MouseEvent) => {
+    mouseDownEvent.preventDefault();
+    setIsPanelDragging(true);
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'ew-resize';
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const sidebarOffset = isSidebarCollapsed ? 0 : sidebarWidth;
+      const newWidth = Math.max(300, Math.min(800, moveEvent.clientX - sidebarOffset));
+      setPanelWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsPanelDragging(false);
       document.body.style.userSelect = '';
       document.body.style.cursor = '';
       window.removeEventListener('mousemove', handleMouseMove);
@@ -213,7 +240,25 @@ export default function Home() {
           style={{ left: isSidebarCollapsed ? 0 : sidebarWidth }} 
         />
 
-        <DetailPanel complex={selectedComplex} isOpen={isPanelOpen} filterState={filterState} announcements={announcements} onClose={() => { setIsPanelOpen(false); setActiveComplexId(null); }} style={{ left: isSidebarCollapsed ? 0 : sidebarWidth }} />
+        <DetailPanel 
+          complex={selectedComplex} 
+          isOpen={isPanelOpen} 
+          filterState={filterState} 
+          announcements={announcements} 
+          onClose={() => { setIsPanelOpen(false); setActiveComplexId(null); }} 
+          style={{ 
+            left: isSidebarCollapsed ? 0 : sidebarWidth,
+            width: `${panelWidth}px`
+          }} 
+        />
+
+        {isPanelOpen && (
+          <div 
+            className={`${styles['resizer-bar']} ${isPanelDragging ? styles.dragging : ''}`} 
+            onMouseDown={startResizingPanel} 
+            style={{ left: (isSidebarCollapsed ? 0 : sidebarWidth) + panelWidth }} 
+          />
+        )}
 
         <div className={styles['app-map-container']}>
           <Map complexes={filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex} />
