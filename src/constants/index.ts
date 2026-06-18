@@ -36,3 +36,28 @@ export const FILTER_SLIDER_STEPS = {
   deposit: 1000000,          // 보증금 100만 원 단위 조절
   monthlyRent: 10000,        // 월세 1만 원 단위 조절
 };
+
+// [6] UI 디자인 토큰 (컴포넌트 인라인 스타일 및 SVG 속성용)
+export const UI_SIZES = {
+  ICON_XS: 12,
+  ICON_SM: 16,
+  ICON_MD: 20,
+  ICON_LG: 24,
+  ICON_XL: 28,
+};
+
+export const UI_STROKE_WIDTHS = {
+  THIN: 1.5,
+  NORMAL: 1.8,
+  MEDIUM: 2.0,
+  THICK: 2.2,
+  BOLD: 2.5,
+};
+
+export const UI_SPACING = {
+  XS: 4,
+  SM: 8,
+  MD: 12,
+  LG: 16,
+  XL: 24,
+};

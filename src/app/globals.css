@@ -18,6 +18,23 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
   --font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
   --header-height: 60px;
+  
+  /* 추가된 폰트 사이즈 및 공통 트랜지션 규격 */
+  --font-size-xs: 0.65rem;
+  --font-size-sm: 0.75rem;
+  --font-size-base: 0.85rem;
+  --font-size-md: 0.95rem;
+  --font-size-lg: 1rem;
+  --font-weight-regular: 400;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* 포인트 테마 및 아이콘 컬러 */
+  --brand-blue: #0068ff;
+  --icon-color: #70757a;
+  --icon-hover-color: #242424;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

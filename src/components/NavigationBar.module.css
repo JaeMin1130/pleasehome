@@ -4,8 +4,8 @@
   left: 0;
   bottom: 0;
   width: 60px;
-  background-color: #ffffff; /* 화이트 테마 적용 */
-  border-right: 1px solid #ebebeb; /* 연한 회색 보더선 */
+  background-color: var(--bg-surface);
+  border-right: 1px solid var(--border-light);
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -45,20 +45,20 @@
   align-items: center;
   gap: 3px;
   cursor: pointer;
-  color: #70757a;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--icon-color);
+  transition: all var(--transition-normal);
   outline: none;
   padding: 0;
 }
 
 .nav-item:hover {
-  color: #242424;
-  background-color: #f5f6f7;
+  color: var(--icon-hover-color);
+  background-color: var(--bg-surface-hover);
 }
 
 .nav-item.active {
-  color: #ffffff;
-  background-color: #0068ff; /* 시안과 동일한 네이버 블루 */
+  color: var(--bg-surface);
+  background-color: var(--brand-blue);
   box-shadow: none;
 }
 
@@ -71,8 +71,8 @@
 }
 
 .nav-label {
-  font-size: 0.65rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   letter-spacing: -0.02em;
 }
 

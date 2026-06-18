@@ -10,8 +10,9 @@ import {
   HEADER_ACCORDION_MIN_HEIGHT,
   HEADER_ACCORDION_MAX_HEIGHT,
   HEADER_ACCORDION_DEFAULT_HEIGHT,
+  UI_SIZES,
+  UI_STROKE_WIDTHS,
 } from '@/constants';
-
 interface SidebarProps {
   announcements: Announcement[];
   activeAnnId: number | null;
@@ -217,7 +218,7 @@ export default function Sidebar({
                       background: 'none',
                       color: 'var(--text-muted)',
                       cursor: 'pointer',
-                      fontSize: '0.85rem',
+                      fontSize: 'var(--font-size-base)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -279,7 +280,7 @@ export default function Sidebar({
               <div style={{ padding: '16px 16px 0 16px', flexShrink: 0 }}>
                 <button 
                   onClick={() => onSelectAnnouncement(null)}
-                  style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', marginBottom: '12px' }}
+                  style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: 'var(--font-size-md)', marginBottom: '12px' }}
                 >
                   ← 다른 공고 목록으로
                 </button>
@@ -304,7 +305,7 @@ export default function Sidebar({
 
             <div className={styles['sidebar-list']} style={{ backgroundColor: 'var(--bg-body)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-secondary)' }}>
+                <div style={{ fontSize: 'var(--font-size-base)', fontWeight: '700', color: 'var(--text-secondary)' }}>
                   공급 주택 목록 ({filteredComplexes.length})
                 </div>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
@@ -316,7 +317,7 @@ export default function Sidebar({
                     style={{
                       width: '160px',
                       padding: '6px 28px 6px 10px',
-                      fontSize: '0.8rem',
+                      fontSize: 'var(--font-size-sm)',
                       borderRadius: '6px',
                       border: '1px solid var(--border-light)',
                       backgroundColor: 'var(--bg-surface)',
@@ -339,7 +340,7 @@ export default function Sidebar({
                         background: 'none',
                         color: 'var(--text-muted)',
                         cursor: 'pointer',
-                        fontSize: '0.8rem',
+                        fontSize: 'var(--font-size-sm)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -355,7 +356,7 @@ export default function Sidebar({
                 </div>
               </div>
               {filteredComplexes.length === 0 ? (
-                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem', backgroundColor: 'var(--bg-surface)', borderRadius: '8px', border: '1px solid var(--border-light)' }}>
+                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 'var(--font-size-base)', backgroundColor: 'var(--bg-surface)', borderRadius: '8px', border: '1px solid var(--border-light)' }}>
                   {complexSearchTerm ? '검색 결과가 없습니다.' : '이 공고는 특정 단지 없이 개별적으로 지원되는 전세임대형 정책이거나, 필터 조건에 맞는 주택이 없습니다.'}
                 </div>
               ) : (
@@ -387,7 +388,7 @@ export default function Sidebar({
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <span className={styles['more-menu-value']}>{isDarkMode ? "다크 지도" : "기본 지도"}</span>
                   <span className={styles['more-menu-chevron']}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width={UI_SIZES.ICON_XS} height={UI_SIZES.ICON_XS} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.BOLD} strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="9 18 15 12 9 6"></polyline>
                     </svg>
                   </span>
@@ -397,7 +398,7 @@ export default function Sidebar({
               <div className={styles['more-menu-item']} onClick={() => setActiveModal('terms')}>
                 <span className={styles['more-menu-label']}>이용약관 및 정책</span>
                 <span className={styles['more-menu-chevron']}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width={UI_SIZES.ICON_XS} height={UI_SIZES.ICON_XS} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.BOLD} strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="9 18 15 12 9 6"></polyline>
                   </svg>
                 </span>
@@ -405,7 +406,7 @@ export default function Sidebar({
               <div className={styles['more-menu-item']} onClick={() => setActiveModal('privacy')}>
                 <span className={styles['more-menu-label']}>개인정보처리방침</span>
                 <span className={styles['more-menu-chevron']}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width={UI_SIZES.ICON_XS} height={UI_SIZES.ICON_XS} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.BOLD} strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="9 18 15 12 9 6"></polyline>
                   </svg>
                 </span>
@@ -419,7 +420,7 @@ export default function Sidebar({
             <div className={styles['more-info-box-wrapper']}>
               <div className={styles['info-box']}>
                 <h4 className={styles['info-box-title']}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "6px", verticalAlign: "middle", display: "inline-block" }}>
+                  <svg width={UI_SIZES.ICON_XS + 2} height={UI_SIZES.ICON_XS + 2} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.MEDIUM} strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "6px", verticalAlign: "middle", display: "inline-block" }}>
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="12" y1="16" x2="12" y2="12"></line>
                     <line x1="12" y1="8" x2="12.01" y2="8"></line>
@@ -453,7 +454,7 @@ export default function Sidebar({
               <button className={styles['modal-close-btn']} onClick={() => setActiveModal(null)}>✕</button>
             </div>
             <div className={styles['modal-body']}>
-              <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: '0.85rem', lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+              <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 'var(--font-size-base)', lineHeight: '1.6', color: 'var(--text-secondary)' }}>
                 {activeModal === 'privacy' ? PRIVACY_POLICY : TERMS_OF_SERVICE}
               </pre>
             </div>
