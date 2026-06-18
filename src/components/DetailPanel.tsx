@@ -64,6 +64,7 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
           <span className={styles['panel-title']}>{complex.name}</span>
           <span className={styles['panel-subtitle']}>
             <svg 
+              className={styles['panel-subtitle-icon']}
               width="12" 
               height="12" 
               viewBox="0 0 24 24" 
@@ -72,7 +73,6 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
               strokeWidth="2" 
               strokeLinecap="round" 
               strokeLinejoin="round"
-              style={{ marginRight: '4px', display: 'inline-block', verticalAlign: 'middle' }}
             >
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
               <circle cx="12" cy="10" r="3"></circle>
@@ -97,7 +97,7 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
                 {complex.has_elevator === undefined || complex.has_elevator === null ? '정보 없음' : complex.has_elevator ? '있음' : '없음'}
               </span>
             </div>
-            <div className={styles['info-card']} style={{ gridColumn: 'span 2' }}>
+            <div className={`${styles['info-card']} ${styles['full-width']}`}>
               <span className={styles['info-label']}>주차 정보</span>
               <span className={styles['info-val']}>{complex.parking_info || '정보 없음'}</span>
             </div>
@@ -129,9 +129,9 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
           )}
 
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '24px', color: 'hsl(var(--text-muted))' }}>공급 정보를 불러오는 중입니다...</div>
+            <div className={styles['loading-msg']}>공급 정보를 불러오는 중입니다...</div>
           ) : filteredUnits.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '24px', color: 'hsl(var(--text-muted))' }}>조건에 맞는 공급 주택형이 없습니다.</div>
+            <div className={styles['empty-msg']}>조건에 맞는 공급 주택형이 없습니다.</div>
           ) : (
             <div className={styles['units-container']}>
               {filteredUnits.map((unit) => (

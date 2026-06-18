@@ -37,8 +37,8 @@ export default function ComplexCard({
               width="18" 
               height="18" 
               viewBox="0 0 24 24" 
-              fill={isBookmarked ? "#f59e0b" : "none"} 
-              stroke={isBookmarked ? "#f59e0b" : "currentColor"} 
+              fill={isBookmarked ? "var(--color-gold)" : "none"} 
+              stroke={isBookmarked ? "var(--color-gold)" : "currentColor"} 
               strokeWidth="2" 
               strokeLinecap="round" 
               strokeLinejoin="round"
@@ -58,7 +58,7 @@ export default function ComplexCard({
           strokeWidth="2" 
           strokeLinecap="round" 
           strokeLinejoin="round"
-          style={{ marginRight: '4px', display: 'inline-block', verticalAlign: 'middle' }}
+          style={{ marginRight: 'var(--spacing-xs)', display: 'inline-block', verticalAlign: 'middle' }}
         >
           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
           <circle cx="12" cy="10" r="3"></circle>

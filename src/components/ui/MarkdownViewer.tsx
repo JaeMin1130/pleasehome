@@ -64,13 +64,13 @@ const parseInlineMarkdown = (text: string): React.ReactNode[] => {
     switch (part.type) {
       case 'bold':
         return (
-          <strong key={idx} style={{ fontWeight: '700', color: 'hsl(var(--text-primary))' }}>
+          <strong key={idx} style={{ fontWeight: 'var(--font-weight-bold)', color: 'var(--text-primary)' }}>
             {part.content}
           </strong>
         );
       case 'italic':
         return (
-          <em key={idx} style={{ fontStyle: 'italic', color: 'hsl(var(--text-primary))' }}>
+          <em key={idx} style={{ fontStyle: 'italic', color: 'var(--text-primary)' }}>
             {part.content}
           </em>
         );
@@ -79,12 +79,12 @@ const parseInlineMarkdown = (text: string): React.ReactNode[] => {
           <code 
             key={idx} 
             style={{ 
-              backgroundColor: 'hsl(var(--accent) / 0.15)', 
+              backgroundColor: 'var(--bg-surface-active)', 
               padding: '2px 5px', 
-              borderRadius: '4px',
+              borderRadius: 'var(--spacing-xs)',
               fontFamily: 'monospace',
-              fontSize: '0.85em',
-              color: 'hsl(var(--text-primary))'
+              fontSize: 'var(--font-size-sm)',
+              color: 'var(--text-primary)'
             }}
           >
             {part.content}
@@ -98,7 +98,7 @@ const parseInlineMarkdown = (text: string): React.ReactNode[] => {
             target="_blank" 
             rel="noopener noreferrer" 
             style={{ 
-              color: 'hsl(var(--accent-hover))', 
+              color: 'var(--primary)', 
               textDecoration: 'underline' 
             }}
           >
@@ -169,28 +169,28 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
     }
 
     const element = (
-      <div key={key} style={{ overflowX: 'auto', margin: '8px 0', width: '100%' }}>
+      <div key={key} style={{ overflowX: 'auto', margin: 'var(--spacing-sm) 0', width: '100%' }}>
         <table 
           style={{ 
             width: '100%', 
             borderCollapse: 'collapse', 
-            fontSize: '0.72rem', 
-            border: '1px solid hsl(var(--border))',
-            color: 'hsl(var(--text-secondary))'
+            fontSize: 'var(--font-size-sm)', 
+            border: '1px solid var(--border-light)',
+            color: 'var(--text-secondary)'
           }}
         >
           {hasHeader && (
             <thead>
-              <tr style={{ backgroundColor: 'hsl(var(--accent) / 0.08)', borderBottom: '2px solid hsl(var(--border))' }}>
+              <tr style={{ backgroundColor: 'var(--bg-surface-active)', borderBottom: '2px solid var(--border-light)' }}>
                 {headerRow.map((cell, cIdx) => (
                   <th 
                     key={cIdx} 
                     style={{ 
-                      padding: '6px 8px', 
+                      padding: '6px var(--spacing-sm)', 
                       textAlign: 'left', 
-                      fontWeight: '700',
-                      borderRight: '1px solid hsl(var(--border))',
-                      color: 'hsl(var(--text-primary))'
+                      fontWeight: 'var(--font-weight-bold)',
+                      borderRight: '1px solid var(--border-light)',
+                      color: 'var(--text-primary)'
                     }}
                   >
                     {parseInlineMarkdown(cell.trim())}
@@ -204,8 +204,8 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
               <tr 
                 key={rIdx} 
                 style={{ 
-                  borderBottom: '1px solid hsl(var(--border))',
-                  backgroundColor: rIdx % 2 === 1 ? 'hsl(var(--accent) / 0.02)' : 'transparent'
+                  borderBottom: '1px solid var(--border-light)',
+                  backgroundColor: rIdx % 2 === 1 ? 'var(--bg-surface-hover)' : 'transparent'
                 }}
               >
                 {row.map((cell, cIdx) => {
@@ -216,11 +216,11 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
                       key={cIdx} 
                       rowSpan={rowSpans[rIdx][cIdx]}
                       style={{ 
-                        padding: '5px 8px',
-                        borderRight: '1px solid hsl(var(--border))',
+                        padding: '5px var(--spacing-sm)',
+                        borderRight: '1px solid var(--border-light)',
                         lineHeight: '1.45',
                         verticalAlign: 'middle',
-                        backgroundColor: rowSpans[rIdx][cIdx] > 1 ? 'hsl(var(--accent) / 0.04)' : undefined
+                        backgroundColor: rowSpans[rIdx][cIdx] > 1 ? 'var(--bg-surface-active)' : undefined
                       }}
                     >
                       {parseInlineMarkdown(cell.trim())}
@@ -254,8 +254,8 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
           key={`hr-${i}`} 
           style={{ 
             border: 'none', 
-            borderTop: '1px solid hsl(var(--border))', 
-            margin: '12px 0 8px 0' 
+            borderTop: '1px solid var(--border-light)', 
+            margin: 'var(--spacing-md) 0 var(--spacing-sm) 0' 
           }} 
         />
       );
@@ -289,12 +289,12 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
           <h4 
             key={`h-${i}`} 
             style={{ 
-              fontSize: '0.8rem', 
-              fontWeight: '700', 
-              margin: '12px 0 6px 0', 
-              color: 'hsl(var(--text-primary))',
-              borderBottom: '1px solid hsl(var(--border))',
-              paddingBottom: '4px'
+              fontSize: 'var(--font-size-md)', 
+              fontWeight: 'var(--font-weight-bold)', 
+              margin: 'var(--spacing-md) 0 6px 0', 
+              color: 'var(--text-primary)',
+              borderBottom: '1px solid var(--border-light)',
+              paddingBottom: 'var(--spacing-xs)'
             }}
           >
             {parsedTitle}
@@ -305,10 +305,10 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
           <h5 
             key={`h-${i}`} 
             style={{ 
-              fontSize: '0.75rem', 
-              fontWeight: '700', 
-              margin: '8px 0 4px 0', 
-              color: 'hsl(var(--text-primary))' 
+              fontSize: 'var(--font-size-base)', 
+              fontWeight: 'var(--font-weight-bold)', 
+              margin: 'var(--spacing-sm) 0 var(--spacing-xs) 0', 
+              color: 'var(--text-primary)' 
             }}
           >
             {parsedTitle}
@@ -328,14 +328,14 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
           style={{ 
             display: 'flex', 
             gap: '6px', 
-            paddingLeft: '4px', 
+            paddingLeft: 'var(--spacing-xs)', 
             margin: '2px 0', 
-            fontSize: '0.75rem', 
+            fontSize: 'var(--font-size-base)', 
             lineHeight: '1.4' 
           }}
         >
-          <span style={{ color: 'hsl(var(--accent-hover))', userSelect: 'none' }}>•</span>
-          <div style={{ color: 'hsl(var(--text-secondary))' }}>{parseInlineMarkdown(listText)}</div>
+          <span style={{ color: 'var(--primary)', userSelect: 'none' }}>•</span>
+          <div style={{ color: 'var(--text-secondary)' }}>{parseInlineMarkdown(listText)}</div>
         </div>
       );
       i++;
@@ -352,16 +352,16 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
           style={{ 
             display: 'flex', 
             gap: '6px', 
-            paddingLeft: '4px', 
+            paddingLeft: 'var(--spacing-xs)', 
             margin: '2px 0', 
-            fontSize: '0.75rem', 
+            fontSize: 'var(--font-size-base)', 
             lineHeight: '1.4' 
           }}
         >
-          <span style={{ color: 'hsl(var(--accent-hover))', fontWeight: '700', userSelect: 'none' }}>
+          <span style={{ color: 'var(--primary)', fontWeight: 'var(--font-weight-bold)', userSelect: 'none' }}>
             {num}.
           </span>
-          <div style={{ color: 'hsl(var(--text-secondary))' }}>
+          <div style={{ color: 'var(--text-secondary)' }}>
             {parseInlineMarkdown(listText)}
           </div>
         </div>
@@ -371,7 +371,7 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
     }
     
     if (content === '') {
-      renderedElements.push(<div key={`empty-${i}`} style={{ height: '4px' }} />);
+      renderedElements.push(<div key={`empty-${i}`} style={{ height: 'var(--spacing-xs)' }} />);
       i++;
       continue;
     }
@@ -380,10 +380,10 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
       <p 
         key={`p-${i}`} 
         style={{ 
-          fontSize: '0.75rem', 
+          fontSize: 'var(--font-size-base)', 
           margin: '2px 0', 
           lineHeight: '1.4', 
-          color: 'hsl(var(--text-secondary))' 
+          color: 'var(--text-secondary)' 
         }}
       >
         {parseInlineMarkdown(content)}
@@ -399,7 +399,7 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: 'var(--spacing-xs)' }}>
       {renderedElements}
     </div>
   );

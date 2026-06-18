@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
 import { Complex } from '@/types';
+import styles from './Map.module.css';
 import {
   MAP_DEFAULT_CENTER,
   MAP_DEFAULT_ZOOM,
@@ -211,8 +212,8 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
           strategy="afterInteractive"
         />
       )}
-      <div style={{ width: '100%', height: '100%' }}>
-        <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
+      <div className={styles['map-container']}>
+        <div ref={mapRef} className={styles['map-canvas']} />
       </div>
     </>
   );

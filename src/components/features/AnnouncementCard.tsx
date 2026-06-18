@@ -77,7 +77,7 @@ export default function AnnouncementCard({
                         ) : (
                           s.raw_text || '공고 본문 참고'
                         )}
-                        {s.notes && <div style={{ fontSize: '0.7rem', color: 'hsl(var(--accent-hover))', marginTop: '2px' }}>{s.notes}</div>}
+                        {s.notes && <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--primary)', marginTop: '2px' }}>{s.notes}</div>}
                       </div>
                     </div>
                   ))}
@@ -120,11 +120,11 @@ export default function AnnouncementCard({
                           <td>{l.target_group || '전체'}</td>
                           <td>
                             {l.max_support_amount ? formatMoney(l.max_support_amount) : '-'}
-                            {l.deposit_limit && <div style={{fontSize: '0.65rem', color: 'hsl(var(--text-muted))'}}>한도: {formatMoney(l.deposit_limit)}</div>}
+                            {l.deposit_limit && <div style={{fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)'}}>한도: {formatMoney(l.deposit_limit)}</div>}
                           </td>
                           <td>
                             {l.interest_rate ? formatInterestRate(l.interest_rate) : '-'}
-                            {l.max_monthly_rent ? <div style={{fontSize: '0.65rem'}}>{formatMoney(l.max_monthly_rent)}/월</div> : ''}
+                            {l.max_monthly_rent ? <div style={{fontSize: 'var(--font-size-xs)'}}>{formatMoney(l.max_monthly_rent)}/월</div> : ''}
                           </td>
                         </tr>
                       ))}
@@ -157,10 +157,10 @@ export default function AnnouncementCard({
                 </span>
               </div>
               {expandedSections[`${ann.id}-details`] && (
-                <div className={styles['section-content']} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div className={styles['section-content']} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
                   {ann.details.map((d) => (
-                    <div key={d.id} style={{ borderBottom: '1px solid hsl(var(--border))', paddingBottom: '8px' }}>
-                      <div style={{ fontSize: '0.75rem', lineHeight: '1.4' }}>
+                    <div key={d.id} style={{ borderBottom: '1px solid var(--border-light)', paddingBottom: 'var(--spacing-sm)' }}>
+                      <div style={{ fontSize: 'var(--font-size-xs)', lineHeight: '1.4' }}>
                         <MarkdownViewer content={d.section_content} />
                       </div>
                     </div>

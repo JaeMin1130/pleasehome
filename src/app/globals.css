@@ -17,8 +17,21 @@
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
   --font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-  --header-height: 60px;
+  --header-height: 72px;
   
+  /* =========================================
+     [ 공간/여백 및 모서리 (Spacing & Radius) ]
+     ========================================= */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
   /* =========================================
      [ 타이포그래피 (글꼴 크기 및 굵기) ]
      ========================================= */
@@ -57,7 +70,7 @@
   --color-hug: #0f766e;      /* HUG 메인 그린 */
   --color-hug-bg: #ccfbf1;   /* HUG 연한 배경 */
   
-  --color-gold: #f59e0b;     /* 골드 (즐겨찾기, 포인트) */
+  --color-gold: var(--color-gold);     /* 골드 (즐겨찾기, 포인트) */
   --color-up: #e11d48;       /* 상승/증가 레드 */
   --color-down: #0284c7;     /* 하락/감소 블루 */
   --bg-light-gray: #f1f3f5;  /* 밝은 회색 배경 */

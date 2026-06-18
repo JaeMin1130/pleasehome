@@ -1,8 +1,8 @@
 .complex-card {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-light);
-  border-radius: 8px;
-  padding: 14px 16px;
+  border-radius: var(--spacing-sm);
+  padding: 1var(--spacing-xs) var(--spacing-lg);
   cursor: pointer;
   transition: all 0.1s ease;
   display: flex;
@@ -41,7 +41,7 @@
   font-size: var(--font-size-lg);
   color: var(--text-muted);
   cursor: pointer;
-  padding: 4px;
+  padding: var(--spacing-xs);
   display: flex;
   align-items: center;
   justify-content: center;

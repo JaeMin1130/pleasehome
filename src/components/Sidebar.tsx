@@ -200,33 +200,15 @@ export default function Sidebar({
         activeAnnId === null ? (
           <>
             <div className={styles['sidebar-search']}>
-              <div style={{ position: 'relative', width: '100%' }}>
+              <div className={styles['search-wrapper']}>
                 <input 
                   type="text" placeholder="공고명 또는 공급기관 검색..." 
                   className={styles['search-input']} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{ paddingRight: '32px' }}
                 />
                 {searchTerm && (
                   <button 
                     onClick={() => setSearchTerm('')}
-                    style={{
-                      position: 'absolute',
-                      right: '10px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      border: 'none',
-                      background: 'none',
-                      color: 'var(--text-muted)',
-                      cursor: 'pointer',
-                      fontSize: 'var(--font-size-base)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: '4px',
-                      transition: 'color 0.15s ease'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
-                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                    className={styles['clear-btn']}
                   >
                     ✕
                   </button>
@@ -249,7 +231,7 @@ export default function Sidebar({
                 const matchesSearch = ann.title.toLowerCase().includes(searchTerm.toLowerCase()) || ann.institution.toLowerCase().includes(searchTerm.toLowerCase());
                 return matchesSearch && getAnnouncementStatus(ann) === activeTabStatus;
               }).length === 0 ? (
-                <div style={{ padding: '24px', textAlign: 'center', color: 'hsl(var(--text-muted))' }}>결과가 없습니다.</div>
+                <div className={styles['empty-msg']}>결과가 없습니다.</div>
               ) : (
                 announcements.filter(ann => {
                   const matchesSearch = ann.title.toLowerCase().includes(searchTerm.toLowerCase()) || ann.institution.toLowerCase().includes(searchTerm.toLowerCase());
@@ -267,25 +249,18 @@ export default function Sidebar({
         ) : (
           <>
             <div 
-              style={{ 
-                height: `${currentHeaderHeight}px`, 
-                display: 'flex', 
-                flexDirection: 'column', 
-                backgroundColor: 'var(--bg-surface)',
-                flexShrink: 0,
-                overflow: 'hidden',
-                marginBottom: '12px'
-              }}
+              className={styles['announcement-detail-wrapper']}
+              style={{ height: `${currentHeaderHeight}px` }}
             >
-              <div style={{ padding: '16px 16px 0 16px', flexShrink: 0 }}>
+              <div className={styles['announcement-detail-header']}>
                 <button 
                   onClick={() => onSelectAnnouncement(null)}
-                  style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: 'var(--font-size-md)', marginBottom: '12px' }}
+                  className={styles['back-btn']}
                 >
                   ← 다른 공고 목록으로
                 </button>
               </div>
-              <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '0 16px 16px 16px' }}>
+              <div className={styles['announcement-detail-body']}>
                 {activeAnn && (
                   <AnnouncementCard
                     ann={activeAnn} isActive={true}
@@ -303,52 +278,23 @@ export default function Sidebar({
               />
             )}
 
-            <div className={styles['sidebar-list']} style={{ backgroundColor: 'var(--bg-body)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
-                <div style={{ fontSize: 'var(--font-size-base)', fontWeight: '700', color: 'var(--text-secondary)' }}>
+            <div className={styles['sidebar-list']}>
+              <div className={styles['complex-list-header']}>
+                <div className={styles['complex-list-title']}>
                   공급 주택 목록 ({filteredComplexes.length})
                 </div>
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <div className={styles['complex-search-wrapper']}>
                   <input 
                     type="text" 
                     placeholder="주택명 검색..." 
                     value={complexSearchTerm}
                     onChange={(e) => setComplexSearchTerm(e.target.value)}
-                    style={{
-                      width: '160px',
-                      padding: '6px 28px 6px 10px',
-                      fontSize: 'var(--font-size-sm)',
-                      borderRadius: '6px',
-                      border: '1px solid var(--border-light)',
-                      backgroundColor: 'var(--bg-surface)',
-                      color: 'var(--text-primary)',
-                      outline: 'none',
-                      transition: 'border-color 0.1s ease'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
-                    onBlur={(e) => e.target.style.borderColor = 'var(--border-light)'}
+                    className={styles['complex-search-input']}
                   />
                   {complexSearchTerm && (
                     <button 
                       onClick={() => setComplexSearchTerm('')}
-                      style={{
-                        position: 'absolute',
-                        right: '8px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        border: 'none',
-                        background: 'none',
-                        color: 'var(--text-muted)',
-                        cursor: 'pointer',
-                        fontSize: 'var(--font-size-sm)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '2px',
-                        transition: 'color 0.15s ease'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
-                      onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                      className={styles['complex-clear-btn']}
                     >
                       ✕
                     </button>
@@ -356,7 +302,7 @@ export default function Sidebar({
                 </div>
               </div>
               {filteredComplexes.length === 0 ? (
-                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 'var(--font-size-base)', backgroundColor: 'var(--bg-surface)', borderRadius: '8px', border: '1px solid var(--border-light)' }}>
+                <div className={styles['complex-empty-msg']}>
                   {complexSearchTerm ? '검색 결과가 없습니다.' : '이 공고는 특정 단지 없이 개별적으로 지원되는 전세임대형 정책이거나, 필터 조건에 맞는 주택이 없습니다.'}
                 </div>
               ) : (
@@ -385,7 +331,7 @@ export default function Sidebar({
             <div className={styles['more-menu-group']}>
               <div className={styles['more-menu-item']} onClick={toggleTheme}>
                 <span className={styles['more-menu-label']}>지도 모드</span>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div className={styles['more-menu-value-wrapper']}>
                   <span className={styles['more-menu-value']}>{isDarkMode ? "다크 지도" : "기본 지도"}</span>
                   <span className={styles['more-menu-chevron']}>
                     <svg width={UI_SIZES.ICON_XS} height={UI_SIZES.ICON_XS} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.BOLD} strokeLinecap="round" strokeLinejoin="round">
@@ -420,7 +366,7 @@ export default function Sidebar({
             <div className={styles['more-info-box-wrapper']}>
               <div className={styles['info-box']}>
                 <h4 className={styles['info-box-title']}>
-                  <svg width={UI_SIZES.ICON_XS + 2} height={UI_SIZES.ICON_XS + 2} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.MEDIUM} strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "6px", verticalAlign: "middle", display: "inline-block" }}>
+                  <svg className={styles['info-box-icon']} width={UI_SIZES.ICON_XS + 2} height={UI_SIZES.ICON_XS + 2} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.MEDIUM} strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="12" y1="16" x2="12" y2="12"></line>
                     <line x1="12" y1="8" x2="12.01" y2="8"></line>
@@ -454,7 +400,7 @@ export default function Sidebar({
               <button className={styles['modal-close-btn']} onClick={() => setActiveModal(null)}>✕</button>
             </div>
             <div className={styles['modal-body']}>
-              <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 'var(--font-size-base)', lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+              <pre className={styles['modal-pre']}>
                 {activeModal === 'privacy' ? PRIVACY_POLICY : TERMS_OF_SERVICE}
               </pre>
             </div>
