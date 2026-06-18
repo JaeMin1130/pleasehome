@@ -1,8 +1,16 @@
 .announcement-card { background-color: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 8px; padding: 16px; cursor: pointer; transition: border-color 0.1s ease; box-shadow: var(--shadow-sm); position: relative; flex-shrink: 0; }
 .announcement-card:hover { border-color: var(--border-strong); }
-.announcement-card.active { border-color: var(--primary); border-width: 2px; padding: 15px; }
+.announcement-card.active { border-width: 2px; padding: 15px; }
+.announcement-card.active.lh { border-color: #1d4ed8; }
+.announcement-card.active.sh { border-color: #e11d48; }
+.announcement-card.active.gh { border-color: #4338ca; }
+.announcement-card.active.hug { border-color: #0f766e; }
 .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.card-type { font-size: 0.75rem; color: var(--primary); font-weight: 600; }
+.card-type { font-size: 0.75rem; font-weight: 600; }
+.lh .card-type { color: #1d4ed8; }
+.sh .card-type { color: #e11d48; }
+.gh .card-type { color: #4338ca; }
+.hug .card-type { color: #0f766e; }
 .card-title { font-size: 1rem; font-weight: 600; line-height: 1.4; margin-bottom: 12px; color: var(--text-primary); word-break: keep-all; }
 .card-accordion { margin-top: 12px; border-top: 1px solid var(--border-light); padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
 .accordion-section { background-color: var(--bg-body); border-radius: 6px; overflow: hidden; border: 1px solid var(--border-light); }

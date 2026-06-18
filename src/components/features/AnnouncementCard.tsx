@@ -20,10 +20,18 @@ export default function AnnouncementCard({
   expandedSections, 
   onToggleSection 
 }: AnnouncementCardProps) {
+  const instClass = ann.institution.includes('SH') 
+    ? 'sh' 
+    : ann.institution.includes('LH') 
+      ? 'lh' 
+      : ann.institution.includes('HUG')
+        ? 'hug'
+        : 'gh';
+
   return (
     <div 
       id={`ann-card-${ann.id}`}
-      className={`${styles['announcement-card']} ${isActive ? styles.active : ''}`}
+      className={`${styles['announcement-card']} ${isActive ? styles.active : ''} ${styles[instClass]}`}
       onClick={onClick}
     >
       <div className={styles['card-header']}>

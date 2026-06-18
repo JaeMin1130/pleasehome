@@ -36,6 +36,7 @@ body { background-color: var(--bg-body); color: var(--text-primary); font-family
 .badge-sh { background-color: #ffe4e6; color: #e11d48; }
 .badge-lh { background-color: #dbeafe; color: #1d4ed8; }
 .badge-gh { background-color: #e0e7ff; color: #4338ca; }
+.badge-hug { background-color: #ccfbf1; color: #0f766e; }
 
 .custom-marker { display: flex; align-items: center; justify-content: center; position: relative; }
 .marker-pin { width: 24px; height: 24px; border-radius: 50%; background: tomato; border: 2px solid #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transition: transform 0.1s ease, background-color 0.1s ease; }
