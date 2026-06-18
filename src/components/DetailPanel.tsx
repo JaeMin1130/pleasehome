@@ -38,7 +38,7 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
   }, [complex]);
 
   const filteredUnits = units.filter((unit) => {
-    if (selectedType !== 'ALL' && !unit.supply_type.startsWith(selectedType)) return false;
+    if (selectedType !== 'ALL' && (!unit.supply_type || !unit.supply_type.startsWith(selectedType))) return false;
     if (filterState.targetGroup !== 'ALL' && unit.target_group !== filterState.targetGroup) return false;
     if (unit.exclusive_area < filterState.minArea || unit.exclusive_area > filterState.maxArea) return false;
     if (unit.deposit < filterState.minDeposit || unit.deposit > filterState.maxDeposit) return false;
@@ -54,7 +54,7 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
 
   // Extract unique base supply types (e.g. "51A", "59A")
   const baseTypes = Array.from(
-    new Set(units.map((u) => u.supply_type.split(' ')[0]).filter(Boolean))
+    new Set(units.map((u) => u.supply_type?.split(' ')[0]).filter((t): t is string => !!t))
   ).sort();
 
   return (
@@ -62,7 +62,23 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
       <div className={styles['panel-header']}>
         <div className={styles['panel-title-container']}>
           <span className={styles['panel-title']}>{complex.name}</span>
-          <span className={styles['panel-subtitle']}>📍 {complex.address}</span>
+          <span className={styles['panel-subtitle']}>
+            <svg 
+              width="12" 
+              height="12" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              style={{ marginRight: '4px', display: 'inline-block', verticalAlign: 'middle' }}
+            >
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            {complex.address}
+          </span>
         </div>
         <button className={styles['panel-close-btn']} onClick={onClose}>✕</button>
       </div>

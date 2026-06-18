@@ -110,7 +110,17 @@ export default function UnitCard({
                 <span className={styles['conversion-result-val']}>
                   {formatMoney(converted.deposit)}
                   <span className={`${styles['conversion-diff']} ${diffAmount > 0 ? styles['up'] : styles['down']}`}>
-                    {diffAmount > 0 ? '▲' : '▼'} {formatMoney(Math.abs(converted.deposit - unit.deposit))}
+                    {diffAmount > 0 ? (
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '2px' }}>
+                        <line x1="12" y1="19" x2="12" y2="5"></line>
+                        <polyline points="5 12 12 5 19 12"></polyline>
+                      </svg>
+                    ) : (
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '2px' }}>
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <polyline points="19 12 12 19 5 12"></polyline>
+                      </svg>
+                    )} {formatMoney(Math.abs(converted.deposit - unit.deposit))}
                   </span>
                 </span>
               </div>
@@ -119,7 +129,17 @@ export default function UnitCard({
                 <span className={styles['conversion-result-val']}>
                   {formatRent(converted.rent)}
                   <span className={`${styles['conversion-diff']} ${diffAmount > 0 ? styles['down'] : styles['up']}`}>
-                    {diffAmount > 0 ? '▼' : '▲'} {formatRent(Math.abs(converted.rent - unit.monthly_rent))}
+                    {diffAmount > 0 ? (
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '2px' }}>
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <polyline points="19 12 12 19 5 12"></polyline>
+                      </svg>
+                    ) : (
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '2px' }}>
+                        <line x1="12" y1="19" x2="12" y2="5"></line>
+                        <polyline points="5 12 12 5 19 12"></polyline>
+                      </svg>
+                    )} {formatRent(Math.abs(converted.rent - unit.monthly_rent))}
                   </span>
                 </span>
               </div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Sidebar from '@/components/Sidebar';
 import DetailPanel from '@/components/DetailPanel';
+import NavigationBar, { NavigationTabType } from '@/components/NavigationBar';
 import { formatMoney, formatRent, formatTargetGroup } from '@/utils/formatters';
 import { Announcement, Complex, FilterState } from '@/types';
 import styles from './page.module.css';
@@ -14,6 +15,7 @@ import {
   PANEL_MAX_WIDTH,
   FILTER_DEFAULT_LIMITS,
   FILTER_SLIDER_STEPS,
+  NAVIGATION_BAR_WIDTH,
 } from '@/constants';
 
 const Map = dynamic(() => import('@/components/Map'), {
@@ -42,6 +44,7 @@ export default function Home() {
 
   const [panelWidth, setPanelWidth] = useState(400);
   const [isPanelDragging, setIsPanelDragging] = useState(false);
+  const [activeTab, setActiveTab] = useState<NavigationTabType>('SEARCH');
 
   const startResizing = (mouseDownEvent: React.MouseEvent) => {
     mouseDownEvent.preventDefault();
@@ -50,7 +53,7 @@ export default function Home() {
     document.body.style.cursor = 'ew-resize';
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      const newWidth = Math.max(SIDEBAR_MIN_WIDTH, Math.min(SIDEBAR_MAX_WIDTH, moveEvent.clientX));
+      const newWidth = Math.max(SIDEBAR_MIN_WIDTH, Math.min(SIDEBAR_MAX_WIDTH, moveEvent.clientX - NAVIGATION_BAR_WIDTH));
       setSidebarWidth(newWidth);
     };
 
@@ -73,7 +76,7 @@ export default function Home() {
     document.body.style.cursor = 'ew-resize';
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      const sidebarOffset = isSidebarCollapsed ? 0 : sidebarWidth;
+      const sidebarOffset = (isSidebarCollapsed ? 0 : sidebarWidth) + NAVIGATION_BAR_WIDTH;
       const newWidth = Math.max(PANEL_MIN_WIDTH, Math.min(PANEL_MAX_WIDTH, moveEvent.clientX - sidebarOffset));
       setPanelWidth(newWidth);
     };
@@ -161,6 +164,15 @@ export default function Home() {
     }
   };
 
+  const handleTabSelect = (tab: NavigationTabType) => {
+    if (activeTab === tab) {
+      setIsSidebarCollapsed(!isSidebarCollapsed);
+    } else {
+      setActiveTab(tab);
+      setIsSidebarCollapsed(false);
+    }
+  };
+
   const availableTargetGroups = [
     'ALL',
     ...Array.from(new Set(announcementUnits.map((u) => u.target_group).filter(Boolean) as string[]))
@@ -169,10 +181,32 @@ export default function Home() {
   return (
     <div className="app-container">
       <main className="app-main">
+        <NavigationBar
+          activeTab={activeTab}
+          isSidebarCollapsed={isSidebarCollapsed}
+          onTabSelect={handleTabSelect}
+        />
+
         {activeAnnId && !isPolicyOnly && (
-          <div className={styles['floating-filter-container']}>
+          <div 
+            className={styles['floating-filter-container']}
+            style={{ right: '20px' }}
+          >
             <button className={styles['floating-filter-btn']} onClick={() => setIsFilterExpanded(!isFilterExpanded)}>
-              <span style={{ marginRight: '6px' }}>🔍</span> 맞춤 상세 필터 {isFilterExpanded ? '▲' : '▼'}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              맞춤 상세 필터
+              {isFilterExpanded ? (
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '6px' }}>
+                  <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
+              ) : (
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '6px' }}>
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              )}
             </button>
             
             {isFilterExpanded && (
@@ -246,12 +280,14 @@ export default function Home() {
           announcements={announcements} activeAnnId={activeAnnId} onSelectAnnouncement={handleSelectAnnouncement} 
           width={sidebarWidth} isCollapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           displayComplexes={filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex}
+          activeTab={activeTab} allComplexes={allComplexes}
+          style={{ left: `${NAVIGATION_BAR_WIDTH}px` }}
         />
 
         <div 
           className={`${styles['resizer-bar']} ${isDragging ? styles.dragging : ''}`} 
           onMouseDown={startResizing} 
-          style={{ left: isSidebarCollapsed ? 0 : sidebarWidth }} 
+          style={{ left: (isSidebarCollapsed ? 0 : sidebarWidth) + NAVIGATION_BAR_WIDTH }} 
         />
 
         <DetailPanel 
@@ -261,7 +297,7 @@ export default function Home() {
           announcements={announcements} 
           onClose={() => { setIsPanelOpen(false); setActiveComplexId(null); }} 
           style={{ 
-            left: isSidebarCollapsed ? 0 : sidebarWidth,
+            left: (isSidebarCollapsed ? 0 : sidebarWidth) + NAVIGATION_BAR_WIDTH,
             width: `${panelWidth}px`
           }} 
         />
@@ -270,7 +306,7 @@ export default function Home() {
           <div 
             className={`${styles['resizer-bar']} ${isPanelDragging ? styles.dragging : ''}`} 
             onMouseDown={startResizingPanel} 
-            style={{ left: (isSidebarCollapsed ? 0 : sidebarWidth) + panelWidth }} 
+            style={{ left: (isSidebarCollapsed ? 0 : sidebarWidth) + NAVIGATION_BAR_WIDTH + panelWidth }} 
           />
         )}
 
@@ -281,7 +317,13 @@ export default function Home() {
           
           {isPolicyOnly && activeAnn && (
             <div className={styles['policy-overlay']}>
-              <div className={styles['policy-icon']}>💡</div>
+              <div className={styles['policy-icon']}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+              </div>
               <h2 className={styles['policy-title']}>{activeAnn.subscription_type} 지원 제도 안내</h2>
               <p className={styles['policy-desc']}>본 공고는 입주자가 원하는 주택을 직접 물색하면, 기관이 집주인과 전세계약을 체결한 후 저렴하게 재임대하는 정책입니다.</p>
               {activeAnn.limits && activeAnn.limits.length > 0 && (
