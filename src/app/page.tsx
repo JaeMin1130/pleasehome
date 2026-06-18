@@ -108,7 +108,17 @@ export default function Home() {
   const isPolicyOnly = activeAnnId !== null && displayComplexes.length === 0;
 
   const handleSelectAnnouncement = (id: number | null) => { setActiveAnnId(id); setActiveComplexId(null); setSelectedComplex(null); setIsPanelOpen(false); };
-  const handleSelectComplex = (complex: Complex) => { setSelectedComplex(complex); setActiveComplexId(complex.id); setIsPanelOpen(true); };
+  const handleSelectComplex = (complex: Complex) => {
+    if (activeComplexId === complex.id && isPanelOpen) {
+      setSelectedComplex(null);
+      setActiveComplexId(null);
+      setIsPanelOpen(false);
+    } else {
+      setSelectedComplex(complex);
+      setActiveComplexId(complex.id);
+      setIsPanelOpen(true);
+    }
+  };
 
   return (
     <div className="app-container">
