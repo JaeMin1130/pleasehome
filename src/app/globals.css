@@ -48,17 +48,17 @@
   /* =========================================
      [ 기관별 브랜드 및 특수 상태 색상 ]
      ========================================= */
-  --color-lh: var(--color-lh);       /* LH 메인 블루 */
-  --color-lh-bg: var(--color-lh-bg);    /* LH 연한 배경 */
-  --color-sh: var(--color-sh);       /* SH 메인 레드 */
-  --color-sh-bg: var(--color-sh-bg);    /* SH 연한 배경 */
-  --color-gh: var(--color-gh);       /* GH 메인 퍼플 */
-  --color-gh-bg: var(--color-gh-bg);    /* GH 연한 배경 */
-  --color-hug: var(--color-hug);      /* HUG 메인 그린 */
-  --color-hug-bg: var(--color-hug-bg);   /* HUG 연한 배경 */
+  --color-lh: #1d4ed8;       /* LH 메인 블루 */
+  --color-lh-bg: #dbeafe;    /* LH 연한 배경 */
+  --color-sh: #e11d48;       /* SH 메인 레드 */
+  --color-sh-bg: #ffe4e6;    /* SH 연한 배경 */
+  --color-gh: #4338ca;       /* GH 메인 퍼플 */
+  --color-gh-bg: #e0e7ff;    /* GH 연한 배경 */
+  --color-hug: #0f766e;      /* HUG 메인 그린 */
+  --color-hug-bg: #ccfbf1;   /* HUG 연한 배경 */
   
   --color-gold: #f59e0b;     /* 골드 (즐겨찾기, 포인트) */
-  --color-up: var(--color-sh);       /* 상승/증가 레드 */
+  --color-up: #e11d48;       /* 상승/증가 레드 */
   --color-down: #0284c7;     /* 하락/감소 블루 */
   --bg-light-gray: #f1f3f5;  /* 밝은 회색 배경 */
   --text-gray-dark: #6b7280; /* 짙은 회색 텍스트 */
