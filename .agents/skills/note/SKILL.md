@@ -35,6 +35,7 @@ description: 대화 과정에서 수립된 에이전트 행동 규칙 중 불필
   - **에이전트 소통 및 대화 행동 규칙:** 대화 태도, 소통 절차, 유저 승인 및 확인 프로토콜 등 에이전트의 대화적 행동 지침은 [AGENTS.md](file:///home/iru/project03/AGENTS.md)의 `## 2. 피드백 및 누적 규칙` 섹션에 `[누적 규칙 #N]` 포맷으로 반영합니다. 단, 더 이상 유효하지 않은 규칙이나 중복 규칙은 즉시 완전히 삭제하여 파일을 항시 최신 상태로 유지합니다.
   - **프로젝트 공통 환경 사양 및 전역 규약:** 프로젝트 빌드 환경, 가상 환경, 디렉토리 구조, 전역 명령어, 공통 Git 형상 관리 가이드 등 전역 사양에 관한 피드백은 [PROJECT.md](file:///home/iru/project03/PROJECT.md)의 관련 섹션에 규약으로 통합 기재합니다.
   - **특정 도메인 기술 스킬 가이드:** PDF 변환, 마크다운 데이터 파싱/적재 및 DB 검증 등 특정 스킬 실행 시 지켜야 하는 구체적인 동작 방식, 비즈니스 룰, 성능 최적화(병렬 처리), 파싱 데이터 대조 검증 지침 등은 해당하는 스킬 문서(예: [extract-data/SKILL.md](file:///home/iru/project03/.agents/skills/extract-data/SKILL.md), [convert-pdf/SKILL.md](file:///home/iru/project03/.agents/skills/convert-pdf/SKILL.md)) 내에 통합 반영하며, [AGENTS.md](file:///home/iru/project03/AGENTS.md)나 [PROJECT.md](file:///home/iru/project03/PROJECT.md)에는 절대 중복 기재하지 않습니다.
+  - **일회성/사소한 구현 상세 기록 금지 (Crucial Restriction):** 일회성 기능 개발이나 특정 컴포넌트의 사소한 디자인 수치(예: 뱃지 색상 수정, 특정 슬라이더 폭 지정 등)와 같이 전역 컨벤션으로 관리될 가치가 없는 사안은 규약에 기록하지 않고 전면 배제합니다. 오직 전 프로젝트에 보편적으로 적용되는 공통 개발 표준과 핵심 구조 설계 원칙만 엄격하게 선별해 기록합니다.
 
 ### 2단계: 프로젝트 개발 환경 및 구조 동기화
 * 예외 폴더(`venv`, `.git` 등)를 제외한 실제 디렉토리 구조 및 가상 환경에 새로 설치된 외부 라이브러리 목록을 스캔합니다.
