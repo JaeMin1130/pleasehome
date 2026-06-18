@@ -3,19 +3,19 @@
 
 .sidebar-brand { padding: 24px 20px; border-bottom: 1px solid var(--border-light); display: flex; align-items: baseline; gap: 12px; background-color: var(--bg-surface); flex-shrink: 0; }
 .brand-logo-wrap { display: flex; align-items: center; gap: 8px; }
-.brand-icon { font-size: 1.6rem; }
-.brand-title { font-size: 1.4rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em; }
-.brand-desc { font-size: 0.8rem; color: var(--text-secondary); }
+.brand-icon { font-size: calc(var(--font-size-lg) * 1.6); }
+.brand-title { font-size: calc(var(--font-size-lg) * 1.4); font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em; }
+.brand-desc { font-size: var(--font-size-sm); color: var(--text-secondary); }
 .sidebar-search { padding: 16px; border-bottom: 1px solid var(--border-light); display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
-.search-input { width: 100%; background-color: var(--bg-body); border: 1px solid var(--border-light); color: var(--text-primary); padding: 10px 14px; border-radius: 6px; font-size: 0.9rem; outline: none; transition: border-color 0.1s ease; }
+.search-input { width: 100%; background-color: var(--bg-body); border: 1px solid var(--border-light); color: var(--text-primary); padding: 10px 14px; border-radius: 6px; font-size: var(--font-size-base); outline: none; transition: border-color 0.1s ease; }
 .search-input:focus { border-color: var(--primary); background-color: var(--bg-surface); }
 .filter-tags { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
 .filter-tags::-webkit-scrollbar { display: none; }
-.filter-tag { background-color: var(--bg-body); color: var(--text-secondary); padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; border: 1px solid var(--border-light); transition: all 0.1s ease; white-space: nowrap; }
+.filter-tag { background-color: var(--bg-body); color: var(--text-secondary); padding: 6px 12px; border-radius: 4px; font-size: var(--font-size-sm); cursor: pointer; border: 1px solid var(--border-light); transition: all 0.1s ease; white-space: nowrap; }
 .filter-tag:hover { background-color: var(--bg-surface-hover); border-color: var(--border-strong); }
 .filter-tag.active { background-color: var(--primary-bg); color: var(--primary); border-color: var(--primary); font-weight: 600; }
 .sidebar-list { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; background-color: var(--bg-body); }
-.sidebar-footer { padding: 16px; border-top: 1px solid var(--border-light); font-size: 0.75rem; text-align: center; color: var(--text-muted); display: flex; justify-content: center; gap: 12px; flex-shrink: 0; }
+.sidebar-footer { padding: 16px; border-top: 1px solid var(--border-light); font-size: var(--font-size-sm); text-align: center; color: var(--text-muted); display: flex; justify-content: center; gap: 12px; flex-shrink: 0; }
 
 .header-resizer {
   height: 5px;
@@ -41,13 +41,13 @@
   flex-shrink: 0;
 }
 .section-title {
-  font-size: 1.25rem;
+  font-size: calc(var(--font-size-lg) * 1.25);
   font-weight: 800;
   color: var(--text-primary);
   margin-bottom: 4px;
 }
 .section-subtitle {
-  font-size: 0.8rem;
+  font-size: var(--font-size-sm);
   color: var(--text-muted);
 }
 
@@ -74,35 +74,35 @@
   gap: 8px;
 }
 .calendar-badge {
-  font-size: 0.7rem;
+  font-size: var(--font-size-xs);
   font-weight: 700;
   padding: 3px 8px;
   border-radius: 4px;
   text-transform: uppercase;
 }
 .badge-upcoming {
-  background-color: #fef3c7;
-  color: #d97706;
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning-text);
 }
 .badge-ongoing {
-  background-color: #dbeafe;
-  color: #1d4ed8;
+  background-color: var(--color-lh-bg);
+  color: var(--color-lh);
 }
 .badge-closed {
-  background-color: #f3f4f6;
-  color: #6b7280;
+  background-color: var(--bg-light-gray);
+  color: var(--text-gray-dark);
 }
 .badge-default {
   background-color: var(--bg-body);
   color: var(--text-secondary);
 }
 .calendar-type {
-  font-size: 0.75rem;
+  font-size: var(--font-size-sm);
   color: var(--text-muted);
   font-weight: 600;
 }
 .calendar-ann-title {
-  font-size: 0.95rem;
+  font-size: var(--font-size-md);
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.4;
@@ -119,7 +119,7 @@
 .info-row {
   display: flex;
   justify-content: space-between;
-  font-size: 0.8rem;
+  font-size: var(--font-size-sm);
 }
 .info-label {
   color: var(--text-muted);
@@ -143,7 +143,7 @@
   margin-top: 20px;
 }
 .empty-icon {
-  font-size: 3rem;
+  font-size: calc(var(--font-size-lg) * 3);
   margin-bottom: 16px;
   animation: pulse 2s infinite;
 }
@@ -153,13 +153,13 @@
   100% { transform: scale(1); opacity: 0.8; }
 }
 .empty-text {
-  font-size: 0.95rem;
+  font-size: var(--font-size-md);
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 6px;
 }
 .empty-subtext {
-  font-size: 0.8rem;
+  font-size: var(--font-size-sm);
   color: var(--text-muted);
   line-height: 1.5;
   word-break: keep-all;
@@ -185,7 +185,7 @@
   gap: 12px;
 }
 .more-section-title {
-  font-size: 0.8rem;
+  font-size: var(--font-size-sm);
   font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -203,12 +203,12 @@
   opacity: 0.8;
 }
 .more-item-label {
-  font-size: 0.9rem;
+  font-size: var(--font-size-base);
   color: var(--text-primary);
   font-weight: 600;
 }
 .more-chevron {
-  font-size: 0.9rem;
+  font-size: var(--font-size-base);
   color: var(--text-muted);
 }
 
@@ -249,13 +249,13 @@
   gap: 8px;
 }
 .info-box-title {
-  font-size: 0.85rem;
+  font-size: var(--font-size-base);
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
 }
 .info-box-desc {
-  font-size: 0.75rem;
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
   line-height: 1.5;
   margin: 0;
@@ -263,7 +263,7 @@
 }
 .more-footer {
   text-align: center;
-  font-size: 0.7rem;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
   margin-top: auto;
   padding-top: 20px;
@@ -316,7 +316,7 @@
   align-items: center;
 }
 .modal-title {
-  font-size: 1.05rem;
+  font-size: var(--font-size-lg);
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
@@ -324,7 +324,7 @@
 .modal-close-btn {
   background: transparent;
   border: none;
-  font-size: 1.1rem;
+  font-size: var(--font-size-lg);
   color: var(--text-muted);
   cursor: pointer;
   transition: color 0.15s;
@@ -349,7 +349,7 @@
   border: none;
   padding: 8px 18px;
   border-radius: 6px;
-  font-size: 0.85rem;
+  font-size: var(--font-size-base);
   font-weight: 600;
   cursor: pointer;
   transition: opacity 0.15s;
@@ -371,7 +371,7 @@
 .more-profile-avatar {
   width: 44px;
   height: 44px;
-  background-color: #f1f3f5;
+  background-color: var(--bg-light-gray);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -383,12 +383,12 @@
   gap: 2px;
 }
 .more-profile-name {
-  font-size: 0.95rem;
+  font-size: var(--font-size-md);
   font-weight: 700;
   color: var(--text-primary);
 }
 .more-profile-email {
-  font-size: 0.75rem;
+  font-size: var(--font-size-sm);
   color: var(--text-muted);
 }
 .more-list-container {
@@ -413,7 +413,7 @@
   cursor: pointer;
   background-color: var(--bg-surface);
   transition: background-color 0.1s ease;
-  border-bottom: 1px solid #f8f9fa;
+  border-bottom: 1px solid var(--border-light);
 }
 .more-menu-item:last-child {
   border-bottom: none;
@@ -422,12 +422,12 @@
   background-color: var(--bg-surface-hover);
 }
 .more-menu-label {
-  font-size: 0.88rem;
+  font-size: var(--font-size-base);
   font-weight: 600;
   color: var(--text-primary);
 }
 .more-menu-value {
-  font-size: 0.82rem;
+  font-size: var(--font-size-sm);
   color: var(--text-muted);
 }
 .more-menu-chevron {
@@ -443,7 +443,7 @@
   border-bottom: 1px solid var(--border-light);
 }
 .more-sub-item {
-  font-size: 0.8rem;
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
   cursor: pointer;
   transition: color 0.15s ease;

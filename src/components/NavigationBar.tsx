@@ -34,7 +34,7 @@ export default function NavigationBar({
           onClick={() => onTabSelect('SEARCH')}
           title="공고 검색"
         >
-          <svg className={styles['nav-icon']} width={UI_SIZES.ICON_MD} height={UI_SIZES.ICON_MD} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.THICK} strokeLinecap="round" strokeLinejoin="round">
+          <svg className={styles['nav-icon']} width={UI_SIZES.ICON_LG} height={UI_SIZES.ICON_LG} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.THICK} strokeLinecap="round" strokeLinejoin="round">
             <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
             <line x1="9" y1="22" x2="9" y2="16"></line>
             <line x1="15" y1="22" x2="15" y2="16"></line>

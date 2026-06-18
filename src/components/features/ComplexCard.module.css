@@ -19,12 +19,12 @@
   background-color: var(--primary-bg);
 }
 .complex-name {
-  font-size: 0.95rem;
+  font-size: var(--font-size-md);
   font-weight: 700;
   color: var(--text-primary);
 }
 .complex-address {
-  font-size: 0.8rem;
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
 }
 
@@ -38,7 +38,7 @@
 .bookmark-btn {
   background: transparent;
   border: none;
-  font-size: 1.15rem;
+  font-size: var(--font-size-lg);
   color: var(--text-muted);
   cursor: pointer;
   padding: 4px;
@@ -52,10 +52,10 @@
 
 .bookmark-btn:hover {
   transform: scale(1.2);
-  color: #f59e0b; /* 골드 색상 */
+  color: var(--color-gold); /* 골드 색상 */
 }
 
 .bookmark-btn.bookmarked {
-  color: #f59e0b;
+  color: var(--color-gold);
 }
 

@@ -19,22 +19,52 @@
   --font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
   --header-height: 60px;
   
-  /* 추가된 폰트 사이즈 및 공통 트랜지션 규격 */
-  --font-size-xs: 0.65rem;
-  --font-size-sm: 0.75rem;
-  --font-size-base: 0.85rem;
-  --font-size-md: 0.95rem;
-  --font-size-lg: 1rem;
-  --font-weight-regular: 400;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-  --transition-fast: 0.15s ease;
-  --transition-normal: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  /* =========================================
+     [ 타이포그래피 (글꼴 크기 및 굵기) ]
+     ========================================= */
+  --font-size-xs: 0.8rem;    /* 뱃지, 부가 설명용 최소형 글씨 */
+  --font-size-sm: 0.8rem;    /* 작은 라벨, 서브 타이틀용 */
+  --font-size-base: 1rem;  /* 본문 기본 텍스트 크기 */
+  --font-size-md: 1rem;    /* 약간 큰 강조형 텍스트 */
+  --font-size-lg: 1rem;       /* 대제목, 모달 타이틀 등 */
   
-  /* 포인트 테마 및 아이콘 컬러 */
-  --brand-blue: #0068ff;
-  --icon-color: #70757a;
-  --icon-hover-color: #242424;
+  --font-weight-regular: 400; /* 일반 본문용 굵기 */
+  --font-weight-semibold: 600;/* 강조, 버튼 텍스트용 굵기 */
+  --font-weight-bold: 700;    /* 대제목, 중요 숫자 강조용 굵기 */
+  
+  /* =========================================
+     [ 애니메이션 및 트랜지션 (화면 전환 효과) ]
+     ========================================= */
+  --transition-fast: 0.15s ease;                          /* 마우스 오버 등 빠른 반응용 */
+  --transition-normal: 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* 일반 상태 변화(버튼 클릭, 탭 전환)용 */
+  
+  /* =========================================
+     [ 포인트 테마 및 아이콘 색상 팔레트 ]
+     ========================================= */
+  --brand-blue: #0068ff;       /* 네이버 블루 - 활성화 탭, 주요 버튼 포인트 색상 */
+  --icon-color: #70757a;       /* 비활성 아이콘 및 보조 텍스트 기본 회색 */
+  --icon-hover-color: #242424; /* 마우스 오버 시 진해지는 강조 회색/검정 */
+
+  /* =========================================
+     [ 기관별 브랜드 및 특수 상태 색상 ]
+     ========================================= */
+  --color-lh: var(--color-lh);       /* LH 메인 블루 */
+  --color-lh-bg: var(--color-lh-bg);    /* LH 연한 배경 */
+  --color-sh: var(--color-sh);       /* SH 메인 레드 */
+  --color-sh-bg: var(--color-sh-bg);    /* SH 연한 배경 */
+  --color-gh: var(--color-gh);       /* GH 메인 퍼플 */
+  --color-gh-bg: var(--color-gh-bg);    /* GH 연한 배경 */
+  --color-hug: var(--color-hug);      /* HUG 메인 그린 */
+  --color-hug-bg: var(--color-hug-bg);   /* HUG 연한 배경 */
+  
+  --color-gold: #f59e0b;     /* 골드 (즐겨찾기, 포인트) */
+  --color-up: var(--color-sh);       /* 상승/증가 레드 */
+  --color-down: #0284c7;     /* 하락/감소 블루 */
+  --bg-light-gray: #f1f3f5;  /* 밝은 회색 배경 */
+  --text-gray-dark: #6b7280; /* 짙은 회색 텍스트 */
+  --color-warning-bg: #fef3c7; /* 경고 연한 배경 */
+  --color-warning-text: #d97706; /* 경고 텍스트 */
+
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -50,18 +80,18 @@ body { background-color: var(--bg-body); color: var(--text-primary); font-family
 .app-main { display: flex; flex: 1; height: 100vh; position: relative; overflow: hidden; }
 
 .badge { padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
-.badge-sh { background-color: #ffe4e6; color: #e11d48; }
-.badge-lh { background-color: #dbeafe; color: #1d4ed8; }
-.badge-gh { background-color: #e0e7ff; color: #4338ca; }
-.badge-hug { background-color: #ccfbf1; color: #0f766e; }
+.badge-sh { background-color: var(--color-sh-bg); color: var(--color-sh); }
+.badge-lh { background-color: var(--color-lh-bg); color: var(--color-lh); }
+.badge-gh { background-color: var(--color-gh-bg); color: var(--color-gh); }
+.badge-hug { background-color: var(--color-hug-bg); color: var(--color-hug); }
 
 .custom-marker { display: flex; align-items: center; justify-content: center; position: relative; }
 .marker-pin { width: 24px; height: 24px; border-radius: 50%; background: tomato; border: 2px solid #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transition: transform 0.1s ease, background-color 0.1s ease; }
 .custom-marker:hover .marker-pin { transform: scale(1.15); z-index: 10; }
-.custom-marker.active .marker-pin { background: #e11d48; transform: scale(1.4); z-index: 20; }
+.custom-marker.active .marker-pin { background: var(--color-sh); transform: scale(1.4); z-index: 20; }
 .marker-pin svg { display: block; }
 .window-hole { fill: tomato; transition: fill 0.1s ease; }
-.custom-marker.active .window-hole { fill: #e11d48; }
+.custom-marker.active .window-hole { fill: var(--color-sh); }
 .popup-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; color: var(--text-primary); }
 .popup-address { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px; }
 .popup-btn { display: block; width: 100%; text-align: center; background-color: var(--primary); color: #ffffff !important; padding: 8px 12px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; text-decoration: none; cursor: pointer; border: none; }
