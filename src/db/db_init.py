@@ -27,10 +27,6 @@ def init_db():
             institution VARCHAR(50) NOT NULL,     -- 시행 기관 (예: 'LH', 'SH', 'HUG')
             subscription_type VARCHAR(50) NOT NULL, -- 청약 유형 (예: '행복주택', '장기전세', '전세임대')
             doc_path VARCHAR(255) NOT NULL,       -- 변환된 마크다운 및 리소스가 위치한 폴더 상대 경로
-            deposit_increase_rate REAL,           -- 보증금 증액 전환이율 (연 %)
-            deposit_decrease_rate REAL,           -- 보증금 감액 전환이율 (연 %)
-            deposit_increase_limit_rate REAL,     -- 월세 대비 보증금 최대 증액 한도 비율 (%)
-            deposit_decrease_limit_rate REAL,     -- 기본 보증금 대비 최대 감액 한도 비율 (%)
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 레코드 생성 일시
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 레코드 최종 수정 일시
         );
@@ -106,6 +102,10 @@ def init_db():
             reserve_count INTEGER DEFAULT 0,      -- 예비 입주자 모집 호수
             deposit BIGINT NOT NULL,              -- 기본 임대 보증금 (원 단위)
             monthly_rent BIGINT DEFAULT 0,        -- 기본 월 임대료 (원 단위, 전세형인 경우 0)
+            max_deposit BIGINT,                   -- 최대 전환 가능 임대보증금 (원 단위)
+            min_deposit BIGINT,                   -- 최소 전환 가능 임대보증금 (원 단위)
+            max_monthly_rent BIGINT,              -- 보증금 감액 시 최대 월 임대료 (원 단위)
+            min_monthly_rent BIGINT,              -- 보증금 증액 시 최소 월 임대료 (원 단위)
             attributes TEXT,                      -- 기타 세부 주택 특이사항 속성 (JSON 또는 텍스트)
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 레코드 생성 일시
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 레코드 최종 수정 일시

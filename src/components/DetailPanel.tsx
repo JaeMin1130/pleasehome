@@ -43,14 +43,6 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
     return true;
   });
 
-  const announcement = complex ? announcements.find((a) => a.id === complex.announcement_id) : null;
-  const hasConversion = announcement && (announcement.deposit_increase_rate !== null || announcement.deposit_decrease_rate !== null);
-  const canIncrease = !!(announcement?.deposit_increase_rate && announcement?.deposit_increase_limit_rate);
-  const canDecrease = !!(announcement?.deposit_decrease_rate && announcement?.deposit_decrease_limit_rate);
-
-  const getSliderMin = () => canDecrease ? -100 : 0;
-  const getSliderMax = () => canIncrease ? 100 : 0;
-
   const handleSliderChange = (unitId: number, value: number) => {
     setSliderValues((prev) => ({ ...prev, [unitId]: value }));
   };
@@ -100,12 +92,8 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
                 <UnitCard
                   key={unit.id}
                   unit={unit}
-                  hasConversion={hasConversion}
-                  announcement={announcement}
-                  sliderVal={sliderValues[unit.id] ?? 0}
+                  sliderVal={sliderValues[unit.id] ?? unit.deposit}
                   onSliderChange={handleSliderChange}
-                  sliderMin={getSliderMin()}
-                  sliderMax={getSliderMax()}
                 />
               ))}
             </div>
@@ -115,3 +103,4 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
     </div>
   );
 }
+

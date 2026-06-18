@@ -1,42 +1,62 @@
 /**
- * 보증금 ↔ 월세 100만원 단위 전환 계산 함수
- * sliderValue: 걸음수 (1단위당 1,000,000원 변동)
- * - sliderValue > 0: 보증금 증액 (월세 -> 보증금)
- * - sliderValue < 0: 보증금 감액 (보증금 -> 월세)
+ * 보증금 ↔ 월세 100만원 단위 전환 계산 함수 (개별 주택 한도액 기준)
+ * targetDeposit: 목표 보증금 (원 단위)
  */
 export function calcConversion(
   baseDeposit: number,
   baseRent: number,
-  sliderValue: number, // 걸음 수 (예: -27 ~ +34)
-  increaseRate: number | null,
-  decreaseRate: number | null,
-  increaseLimitRate: number | null,
-  decreaseLimitRate: number | null,
-): { deposit: number; rent: number } {
-  if (sliderValue === 0) {
-    return { deposit: baseDeposit, rent: baseRent };
+  targetDeposit: number,
+  maxDeposit: number | null,
+  minDeposit: number | null,
+  maxMonthlyRent: number | null,
+  minMonthlyRent: number | null,
+): { deposit: number; rent: number; effectiveRate: number | null } {
+  if (
+    targetDeposit === baseDeposit ||
+    maxDeposit === null ||
+    minDeposit === null ||
+    maxMonthlyRent === null ||
+    minMonthlyRent === null
+  ) {
+    return { deposit: baseDeposit, rent: baseRent, effectiveRate: null };
   }
 
-  if (sliderValue > 0 && increaseRate && increaseRate > 0) {
-    // 보증금 증액 (월세 → 보증금): 100만원 단위로 증액
-    const addDeposit = sliderValue * 1000000;
-    const reduceRent = (addDeposit * (increaseRate / 100)) / 12;
+  // 1. 보증금 증액 시 (targetDeposit > baseDeposit)
+  if (targetDeposit > baseDeposit && maxDeposit > baseDeposit) {
+    const diffDeposit = targetDeposit - baseDeposit;
+    const maxDiffDeposit = maxDeposit - baseDeposit;
+    const diffRent = baseRent - minMonthlyRent;
+    
+    const calculatedRent = baseRent - (diffDeposit * diffRent) / maxDiffDeposit;
+    
+    // 이율 역산: ((기본월세 - 최소월세) * 12) / (최대보증금 - 기본보증금) * 100
+    const effectiveRate = ((baseRent - minMonthlyRent) * 12) / (maxDeposit - baseDeposit) * 100;
+
     return {
-      deposit: baseDeposit + addDeposit,
-      rent: Math.max(0, Math.round(baseRent - reduceRent)),
+      deposit: targetDeposit,
+      rent: Math.max(minMonthlyRent, Math.round(calculatedRent)),
+      effectiveRate,
     };
   }
 
-  if (sliderValue < 0 && decreaseRate && decreaseRate > 0) {
-    // 보증금 감액 (보증금 → 월세): 100만원 단위로 감액
-    const reduceDeposit = Math.abs(sliderValue) * 1000000;
-    const addRent = (reduceDeposit * (decreaseRate / 100)) / 12;
+  // 2. 보증금 감액 시 (targetDeposit < baseDeposit)
+  if (targetDeposit < baseDeposit && baseDeposit > minDeposit) {
+    const diffDeposit = baseDeposit - targetDeposit;
+    const maxDiffDeposit = baseDeposit - minDeposit;
+    const diffRent = maxMonthlyRent - baseRent;
+    
+    const calculatedRent = baseRent + (diffDeposit * diffRent) / maxDiffDeposit;
+
+    // 이율 역산: ((최대월세 - 기본월세) * 12) / (기본보증금 - 최소보증금) * 100
+    const effectiveRate = ((maxMonthlyRent - baseRent) * 12) / (baseDeposit - minDeposit) * 100;
+
     return {
-      deposit: Math.max(0, Math.round(baseDeposit - reduceDeposit)),
-      rent: Math.round(baseRent + addRent),
+      deposit: targetDeposit,
+      rent: Math.min(maxMonthlyRent, Math.round(calculatedRent)),
+      effectiveRate,
     };
   }
 
-  return { deposit: baseDeposit, rent: baseRent };
+  return { deposit: baseDeposit, rent: baseRent, effectiveRate: null };
 }
 

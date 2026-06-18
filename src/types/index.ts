@@ -33,10 +33,6 @@ export interface Announcement {
   institution: string;
   subscription_type: string;
   doc_path: string;
-  deposit_increase_rate: number | null;
-  deposit_decrease_rate: number | null;
-  deposit_increase_limit_rate: number | null;
-  deposit_decrease_limit_rate: number | null;
   schedules: Schedule[];
   details: Detail[];
   limits: Limit[];
@@ -67,6 +63,10 @@ export interface HousingUnit {
   reserve_count: number;
   deposit: number;
   monthly_rent: number;
+  max_deposit: number | null;
+  min_deposit: number | null;
+  max_monthly_rent: number | null;
+  min_monthly_rent: number | null;
   attributes: string | null;
 }
 
