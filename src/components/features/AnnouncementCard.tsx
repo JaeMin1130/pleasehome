@@ -160,9 +160,6 @@ export default function AnnouncementCard({
                 <div className={styles['section-content']} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {ann.details.map((d) => (
                     <div key={d.id} style={{ borderBottom: '1px solid hsl(var(--border))', paddingBottom: '8px' }}>
-                      <div style={{ fontWeight: '600', fontSize: '0.75rem', color: 'hsl(var(--accent-hover))', marginBottom: '4px' }}>
-                        Q. {d.section_title}
-                      </div>
                       <div style={{ fontSize: '0.75rem', lineHeight: '1.4' }}>
                         <MarkdownViewer content={d.section_content} />
                       </div>

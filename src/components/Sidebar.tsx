@@ -22,7 +22,7 @@ interface SidebarProps {
   displayComplexes: Complex[];
   activeComplexId: number | null;
   onSelectComplex: (complex: Complex) => void;
-  activeTab: 'SEARCH' | 'CALENDAR' | 'BOOKMARK' | 'MORE';
+  activeTab: 'SEARCH' | 'MORE';
   allComplexes: Complex[];
   style?: React.CSSProperties;
 }
@@ -42,27 +42,7 @@ export default function Sidebar({
   const [headerHeight, setHeaderHeight] = useState(HEADER_ACCORDION_MAX_HEIGHT);
   const [isResizingHeader, setIsResizingHeader] = useState(false);
 
-  // 북마크 로컬스토리지 연동 상태
-  const [bookmarks, setBookmarks] = useState<number[]>([]);
-  
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('bookmarkedComplexes');
-      setBookmarks(saved ? JSON.parse(saved) : []);
-    }
-  }, []);
 
-  const toggleBookmark = (complexId: number) => {
-    setBookmarks(prev => {
-      const next = prev.includes(complexId)
-        ? prev.filter(id => id !== complexId)
-        : [...prev, complexId];
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('bookmarkedComplexes', JSON.stringify(next));
-      }
-      return next;
-    });
-  };
 
   // 다크 모드 상태
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -173,23 +153,7 @@ export default function Sidebar({
     ? headerHeight 
     : (isAnyAccordionOpen ? headerHeight : HEADER_ACCORDION_DEFAULT_HEIGHT);
 
-  // 캘린더 이벤트 데이터 추출 및 정렬
-  const calendarEvents = announcements.flatMap(ann => 
-    ann.schedules.map(s => ({
-      announcementId: ann.id,
-      announcementTitle: ann.title,
-      institution: ann.institution,
-      subscriptionType: ann.subscription_type,
-      scheduleType: s.schedule_type,
-      startDate: s.start_date,
-      endDate: s.end_date,
-      notes: s.notes
-    }))
-  ).filter(e => e.startDate)
-  .sort((a, b) => new Date(a.startDate!).getTime() - new Date(b.startDate!).getTime());
 
-  // 관심 주택 목록
-  const bookmarkedComplexes = allComplexes.filter(c => bookmarks.includes(c.id));
 
   // 약관 상수 텍스트
   const PRIVACY_POLICY = `제 1 조 (목적)
@@ -220,21 +184,15 @@ export default function Sidebar({
         ...style
       }}
     >
-      {onToggleCollapse && (
-        <button className={styles['sidebar-toggle-btn']} onClick={onToggleCollapse}>
-          {isCollapsed ? '▶' : '◀'}
-        </button>
-      )}
 
-      {/* SEARCH 탭일 때만 기존 브랜드 로고 헤더를 표시 */}
-      {activeTab === 'SEARCH' && (
-        <div className={styles['sidebar-brand']}>
-          <div className={styles['brand-logo-wrap']}>
-            <h1 className={styles['brand-title']}>공공맵</h1>
-          </div>
-          <span className={styles['brand-desc']}>공공청약 연동 서비스</span>
+
+      {/* 브랜드 로고 헤더 (모든 탭에서 공통 표시) */}
+      <div className={styles['sidebar-brand']}>
+        <div className={styles['brand-logo-wrap']}>
+          <h1 className={styles['brand-title']}>공공맵</h1>
         </div>
-      )}
+        <span className={styles['brand-desc']}>공공청약 연동 서비스</span>
+      </div>
 
       {/* 탭 분기 렌더링 */}
       {activeTab === 'SEARCH' && (
@@ -415,122 +373,11 @@ export default function Sidebar({
         )
       )}
 
-      {activeTab === 'CALENDAR' && (
-        <>
-          <div className={styles['section-title-bar']}>
-            <h2 className={styles['section-title']}>일정 달력</h2>
-            <span className={styles['section-subtitle']}>청약 주요 일정 목록</span>
-          </div>
-          <div className={styles['sidebar-list']}>
-            {calendarEvents.length === 0 ? (
-              <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>등록된 일정이 없습니다.</div>
-            ) : (
-              calendarEvents.map((event, idx) => {
-                const now = new Date();
-                const startDate = event.startDate ? new Date(event.startDate) : null;
-                const endDate = event.endDate ? new Date(event.endDate) : null;
-                
-                let badgeText = '일정';
-                let badgeClass = styles['badge-default'];
-                
-                if (startDate && endDate) {
-                  if (now < startDate) {
-                    badgeText = '예정';
-                    badgeClass = styles['badge-upcoming'];
-                  } else if (now >= startDate && now <= endDate) {
-                    badgeText = '진행중';
-                    badgeClass = styles['badge-ongoing'];
-                  } else {
-                    badgeText = '마감';
-                    badgeClass = styles['badge-closed'];
-                  }
-                }
-                
-                return (
-                  <div 
-                    key={idx} 
-                    className={styles['calendar-card']}
-                    onClick={() => onSelectAnnouncement(event.announcementId)}
-                  >
-                    <div className={styles['calendar-card-header']}>
-                      <span className={`${styles['calendar-badge']} ${badgeClass}`}>{badgeText}</span>
-                      <span className={styles['calendar-type']}>{event.subscriptionType}</span>
-                    </div>
-                    <h3 className={styles['calendar-ann-title']}>{event.announcementTitle}</h3>
-                    <div className={styles['calendar-info']}>
-                      <div className={styles['info-row']}>
-                        <span className={styles['info-label']}>구분</span>
-                        <span className={styles['info-val']}>{event.scheduleType}</span>
-                      </div>
-                      <div className={styles['info-row']}>
-                        <span className={styles['info-label']}>일정</span>
-                        <span className={styles['info-val']}>
-                          {event.startDate ? event.startDate.substring(0, 10) : ''}
-                          {event.endDate ? ` ~ ${event.endDate.substring(0, 10)}` : ''}
-                        </span>
-                      </div>
-                      {event.notes && (
-                        <div className={styles['info-row']}>
-                          <span className={styles['info-label']}>비고</span>
-                          <span className={styles['info-val']}>{event.notes}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </>
-      )}
 
-      {activeTab === 'BOOKMARK' && (
-        <>
-          <div className={styles['section-title-bar']}>
-            <h2 className={styles['section-title']}>관심 주택</h2>
-            <span className={styles['section-subtitle']}>북마크된 단지 목록</span>
-          </div>
-          <div className={styles['sidebar-list']}>
-            {bookmarkedComplexes.length === 0 ? (
-              <div className={styles['empty-state']}>
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "16px" }}>
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                </svg>
-                <p className={styles['empty-text']}>관심 주택으로 등록된 단지가 없습니다.</p>
-                <p className={styles['empty-subtext']}>단지 상세 정보에서 별표 아이콘을 눌러 관심 단지를 등록할 수 있습니다.</p>
-              </div>
-            ) : (
-              bookmarkedComplexes.map((complex) => (
-                <ComplexCard
-                  key={complex.id}
-                  complex={complex}
-                  isActive={activeComplexId === complex.id}
-                  onClick={() => {
-                    onSelectAnnouncement(complex.announcement_id);
-                    onSelectComplex(complex);
-                  }}
-                />
-              ))
-            )}
-          </div>
-        </>
-      )}
 
       {activeTab === 'MORE' && (
         <>
-          {/* 프로필 정보 영역 */}
-          <div className={styles['more-profile-box']}>
-            <div className={styles['more-profile-avatar']}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
-            </div>
-            <div className={styles['more-profile-info']}>
-              <span className={styles['more-profile-name']}>공공맵 사용자</span>
-              <span className={styles['more-profile-email']}>guest@publicmap.kr</span>
-            </div>
-          </div>
+          {/* 프로필 영역 삭제됨 */}
 
           <div className={styles['more-list-container']}>
             {/* 설정 메뉴 목록 */}
@@ -546,22 +393,7 @@ export default function Sidebar({
                   </span>
                 </div>
               </div>
-              <div className={styles['more-menu-item']}>
-                <span className={styles['more-menu-label']}>범례</span>
-                <span className={styles['more-menu-chevron']}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                  </svg>
-                </span>
-              </div>
-              <div className={styles['more-menu-item']}>
-                <span className={styles['more-menu-label']}>설정</span>
-                <span className={styles['more-menu-chevron']}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                  </svg>
-                </span>
-              </div>
+
               <div className={styles['more-menu-item']} onClick={() => setActiveModal('terms')}>
                 <span className={styles['more-menu-label']}>이용약관 및 정책</span>
                 <span className={styles['more-menu-chevron']}>
@@ -578,35 +410,10 @@ export default function Sidebar({
                   </svg>
                 </span>
               </div>
-              <div className={styles['more-menu-item']}>
-                <span className={styles['more-menu-label']}>버전 정보 <span style={{ fontSize: "0.75rem", color: "#999", marginLeft: "4px" }}>v1.0.0</span></span>
-                <span className={styles['more-menu-value']} style={{ color: "#0068ff", fontWeight: "600" }}>최신버전</span>
-              </div>
+
             </div>
 
-            {/* 보조 회색 메뉴 영역 */}
-            <div className={styles['more-sub-menu-group']}>
-              <div className={styles['more-sub-item']}>
-                공지사항 
-                <span style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "#ff4d4f",
-                  color: "white",
-                  borderRadius: "50%",
-                  width: "14px",
-                  height: "14px",
-                  fontSize: "0.6rem",
-                  fontWeight: "bold",
-                  marginLeft: "4px",
-                  verticalAlign: "middle"
-                }}>N</span>
-              </div>
-              <div className={styles['more-sub-item']}>공공데이터 연동 안내</div>
-              <div className={styles['more-sub-item']}>고객 센터</div>
-              <div className={styles['more-sub-item']}>정보 수정 제안</div>
-            </div>
+
 
             {/* 법적고지 안내 박스 */}
             <div className={styles['more-info-box-wrapper']}>
