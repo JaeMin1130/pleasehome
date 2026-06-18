@@ -28,6 +28,36 @@ export default function Sidebar({
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<ApplicationStatus>('ONGOING');
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
+  
+  // 높이 조절 상태 추가
+  const [headerHeight, setHeaderHeight] = useState(240);
+  const [isResizingHeader, setIsResizingHeader] = useState(false);
+
+  const startResizingHeader = (mouseDownEvent: React.MouseEvent) => {
+    mouseDownEvent.preventDefault();
+    setIsResizingHeader(true);
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'ns-resize';
+
+    const startHeight = headerHeight;
+    const startY = mouseDownEvent.clientY;
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const newHeight = Math.max(120, Math.min(500, startHeight + (moveEvent.clientY - startY)));
+      setHeaderHeight(newHeight);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizingHeader(false);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+  };
 
   const getAnnouncementStatus = (ann: Announcement): ApplicationStatus => {
     const applySchedules = ann.schedules.filter(s => s.schedule_type === '신청접수');
@@ -124,21 +154,41 @@ export default function Sidebar({
       ) : (
         /* 모드 2: 단지 드릴다운 상세 모드 */
         <>
-          <div style={{ padding: '16px', borderBottom: '1px solid var(--border-light)', backgroundColor: 'var(--bg-surface)' }}>
-            <button 
-              onClick={() => onSelectAnnouncement(null)}
-              style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', marginBottom: '12px' }}
-            >
-              ← 다른 공고 목록으로
-            </button>
-            {activeAnn && (
-              <AnnouncementCard
-                ann={activeAnn} isActive={true}
-                onClick={() => {}}
-                expandedSections={expandedSections} onToggleSection={(key) => toggleSection(key, activeAnn.id)}
-              />
-            )}
+          <div 
+            style={{ 
+              height: isResizingHeader ? `${headerHeight}px` : 'fit-content',
+              maxHeight: `${headerHeight}px`,
+              display: 'flex', 
+              flexDirection: 'column', 
+              backgroundColor: 'var(--bg-surface)',
+              flexShrink: 0
+            }}
+          >
+            <div style={{ padding: '16px 16px 0 16px', flexShrink: 0 }}>
+              <button 
+                onClick={() => onSelectAnnouncement(null)}
+                style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', marginBottom: '12px' }}
+              >
+                ← 다른 공고 목록으로
+              </button>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 16px 16px' }}>
+              {activeAnn && (
+                <AnnouncementCard
+                  ann={activeAnn} isActive={true}
+                  onClick={() => {}}
+                  expandedSections={expandedSections} onToggleSection={(key) => toggleSection(key, activeAnn.id)}
+                />
+              )}
+            </div>
           </div>
+
+          {/* 높이 조절 리사이저 바 */}
+          <div 
+            onMouseDown={startResizingHeader}
+            className={`${styles['header-resizer']} ${isResizingHeader ? styles.resizing : ''}`}
+          />
+
           <div className={styles['sidebar-list']} style={{ backgroundColor: 'var(--bg-body)' }}>
             <div style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-secondary)', marginBottom: '4px', paddingLeft: '4px' }}>
               해당 공고의 공급 주택 목록 ({displayComplexes.length})
