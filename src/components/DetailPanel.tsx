@@ -18,11 +18,13 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
   const [units, setUnits] = useState<HousingUnit[]>([]);
   const [loading, setLoading] = useState(false);
   const [sliderValues, setSliderValues] = useState<Record<number, number>>({});
+  const [selectedType, setSelectedType] = useState<string>('ALL');
 
   useEffect(() => {
     if (!complex) return;
     setLoading(true);
     setSliderValues({});
+    setSelectedType('ALL');
     fetch(`/api/housing-units?complex_id=${complex.id}`)
       .then((res) => res.json())
       .then((data) => {
@@ -36,6 +38,7 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
   }, [complex]);
 
   const filteredUnits = units.filter((unit) => {
+    if (selectedType !== 'ALL' && !unit.supply_type.startsWith(selectedType)) return false;
     if (filterState.targetGroup !== 'ALL' && unit.target_group !== filterState.targetGroup) return false;
     if (unit.exclusive_area < filterState.minArea || unit.exclusive_area > filterState.maxArea) return false;
     if (unit.deposit < filterState.minDeposit || unit.deposit > filterState.maxDeposit) return false;
@@ -48,6 +51,11 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
   };
 
   if (!complex) return null;
+
+  // Extract unique base supply types (e.g. "51A", "59A")
+  const baseTypes = Array.from(
+    new Set(units.map((u) => u.supply_type.split(' ')[0]).filter(Boolean))
+  ).sort();
 
   return (
     <div className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''}`} style={style}>
@@ -82,6 +90,28 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
 
         <div>
           <h4 className={styles['panel-section-title']}>주택형별 공급 및 가격 정보</h4>
+          
+          {/* 주택형 필터 칩 탭 */}
+          {!loading && units.length > 0 && (
+            <div className={styles['filter-tabs-container']}>
+              <button
+                className={`${styles['filter-tab-btn']} ${selectedType === 'ALL' ? styles.active : ''}`}
+                onClick={() => setSelectedType('ALL')}
+              >
+                전체
+              </button>
+              {baseTypes.map((type) => (
+                <button
+                  key={type}
+                  className={`${styles['filter-tab-btn']} ${selectedType === type ? styles.active : ''}`}
+                  onClick={() => setSelectedType(type)}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+          )}
+
           {loading ? (
             <div style={{ textAlign: 'center', padding: '24px', color: 'hsl(var(--text-muted))' }}>공급 정보를 불러오는 중입니다...</div>
           ) : filteredUnits.length === 0 ? (
@@ -103,4 +133,5 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
     </div>
   );
 }
+
 

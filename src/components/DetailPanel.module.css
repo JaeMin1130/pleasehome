@@ -13,3 +13,34 @@
 .info-label { font-size: 0.8rem; color: var(--text-secondary); }
 .info-val { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
 .units-container { display: flex; flex-direction: column; gap: 16px; }
+
+.filter-tabs-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.filter-tab-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 1px solid var(--border-light);
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-tab-btn:hover {
+  background-color: var(--bg-surface-hover);
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+}
+
+.filter-tab-btn.active {
+  background-color: var(--text-primary);
+  color: var(--bg-surface);
+  border-color: var(--text-primary);
+}
