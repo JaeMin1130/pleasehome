@@ -1,6 +1,6 @@
 import React from 'react';
 import { HousingUnit, Announcement } from '@/types';
-import { formatMoney, formatRent } from '@/utils/formatters';
+import { formatMoney, formatRent, formatTargetGroup } from '@/utils/formatters';
 import { calcConversion } from '@/utils/conversion';
 import styles from './UnitCard.module.css';
 
@@ -45,7 +45,7 @@ export default function UnitCard({
           </span>
         </span>
         {unit.target_group && (
-          <span className={styles['unit-target']}>{unit.target_group}</span>
+          <span className={styles['unit-target']}>{formatTargetGroup(unit.target_group)}</span>
         )}
       </div>
 

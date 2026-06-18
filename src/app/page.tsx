@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Sidebar from '@/components/Sidebar';
 import DetailPanel from '@/components/DetailPanel';
-import { formatMoney, formatRent } from '@/utils/formatters';
+import { formatMoney, formatRent, formatTargetGroup } from '@/utils/formatters';
 import { Announcement, Complex, FilterState } from '@/types';
 import styles from './page.module.css';
 
@@ -120,6 +120,11 @@ export default function Home() {
     }
   };
 
+  const availableTargetGroups = [
+    'ALL',
+    ...Array.from(new Set(announcementUnits.map((u) => u.target_group).filter(Boolean) as string[]))
+  ];
+
   return (
     <div className="app-container">
       <main className="app-main">
@@ -135,12 +140,12 @@ export default function Home() {
                   <div className={styles['filter-group']}>
                     <span className={styles['filter-label']}>신청 대상</span>
                     <div className={styles['filter-chips']}>
-                      {['ALL', '일반', '청년', '신혼부부', '고령자', '주거약자'].map((group) => (
+                      {availableTargetGroups.map((group) => (
                         <button
                           key={group} className={`${styles['filter-chip']} ${filterState.targetGroup === group ? styles.active : ''}`}
                           onClick={() => setFilterState({ ...filterState, targetGroup: group })}
                         >
-                          {group === 'ALL' ? '전체' : group}
+                          {group === 'ALL' ? '전체' : formatTargetGroup(group)}
                         </button>
                       ))}
                     </div>

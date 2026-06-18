@@ -31,3 +31,22 @@ export const formatRent = (amount: number | null | undefined): string => {
   if (amount === null || amount === undefined) return '-';
   return `${amount.toLocaleString()}원`;
 };
+
+export const formatTargetGroup = (group: string | null | undefined): string => {
+  if (!group) return '-';
+  const mapping: Record<string, string> = {
+    '우선공급/일반공급': '우선/일반',
+    '일반공급': '일반',
+    '신혼부부·한부모가족': '신혼/한부모',
+    '신혼부부·한부모가족(주거약자)': '신혼/한부모(약자)',
+    '고령자(주거약자용)': '고령자(약자)',
+    '고령자(주거약자용 외)': '고령자(일반)',
+    '대학생/청년(소득 무)': '대학생/청년(소득無)',
+    '청년(소득 무)': '청년(소득無)',
+    '청년(소득 유)': '청년(소득有)',
+    '산업단지근로자, 신혼부부, 한부모가족': '산단/신혼/한부모',
+    '산업단지근로자': '산단근로자',
+    '주거급여수급자': '주거급여수급',
+  };
+  return mapping[group.trim()] || group;
+};
