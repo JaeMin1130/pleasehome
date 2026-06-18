@@ -31,17 +31,19 @@ description: 대화 과정에서 수립된 에이전트 행동 규칙 중 불필
 ### 1단계: 사용자 피드백 수집 및 반영 (동적 & 증분 분석)
 * **로그 경로 동적 확인:** 하드코딩된 경로를 사용하지 않고, 홈 디렉토리(`~/.gemini/antigravity-cli/brain/`)와 현재 실행 중인 프로세스의 환경 변수 `ANTIGRAVITY_CONVERSATION_ID`를 결합하여 현재 세션의 `transcript.jsonl` 파일 경로를 알아냅니다.
 * **증분 스캔:** 동적으로 로드한 `transcript.jsonl` 파일의 가장 마지막 라인부터 역방향으로 스캔하여 **가장 최근에 `note` 스킬이 실행된 지점**을 찾고, 그 시점 이후부터 현재까지 생성된 대화 내용(`USER_INPUT`)만 슬라이싱하여 피드백(Do's & Don'ts)을 추출합니다. (최초 실행 시에는 세션 처음부터 분석)
-* **피드백 이원화 및 규칙 반영:** 추출된 피드백의 성격에 따라 기록 대상을 명확히 분리하여 정보 중복 및 토큰 낭비를 차단합니다.
-  - **에이전트 행동 및 소통 규칙:** 대화 태도, 소통 절차, 도구 호출 규칙 등 에이전트 행동 지침은 [AGENTS.md](file:///home/iru/project03/AGENTS.md)의 `## 2. 피드백 및 누적 규칙` 섹션에 `[누적 규칙 #N]` 포맷으로 반영합니다. 단, 더 이상 유효하지 않은 규칙이나 중복 규칙은 즉시 완전히 삭제하여 파일을 항시 최신 상태로 유지합니다.
-  - **프로젝트 물리 사양 및 개발 규약 (Conventions):** 파일/폴더 명명 규칙, 실행 명령어 규칙, 특정 데이터 변환 표준 포맷 등 프로젝트 물리 사양에 관한 피드백은 [PROJECT.md](file:///home/iru/project03/PROJECT.md)의 관련 섹션(`## 4. 실행 및 개발 규약` 등)에 규약으로 통합 기재하며, [AGENTS.md](file:///home/iru/project03/AGENTS.md)에는 중복 기재하지 않습니다.
+* **피드백 다원화 및 규칙 반영:** 추출된 피드백의 성격에 따라 기록 대상을 명확히 분리하여 정보 중복 및 토큰 낭비를 차단합니다.
+  - **에이전트 소통 및 대화 행동 규칙:** 대화 태도, 소통 절차, 유저 승인 및 확인 프로토콜 등 에이전트의 대화적 행동 지침은 [AGENTS.md](file:///home/iru/project03/AGENTS.md)의 `## 2. 피드백 및 누적 규칙` 섹션에 `[누적 규칙 #N]` 포맷으로 반영합니다. 단, 더 이상 유효하지 않은 규칙이나 중복 규칙은 즉시 완전히 삭제하여 파일을 항시 최신 상태로 유지합니다.
+  - **프로젝트 공통 환경 사양 및 전역 규약:** 프로젝트 빌드 환경, 가상 환경, 디렉토리 구조, 전역 명령어, 공통 Git 형상 관리 가이드 등 전역 사양에 관한 피드백은 [PROJECT.md](file:///home/iru/project03/PROJECT.md)의 관련 섹션에 규약으로 통합 기재합니다.
+  - **특정 도메인 기술 스킬 가이드:** PDF 변환, 마크다운 데이터 파싱/적재 및 DB 검증 등 특정 스킬 실행 시 지켜야 하는 구체적인 동작 방식, 비즈니스 룰, 성능 최적화(병렬 처리), 파싱 데이터 대조 검증 지침 등은 해당하는 스킬 문서(예: [extract-data/SKILL.md](file:///home/iru/project03/.agents/skills/extract-data/SKILL.md), [convert-pdf/SKILL.md](file:///home/iru/project03/.agents/skills/convert-pdf/SKILL.md)) 내에 통합 반영하며, [AGENTS.md](file:///home/iru/project03/AGENTS.md)나 [PROJECT.md](file:///home/iru/project03/PROJECT.md)에는 절대 중복 기재하지 않습니다.
 
 ### 2단계: 프로젝트 개발 환경 및 구조 동기화
 * 예외 폴더(`venv`, `.git` 등)를 제외한 실제 디렉토리 구조 및 가상 환경에 새로 설치된 외부 라이브러리 목록을 스캔합니다.
 * 새로 추가되거나 변경된 물리적 환경 사양, 표준 실행 명령어, 파일 규칙 세부 정보를 [PROJECT.md](file:///home/iru/project03/PROJECT.md) 파일에 반영하여 최신화합니다.
 
-### 3단계: 문서 간 중복 제거 및 검증 (Redundancy Elimination & SSOT Verification)
-* **상시 중복 전수 검사:** 스킬 가동 시 [PROJECT.md](file:///home/iru/project03/PROJECT.md)와 [AGENTS.md](file:///home/iru/project03/AGENTS.md)에 기술된 모든 규약, 지침, 구조 명세를 비교하여 동일하거나 유사한 내용이 중복 기재되어 있는지 전수 검사합니다.
-* **단일 소스화 및 자동 클린업:** 중복된 규칙이나 사양 명세가 발견될 경우, 개발 명세/규약은 [PROJECT.md](file:///home/iru/project03/PROJECT.md)로 일원화하고 [AGENTS.md](file:///home/iru/project03/AGENTS.md)에서는 해당 중복 문구를 스스로 삭제(Cleanup)하여 에이전트 컨텍스트 토큰을 보존합니다.
+### 3단계: 문서 간 및 문서 내 중복 제거 (Redundancy Elimination & SSOT Verification)
+* **상시 중복 전수 검사:** 스킬 가동 시 모든 관련 문서 간의 내용 비교뿐만 아니라, **각 문서 내부(특히 AGENTS.md 및 개별 SKILL.md 내부)에 누적된 규칙들 중 동일하거나 유사한 맥락의 지침이 중복 기재되어 있는지도 반드시 전수 검사**합니다.
+* **단일 소스화 및 자동 클린업:** 문서 간 중복 내용 발견 시 성격에 맞는 단일 파일(SSOT)로 일원화하여 정리합니다. 또한 문서 내 중복 발견 시, 여러 규칙을 가장 강력하고 포괄적인 하나의 규칙으로 압축 통합하고, 불필요해진 나머지 조항들은 파일에서 물리적으로 완전 삭제(Cleanup)하여 에이전트 컨텍스트 토큰을 보존합니다.
 
 ### 4단계: 검토 보고
 * 업데이트 완료 후, 변경된 파일 명세와 상세 Diff 내역을 사용자에게 브리핑하고 최종 피드백을 요청합니다.
+

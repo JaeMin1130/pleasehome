@@ -8,11 +8,11 @@ import re
 def clean_address(address):
     if not address:
         return address
-    # 끝에 붙은 ' 일원', ' 일대' 제거
-    address = re.sub(r'\s+(일원|일대)$', '', address.strip())
-    # 끝에 붙은 ' 외 N필지', ' 외' 등 제거
-    address = re.sub(r'\s+외\s*\d*필지.*$', '', address)
-    address = re.sub(r'\s+외\s*$', '', address)
+    # '외' 뒤에 오는 세부 지구 정보나 필지 정보 전체를 안전하게 절삭
+    # 예: "도내동 외 일원 고양창릉..." -> "도내동"
+    address = re.sub(r'\s+외(?:\b|\s).*$', '', address.strip())
+    # 끝에 남는 '일원' 이나 '일대' 정리
+    address = re.sub(r'\s+(?:일원|일대)$', '', address)
     return address.strip()
 
 def load_json_to_db(json_data, dest_json_path=None, source_path=None):
