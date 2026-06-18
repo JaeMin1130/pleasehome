@@ -26,6 +26,7 @@ export default function Sidebar({
   displayComplexes, activeComplexId, onSelectComplex 
 }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [complexSearchTerm, setComplexSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<ApplicationStatus>('ONGOING');
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
   
@@ -96,6 +97,11 @@ export default function Sidebar({
     return matchesSearch && getAnnouncementStatus(ann) === activeTab;
   });
 
+  const filteredComplexes = displayComplexes.filter(c => 
+    c.name.toLowerCase().includes(complexSearchTerm.toLowerCase()) ||
+    c.address.toLowerCase().includes(complexSearchTerm.toLowerCase())
+  );
+
   const activeAnn = announcements.find(a => a.id === activeAnnId);
 
   // 아코디언이 하나라도 열려 있는지 체크
@@ -129,10 +135,38 @@ export default function Sidebar({
       {activeAnnId === null ? (
         <>
           <div className={styles['sidebar-search']}>
-            <input 
-              type="text" placeholder="공고명 또는 공급기관 검색..." 
-              className={styles['search-input']} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-            />
+            <div style={{ position: 'relative', width: '100%' }}>
+              <input 
+                type="text" placeholder="공고명 또는 공급기관 검색..." 
+                className={styles['search-input']} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ paddingRight: '32px' }}
+              />
+              {searchTerm && (
+                <button 
+                  onClick={() => setSearchTerm('')}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    border: 'none',
+                    background: 'none',
+                    color: 'var(--text-muted)',
+                    cursor: 'pointer',
+                    fontSize: '0.85rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '4px',
+                    transition: 'color 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
             <div className={styles['filter-tags']}>
               <span className={`${styles['filter-tag']} ${activeTab === 'UPCOMING' ? styles.active : ''}`} onClick={() => setActiveTab('UPCOMING')}>
                 접수 예정 ({getStatusCount('UPCOMING')})
@@ -201,15 +235,63 @@ export default function Sidebar({
           )}
 
           <div className={styles['sidebar-list']} style={{ backgroundColor: 'var(--bg-body)' }}>
-            <div style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-secondary)', marginBottom: '4px', paddingLeft: '4px' }}>
-              해당 공고의 공급 주택 목록 ({displayComplexes.length})
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', paddingLeft: '4px', paddingRight: '4px' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-secondary)' }}>
+                공급 주택 목록 ({filteredComplexes.length})
+              </div>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <input 
+                  type="text" 
+                  placeholder="주택명 검색..." 
+                  value={complexSearchTerm}
+                  onChange={(e) => setComplexSearchTerm(e.target.value)}
+                  style={{
+                    width: '160px',
+                    padding: '6px 28px 6px 10px',
+                    fontSize: '0.8rem',
+                    borderRadius: '6px',
+                    border: '1px solid var(--border-light)',
+                    backgroundColor: 'var(--bg-surface)',
+                    color: 'var(--text-primary)',
+                    outline: 'none',
+                    transition: 'border-color 0.1s ease'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                  onBlur={(e) => e.target.style.borderColor = 'var(--border-light)'}
+                />
+                {complexSearchTerm && (
+                  <button 
+                    onClick={() => setComplexSearchTerm('')}
+                    style={{
+                      position: 'absolute',
+                      right: '8px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      border: 'none',
+                      background: 'none',
+                      color: 'var(--text-muted)',
+                      cursor: 'pointer',
+                      fontSize: '0.8rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '2px',
+                      transition: 'color 0.15s ease'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
             </div>
-            {displayComplexes.length === 0 ? (
+            {filteredComplexes.length === 0 ? (
               <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem', backgroundColor: 'var(--bg-surface)', borderRadius: '8px', border: '1px solid var(--border-light)' }}>
-                이 공고는 특정 단지 없이 개별적으로 지원되는 전세임대형 정책이거나, 필터 조건에 맞는 주택이 없습니다.
+                {complexSearchTerm ? '검색 결과가 없습니다.' : '이 공고는 특정 단지 없이 개별적으로 지원되는 전세임대형 정책이거나, 필터 조건에 맞는 주택이 없습니다.'}
               </div>
             ) : (
-              displayComplexes.map((complex) => (
+              filteredComplexes.map((complex) => (
                 <ComplexCard
                   key={complex.id}
                   complex={complex}
