@@ -2,6 +2,15 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
+import { Complex } from '@/types';
+import {
+  MAP_DEFAULT_CENTER,
+  MAP_DEFAULT_ZOOM,
+  MAP_MIN_ZOOM,
+  MAP_MAX_ZOOM,
+  MAP_MARKER_SIZE,
+  MAP_MARKER_ANCHOR,
+} from '@/constants';
 
 // 전역 naver 객체 타입 정의
 declare global {
@@ -10,22 +19,8 @@ declare global {
   }
 }
 
-
-
-
-
 // 2번 이슈: 주소 변환 레이턴시를 최소화하기 위한 인메모리 지오코딩 캐시
 const GEOCODE_CACHE: { [address: string]: [number, number] } = {};
-
-interface Complex {
-  id: number;
-  announcement_id: number;
-  name: string;
-  address: string;
-  heating_type?: string;
-  has_elevator?: boolean;
-  parking_info?: string;
-}
 
 interface MappedComplex extends Complex {
   lat: number;
@@ -50,10 +45,10 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
     if (!mapRef.current || !window.naver || !window.naver.maps) return;
 
     const mapOptions = {
-      center: new window.naver.maps.LatLng(37.5665, 126.9780),
-      zoom: 11,
-      minZoom: 6,
-      maxZoom: 19,
+      center: new window.naver.maps.LatLng(MAP_DEFAULT_CENTER.lat, MAP_DEFAULT_CENTER.lng),
+      zoom: MAP_DEFAULT_ZOOM,
+      minZoom: MAP_MIN_ZOOM,
+      maxZoom: MAP_MAX_ZOOM,
       zoomControl: false,
       tileTransition: false
     };
@@ -158,8 +153,8 @@ export default function Map({ complexes, activeComplexId, onSelectComplex }: Map
                 </div>
               </div>
             `,
-            size: new window.naver.maps.Size(24, 24),
-            anchor: new window.naver.maps.Point(12, 12)
+            size: new window.naver.maps.Size(MAP_MARKER_SIZE.width, MAP_MARKER_SIZE.height),
+            anchor: new window.naver.maps.Point(MAP_MARKER_ANCHOR.x, MAP_MARKER_ANCHOR.y)
           }
         });
 

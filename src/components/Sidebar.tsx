@@ -6,6 +6,11 @@ import { Announcement, ApplicationStatus, Complex } from '@/types';
 import AnnouncementCard from '@/components/features/AnnouncementCard';
 import ComplexCard from '@/components/features/ComplexCard';
 import styles from './Sidebar.module.css';
+import {
+  HEADER_ACCORDION_MIN_HEIGHT,
+  HEADER_ACCORDION_MAX_HEIGHT,
+  HEADER_ACCORDION_DEFAULT_HEIGHT,
+} from '@/constants';
 
 interface SidebarProps {
   announcements: Announcement[];
@@ -31,7 +36,7 @@ export default function Sidebar({
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
   
   // 높이 조절 상태 추가 (아코디언을 열었을 때 적용할 최대 높이 상태)
-  const [headerHeight, setHeaderHeight] = useState(600); // 초기값을 사용자가 수정한 최대 한도인 600px로 설정
+  const [headerHeight, setHeaderHeight] = useState(HEADER_ACCORDION_MAX_HEIGHT);
   const [isResizingHeader, setIsResizingHeader] = useState(false);
 
   const startResizingHeader = (mouseDownEvent: React.MouseEvent) => {
@@ -44,9 +49,10 @@ export default function Sidebar({
     const startY = mouseDownEvent.clientY;
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      const newHeight = Math.max(150, Math.min(600, startHeight + (moveEvent.clientY - startY)));
+      const newHeight = Math.max(HEADER_ACCORDION_MIN_HEIGHT, Math.min(HEADER_ACCORDION_MAX_HEIGHT, startHeight + (moveEvent.clientY - startY)));
       setHeaderHeight(newHeight);
     };
+
 
     const handleMouseUp = () => {
       setIsResizingHeader(false);
@@ -107,10 +113,11 @@ export default function Sidebar({
   // 아코디언이 하나라도 열려 있는지 체크
   const isAnyAccordionOpen = Object.values(expandedSections).some(isOpen => isOpen === true);
 
-  // 드래그 중인 경우에는 마우스 위치를 따르고, 그 외에는 아코디언 개폐 여부에 따라 최대 높이(headerHeight)와 초기 높이(280px)로 설정
+  // 드래그 중인 경우에는 마우스 위치를 따르고, 그 외에는 아코디언 개폐 여부에 따라 최대 높이(headerHeight)와 초기 높이(HEADER_ACCORDION_DEFAULT_HEIGHT)로 설정
   const currentHeaderHeight = isResizingHeader 
     ? headerHeight 
-    : (isAnyAccordionOpen ? headerHeight : 280);
+    : (isAnyAccordionOpen ? headerHeight : HEADER_ACCORDION_DEFAULT_HEIGHT);
+
 
   return (
     <aside 

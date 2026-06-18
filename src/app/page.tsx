@@ -7,6 +7,14 @@ import DetailPanel from '@/components/DetailPanel';
 import { formatMoney, formatRent, formatTargetGroup } from '@/utils/formatters';
 import { Announcement, Complex, FilterState } from '@/types';
 import styles from './page.module.css';
+import {
+  SIDEBAR_MIN_WIDTH,
+  SIDEBAR_MAX_WIDTH,
+  PANEL_MIN_WIDTH,
+  PANEL_MAX_WIDTH,
+  FILTER_DEFAULT_LIMITS,
+  FILTER_SLIDER_STEPS,
+} from '@/constants';
 
 const Map = dynamic(() => import('@/components/Map'), {
   ssr: false,
@@ -42,7 +50,7 @@ export default function Home() {
     document.body.style.cursor = 'ew-resize';
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      const newWidth = Math.max(280, Math.min(700, moveEvent.clientX));
+      const newWidth = Math.max(SIDEBAR_MIN_WIDTH, Math.min(SIDEBAR_MAX_WIDTH, moveEvent.clientX));
       setSidebarWidth(newWidth);
     };
 
@@ -66,7 +74,7 @@ export default function Home() {
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const sidebarOffset = isSidebarCollapsed ? 0 : sidebarWidth;
-      const newWidth = Math.max(300, Math.min(800, moveEvent.clientX - sidebarOffset));
+      const newWidth = Math.max(PANEL_MIN_WIDTH, Math.min(PANEL_MAX_WIDTH, moveEvent.clientX - sidebarOffset));
       setPanelWidth(newWidth);
     };
 
@@ -83,7 +91,13 @@ export default function Home() {
   };
 
   const [filterState, setFilterState] = useState<FilterState>({
-    targetGroup: 'ALL', minArea: 10, maxArea: 100, minDeposit: 0, maxDeposit: 200000000, minMonthlyRent: 0, maxMonthlyRent: 1500000
+    targetGroup: 'ALL',
+    minArea: FILTER_DEFAULT_LIMITS.minArea,
+    maxArea: FILTER_DEFAULT_LIMITS.maxArea,
+    minDeposit: FILTER_DEFAULT_LIMITS.minDeposit,
+    maxDeposit: FILTER_DEFAULT_LIMITS.maxDeposit,
+    minMonthlyRent: FILTER_DEFAULT_LIMITS.minMonthlyRent,
+    maxMonthlyRent: FILTER_DEFAULT_LIMITS.maxMonthlyRent
   });
 
   useEffect(() => {
@@ -197,8 +211,8 @@ export default function Home() {
                       <span className={styles['filter-val-text']}>{formatMoney(filterState.minDeposit)} ~ {formatMoney(filterState.maxDeposit)}</span>
                     </div>
                     <div className={styles['double-slider-container']}>
-                      <input type="range" min={dynamicMinDeposit} max={dynamicMaxDeposit} step={1000000} value={filterState.minDeposit} onChange={(e) => setFilterState({ ...filterState, minDeposit: Math.min(parseInt(e.target.value), filterState.maxDeposit - 1000000) })} className={`${styles.thumb} ${styles['thumb--left']}`} />
-                      <input type="range" min={dynamicMinDeposit} max={dynamicMaxDeposit} step={1000000} value={filterState.maxDeposit} onChange={(e) => setFilterState({ ...filterState, maxDeposit: Math.max(parseInt(e.target.value), filterState.minDeposit + 1000000) })} className={`${styles.thumb} ${styles['thumb--right']}`} />
+                      <input type="range" min={dynamicMinDeposit} max={dynamicMaxDeposit} step={FILTER_SLIDER_STEPS.deposit} value={filterState.minDeposit} onChange={(e) => setFilterState({ ...filterState, minDeposit: Math.min(parseInt(e.target.value), filterState.maxDeposit - FILTER_SLIDER_STEPS.deposit) })} className={`${styles.thumb} ${styles['thumb--left']}`} />
+                      <input type="range" min={dynamicMinDeposit} max={dynamicMaxDeposit} step={FILTER_SLIDER_STEPS.deposit} value={filterState.maxDeposit} onChange={(e) => setFilterState({ ...filterState, maxDeposit: Math.max(parseInt(e.target.value), filterState.minDeposit + FILTER_SLIDER_STEPS.deposit) })} className={`${styles.thumb} ${styles['thumb--right']}`} />
                       <div className={styles['slider-track-track']} />
                       <div className={styles['slider-track-range']} style={{ left: `${((filterState.minDeposit - dynamicMinDeposit) / (dynamicMaxDeposit - dynamicMinDeposit || 1)) * 100}%`, width: `${((filterState.maxDeposit - filterState.minDeposit) / (dynamicMaxDeposit - dynamicMinDeposit || 1)) * 100}%` }} />
                     </div>
@@ -210,8 +224,8 @@ export default function Home() {
                       <span className={styles['filter-val-text']}>{formatRent(filterState.minMonthlyRent)} ~ {formatRent(filterState.maxMonthlyRent)}</span>
                     </div>
                     <div className={styles['double-slider-container']}>
-                      <input type="range" min={dynamicMinRent} max={dynamicMaxRent} step={10000} value={filterState.minMonthlyRent} onChange={(e) => setFilterState({ ...filterState, minMonthlyRent: Math.min(parseInt(e.target.value), filterState.maxMonthlyRent - 10000) })} className={`${styles.thumb} ${styles['thumb--left']}`} />
-                      <input type="range" min={dynamicMinRent} max={dynamicMaxRent} step={10000} value={filterState.maxMonthlyRent} onChange={(e) => setFilterState({ ...filterState, maxMonthlyRent: Math.max(parseInt(e.target.value), filterState.minMonthlyRent + 10000) })} className={`${styles.thumb} ${styles['thumb--right']}`} />
+                      <input type="range" min={dynamicMinRent} max={dynamicMaxRent} step={FILTER_SLIDER_STEPS.monthlyRent} value={filterState.minMonthlyRent} onChange={(e) => setFilterState({ ...filterState, minMonthlyRent: Math.min(parseInt(e.target.value), filterState.maxMonthlyRent - FILTER_SLIDER_STEPS.monthlyRent) })} className={`${styles.thumb} ${styles['thumb--left']}`} />
+                      <input type="range" min={dynamicMinRent} max={dynamicMaxRent} step={FILTER_SLIDER_STEPS.monthlyRent} value={filterState.maxMonthlyRent} onChange={(e) => setFilterState({ ...filterState, maxMonthlyRent: Math.max(parseInt(e.target.value), filterState.minMonthlyRent + FILTER_SLIDER_STEPS.monthlyRent) })} className={`${styles.thumb} ${styles['thumb--right']}`} />
                       <div className={styles['slider-track-track']} />
                       <div className={styles['slider-track-range']} style={{ left: `${((filterState.minMonthlyRent - dynamicMinRent) / (dynamicMaxRent - dynamicMinRent || 1)) * 100}%`, width: `${((filterState.maxMonthlyRent - filterState.minMonthlyRent) / (dynamicMaxRent - dynamicMinRent || 1)) * 100}%` }} />
                     </div>
