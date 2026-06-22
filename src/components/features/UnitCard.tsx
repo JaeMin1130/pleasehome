@@ -40,14 +40,21 @@ export default function UnitCard({
     <div className={styles['unit-card']}>
       <div className={styles['unit-header']}>
         <span className={styles['unit-supply-type']}>
-          {unit.supply_type || `${unit.exclusive_area}형`} 
-          <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: 'var(--font-weight-regular)', color: 'var(--text-secondary)', marginLeft: 'var(--spacing-xs)' }}>
+          {unit.room_type || `${unit.exclusive_area}형`} 
+          <span className={styles['area-text']}>
             ({unit.exclusive_area.toFixed(2)}㎡ / ~{Math.round(unit.exclusive_area * 0.3025)}평)
           </span>
         </span>
-        {unit.target_group && (
-          <span className={styles['unit-target']}>{formatTargetGroup(unit.target_group)}</span>
-        )}
+        <div className={styles['unit-header-right']}>
+          {unit.supply_type && (
+            <span className={`${styles['unit-target']} ${styles['supply-type']}`}>
+              {unit.supply_type}
+            </span>
+          )}
+          {unit.target_group && (
+            <span className={styles['unit-target']}>{formatTargetGroup(unit.target_group)}</span>
+          )}
+        </div>
       </div>
 
       <div className={styles['unit-price-box']}>
@@ -59,7 +66,7 @@ export default function UnitCard({
         </div>
         <div className={styles['price-item']}>
           <span className={styles['price-lbl']}>월 임대료</span>
-          <span className={styles['price-val']} style={{ color: 'var(--primary)' }}>
+          <span className={`${styles['price-val']} ${styles['primary']}`}>
             {converted && diffAmount !== 0 ? formatRent(converted.rent) : formatRent(unit.monthly_rent)}
           </span>
         </div>
@@ -86,7 +93,7 @@ export default function UnitCard({
             )}
           </div>
           <div className={styles['conversion-slider-track-wrap']}>
-            <span className={`${styles['conversion-slider-label']}`} style={{ whiteSpace: 'nowrap' }}>보증금↓</span>
+            <span className={`${styles['conversion-slider-label']}`}>보증금↓</span>
             <input
               type="range"
               className={styles['conversion-slider']}
@@ -96,7 +103,7 @@ export default function UnitCard({
               value={sliderVal}
               onChange={(e) => onSliderChange(unit.id, parseInt(e.target.value, 10))}
             />
-            <span className={`${styles['conversion-slider-label']}`} style={{ whiteSpace: 'nowrap' }}>보증금↑</span>
+            <span className={`${styles['conversion-slider-label']}`}>보증금↑</span>
           </div>
           {diffAmount !== 0 && converted && (
             <div className={styles['conversion-result']}>
@@ -111,12 +118,12 @@ export default function UnitCard({
                   <span>{formatMoney(converted.deposit)}</span>
                   <span className={`${styles['conversion-diff']} ${diffAmount > 0 ? styles['up'] : styles['down']}`}>
                     {diffAmount > 0 ? (
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '2px' }}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['diff-icon']}>
                         <line x1="12" y1="19" x2="12" y2="5"></line>
                         <polyline points="5 12 12 5 19 12"></polyline>
                       </svg>
                     ) : (
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '2px' }}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['diff-icon']}>
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <polyline points="19 12 12 19 5 12"></polyline>
                       </svg>
@@ -130,12 +137,12 @@ export default function UnitCard({
                   <span>{formatRent(converted.rent)}</span>
                   <span className={`${styles['conversion-diff']} ${diffAmount > 0 ? styles['down'] : styles['up']}`}>
                     {diffAmount > 0 ? (
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '2px' }}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['diff-icon']}>
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <polyline points="19 12 12 19 5 12"></polyline>
                       </svg>
                     ) : (
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '2px' }}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['diff-icon']}>
                         <line x1="12" y1="19" x2="12" y2="5"></line>
                         <polyline points="5 12 12 5 19 12"></polyline>
                       </svg>
@@ -148,7 +155,7 @@ export default function UnitCard({
         </div>
       )}
 
-      <div className={styles['unit-meta-list']} style={{ borderTop: '1px dashed var(--border-light)', paddingTop: 'var(--spacing-sm)', marginTop: 'var(--spacing-xs)' }}>
+      <div className={styles['unit-meta-list']}>
         <div className={styles['meta-item']}>
           <span className={styles['meta-lbl']}>공급호수: </span>
           <span className={styles['meta-val-bold']}>{unit.supply_count}호</span> 

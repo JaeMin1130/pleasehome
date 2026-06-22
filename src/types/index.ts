@@ -54,6 +54,7 @@ export interface HousingUnit {
   complex_id: number;
   room_number: string | null;
   room_count: number | null;
+  room_type: string | null;
   supply_type: string | null;
   exclusive_area: number;
   contract_area: number | null;

@@ -61,7 +61,8 @@ ORDER BY a.id, c.id;
 -- 특정 단지(예: 마곡)에 해당하는 상세 평수 및 보증금/월세 매핑 정합성을 정밀 검증합니다.
 SELECT 
     c.name AS '단지명',
-    u.supply_type AS '주택형',
+    u.room_type AS '주택형',
+    u.supply_type AS '공급구분',
     u.exclusive_area AS '전용면적(㎡)',
     u.target_group AS '공급대상',
     u.supply_count AS '모집호수',
@@ -79,7 +80,8 @@ SELECT
     a.id AS '공고ID',
     a.subscription_type AS '공고유형',
     c.name AS '단지명',
-    u.supply_type AS '주택형',
+    u.room_type AS '주택형',
+    u.supply_type AS '공급구분',
     u.exclusive_area AS '면적(㎡)',
     u.supply_count AS '공급호수',
     u.deposit AS '보증금(원)',

@@ -1,10 +1,10 @@
 .complex-card {
   background-color: var(--bg-surface);
-  border: 1px solid var(--border-light);
+  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
   border-radius: var(--spacing-sm);
   padding: calc(var(--spacing-md) * 0.6) var(--spacing-md);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-fast-all);
   display: flex;
   flex-direction: column;
   gap: calc(var(--spacing-sm) * 0.75);
@@ -20,7 +20,7 @@
 }
 .complex-name {
   font-size: var(--font-size-md);
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   color: var(--text-primary);
 }
 .complex-address {

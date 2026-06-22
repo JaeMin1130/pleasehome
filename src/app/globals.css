@@ -1,6 +1,20 @@
 /* globals.css - Clean, Professional Light Mode for Public Service */
 
 :root {
+  /* 신규 디자인 토큰 (하드코딩 박멸용) */
+  --color-white: #ffffff;
+  --bg-overlay: rgba(15, 23, 42, 0.6);
+  --font-weight-medium: 500;
+  --font-weight-extrabold: 800;
+  --z-index-bg: 0;
+  --z-index-base: 10;
+  --z-index-panel: 80;
+  --z-index-dropdown: 100;
+  --z-index-sticky: 120;
+  --z-index-modal: 500;
+  --z-index-tooltip: 1000;
+  --transition-panel: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast-all: all 0.15s ease;
   --bg-body: #f5f7f9;
   --bg-surface: #ffffff;
   --bg-surface-hover: rgba(26, 86, 219, 0.03);
@@ -17,7 +31,23 @@
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.03);
   --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.03);
   --font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-  --header-height: 72px;
+  --header-height: calc(var(--spacing-xl) * 2.25);
+  
+  /* =========================================
+     [ 레이아웃 전역 뼈대 수치 ]
+     ========================================= */
+  --layout-sidebar-width: 400px;
+  --layout-panel-width: 400px;
+  --layout-nav-width: 60px;
+  --layout-overlay-max: 480px;
+  --layout-modal-width: 90%;
+  --layout-modal-max-height: 80vh;
+  --position-center: 50%;
+  --transform-half: -50%;
+  --layout-height-full: 100vh;
+  --layout-flex-1: 1;
+  --layout-flex-basis-45: 1 1 45%;
+  --layout-flex-basis-100: 1 1 100%;
   
   /* =========================================
      [ 공간/여백 및 모서리 (Spacing & Radius) ]
@@ -31,6 +61,7 @@
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
+  --radius-full: 50%;
 
   /* =========================================
      [ 타이포그래피 (글꼴 크기 및 굵기) ]
@@ -39,7 +70,14 @@
   --font-size-sm: 0.85rem;    /* 작은 라벨, 서브 타이틀용 */
   --font-size-base: 0.95rem;  /* 본문 기본 텍스트 크기 */
   --font-size-md: 1.05rem;    /* 약간 큰 강조형 텍스트 */
-  --font-size-lg: 1.2rem;       /* 대제목, 모달 타이틀 등 */
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --letter-spacing-tight: -0.02em;
+
+  /* Line Heights */
+  --line-height-tight: 1.4;
+  --line-height-base: 1.5;
+  --line-height-loose: 1.6;    /* 대제목, 모달 타이틀 등 */
   
   --font-weight-regular: 400; /* 일반 본문용 굵기 */
   --font-weight-semibold: 600;/* 강조, 버튼 텍스트용 굵기 */
@@ -82,30 +120,30 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-body { background-color: var(--bg-body); color: var(--text-primary); font-family: var(--font-family); font-size: 14px; line-height: 1.5; overflow: hidden; height: 100vh; width: 100vw; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { background-color: var(--bg-body); color: var(--text-primary); font-family: var(--font-family); font-size: var(--font-size-base); line-height: 1.5; overflow: hidden; height: 100vh; width: 100vw; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar { width: calc(var(--spacing-sm) * 0.75); height: calc(var(--spacing-sm) * 0.75); }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: calc(var(--radius-sm) * 0.75); }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 .app-container { display: flex; flex-direction: column; height: 100vh; width: 100vw; overflow: hidden; }
-.app-main { display: flex; flex: 1; height: 100vh; position: relative; overflow: hidden; }
+.app-main { display: flex; flex: var(--layout-flex-1); height: var(--layout-height-full); position: relative; overflow: hidden; }
 
-.badge { padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
+.badge { padding: calc(var(--spacing-xs) * 0.75) calc(var(--spacing-sm) * 0.75); border-radius: var(--radius-sm); font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); }
 .badge-sh { background-color: var(--color-sh-bg); color: var(--color-sh); }
 .badge-lh { background-color: var(--color-lh-bg); color: var(--color-lh); }
 .badge-gh { background-color: var(--color-gh-bg); color: var(--color-gh); }
 .badge-hug { background-color: var(--color-hug-bg); color: var(--color-hug); }
 
 .custom-marker { display: flex; align-items: center; justify-content: center; position: relative; }
-.marker-pin { width: 24px; height: 24px; border-radius: 50%; background: tomato; border: 2px solid #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transition: transform 0.1s ease, background-color 0.1s ease; }
-.custom-marker:hover .marker-pin { transform: scale(1.15); z-index: 10; }
-.custom-marker.active .marker-pin { background: var(--color-sh); transform: scale(1.4); z-index: 20; }
+.marker-pin { width: var(--spacing-lg); height: var(--spacing-lg); border-radius: var(--radius-full); background: tomato; border: calc(var(--spacing-xs) * 0.5) solid var(--color-white); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); transition: transform var(--transition-fast), background-color var(--transition-fast); }
+.custom-marker:hover .marker-pin { transform: scale(1.15); z-index: var(--z-index-base); }
+.custom-marker.active .marker-pin { background: var(--color-sh); transform: scale(1.4); z-index: calc(var(--z-index-base) + 10); }
 .marker-pin svg { display: block; }
-.window-hole { fill: tomato; transition: fill 0.1s ease; }
+.window-hole { fill: tomato; transition: fill var(--transition-fast); }
 .custom-marker.active .window-hole { fill: var(--color-sh); }
-.popup-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; color: var(--text-primary); }
-.popup-address { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px; }
-.popup-btn { display: block; width: 100%; text-align: center; background-color: var(--primary); color: #ffffff !important; padding: 8px 12px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; text-decoration: none; cursor: pointer; border: none; }
+.popup-title { font-weight: var(--font-weight-bold); font-size: var(--font-size-base); margin-bottom: var(--spacing-xs); color: var(--text-primary); }
+.popup-address { font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: calc(var(--spacing-md) * 0.75); }
+.popup-btn { display: block; width: 100%; text-align: center; background-color: var(--primary); color: var(--color-white) !important; padding: var(--spacing-sm) calc(var(--spacing-md) * 0.75); border-radius: var(--radius-sm); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); text-decoration: none; cursor: pointer; border: none; }
 .popup-btn:hover { background-color: var(--primary-hover); }

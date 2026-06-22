@@ -126,15 +126,15 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
             cursor.execute(
                 """
                 INSERT INTO housing_units (
-                    announcement_id, complex_id, room_number, room_count, supply_type, 
+                    announcement_id, complex_id, room_number, room_count, room_type, supply_type, 
                     exclusive_area, contract_area, target_group, income_group, 
                     supply_count, reserve_count, deposit, monthly_rent,
                     max_deposit, min_deposit, max_monthly_rent, min_monthly_rent, attributes
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                 """,
                 (
-                    ann_id, comp_id, unit["room_number"], unit["room_count"], unit["supply_type"],
+                    ann_id, comp_id, unit["room_number"], unit["room_count"], unit["room_type"], unit["supply_type"],
                     unit["exclusive_area"], unit["contract_area"], unit["target_group"], unit["income_group"],
                     unit["supply_count"], unit["reserve_count"], unit["deposit"], unit["monthly_rent"],
                     unit.get("max_deposit"), unit.get("min_deposit"), unit.get("max_monthly_rent"), unit.get("min_monthly_rent"),

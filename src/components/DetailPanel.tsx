@@ -38,7 +38,7 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
   }, [complex]);
 
   const filteredUnits = units.filter((unit) => {
-    if (selectedType !== 'ALL' && (!unit.supply_type || !unit.supply_type.startsWith(selectedType))) return false;
+    if (selectedType !== 'ALL' && (!unit.room_type || !unit.room_type.startsWith(selectedType))) return false;
     if (filterState.targetGroup !== 'ALL' && unit.target_group !== filterState.targetGroup) return false;
     if (unit.exclusive_area < filterState.minArea || unit.exclusive_area > filterState.maxArea) return false;
     if (unit.deposit < filterState.minDeposit || unit.deposit > filterState.maxDeposit) return false;
@@ -54,7 +54,7 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
 
   // Extract unique base supply types (e.g. "51A", "59A")
   const baseTypes = Array.from(
-    new Set(units.map((u) => u.supply_type?.split(' ')[0]).filter((t): t is string => !!t))
+    new Set(units.map((u) => u.room_type?.split(' ')[0]).filter((t): t is string => !!t))
   ).sort();
 
   return (

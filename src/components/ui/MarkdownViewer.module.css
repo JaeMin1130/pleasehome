@@ -39,25 +39,25 @@
   width: 100%;
   border-collapse: collapse;
   font-size: var(--font-size-sm);
-  border: 1px solid var(--border-light);
+  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
   color: var(--text-secondary);
 }
 
 .md-thead-tr {
   background-color: var(--bg-surface-active);
-  border-bottom: 2px solid var(--border-light);
+  border-bottom: calc(var(--spacing-xs) * 0.5) solid var(--border-light);
 }
 
 .md-th {
   padding: var(--spacing-sm);
   text-align: left;
   font-weight: var(--font-weight-bold);
-  border-right: 1px solid var(--border-light);
+  border-right: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
   color: var(--text-primary);
 }
 
 .md-tr {
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
 }
 .md-tr:nth-child(odd) {
   background-color: var(--bg-surface-hover);
@@ -65,8 +65,8 @@
 
 .md-td {
   padding: var(--spacing-sm);
-  border-right: 1px solid var(--border-light);
-  line-height: 1.45;
+  border-right: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  line-height: var(--line-height-base);
   vertical-align: middle;
 }
 
@@ -76,7 +76,7 @@
 
 .md-hr {
   border: none;
-  border-top: 1px solid var(--border-light);
+  border-top: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
   margin: var(--spacing-md) 0 var(--spacing-sm) 0;
 }
 
@@ -85,7 +85,7 @@
   font-weight: var(--font-weight-bold);
   margin: var(--spacing-md) 0 var(--spacing-sm) 0;
   color: var(--text-primary);
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
   padding-bottom: var(--spacing-xs);
 }
 
@@ -102,7 +102,7 @@
   padding-left: var(--spacing-xs);
   margin: var(--spacing-xs) 0;
   font-size: var(--font-size-base);
-  line-height: 1.4;
+  line-height: var(--line-height-tight);
 }
 
 .md-bullet {
@@ -123,6 +123,10 @@
 .md-p {
   font-size: var(--font-size-base);
   margin: var(--spacing-xs) 0;
-  line-height: 1.4;
+  line-height: var(--line-height-tight);
   color: var(--text-secondary);
+}
+
+.md-empty-space {
+  height: var(--spacing-xs);
 }

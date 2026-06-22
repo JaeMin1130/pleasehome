@@ -49,16 +49,16 @@ def audit_database():
     print("\n[4] 주택 가격 정합성 샘플링 (housing_units - 상위 5개):")
     cursor.execute(
         """
-        SELECT c.name, h.supply_type, h.target_group, h.income_group, h.deposit, h.monthly_rent
+        SELECT c.name, h.room_type, h.supply_type, h.target_group, h.income_group, h.deposit, h.monthly_rent
         FROM housing_units h
         JOIN complexes c ON h.complex_id = c.id
         LIMIT 5;
         """
     )
     for sample in cursor.fetchall():
-        print(f"  - 단지: {sample[0]} | 타입: {sample[1]} | 대상: {sample[2]} ({sample[3]})")
-        print(f"    * 보증금 : {sample[4]:,} 원")
-        print(f"    * 월 임대료: {sample[5]:,} 원")
+        print(f"  - 단지: {sample[0]} | 주택형: {sample[1]} | 공급구분: {sample[2]} | 대상: {sample[3]} ({sample[4]})")
+        print(f"    * 보증금 : {sample[5]:,} 원")
+        print(f"    * 월 임대료: {sample[6]:,} 원")
         
     # 5. 로드 로그 감사
     print("\n[5] 최근 10개 데이터 적재 결과 로그 (data_load_logs):")

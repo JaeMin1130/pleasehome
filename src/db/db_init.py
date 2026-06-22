@@ -93,7 +93,8 @@ def init_db():
             complex_id INTEGER,                   -- 소속 단지 ID (complexes.id 외래키, 단지가 없을 시 NULL)
             room_number VARCHAR(50),              -- 동/호수 정보 (특정 호실 공급 시 기록)
             room_count INTEGER,                   -- 방 개수
-            supply_type VARCHAR(100),             -- 주택형 (예: '39형', '59형')
+            room_type VARCHAR(100),               -- 주택형 (예: '39형', '59형')
+            supply_type VARCHAR(100),             -- 공급 구분 (예: '우선공급', '일반공급', '특별공급')
             exclusive_area REAL NOT NULL,         -- 전용면적 (제곱미터 단위, REAL)
             contract_area REAL,                   -- 계약면적 (제곱미터 단위, REAL)
             target_group VARCHAR(100),            -- 세부 공급 대상군 (예: '대학생', '청년', '신혼부부', '고령자')

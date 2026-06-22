@@ -265,7 +265,7 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
     }
     
     if (content === '') {
-      renderedElements.push(<div key={`empty-${i}`} style={{ height: 'var(--spacing-xs)' }} />);
+      renderedElements.push(<div key={`empty-${i}`} className={styles['md-empty-space']} />);
       i++;
       continue;
     }

@@ -1,10 +1,10 @@
 .announcement-card {
     background-color: var(--bg-surface);
-    border: 1px solid var(--border-light);
+    border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
     border-radius: var(--spacing-sm);
     padding: var(--spacing-sm);
     cursor: pointer;
-    transition: border-color 0.1s ease;
+    transition: border-color var(--transition-fast);
     box-shadow: var(--shadow-sm);
     position: relative;
     flex-shrink: 0;
@@ -15,8 +15,8 @@
 }
 
 .announcement-card.active {
-    border-width: 2px;
-    padding: 15px;
+    border-width: calc(var(--spacing-xs) * 0.5);
+    padding: calc(var(--spacing-sm) * 1.875);
 }
 
 .announcement-card.active.lh {
@@ -35,16 +35,58 @@
     border-color: var(--color-hug);
 }
 
+.section-title-wrap {
+    display: flex;
+    align-items: center;
+}
+
+.icon-inline {
+    margin-right: var(--spacing-xs);
+    vertical-align: middle;
+    display: inline-block;
+}
+
+.note-text {
+    font-size: var(--font-size-xs);
+    color: var(--primary);
+    margin-top: calc(var(--spacing-xs) * 0.5);
+}
+
+.limit-text {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+}
+
+.rent-text {
+    font-size: var(--font-size-xs);
+}
+
+.section-content-flex {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.doc-item {
+    border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+    padding-bottom: var(--spacing-sm);
+}
+
+.doc-desc {
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-tight);
+}
+
 .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: calc(var(--spacing-sm) * 1.25);
 }
 
 .card-type {
     font-size: var(--font-size-sm);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
 }
 
 .lh .card-type {
@@ -65,8 +107,8 @@
 
 .card-title {
     font-size: var(--font-size-lg);
-    font-weight: 600;
-    line-height: 1.4;
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
     margin-bottom: var(--spacing-md);
     color: var(--text-primary);
     word-break: keep-all;
@@ -74,7 +116,7 @@
 
 .card-accordion {
     margin-top: var(--spacing-md);
-    border-top: 1px solid var(--border-light);
+    border-top: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
     padding-top: var(--spacing-md);
     display: flex;
     flex-direction: column;
@@ -83,18 +125,18 @@
 
 .accordion-section {
     background-color: var(--bg-body);
-    border-radius: 6px;
+    border-radius: calc(var(--spacing-sm) * 0.75);
     overflow: hidden;
-    border: 1px solid var(--border-light);
+    border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
 }
 
 .section-header {
-    padding: 10px var(--spacing-md);
+    padding: calc(var(--spacing-sm) * 1.25) var(--spacing-md);
     background-color: var(--bg-surface);
     font-size: var(--font-size-base);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     color: var(--text-primary);
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -106,16 +148,16 @@
     padding: var(--spacing-md);
     font-size: var(--font-size-base);
     color: var(--text-secondary);
-    max-height: 300px;
+    max-height: calc(var(--spacing-xl) * 9.375);
     overflow-y: auto;
-    line-height: 1.6;
+    line-height: var(--line-height-loose);
 }
 
 .schedule-item {
     display: flex;
     flex-direction: column;
     padding: var(--spacing-sm) 0;
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
 }
 
 .schedule-item:last-child {
@@ -128,10 +170,10 @@
 }
 
 .schedule-label {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     color: var(--text-primary);
     font-size: var(--font-size-base);
-    margin-bottom: 2px;
+    margin-bottom: calc(var(--spacing-xs) * 0.5);
 }
 
 .schedule-val {
@@ -143,21 +185,21 @@
     width: 100%;
     border-collapse: collapse;
     margin-top: var(--spacing-sm);
-    border: 1px solid var(--border-light);
+    border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
 }
 
 .limits-table th,
 .limits-table td {
     padding: var(--spacing-sm);
     text-align: left;
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
     font-size: var(--font-size-sm);
 }
 
 .limits-table th {
     background-color: var(--bg-surface);
     color: var(--text-primary);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
 }
 
 .limits-table tr:last-child td {

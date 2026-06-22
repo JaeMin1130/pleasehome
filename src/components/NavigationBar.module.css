@@ -3,16 +3,16 @@
   top: 0;
   left: 0;
   bottom: 0;
-  width: 60px;
+  width: calc(var(--spacing-md) * 3.75);
   background-color: var(--bg-surface);
-  border-right: 1px solid var(--border-light);
+  border-right: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
   padding-top: 0;
   padding-bottom: var(--spacing-md);
-  z-index: 120;
+  z-index: var(--z-index-sticky);
   flex-shrink: 0;
 }
 
@@ -27,16 +27,15 @@
 
 
 .nav-brand-wrapper {
-  width: calc(100% + 1px);
+  width: calc(100% + calc(var(--spacing-xs) * 0.25));
   height: var(--header-height);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: 1px solid var(--border-light);
-  margin-bottom: var(--spacing-sm);
+  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
   background-color: var(--bg-surface);
   position: relative;
-  z-index: 130;
+  z-index: calc(var(--z-index-sticky) + 10);
 }
 
 .nav-brand-logo {
@@ -44,16 +43,16 @@
 }
 
 .nav-brand {
-  width: 44px;
-  height: 44px;
+  width: calc(var(--spacing-md) * 2.75);
+  height: calc(var(--spacing-md) * 2.75);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .nav-item {
-  width: 60px;
-  height: 56px;
+  width: calc(var(--spacing-md) * 3.75);
+  height: calc(var(--spacing-md) * 3.5);
   background: transparent;
   border: none;
   display: flex;
@@ -88,7 +87,7 @@
 .nav-label {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 
