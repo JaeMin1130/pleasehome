@@ -106,7 +106,7 @@ export default function Sidebar({
   };
 
   const getAnnouncementStatus = (ann: Announcement): ApplicationStatus => {
-    const applySchedules = ann.schedules.filter(s => s.schedule_type === '신청접수');
+    const applySchedules = ann.schedules.filter(s => s.schedule_type.includes('신청접수'));
     if (applySchedules.length === 0) return 'CLOSED';
     let minStart: Date | null = null, maxEnd: Date | null = null;
     for (const s of applySchedules) {
