@@ -46,7 +46,7 @@ export default function AnnouncementCard({
             <div className={styles['accordion-section']}>
               <div className={styles['section-header']} onClick={() => onToggleSection(`${ann.id}-schedule`)}>
                 <span>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px', verticalAlign: 'middle', display: 'inline-block' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 'var(--spacing-xs)', verticalAlign: 'middle', display: 'inline-block' }}>
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                     <line x1="16" y1="2" x2="16" y2="6"></line>
                     <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -77,7 +77,7 @@ export default function AnnouncementCard({
                         ) : (
                           s.raw_text || '공고 본문 참고'
                         )}
-                        {s.notes && <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--primary)', marginTop: '2px' }}>{s.notes}</div>}
+                        {s.notes && <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--primary)', marginTop: 'calc(var(--spacing-xs) * 0.5)' }}>{s.notes}</div>}
                       </div>
                     </div>
                   ))}
@@ -90,7 +90,7 @@ export default function AnnouncementCard({
             <div className={styles['accordion-section']}>
               <div className={styles['section-header']} onClick={() => onToggleSection(`${ann.id}-limits`)}>
                 <span>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px', verticalAlign: 'middle', display: 'inline-block' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 'var(--spacing-xs)', verticalAlign: 'middle', display: 'inline-block' }}>
                     <line x1="12" y1="1" x2="12" y2="23"></line>
                     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                   </svg>
@@ -139,7 +139,7 @@ export default function AnnouncementCard({
             <div className={styles['accordion-section']}>
               <div className={styles['section-header']} onClick={() => onToggleSection(`${ann.id}-details`)}>
                 <span>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px', verticalAlign: 'middle', display: 'inline-block' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 'var(--spacing-xs)', verticalAlign: 'middle', display: 'inline-block' }}>
                     <path d="M9 18h6M10 22h4M15.09 14c.18-.08.37-.17.55-.28A7.5 7.5 0 1 0 8.36 14c.18.11.37.2.55.28L10 18h4z"></path>
                   </svg>
                   상세 안내 가이드

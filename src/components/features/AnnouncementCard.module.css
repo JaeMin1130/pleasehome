@@ -1,27 +1,165 @@
-.announcement-card { background-color: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--spacing-sm); padding: var(--spacing-lg); cursor: pointer; transition: border-color 0.1s ease; box-shadow: var(--shadow-sm); position: relative; flex-shrink: 0; }
-.announcement-card:hover { border-color: var(--border-strong); }
-.announcement-card.active { border-width: 2px; padding: 15px; }
-.announcement-card.active.lh { border-color: var(--color-lh); }
-.announcement-card.active.sh { border-color: var(--color-sh); }
-.announcement-card.active.gh { border-color: var(--color-gh); }
-.announcement-card.active.hug { border-color: var(--color-hug); }
-.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.card-type { font-size: var(--font-size-sm); font-weight: 600; }
-.lh .card-type { color: var(--color-lh); }
-.sh .card-type { color: var(--color-sh); }
-.gh .card-type { color: var(--color-gh); }
-.hug .card-type { color: var(--color-hug); }
-.card-title { font-size: var(--font-size-lg); font-weight: 600; line-height: 1.4; margin-bottom: var(--spacing-md); color: var(--text-primary); word-break: keep-all; }
-.card-accordion { margin-top: var(--spacing-md); border-top: 1px solid var(--border-light); padding-top: var(--spacing-md); display: flex; flex-direction: column; gap: var(--spacing-sm); }
-.accordion-section { background-color: var(--bg-body); border-radius: 6px; overflow: hidden; border: 1px solid var(--border-light); }
-.section-header { padding: 10px var(--spacing-md); background-color: var(--bg-surface); font-size: var(--font-size-base); font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
-.section-content { padding: var(--spacing-md); font-size: var(--font-size-base); color: var(--text-secondary); max-height: 300px; overflow-y: auto; line-height: 1.6; }
-.schedule-item { display: flex; flex-direction: column; padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--border-light); }
-.schedule-item:last-child { border-bottom: none; padding-bottom: 0; }
-.schedule-item:first-child { padding-top: 0; }
-.schedule-label { font-weight: 600; color: var(--text-primary); font-size: var(--font-size-base); margin-bottom: 2px; }
-.schedule-val { font-size: var(--font-size-sm); color: var(--text-secondary); }
-.limits-table { width: 100%; border-collapse: collapse; margin-top: var(--spacing-sm); border: 1px solid var(--border-light); }
-.limits-table th, .limits-table td { padding: var(--spacing-sm); text-align: left; border-bottom: 1px solid var(--border-light); font-size: var(--font-size-sm); }
-.limits-table th { background-color: var(--bg-surface); color: var(--text-primary); font-weight: 600; }
-.limits-table tr:last-child td { border-bottom: none; }
+.announcement-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    cursor: pointer;
+    transition: border-color 0.1s ease;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    flex-shrink: 0;
+}
+
+.announcement-card:hover {
+    border-color: var(--border-strong);
+}
+
+.announcement-card.active {
+    border-width: 2px;
+    padding: 15px;
+}
+
+.announcement-card.active.lh {
+    border-color: var(--color-lh);
+}
+
+.announcement-card.active.sh {
+    border-color: var(--color-sh);
+}
+
+.announcement-card.active.gh {
+    border-color: var(--color-gh);
+}
+
+.announcement-card.active.hug {
+    border-color: var(--color-hug);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.card-type {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+}
+
+.lh .card-type {
+    color: var(--color-lh);
+}
+
+.sh .card-type {
+    color: var(--color-sh);
+}
+
+.gh .card-type {
+    color: var(--color-gh);
+}
+
+.hug .card-type {
+    color: var(--color-hug);
+}
+
+.card-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: var(--spacing-md);
+    color: var(--text-primary);
+    word-break: keep-all;
+}
+
+.card-accordion {
+    margin-top: var(--spacing-md);
+    border-top: 1px solid var(--border-light);
+    padding-top: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.accordion-section {
+    background-color: var(--bg-body);
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border-light);
+}
+
+.section-header {
+    padding: 10px var(--spacing-md);
+    background-color: var(--bg-surface);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.section-content {
+    padding: var(--spacing-md);
+    font-size: var(--font-size-base);
+    color: var(--text-secondary);
+    max-height: 300px;
+    overflow-y: auto;
+    line-height: 1.6;
+}
+
+.schedule-item {
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.schedule-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.schedule-item:first-child {
+    padding-top: 0;
+}
+
+.schedule-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
+    margin-bottom: 2px;
+}
+
+.schedule-val {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+.limits-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: var(--spacing-sm);
+    border: 1px solid var(--border-light);
+}
+
+.limits-table th,
+.limits-table td {
+    padding: var(--spacing-sm);
+    text-align: left;
+    border-bottom: 1px solid var(--border-light);
+    font-size: var(--font-size-sm);
+}
+
+.limits-table th {
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.limits-table tr:last-child td {
+    border-bottom: none;
+}

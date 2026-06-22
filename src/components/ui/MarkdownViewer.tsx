@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from './MarkdownViewer.module.css';
 
 // 인라인 마크다운 (볼드, 이탤릭, 인라인 코드, 링크) 파싱 및 토큰화 헬퍼 함수
 const parseInlineMarkdown = (text: string): React.ReactNode[] => {
@@ -64,44 +65,25 @@ const parseInlineMarkdown = (text: string): React.ReactNode[] => {
     switch (part.type) {
       case 'bold':
         return (
-          <strong key={idx} style={{ fontWeight: 'var(--font-weight-bold)', color: 'var(--text-primary)' }}>
+          <strong key={idx} className={styles['md-bold']}>
             {part.content}
           </strong>
         );
       case 'italic':
         return (
-          <em key={idx} style={{ fontStyle: 'italic', color: 'var(--text-primary)' }}>
+          <em key={idx} className={styles['md-italic']}>
             {part.content}
           </em>
         );
       case 'code':
         return (
-          <code 
-            key={idx} 
-            style={{ 
-              backgroundColor: 'var(--bg-surface-active)', 
-              padding: '2px 5px', 
-              borderRadius: 'var(--spacing-xs)',
-              fontFamily: 'monospace',
-              fontSize: 'var(--font-size-sm)',
-              color: 'var(--text-primary)'
-            }}
-          >
+          <code key={idx} className={styles['md-code']}>
             {part.content}
           </code>
         );
       case 'link':
         return (
-          <a 
-            key={idx} 
-            href={part.url} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            style={{ 
-              color: 'var(--primary)', 
-              textDecoration: 'underline' 
-            }}
-          >
+          <a key={idx} href={part.url} target="_blank" rel="noopener noreferrer" className={styles['md-link']}>
             {part.content}
           </a>
         );
@@ -169,30 +151,13 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
     }
 
     const element = (
-      <div key={key} style={{ overflowX: 'auto', margin: 'var(--spacing-sm) 0', width: '100%' }}>
-        <table 
-          style={{ 
-            width: '100%', 
-            borderCollapse: 'collapse', 
-            fontSize: 'var(--font-size-sm)', 
-            border: '1px solid var(--border-light)',
-            color: 'var(--text-secondary)'
-          }}
-        >
+      <div key={key} className={styles['md-table-container']}>
+        <table className={styles['md-table']}>
           {hasHeader && (
             <thead>
-              <tr style={{ backgroundColor: 'var(--bg-surface-active)', borderBottom: '2px solid var(--border-light)' }}>
+              <tr className={styles['md-thead-tr']}>
                 {headerRow.map((cell, cIdx) => (
-                  <th 
-                    key={cIdx} 
-                    style={{ 
-                      padding: '6px var(--spacing-sm)', 
-                      textAlign: 'left', 
-                      fontWeight: 'var(--font-weight-bold)',
-                      borderRight: '1px solid var(--border-light)',
-                      color: 'var(--text-primary)'
-                    }}
-                  >
+                  <th key={cIdx} className={styles['md-th']}>
                     {parseInlineMarkdown(cell.trim())}
                   </th>
                 ))}
@@ -201,13 +166,7 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
           )}
           <tbody>
             {bodyRows.map((row, rIdx) => (
-              <tr 
-                key={rIdx} 
-                style={{ 
-                  borderBottom: '1px solid var(--border-light)',
-                  backgroundColor: rIdx % 2 === 1 ? 'var(--bg-surface-hover)' : 'transparent'
-                }}
-              >
+              <tr key={rIdx} className={styles['md-tr']}>
                 {row.map((cell, cIdx) => {
                   if (!showCell[rIdx][cIdx]) return null;
                   
@@ -215,13 +174,7 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
                     <td 
                       key={cIdx} 
                       rowSpan={rowSpans[rIdx][cIdx]}
-                      style={{ 
-                        padding: '5px var(--spacing-sm)',
-                        borderRight: '1px solid var(--border-light)',
-                        lineHeight: '1.45',
-                        verticalAlign: 'middle',
-                        backgroundColor: rowSpans[rIdx][cIdx] > 1 ? 'var(--bg-surface-active)' : undefined
-                      }}
+                      className={`${styles['md-td']} ${rowSpans[rIdx][cIdx] > 1 ? styles['md-td-span'] : ''}`}
                     >
                       {parseInlineMarkdown(cell.trim())}
                     </td>
@@ -249,16 +202,7 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
         const tableElement = flushTable(`table-${i}`);
         if (tableElement) renderedElements.push(tableElement);
       }
-      renderedElements.push(
-        <hr 
-          key={`hr-${i}`} 
-          style={{ 
-            border: 'none', 
-            borderTop: '1px solid var(--border-light)', 
-            margin: 'var(--spacing-md) 0 var(--spacing-sm) 0' 
-          }} 
-        />
-      );
+      renderedElements.push(<hr key={`hr-${i}`} className={styles['md-hr']} />);
       i++;
       continue;
     }
@@ -285,35 +229,9 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
       const parsedTitle = parseInlineMarkdown(titleText);
       
       if (level <= 3) {
-        renderedElements.push(
-          <h4 
-            key={`h-${i}`} 
-            style={{ 
-              fontSize: 'var(--font-size-md)', 
-              fontWeight: 'var(--font-weight-bold)', 
-              margin: 'var(--spacing-md) 0 6px 0', 
-              color: 'var(--text-primary)',
-              borderBottom: '1px solid var(--border-light)',
-              paddingBottom: 'var(--spacing-xs)'
-            }}
-          >
-            {parsedTitle}
-          </h4>
-        );
+        renderedElements.push(<h4 key={`h-${i}`} className={styles['md-h4']}>{parsedTitle}</h4>);
       } else {
-        renderedElements.push(
-          <h5 
-            key={`h-${i}`} 
-            style={{ 
-              fontSize: 'var(--font-size-base)', 
-              fontWeight: 'var(--font-weight-bold)', 
-              margin: 'var(--spacing-sm) 0 var(--spacing-xs) 0', 
-              color: 'var(--text-primary)' 
-            }}
-          >
-            {parsedTitle}
-          </h5>
-        );
+        renderedElements.push(<h5 key={`h-${i}`} className={styles['md-h5']}>{parsedTitle}</h5>);
       }
       i++;
       continue;
@@ -323,19 +241,9 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
     if (listMatch) {
       const listText = listMatch[1];
       renderedElements.push(
-        <div 
-          key={`li-${i}`} 
-          style={{ 
-            display: 'flex', 
-            gap: '6px', 
-            paddingLeft: 'var(--spacing-xs)', 
-            margin: '2px 0', 
-            fontSize: 'var(--font-size-base)', 
-            lineHeight: '1.4' 
-          }}
-        >
-          <span style={{ color: 'var(--primary)', userSelect: 'none' }}>•</span>
-          <div style={{ color: 'var(--text-secondary)' }}>{parseInlineMarkdown(listText)}</div>
+        <div key={`li-${i}`} className={styles['md-li']}>
+          <span className={styles['md-bullet']}>•</span>
+          <div className={styles['md-text']}>{parseInlineMarkdown(listText)}</div>
         </div>
       );
       i++;
@@ -347,23 +255,9 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
       const num = orderedListMatch[1];
       const listText = orderedListMatch[2];
       renderedElements.push(
-        <div 
-          key={`ol-${i}`} 
-          style={{ 
-            display: 'flex', 
-            gap: '6px', 
-            paddingLeft: 'var(--spacing-xs)', 
-            margin: '2px 0', 
-            fontSize: 'var(--font-size-base)', 
-            lineHeight: '1.4' 
-          }}
-        >
-          <span style={{ color: 'var(--primary)', fontWeight: 'var(--font-weight-bold)', userSelect: 'none' }}>
-            {num}.
-          </span>
-          <div style={{ color: 'var(--text-secondary)' }}>
-            {parseInlineMarkdown(listText)}
-          </div>
+        <div key={`ol-${i}`} className={styles['md-li']}>
+          <span className={styles['md-bullet-num']}>{num}.</span>
+          <div className={styles['md-text']}>{parseInlineMarkdown(listText)}</div>
         </div>
       );
       i++;
@@ -377,15 +271,7 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
     }
     
     renderedElements.push(
-      <p 
-        key={`p-${i}`} 
-        style={{ 
-          fontSize: 'var(--font-size-base)', 
-          margin: '2px 0', 
-          lineHeight: '1.4', 
-          color: 'var(--text-secondary)' 
-        }}
-      >
+      <p key={`p-${i}`} className={styles['md-p']}>
         {parseInlineMarkdown(content)}
       </p>
     );
@@ -399,7 +285,7 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: 'var(--spacing-xs)' }}>
+    <div className={styles['md-container']}>
       {renderedElements}
     </div>
   );

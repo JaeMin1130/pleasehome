@@ -41,7 +41,7 @@ export default function UnitCard({
       <div className={styles['unit-header']}>
         <span className={styles['unit-supply-type']}>
           {unit.supply_type || `${unit.exclusive_area}형`} 
-          <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: 'var(--font-weight-regular)', color: 'var(--text-secondary)', marginLeft: '6px' }}>
+          <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: 'var(--font-weight-regular)', color: 'var(--text-secondary)', marginLeft: 'var(--spacing-xs)' }}>
             ({unit.exclusive_area.toFixed(2)}㎡ / ~{Math.round(unit.exclusive_area * 0.3025)}평)
           </span>
         </span>
@@ -67,11 +67,11 @@ export default function UnitCard({
 
       {hasConversion && unit.monthly_rent > 0 && (
         <div className={styles['conversion-slider-box']}>
-          <div className={styles['conversion-slider-header']} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
+          <div className={styles['conversion-slider-header']}>
+            <div className={styles['slider-title-wrap']}>
               <span className={styles['conversion-slider-title']}>보증금 ↔ 월세 전환 (100만원 단위)</span>
               {diffAmount !== 0 && (
-                <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: 'var(--font-weight-bold)', color: 'var(--primary)' }}>
+                <span className={styles['slider-diff-text']}>
                   ({diffAmount > 0 ? `+${Math.round(diffAmount / 10000)}만원` : `${Math.round(diffAmount / 10000)}만원`})
                 </span>
               )}
@@ -101,8 +101,8 @@ export default function UnitCard({
           {diffAmount !== 0 && converted && (
             <div className={styles['conversion-result']}>
               {converted.effectiveRate !== null && (
-                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', marginBottom: 'var(--spacing-sm)', textAlign: 'right' }}>
-                  적용 전환율: <span style={{ fontWeight: 'var(--font-weight-bold)', color: 'var(--primary)' }}>연 {converted.effectiveRate.toFixed(2)}%</span>
+                <div className={styles['rate-text-wrap']}>
+                  적용 전환율: <span className={styles['rate-text-highlight']}>연 {converted.effectiveRate.toFixed(2)}%</span>
                 </div>
               )}
               <div className={styles['conversion-result-item']}>
@@ -149,31 +149,31 @@ export default function UnitCard({
       )}
 
       <div className={styles['unit-meta-list']} style={{ borderTop: '1px dashed var(--border-light)', paddingTop: 'var(--spacing-sm)', marginTop: 'var(--spacing-xs)' }}>
-        <div style={{ flex: '1 1 45%' }}>
-          <span style={{ color: 'var(--text-muted)' }}>공급호수: </span>
-          <span style={{ fontWeight: 'var(--font-weight-semibold)' }}>{unit.supply_count}호</span> 
-          {unit.reserve_count > 0 && <span style={{ color: 'var(--text-muted)' }}> (예비 {unit.reserve_count}호)</span>}
+        <div className={styles['meta-item']}>
+          <span className={styles['meta-lbl']}>공급호수: </span>
+          <span className={styles['meta-val-bold']}>{unit.supply_count}호</span> 
+          {unit.reserve_count > 0 && <span className={styles['meta-lbl']}> (예비 {unit.reserve_count}호)</span>}
         </div>
         {unit.income_group && (
-          <div style={{ flex: '1 1 45%' }}>
-            <span style={{ color: 'var(--text-muted)' }}>소득기준: </span>
+          <div className={styles['meta-item']}>
+            <span className={styles['meta-lbl']}>소득기준: </span>
             <span>{unit.income_group}</span>
           </div>
         )}
         {unit.room_number && (
-          <div style={{ flex: '1 1 45%' }}>
-            <span style={{ color: 'var(--text-muted)' }}>동/호수: </span>
+          <div className={styles['meta-item']}>
+            <span className={styles['meta-lbl']}>동/호수: </span>
             <span>{unit.room_number}</span>
           </div>
         )}
         {unit.room_count && (
-          <div style={{ flex: '1 1 45%' }}>
-            <span style={{ color: 'var(--text-muted)' }}>방 개수: </span>
+          <div className={styles['meta-item']}>
+            <span className={styles['meta-lbl']}>방 개수: </span>
             <span>{unit.room_count}개</span>
           </div>
         )}
         {unit.attributes && (
-          <div style={{ flex: '1 1 100%', fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', marginTop: 'var(--spacing-xs)' }}>
+          <div className={styles['meta-attr']}>
             * {unit.attributes}
           </div>
         )}

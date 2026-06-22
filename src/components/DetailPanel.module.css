@@ -24,8 +24,8 @@
 }
 
 .filter-tab-btn {
-  padding: 6px 14px;
-  border-radius: 20px;
+  padding: calc(var(--spacing-xs) * 1.5) var(--spacing-md);
+  border-radius: var(--radius-full);
   font-size: var(--font-size-base);
   font-weight: 500;
   border: 1px solid var(--border-light);

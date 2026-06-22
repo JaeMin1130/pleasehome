@@ -194,17 +194,17 @@ export default function Home() {
             className={styles['floating-filter-container']}
           >
             <button className={styles['floating-filter-btn']} onClick={() => setIsFilterExpanded(!isFilterExpanded)}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 'var(--spacing-xs)' }}>
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
               맞춤 상세 필터
               {isFilterExpanded ? (
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '6px' }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'var(--spacing-xs)' }}>
                   <polyline points="18 15 12 9 6 15"></polyline>
                 </svg>
               ) : (
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '6px' }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'var(--spacing-xs)' }}>
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               )}
@@ -329,7 +329,7 @@ export default function Home() {
               <p className={styles['policy-desc']}>본 공고는 입주자가 원하는 주택을 직접 물색하면, 기관이 집주인과 전세계약을 체결한 후 저렴하게 재임대하는 정책입니다.</p>
               {activeAnn.limits && activeAnn.limits.length > 0 && (
                 <div className={styles['policy-limits-box']}>
-                  <div style={{fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--font-size-sm)', marginBottom: '8px', color: 'var(--primary-hover)'}}>지원 조건 요약</div>
+                  <div style={{fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--spacing-sm)', color: 'var(--primary-hover)'}}>지원 조건 요약</div>
                   {activeAnn.limits.map((limit) => (
                     <div key={limit.id} className={styles['policy-limit-item']}>
                       <span className={styles['policy-limit-lbl']}>{limit.target_group || '기본 지원'}</span>

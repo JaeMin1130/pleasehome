@@ -1,0 +1,128 @@
+.md-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-xs);
+}
+
+.md-bold {
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.md-italic {
+  font-style: italic;
+  color: var(--text-primary);
+}
+
+.md-code {
+  background-color: var(--bg-surface-active);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--spacing-xs);
+  font-family: monospace;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+.md-link {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.md-table-container {
+  overflow-x: auto;
+  margin: var(--spacing-sm) 0;
+  width: 100%;
+}
+
+.md-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+}
+
+.md-thead-tr {
+  background-color: var(--bg-surface-active);
+  border-bottom: 2px solid var(--border-light);
+}
+
+.md-th {
+  padding: var(--spacing-sm);
+  text-align: left;
+  font-weight: var(--font-weight-bold);
+  border-right: 1px solid var(--border-light);
+  color: var(--text-primary);
+}
+
+.md-tr {
+  border-bottom: 1px solid var(--border-light);
+}
+.md-tr:nth-child(odd) {
+  background-color: var(--bg-surface-hover);
+}
+
+.md-td {
+  padding: var(--spacing-sm);
+  border-right: 1px solid var(--border-light);
+  line-height: 1.45;
+  vertical-align: middle;
+}
+
+.md-td-span {
+  background-color: var(--bg-surface-active);
+}
+
+.md-hr {
+  border: none;
+  border-top: 1px solid var(--border-light);
+  margin: var(--spacing-md) 0 var(--spacing-sm) 0;
+}
+
+.md-h4 {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  margin: var(--spacing-md) 0 var(--spacing-sm) 0;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: var(--spacing-xs);
+}
+
+.md-h5 {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  margin: var(--spacing-sm) 0 var(--spacing-xs) 0;
+  color: var(--text-primary);
+}
+
+.md-li {
+  display: flex;
+  gap: var(--spacing-sm);
+  padding-left: var(--spacing-xs);
+  margin: var(--spacing-xs) 0;
+  font-size: var(--font-size-base);
+  line-height: 1.4;
+}
+
+.md-bullet {
+  color: var(--primary);
+  user-select: none;
+}
+
+.md-bullet-num {
+  color: var(--primary);
+  font-weight: var(--font-weight-bold);
+  user-select: none;
+}
+
+.md-text {
+  color: var(--text-secondary);
+}
+
+.md-p {
+  font-size: var(--font-size-base);
+  margin: var(--spacing-xs) 0;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
