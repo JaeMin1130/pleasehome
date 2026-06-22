@@ -11,8 +11,10 @@ import styles from './page.module.css';
 import {
   SIDEBAR_MIN_WIDTH,
   SIDEBAR_MAX_WIDTH,
+  SIDEBAR_DEFAULT_WIDTH,
   PANEL_MIN_WIDTH,
   PANEL_MAX_WIDTH,
+  PANEL_DEFAULT_WIDTH,
   FILTER_DEFAULT_LIMITS,
   FILTER_SLIDER_STEPS,
   NAVIGATION_BAR_WIDTH,
@@ -38,11 +40,11 @@ export default function Home() {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
 
-  const [sidebarWidth, setSidebarWidth] = useState(400);
+  const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_DEFAULT_WIDTH);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
-  const [panelWidth, setPanelWidth] = useState(400);
+  const [panelWidth, setPanelWidth] = useState(PANEL_DEFAULT_WIDTH);
   const [isPanelDragging, setIsPanelDragging] = useState(false);
   const [activeTab, setActiveTab] = useState<NavigationTabType>('SEARCH');
 

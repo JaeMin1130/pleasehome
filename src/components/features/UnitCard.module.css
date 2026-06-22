@@ -2,7 +2,7 @@
 .unit-header { display: flex; justify-content: space-between; align-items: center; }
 .unit-supply-type { font-size: var(--font-size-lg); font-weight: 700; color: var(--text-primary); }
 .unit-target { font-size: var(--font-size-sm); color: var(--primary); background-color: var(--primary-bg); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--spacing-xs); font-weight: 600; }
-.unit-price-box { display: flex; gap: var(--spacing-2xl); border-top: 1px solid var(--border-light); padding-top: var(--spacing-md); margin-top: var(--spacing-xs); }
+.unit-price-box { display: flex; gap: calc(var(--spacing-lg) * 1.5); border-top: 1px solid var(--border-light); padding-top: var(--spacing-md); margin-top: var(--spacing-xs); }
 .price-item { display: flex; flex-direction: column; gap: var(--spacing-xs); }
 .price-lbl { font-size: var(--font-size-sm); color: var(--text-secondary); }
 .price-val { font-size: var(--font-size-lg); font-weight: 700; color: var(--text-primary); }
@@ -17,7 +17,7 @@
 .conversion-slider-label { font-size: var(--font-size-sm); color: var(--text-secondary); white-space: nowrap; }
 .conversion-slider { -webkit-appearance: none; appearance: none; width: 100%; height: var(--spacing-xs); border-radius: 2px; background: var(--border-strong); outline: none; cursor: pointer; }
 .conversion-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: var(--spacing-lg); height: var(--spacing-lg); border-radius: 50%; background: var(--primary); cursor: pointer; }
-.conversion-result { display: flex; gap: var(--spacing-2xl); margin-top: var(--spacing-lg); padding: var(--spacing-md) var(--spacing-lg); background: var(--primary-bg); border-radius: 6px; border: 1px solid var(--color-lh-bg); }
+.conversion-result { display: flex; gap: calc(var(--spacing-lg) * 1.5); margin-top: var(--spacing-lg); padding: var(--spacing-md) var(--spacing-lg); background: var(--primary-bg); border-radius: 6px; border: 1px solid var(--color-lh-bg); }
 .conversion-result-item { display: flex; flex-direction: column; flex: 1; gap: var(--spacing-xs); }
 .conversion-result-lbl { font-size: var(--font-size-sm); color: var(--primary); }
 .conversion-result-val { font-size: var(--font-size-lg); font-weight: 700; color: var(--text-primary); display: flex; flex-direction: column; gap: 2px; }

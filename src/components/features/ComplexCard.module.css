@@ -2,12 +2,12 @@
   background-color: var(--bg-surface);
   border: 1px solid var(--border-light);
   border-radius: var(--spacing-sm);
-  padding: 1var(--spacing-xs) var(--spacing-lg);
+  padding: calc(var(--spacing-md) * 0.6) var(--spacing-md);
   cursor: pointer;
-  transition: all 0.1s ease;
+  transition: all 0.15s ease;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: calc(var(--spacing-sm) * 0.75);
   box-shadow: var(--shadow-sm);
 }
 .complex-card:hover {
@@ -26,6 +26,9 @@
 .complex-address {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing-sm) * 0.8);
 }
 
 .card-top-row {

@@ -72,7 +72,7 @@ export default function UnitCard({
               <span className={styles['conversion-slider-title']}>보증금 ↔ 월세 전환 (100만원 단위)</span>
               {diffAmount !== 0 && (
                 <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: 'var(--font-weight-bold)', color: 'var(--primary)' }}>
-                  ({diffAmount > 0 ? `+${diffAmount / 1000000 * 100}만원` : `${diffAmount / 1000000 * 100}만원`})
+                  ({diffAmount > 0 ? `+${Math.round(diffAmount / 10000)}만원` : `${Math.round(diffAmount / 10000)}만원`})
                 </span>
               )}
             </div>
@@ -108,7 +108,7 @@ export default function UnitCard({
               <div className={styles['conversion-result-item']}>
                 <span className={styles['conversion-result-lbl']}>전환 후 보증금</span>
                 <span className={styles['conversion-result-val']}>
-                  {formatMoney(converted.deposit)}
+                  <span>{formatMoney(converted.deposit)}</span>
                   <span className={`${styles['conversion-diff']} ${diffAmount > 0 ? styles['up'] : styles['down']}`}>
                     {diffAmount > 0 ? (
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '2px' }}>
@@ -127,7 +127,7 @@ export default function UnitCard({
               <div className={styles['conversion-result-item']}>
                 <span className={styles['conversion-result-lbl']}>전환 후 월 임대료</span>
                 <span className={styles['conversion-result-val']}>
-                  {formatRent(converted.rent)}
+                  <span>{formatRent(converted.rent)}</span>
                   <span className={`${styles['conversion-diff']} ${diffAmount > 0 ? styles['down'] : styles['up']}`}>
                     {diffAmount > 0 ? (
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '2px' }}>

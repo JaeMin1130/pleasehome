@@ -9,11 +9,13 @@ export const NAVIGATION_BAR_WIDTH = 60;
 // [3] 리사이저 드래그 너비 및 높이 제한 범위
 export const SIDEBAR_MIN_WIDTH = 280;
 export const SIDEBAR_MAX_WIDTH = 700;
-export const PANEL_MIN_WIDTH = 300;
-export const PANEL_MAX_WIDTH = 800;
+export const SIDEBAR_DEFAULT_WIDTH = 500;
+export const PANEL_MIN_WIDTH = 450;
+export const PANEL_MAX_WIDTH = 900;
+export const PANEL_DEFAULT_WIDTH = 550;
 export const HEADER_ACCORDION_MIN_HEIGHT = 150;
 export const HEADER_ACCORDION_MAX_HEIGHT = 600;
-export const HEADER_ACCORDION_DEFAULT_HEIGHT = 280;
+export const HEADER_ACCORDION_DEFAULT_HEIGHT = 300;
 
 // [4] 네이버 지도 초기 세팅값
 export const MAP_DEFAULT_CENTER = { lat: 37.5665, lng: 126.9780 }; // 서울 기준

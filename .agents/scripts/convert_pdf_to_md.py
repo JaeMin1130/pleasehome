@@ -140,7 +140,7 @@ def parse_metadata(pdf_path):
             pass
 
     # 최종 기본값 세팅
-    if not institution:
+    if not institution or institution not in ["LH", "SH", "GH", "iH", "HUG"]:
         institution = "LH"
     if not category:
         category = "공공임대"
