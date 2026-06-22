@@ -73,7 +73,6 @@ JOIN complexes c ON u.complex_id = c.id
 WHERE c.name LIKE '%마곡%'  -- 검증할 단지명 필터
 ORDER BY u.exclusive_area ASC;
 
-
 -- 6. 공고-단지-평형 원스톱 통합 관계 조인 검증
 -- 최상위 공고부터 하위 모집 단위까지의 일대다 관계 부모-자식 연결 무결성을 한눈에 전수 검사합니다.
 SELECT 

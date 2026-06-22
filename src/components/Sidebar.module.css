@@ -1,7 +1,7 @@
 .app-sidebar { width: 400px; background-color: var(--bg-surface); border-right: 1px solid var(--border-light); display: flex; flex-direction: column; height: 100%; z-index: 100; flex-shrink: 0; position: absolute; top: 0; left: 0; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 .app-sidebar.collapsed { transform: translateX(-100%); }
 
-.sidebar-brand { height: var(--header-height); padding: 0 20px 0 0; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: var(--spacing-sm); background-color: var(--bg-surface); flex-shrink: 0; }
+.sidebar-brand { height: var(--header-height); padding: 0 20px 0 0; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: calc(var(--spacing-sm) * 0.75); background-color: var(--bg-surface); flex-shrink: 0; }
 .brand-logo-wrap { display: flex; align-items: center; gap: var(--spacing-sm); }
 .brand-icon { font-size: calc(var(--font-size-lg) * 1.6); }
 .brand-title { font-size: calc(var(--font-size-lg) * 1.6); font-weight: var(--font-weight-bold); color: var(--text-primary); letter-spacing: -0.02em; }
@@ -14,7 +14,7 @@
 .filter-tag { background-color: var(--bg-body); color: var(--text-secondary); padding: 6px 12px; border-radius: var(--radius-sm); font-size: var(--font-size-sm); cursor: pointer; border: 1px solid var(--border-light); transition: all var(--transition-fast); white-space: nowrap; }
 .filter-tag:hover { background-color: var(--bg-surface-hover); border-color: var(--border-strong); }
 .filter-tag.active { background-color: var(--primary-bg); color: var(--primary); border-color: var(--primary); font-weight: var(--font-weight-semibold); }
-.sidebar-list { flex: 1; overflow-y: auto; padding: var(--spacing-md); display: flex; flex-direction: column; gap: var(--spacing-md); background-color: var(--bg-body); }
+.sidebar-list { flex: 1; overflow-y: auto; padding: var(--spacing-md); display: flex; flex-direction: column; gap: calc(var(--spacing-md) * 0.75); background-color: var(--bg-body); }
 .sidebar-footer { padding: var(--spacing-md); border-top: 1px solid var(--border-light); font-size: var(--font-size-sm); text-align: center; color: var(--text-muted); display: flex; justify-content: center; gap: var(--spacing-sm); flex-shrink: 0; }
 
 .header-resizer {

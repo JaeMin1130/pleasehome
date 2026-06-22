@@ -19,7 +19,7 @@
 .nav-group {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: calc(var(--spacing-md) * 0.75);
   align-items: center;
   width: 100%;
 }
