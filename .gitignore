@@ -63,3 +63,4 @@ docs/
 
 # etc
 errors/
+*.pem

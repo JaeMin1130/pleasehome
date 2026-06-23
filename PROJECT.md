@@ -61,7 +61,9 @@ project03/
 ├── errors/                         # 에러 및 이슈 관련 참고 스크린샷 이미지 보관소
 ├── docs/
 │   ├── pdf/                        # 원본 PDF 저장소 (규격 폴더 구조)
-│   └── md/                         # 변환된 Markdown 및 이미지 저장소
+│   ├── md/                         # 변환된 Markdown 및 이미지 저장소
+│   └── dev/
+│       └── DEPLOYMENT.md           # NCP Micro 서버 전용 상세 배포 및 트러블슈팅 가이드
 │       └── {공고_폴더}/
 │           ├── document.md         # 변환된 마크다운 공고문
 │           ├── data.json           # 서브에이전트가 추출한 정제 JSON 데이터
@@ -105,6 +107,7 @@ project03/
 ├── next.config.ts                  # Next.js 컴파일/빌드 설정 파일
 ├── eslint.config.mjs               # ESLint 정적 분석 설정 파일
 ├── postcss.config.mjs              # PostCSS 스타일 처리 설정 파일
+├── README.md                       # 프로젝트 전반적 실행 및 데이터 파이프라인 가이드
 └── venv/                           # 파이썬 가상 환경
 
 ```
@@ -287,6 +290,9 @@ npm run build
 # [방법 9] 빌드된 프로덕션 서버 실행
 npm run start
 ```
+
+> [!TIP]
+> NCP Micro 가상 서버 실배포 프로세스, Nginx 리버스 프록시(Rate Limit 락 적용), OOM 방지 Swap 활성화 및 `pleasehome.com` 도메인 HTTPS SSL 적용 등 정식 운영 서버 구축 단계는 **[DEPLOYMENT.md](file:///home/iru/project03/docs/dev/DEPLOYMENT.md)** 가이드를 확인하여 실행해 주시기 바랍니다.
 
 ---
 
