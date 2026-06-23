@@ -63,7 +63,8 @@ project03/
 │   ├── pdf/                        # 원본 PDF 저장소 (규격 폴더 구조)
 │   ├── md/                         # 변환된 Markdown 및 이미지 저장소
 │   └── dev/
-│       └── DEPLOYMENT.md           # NCP Micro 서버 전용 상세 배포 및 트러블슈팅 가이드
+│       ├── DEPLOYMENT.md           # NCP Micro 서버 전용 상세 배포 및 트러블슈팅 가이드
+│       └── CHANGELOG.md            # v1.0.0 출시 이력 및 변경 상세 릴리즈 노트
 │       └── {공고_폴더}/
 │           ├── document.md         # 변환된 마크다운 공고문
 │           ├── data.json           # 서브에이전트가 추출한 정제 JSON 데이터
@@ -300,6 +301,7 @@ npm run start
 
 1. **커밋 메시지 규약:** Git 커밋을 생성할 때는 반드시 [.agents/commit_convention.md](file:///home/iru/project03/.agents/commit_convention.md)에 명시된 Conventional Commits 규칙을 엄격히 준수합니다. (구 AGENTS.md 누적 규칙 #11 이관)
 2. **Git Diverged(이력 불일치) 대응:** 로컬과 원격 저장소의 Git 히스토리가 갈라졌을 때(Diverged), 복잡한 리베이스나 강제 병합 충돌 해결을 임의로 수행하지 않습니다. 작업 디렉토리의 변경사항을 Stash에 안전하게 임시 백업한 후, 원격의 정상 완료된 빌드 버전을 기준으로 로컬을 깔끔하게 리셋(`git reset --hard`)하고, 필요한 최소한의 코드 수정 패치만을 적용한 뒤 커밋 및 푸시하여 히스토리를 한 줄로 투명하게 유지합니다. (구 AGENTS.md 누적 규칙 #20 이관)
+3. **가이드 문서 예외적 추적 관리:** 대용량 원본 데이터(`docs/pdf/`)나 데이터 빌드 부산물(`docs/md/`)은 Git 무시 대상(`.gitignore`)으로 차단하되, 개발 가이드(`docs/dev/`)와 API 문서(`docs/api-guide/`) 등의 마크다운 문서 디렉토리는 예외 패턴(`!docs/dev/`, `!docs/api-guide/`)으로 등록하여 형상 관리가 정상 작동하도록 보장합니다.
 
 ---
 

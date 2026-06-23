@@ -40,6 +40,8 @@ Thumbs.db
 
 # Data & PDF/Markdown
 docs/
+!docs/dev/
+!docs/api-guide/
 
 # IDEs and editors
 .idea/
