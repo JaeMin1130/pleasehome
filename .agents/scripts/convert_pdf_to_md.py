@@ -65,10 +65,12 @@ def parse_metadata(pdf_path):
     elif "공공임대" in filename:
         category = "공공임대"
 
-    # 4. 기관명 1차 추출 (LH, SH, GH, iH, HUG) - 대소문자 무관 및 명칭 보완
+    # 4. 기관명 1차 추출 (LH, SH, GH, iH, HUG, 민간) - 대소문자 무관 및 명칭 보완
     institution = None
     filename_lower = filename.lower()
-    if "lh" in filename_lower or "한국토지주택" in filename_lower:
+    if "민간" in filename_lower:
+        institution = "민간"
+    elif "lh" in filename_lower or "한국토지주택" in filename_lower:
         institution = "LH"
     elif "sh" in filename_lower or "서울주택도시" in filename_lower:
         institution = "SH"
@@ -85,7 +87,7 @@ def parse_metadata(pdf_path):
             institution = agency_match.group(1)
 
     # 5. 본문 텍스트 분석 기반 보정 (기관명이 표준 5대 기관이 아니거나 유형을 감지 못한 경우 강제 구동)
-    if not category or institution not in ["LH", "SH", "GH", "iH", "HUG"]:
+    if not category or institution not in ["LH", "SH", "GH", "iH", "HUG", "민간"]:
         try:
             import opendataloader_pdf
             with tempfile.TemporaryDirectory() as temp_dir:
@@ -126,7 +128,9 @@ def parse_metadata(pdf_path):
                     
                     # 기관명 재검증 및 강제 보정 - 대소문자 무관 및 명칭 보완
                     text_lower = text.lower()
-                    if "한국토지주택" in text_lower or "lh" in text_lower or "l.h" in text_lower:
+                    if "민간" in filename_lower or "민간임대" in text_lower or "민간임대주택" in text_lower:
+                        institution = "민간"
+                    elif "한국토지주택" in text_lower or "lh" in text_lower or "l.h" in text_lower:
                         institution = "LH"
                     elif "서울주택도시" in text_lower or "sh" in text_lower:
                         institution = "SH"
@@ -140,7 +144,7 @@ def parse_metadata(pdf_path):
             pass
 
     # 최종 기본값 세팅
-    if not institution or institution not in ["LH", "SH", "GH", "iH", "HUG"]:
+    if not institution or institution not in ["LH", "SH", "GH", "iH", "HUG", "민간"]:
         institution = "LH"
     if not category:
         category = "공공임대"

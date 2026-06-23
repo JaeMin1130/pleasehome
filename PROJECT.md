@@ -49,7 +49,11 @@ project03/
 │   │   └── markdown_sql_parser/
 │   │       └── agent.json          # 서브에이전트 역할 정의 및 프롬프트 명세
 │   ├── scripts/
-│   │   └── convert_pdf_to_md.py    # PDF 표준 마크다운 변환 통합 스크립트
+│   │   ├── convert_pdf_to_md.py    # PDF 표준 마크다운 변환 통합 스크립트
+│   │   ├── pre_processor.py        # 0단계: 7대 기본 특성 분류 및 테이블 평탄화 전처리 스크립트
+│   │   ├── critic_validator.py     # 2단계: 적재 전 실시간 데이터 및 수학적 정합성 무결성 검증기
+│   │   ├── insert_loader.py        # 3단계: JSON 정제 데이터를 DB 적재 및 실패 격리(성능 저하 적재) 스크립트
+│   │   └── audit_db.py             # DB 적재 후 전체 데이터 무결성 및 누락 공고 검출 경보 감사 스크립트
 │   └── skills/
 │       ├── convert-pdf/SKILL.md    # PDF 자동 스캔/변환 스킬
 │       ├── extract-data/SKILL.md   # 마크다운 to DB 추출/적재 자동화 스킬
@@ -90,11 +94,8 @@ project03/
 │   ├── db/
 │   │   ├── db_init.py              # 데이터베이스 테이블 및 인덱스 초기화 스크립트
 │   │   └── query.sql               # 쿼리 참고용 SQL 파일
-│   ├── lib/
-│   │   └── db.ts                   # SQLite 데이터베이스 커넥터 모듈
-│   └── parser/
-│       ├── insert_loader.py        # 서브에이전트 JSON 정제 데이터를 파일로 저장 및 관계형 DB 적재 스크립트
-│       └── audit_db.py             # DB 데이터 정합성 및 무결성 감사/검증 스크립트
+│   └── lib/
+│       └── db.ts                   # SQLite 데이터베이스 커넥터 모듈
 ├── public_housing.db               # 적재 완료된 SQLite 데이터베이스 파일
 ├── .env.local                      # 환경 변수 및 시크릿 키 설정 파일 (Git 제외 대상)
 ├── node_modules/                   # Node.js 패키지 (자동 관리, Git 제외 대상)
@@ -124,6 +125,7 @@ project03/
 | `institution` | VARCHAR(50) | N | 시행 기관 (예: `LH`, `SH`, `HUG` 등) |
 | `subscription_type` | VARCHAR(50) | N | 청약 유형 (예: `행복주택`, `장기전세`, `장기전세2`, `국민임대`, `영구임대` 등) |
 | `doc_path` | VARCHAR(255) | N | 변환된 마크다운 문서 및 리소스 디렉토리 경로 |
+| `attributes` | TEXT | Y | 비정형 추가 공고 공통 속성 정보 |
 | `created_at` | TIMESTAMP | Y (Default) | 레코드 최초 생성 일시 |
 | `updated_at` | TIMESTAMP | Y (Default) | 레코드 최종 수정 일시 |
 
@@ -171,6 +173,7 @@ project03/
 | `interest_rate` | REAL | Y | 지원금 잔액에 대한 연간 기본 이자율 (퍼센트 단위) |
 | `max_monthly_rent` | BIGINT | Y | 월세 혼합형 계약 시 최대 허용 월 임대료 (원 단위) |
 | `notes` | TEXT | Y | 기타 이자율 우대 조건 및 예외사항 비고 |
+| `attributes` | TEXT | Y | 비정형 추가 지원 한도 속성 정보 |
 
 ---
 
@@ -186,6 +189,7 @@ project03/
 | `heating_type` | VARCHAR(50) | Y | 난방 방식 (예: `개별난방`, `지역난방`) |
 | `has_elevator` | BOOLEAN | Y | 엘리베이터 유무 (1: 설치, 0: 미설치) |
 | `parking_info` | VARCHAR(100) | Y | 주차 구획수 등 주차 관련 설명 |
+| `attributes` | TEXT | Y | 비정형 추가 단지 속성 정보 |
 | `created_at` | TIMESTAMP | Y (Default) | 레코드 생성 일시 |
 | `updated_at` | TIMESTAMP | Y (Default) | 레코드 최종 수정 일시 |
 
@@ -265,10 +269,10 @@ npm install
 ./venv/bin/python src/db/db_init.py
 
 # [방법 5] 적재된 DB 데이터 정합성 검증 및 리포팅 감사(Audit) 실행
-./venv/bin/python src/parser/audit_db.py
+./venv/bin/python .agents/scripts/audit_db.py
 
 # [방법 6] 서브에이전트가 추출한 JSON 데이터를 파일로 보관하고 데이터베이스에 관계형 적재
-./venv/bin/python src/parser/insert_loader.py <JSON_파일경로_또는_JSON문자열> [저장할_JSON_대상경로]
+./venv/bin/python .agents/scripts/insert_loader.py <JSON_파일경로_또는_JSON문자열> [저장할_JSON_대상경로]
 ```
 
 ### Next.js 프론트엔드/백엔드 가동 및 빌드 명령어

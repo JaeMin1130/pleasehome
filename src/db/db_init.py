@@ -27,6 +27,7 @@ def init_db():
             institution VARCHAR(50) NOT NULL,     -- 시행 기관 (예: 'LH', 'SH', 'HUG')
             subscription_type VARCHAR(50) NOT NULL, -- 청약 유형 (예: '행복주택', '장기전세', '전세임대')
             doc_path VARCHAR(255) NOT NULL,       -- 변환된 마크다운 및 리소스가 위치한 폴더 상대 경로
+            attributes TEXT,                      -- 비정형 추가 공고 공통 속성
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 레코드 생성 일시
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 레코드 최종 수정 일시
         );
@@ -67,6 +68,7 @@ def init_db():
             interest_rate REAL,                   -- 지원금에 대한 기본 연 이자율 (퍼센트 단위)
             max_monthly_rent BIGINT,              -- 혼합형 주택 공급 시 최대 허용 월 임대료 (원 단위)
             notes TEXT,                           -- 한도 조건 관련 비고 및 유의사항
+            attributes TEXT,                      -- 비정형 추가 한도 속성
             FOREIGN KEY (announcement_id) REFERENCES announcements (id) ON DELETE CASCADE
         );
         """,
@@ -80,6 +82,7 @@ def init_db():
             heating_type VARCHAR(50),             -- 난방 방식 (예: '개별난방', '지역난방', '중앙난방')
             has_elevator BOOLEAN,                 -- 승강기(엘리베이터) 설치 여부 (1: 설치, 0: 미설치)
             parking_info VARCHAR(100),            -- 주차 구획 수 및 가능 여부 정보
+            attributes TEXT,                      -- 비정형 추가 단지 속성
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 레코드 생성 일시
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 레코드 최종 수정 일시
             FOREIGN KEY (announcement_id) REFERENCES announcements (id) ON DELETE CASCADE
