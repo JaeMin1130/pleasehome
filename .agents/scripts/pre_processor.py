@@ -32,11 +32,20 @@ def detect_features(md_content):
     is_distributed = False
     dist_keywords = [
         "상세 내역은 첨부", "주택 내역은 첨부", "대상 주택 목록은 첨부", 
-        "첨부파일을 참조", "홈페이지에서 확인", "별첨 자료", "별첨1", "첨부 1"
+        "첨부파일을 참조", "홈페이지에서 확인", "별첨 자료", "별첨1", "첨부 1",
+        "주택내역", "첨부파일", "별첨"
     ]
-    # 테이블(표)이 본문에 거의 존재하지 않거나, 위 키워드가 등장할 때
-    table_count = len(re.findall(r'\|.*?\|', md_content))
-    if table_count < 10 and any(k in md_content for k in dist_keywords):
+    # 본문 내 주택 주소나 공급 세부 정보를 담은 표의 유무를 정교하게 판별
+    has_housing_table = False
+    tables = re.findall(r'((?:\|.*\|(?:\n|$))+)', md_content)
+    for table in tables:
+        if ("소재지" in table or "주소" in table or "단지명" in table) and \
+           ("면적" in table or "전용면적" in table) and \
+           ("보증금" in table or "임대료" in table):
+            has_housing_table = True
+            break
+            
+    if not has_housing_table and any(k in md_content for k in dist_keywords):
         is_distributed = True
 
     # 3. is_income_linked
