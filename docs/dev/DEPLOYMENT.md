@@ -40,20 +40,11 @@
 
 ---
 
-## 🐍 STEP 2. 로컬(Dev) 데이터 적재 작업
+## 📦 STEP 2. 외부 빌드 데이터베이스(DB) 확보
 
-로컬 개발 환경에서 파이프라인 스크립트를 구동하여 SQLite 데이터베이스를 최신 상태로 채워 놓습니다.
-```bash
-# 1. PDF -> 마크다운 일괄 변환
-./venv/bin/python .agents/scripts/convert_pdf_to_md.py
-
-# 2. JSON 데이터 추출 및 SQLite 적재 완결
-./venv/bin/python .agents/scripts/insert_loader.py <JSON_파일경로>
-
-# 3. 데이터 적재 상태 및 정합성 검사
-./venv/bin/python .agents/scripts/audit_db.py
-```
-*작업이 완료되면 로컬 루트 디렉토리에 서빙 전용 `public_housing.db` 파일이 생성됩니다.*
+본 프로젝트의 Next.js WAS는 스스로 데이터 파이프라인을 기동하지 않고, 외부에서 빌드 완료된 SQLite 데이터베이스를 주입받아 읽기 전용으로 서비스합니다.
+1. 외부 데이터 수집/가공 CLI 도구 또는 시스템에서 빌드가 완료된 최신의 `public_housing.db` 파일을 다운로드하거나 전달받습니다.
+2. 확보한 데이터베이스 파일을 로컬 프로젝트 루트 디렉토리 `/home/iru/project03/`에 위치시킵니다.
 
 ---
 
@@ -173,7 +164,7 @@ rsync -avz \
 # 1. 네이버 지도 API 환경 변수 파일 전송
 scp -i <인증키.pem> ./.env.local iru@<서버_공인_IP>:/home/iru/project03/.env.local
 
-# 2. 로컬 파이프라인에서 완성한 데이터베이스(SQLite) 파일 전송
+# 2. 외부에서 빌드 완료되어 준비된 데이터베이스(SQLite) 파일 전송
 scp -i <인증키.pem> ./public_housing.db iru@<서버_공인_IP>:/home/iru/project03/public_housing.db
 ```
 
@@ -296,7 +287,7 @@ sudo certbot --nginx -d pleasehome.com -d www.pleasehome.com
 
 공고문 데이터가 새롭게 갱신되어 서버의 DB 파일만 교체(Swap)할 때의 프로세스입니다. 이 작업은 웹 서버를 중단시키지 않는 **무중단 스왑** 구조로 동작합니다.
 
-1. 로컬(Dev)에서 신규 PDF 파이프라인 처리를 실행하여 최신 `public_housing.db`를 만듭니다.
+1. 외부 데이터 파이프라인 CLI 등을 구동하여 빌드가 완료된 최신의 `public_housing.db` 파일을 확보합니다.
 2. 로컬 터미널에서 신규 DB 파일만 가동 경로로 안전하게 덮어씁니다:
    ```bash
    scp -i <인증키.pem> ./public_housing.db iru@<서버_공인_IP>:/home/iru/project03/public_housing.db

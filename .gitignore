@@ -8,15 +8,6 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# Python virtual environment
-venv/
-.venv/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.ipynb_checkpoints
-
 # Database (SQLite)
 *.db
 *.db-shm
@@ -38,7 +29,7 @@ logs/
 .DS_Store
 Thumbs.db
 
-# Data & PDF/Markdown
+# Data & PDF/Markdown (Exclude doc/dev and api-guide)
 docs/
 !docs/dev/
 !docs/api-guide/
@@ -53,10 +44,7 @@ docs/
 *.sw?
 .history/
 
-# Python & Linter Cache
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
+# Linter Cache
 .eslintcache
 
 # Agent local temp files
@@ -64,5 +52,4 @@ docs/
 .agents/**/tmp/
 
 # etc
-errors/
 *.pem
