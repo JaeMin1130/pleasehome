@@ -78,6 +78,11 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
               <circle cx="12" cy="10" r="3"></circle>
             </svg>
             {complex.address}
+            {complex.is_imprecise === 1 && (
+              <span className={styles['imprecise-badge']} title="해당 단지는 신도시 등 임시 주소 상태로, 지도 상의 대략적인 예정지 위치(도/동)에 마커가 매핑되었습니다.">
+                미확정 주소
+              </span>
+            )}
           </span>
         </div>
         <button className={styles['panel-close-btn']} onClick={onClose}>✕</button>

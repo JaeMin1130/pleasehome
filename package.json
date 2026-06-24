@@ -1,12 +1,13 @@
 {
   "name": "temp-next-app",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node migrate_coords.js && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "build:pack": "node migrate_coords.js && next build && mkdir -p deploy && cp -r .next/standalone/. deploy/ && cp -r public deploy/ && cp -r .next/static deploy/.next/ && rm -f deploy/public_housing.db && cd deploy && tar -czf ../announce_deploy.tar.gz . && cd .. && rm -rf deploy"
   },
   "dependencies": {
     "better-sqlite3": "^12.10.1",

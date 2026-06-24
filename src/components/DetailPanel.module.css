@@ -163,3 +163,16 @@
   padding: var(--spacing-lg);
   color: var(--text-muted);
 }
+
+.imprecise-badge {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: var(--spacing-sm);
+  padding: calc(var(--spacing-xs) * 0.75) calc(var(--spacing-sm) * 0.75);
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-tight);
+}
