@@ -1,0 +1,8 @@
+# Exclude everything by default (최상위 루트 하위의 모든 파일과 폴더를 기본 무시)
+/*
+
+# Whitelist allowed directories & files (추적을 허용할 핵심 자산 화이트리스트)
+!/src/
+!/package.json
+!/.gitignore
+!/README.md

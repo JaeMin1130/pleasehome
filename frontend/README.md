@@ -75,7 +75,7 @@ graph TD
 ## 📂 폴더 구조 요약 (Directory Structure)
 
 ```text
-pleasehome-front/
+frontend/
 ├── .agents/
 │   ├── skills/
 │   │   └── note/                   # 규칙 및 동기화 관리 에이전트 스킬
@@ -148,12 +148,12 @@ npm run dev
 
 ## 📄 형상 관리 및 개발 규약
 
-* **Git 커밋 규칙**: 모든 커밋은 Conventional Commits에 기재된 형태를 따르며, 구체적인 작성 규약은 [.agents/commit_convention.md](file:///home/iru/app/pleasehome/pleasehome-front/.agents/commit_convention.md)를 참조하십시오.
-* **디자인 토큰 시스템**: 모든 UI 간격 및 색상은 컴포넌트 내에 하드코딩하지 않고 전역 [globals.css](file:///home/iru/app/pleasehome/pleasehome-front/src/app/globals.css)의 디자인 토큰 변수에 100% 종속됩니다.
-* **에이전트 소통 규약**: AI 에이전트의 행동 및 피드백 누적 규칙에 대한 규정은 [AGENTS.md](file:///home/iru/app/pleasehome/pleasehome-front/AGENTS.md) 파일에 명기되어 있습니다.
+* **Git 커밋 규칙**: 모든 커밋은 Conventional Commits에 기재된 형태를 따르며, 구체적인 작성 규약은 [.agents/commit_convention.md](file:///home/iru/app/pleasehome/frontend/.agents/commit_convention.md)를 참조하십시오.
+* **디자인 토큰 시스템**: 모든 UI 간격 및 색상은 컴포넌트 내에 하드코딩하지 않고 전역 [globals.css](file:///home/iru/app/pleasehome/frontend/src/app/globals.css)의 디자인 토큰 변수에 100% 종속됩니다.
+* **에이전트 소통 규약**: AI 에이전트의 행동 및 피드백 누적 규칙에 대한 규정은 [AGENTS.md](file:///home/iru/app/pleasehome/frontend/AGENTS.md) 파일에 명기되어 있습니다.
 
 ---
 
 ## 📄 라이선스 (License)
 
-본 프로젝트는 [MIT License](file:///home/iru/app/pleasehome/pleasehome-front/LICENSE) 하에 오픈소스로 관리 및 활용됩니다. 자세한 사항은 `LICENSE` 파일을 참고하시기 바랍니다.
+본 프로젝트는 [MIT License](file:///home/iru/app/pleasehome/frontend/LICENSE) 하에 오픈소스로 관리 및 활용됩니다. 자세한 사항은 `LICENSE` 파일을 참고하시기 바랍니다.
