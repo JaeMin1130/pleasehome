@@ -4,7 +4,9 @@
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Nginx](https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white)](https://nginx.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![PM2](https://img.shields.io/badge/PM2-2B037A?style=for-the-badge&logo=pm2&logoColor=white)](https://pm2.keymetrics.io/)
 [![Naver Maps API](https://img.shields.io/badge/Naver%20Maps%20API-03C75A?style=for-the-badge&logo=naver&logoColor=white)](https://www.ncloud.com/)
 [![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
@@ -25,6 +27,36 @@
 * **실시간 지리 시각화**: 네이버 지도 API와 연동하여 위경도 좌표를 기반으로 공공주택 단지를 브라우저 레이턴시 없이 즉시 렌더링합니다.
 * **다차원 조건별 맞춤 필터링**: 공고 기관별, 임대 유형별, 공급 대상별 및 보증금/월세 범위 등 사용자 맞춤형 조건을 통한 빠른 필터링을 지원합니다.
 * **상세 조건 대조 분석**: 단지 선택 시 우측 슬라이딩 상세 패널을 통해 평형, 공급 호수, 기본 임대조건 및 최대 전환 조건(보증금 ↔ 월세)을 직관적으로 대조합니다.
+* **공고 세부 자격 및 정보 가이드**: 복잡한 신청 자격 요건을 직관적인 아코디언 레이아웃으로 제공하고, 변환된 마크다운 뷰어 연동을 통해 원문 공고 정보까지 쾌적하게 조회합니다.
+
+---
+
+## 🖥️ UI 레이아웃 구조 (UI Layout Structure)
+
+본 서비스는 사용자가 정보의 맥락을 잃지 않고 다차원 요소를 유연하게 대조·탐색할 수 있도록 3단 화면 분할 시스템을 채택하고 있습니다.
+
+```text
+┌────────────────────────────────────────────────────────┐
+│                 PleaseHome Dashboard Header            │
+├───────────────────┬────────────────────────────────────┤
+│                   │                                    │
+│ [검색 및 필터]    │           [ Naver Map ]            │
+│ - 기관 / 유형별   │ - 공급 단지별 마커 시각화          │
+│ - 보증금/월세 락  │ - 마커 클릭 시 요약 팝업           │
+│                   │                                    │
+│ [모집 공고 목록]  │                                    │
+│ - 공고 아코디언   │                                    │
+│ - 데이터 연동     │                                    │
+│                   │                                    │
+└───────────────────┴────────────────────────────────────┘
+│ [우측 슬라이딩 상세 패널 (Detail Panel)]              │
+│ - 단지 선택 시 우측에서 등장, 평형별 세부 조건 상세 분석│
+└────────────────────────────────────────────────────────┘
+```
+
+* **좌측 영역 (Sidebar)**: 공고 목록 조회 및 청약 조건 다차원 검색/필터링
+* **중앙 영역 (Naver Map)**: 단지들의 실제 위치 매핑 (DB 위경도 기반 동기식 즉시 마킹)
+* **우측 영역 (Sliding Detail Panel)**: 평형별 공급 호수 및 최대 상호 전환 조건(보증금 ↔ 월 임대료) 상세 분석
 
 ---
 
@@ -57,8 +89,10 @@ graph TD
 ```text
 pleasehome/
 ├── frontend/                   # 웹 프론트엔드 (Next.js 14+)
+│   ├── .agents/                # AI 에이전트 소통/행동 규칙 (AGENTS.md 등)
+│   ├── docs/                   # 프론트엔드 상세 배포 가이드 및 CHANGELOG
 │   ├── src/app/                # App Router 기반 페이지 & REST API
-│   ├── src/components/         # 지도, 사이드바 등 재사용 UI 컴포넌트
+│   ├── src/components/         # 네이버 지도, 사이드바 등 재사용 UI 컴포넌트
 │   ├── public/                 # 정적 에셋 파일
 │   └── package.json            # Node.js 의존성 관리
 ├── backend/                    # 데이터 파이프라인 백엔드 (Python)
@@ -113,16 +147,16 @@ npm run dev
 
 ## 🚀 CI/CD 및 배포 파이프라인 (Deployment Pipeline)
 
-본 프로젝트는 최소한의 클라우드 서버 자원(Micro 단위)을 효율적으로 활용하기 위해 격리된 무중단 배포(Zero-Downtime) 전략을 취하고 있습니다.
+본 프로젝트는 최소한의 클라우드 서버 자원(Micro 단위, 1GB RAM)을 효율적으로 활용하기 위해 격리된 무중단 배포(Zero-Downtime) 전략을 취하고 있습니다. 서버 성능 최적화와 실서비스 데이터의 안전한 보호를 위해 소스 코드 배포와 데이터베이스 배포가 정밀하게 분리(격리)되어 수행됩니다.
 
 1. **로컬 빌드 및 데이터 적재**:
    * 로컬 환경에서 외부 API 통신을 통해 최신 `public_housing.db` 구축 및 검증.
    * 프론트엔드 최적화를 위한 Static Build 수행.
 2. **격리된 고속 배포 (rsync & scp)**:
-   * **소스 코드 동기화**: 변경된 로직과 빌드 결과물은 `rsync`를 통해 초고속으로 타깃 서버에 동기화.
-   * **데이터 스왑**: 완성된 SQLite DB 파일은 `scp`를 통해 별도 업로드.
+   * **소스 코드 동기화 (rsync)**: 로컬의 Git 히스토리 및 개발 문서들 외에 실서비스용 데이터베이스(`public_housing.db*`), 마스터 키 파일(`.pem`), 환경변수(`.env.local`) 등은 전송 제외(`--exclude`)하여 소스 코드만 초고속으로 동기화.
+   * **중요 설정 및 데이터 업로드 (scp)**: 완성된 SQLite DB 파일 및 네이버 API 환경변수 파일 등은 `scp`를 통해 별도 단독 업로드.
 3. **PM2 Zero-Downtime Reload**:
-   * 서버 측 Nginx 리버스 프록시 환경에서 PM2가 무중단으로 애플리케이션 프로세스를 교체(`pm2 reload`)하여 서버 다운타임을 원천 차단합니다.
+   * 서버 측 Nginx 리버스 프록시 환경에서 공고 데이터가 갱신되어 DB 파일을 교체하거나 코드가 업데이트될 때, 웹서버를 다운시키지 않고 애플리케이션 프로세스를 교체(`pm2 reload`)하여 서버 다운타임을 원천 차단합니다.
 
 *(추후 GitHub Actions를 활용한 전면 자동화 배포 파이프라인으로 고도화될 예정입니다.)*
 
@@ -136,6 +170,21 @@ npm run dev
 2. 작업 후 로컬에서 정상 구동 여부를 확인합니다.
 3. 커밋 메시지는 규약(Conventional Commits)에 맞춰 작성합니다.
 4. Pull Request(PR) 생성 시 작업 배경, 변경 사항, 테스트 내역을 명확히 기재하여 리뷰를 요청합니다.
+
+---
+
+## 📄 형상 관리 및 코딩 규약 (Convention)
+
+* **Git 커밋 규약**: `feat`, `fix`, `refactor`, `chore` 등 Conventional Commits 표준을 엄격하게 준수합니다. 구체적인 작성 규약은 `frontend/.agents/commit_convention.md`를 참조하십시오.
+* **코드 품질 관리**: 프론트엔드는 전역 설정된 ESLint 및 Prettier 규칙에 종속되며, 백엔드 파이프라인은 PEP 8 코드 스타일 가이드라인을 지향합니다.
+* **디자인 토큰 시스템**: 프론트엔드의 모든 UI 간격 및 색상은 컴포넌트 내에 하드코딩하지 않고 전역 `globals.css`의 디자인 토큰 변수에 100% 종속됩니다.
+* **에이전트 소통 규약**: AI 에이전트의 행동 및 피드백 누적 규칙에 대한 규정은 `frontend/AGENTS.md` 파일에 명기되어 있습니다.
+
+---
+
+## 📜 라이선스 (License)
+
+본 프로젝트는 [MIT License](LICENSE) 하에 배포 및 관리됩니다. 자세한 사항은 `LICENSE` 파일을 참조 바랍니다.
 
 ---
 
@@ -181,13 +230,3 @@ npm run dev
 
 ---
 
-## 📄 형상 관리 및 코딩 규약 (Convention)
-
-* **Git 커밋 규약**: `feat`, `fix`, `refactor`, `chore` 등 Conventional Commits 표준을 엄격하게 준수합니다.
-* **코드 품질 관리**: 프론트엔드는 전역 설정된 ESLint 및 Prettier 규칙에 종속되며, 백엔드 파이프라인은 PEP 8 코드 스타일 가이드라인을 지향합니다.
-
----
-
-## 📜 라이선스 (License)
-
-본 프로젝트는 [MIT License](LICENSE) 하에 배포 및 관리됩니다. 자세한 사항은 `LICENSE` 파일을 참조 바랍니다.
