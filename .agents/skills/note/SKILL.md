@@ -32,14 +32,14 @@ description: 대화 과정에서 수립된 에이전트 행동 규칙 중 불필
 * **로그 경로 동적 확인:** 하드코딩된 경로를 사용하지 않고, 홈 디렉토리(`~/.gemini/antigravity-cli/brain/`)와 현재 실행 중인 프로세스의 환경 변수 `ANTIGRAVITY_CONVERSATION_ID`를 결합하여 현재 세션의 `transcript.jsonl` 파일 경로를 알아냅니다.
 * **증분 스캔:** 동적으로 로드한 `transcript.jsonl` 파일의 가장 마지막 라인부터 역방향으로 스캔하여 **가장 최근에 `note` 스킬이 실행된 지점**을 찾고, 그 시점 이후부터 현재까지 생성된 대화 내용만 슬라이싱하여 피드백(Do's & Don'ts)을 추출합니다. (최초 실행 시에는 세션 처음부터 분석)
 * **피드백 다원화 및 규칙 반영:** 추출된 피드백의 성격에 따라 기록 대상을 명확히 분리하여 정보 중복 및 토큰 낭비를 차단합니다.
-  - **에이전트 소통 및 대화 행동 규칙:** 대화 태도, 소통 절차, 유저 승인 및 확인 프로토콜 등 에이전트의 대화적 행동 지침은 [AGENTS.md](file:///home/iru/project03/AGENTS.md)의 `## 2. 피드백 및 누적 규칙` 섹션에 `[누적 규칙 #N]` 포맷으로 반영합니다. 단, 더 이상 유효하지 않은 규칙이나 중복 규칙은 즉시 완전히 삭제하여 파일을 항시 최신 상태로 유지합니다.
-  - **프로젝트 공통 환경 사양 및 전역 규약:** 프로젝트 개요, 프로젝트 빌드 환경, 가상 환경, 디렉토리 구조, 전역 명령어, 공통 Git 형상 관리 가이드 등 전역 사양에 관한 피드백은 [PROJECT.md](file:///home/iru/project03/PROJECT.md)의 관련 섹션에 규약으로 통합 기재합니다.
-  - **특정 도메인 기술 스킬 가이드:** PDF 변환, 마크다운 데이터 파싱/적재 및 DB 검증 등 특정 스킬 관련 비즈니스 규칙, 가격 상호전환 제한 범위, 외부 정책 사양 등 고수준의 도메인 사양은 해당하는 스킬 문서(예: [extract-data/SKILL.md](file:///home/iru/project03/.agents/skills/extract-data/SKILL.md)) 내에 기재하며, [AGENTS.md](file:///home/iru/project03/AGENTS.md)나 [PROJECT.md](file:///home/iru/project03/PROJECT.md)에는 절대 중복 기재하지 않습니다.
+  - **에이전트 소통 및 대화 행동 규칙:** 대화 태도, 소통 절차, 유저 승인 및 확인 프로토콜 등 에이전트의 대화적 행동 지침은 [AGENTS.md](file:///home/iru/app/pleasehome/pleasehome-front/AGENTS.md)의 `## 2. 피드백 및 누적 규칙` 섹션에 `[누적 규칙 #N]` 포맷으로 반영합니다. 단, 더 이상 유효하지 않은 규칙이나 중복 규칙은 즉시 완전히 삭제하여 파일을 항시 최신 상태로 유지합니다.
+  - **프로젝트 공통 환경 사양 및 전역 규약:** 프로젝트 개요, 프로젝트 빌드 환경, 가상 환경, 디렉토리 구조, 전역 명령어, 공통 Git 형상 관리 가이드 등 전역 사양에 관한 피드백은 [PROJECT.md](file:///home/iru/app/pleasehome/pleasehome-front/PROJECT.md)의 관련 섹션에 규약으로 통합 기재합니다.
+  - **특정 도메인 기술 스킬 가이드:** PDF 변환, 마크다운 데이터 파싱/적재 및 DB 검증 등 특정 스킬 관련 비즈니스 규칙, 가격 상호전환 제한 범위, 외부 정책 사양 등 고수준의 도메인 사양은 해당하는 스킬 문서(예: [extract-data/SKILL.md](file:///home/iru/app/pleasehome/pleasehome-front/.agents/skills/extract-data/SKILL.md)) 내에 기재하며, [AGENTS.md](file:///home/iru/app/pleasehome/pleasehome-front/AGENTS.md)나 [PROJECT.md](file:///home/iru/app/pleasehome/pleasehome-front/PROJECT.md)에는 절대 중복 기재하지 않습니다.
   - **물리적 코드 로직 및 사소한 구현 상세 기록 금지 (Crucial Restriction):** 소스 코드에 구현된 물리적 제어 논리(예: if문 감지 알고리즘, 정규식 조건, 파싱 함수 흐름 등)나 일회성 기능 개발 및 사소한 디자인 수치는 가이드 문서에 절대 기록하지 않고 배제합니다. 프로그램의 세부 논리는 오직 소스 코드 자체(SSOT)가 동작으로 증명하도록 통제합니다.
 
 ### 2단계: 프로젝트 개발 환경 및 구조 동기화
 * 예외 폴더(`venv`, `.git` 등)를 제외한 실제 디렉토리 구조 및 가상 환경에 새로 설치된 외부 라이브러리 목록을 스캔합니다.
-* 새로 추가되거나 변경된 물리적 환경 사양, 표준 실행 명령어, 파일 규칙 세부 정보를 [PROJECT.md](file:///home/iru/project03/PROJECT.md) 파일에 반영하여 최신화합니다.
+* 새로 추가되거나 변경된 물리적 환경 사양, 표준 실행 명령어, 파일 규칙 세부 정보를 [PROJECT.md](file:///home/iru/app/pleasehome/pleasehome-front/PROJECT.md) 파일에 반영하여 최신화합니다.
 
 ### 3단계: 문서 간 및 문서 내 중복 제거 (Redundancy Elimination & SSOT Verification)
 * **상시 중복 전수 검사:** 스킬 가동 시 모든 관련 문서 간의 내용 비교뿐만 아니라, **각 문서 내부(특히 AGENTS.md 및 개별 SKILL.md 내부)에 누적된 규칙들 중 동일하거나 유사한 맥락의 지침이 중복 기재되어 있는지도 반드시 전수 검사**합니다.
