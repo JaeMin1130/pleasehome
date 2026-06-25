@@ -41,14 +41,17 @@ def main():
     
     for notice in notices:
         bbs_sn = notice.get("BBS_SN")
-        # 응답 구조상 목록조회 결과에는 시스템코드가 명확히 필드로 없을 경우 LINK_URL 파싱이나 API 제원 확인 필요 (가이드상으로는 상세 요청시 필요)
-        # 가이드 문서: "고객센터연계시스템구분코드(CCR_CNNT_SYS_DS_CD) : 공지사항목록조회 API의 특정 공지사항의 응답 메시지 중..."
-        # 예시 데이터상 응답에는 CCR_CNNT_SYS_DS_CD가 직접 없으나 LINK_URL에서 파싱 가능함
-        link_url = notice.get("LINK_URL", "")
         
-        sys_ds_cd = "04" # 기본값 예시
-        if "CCR_CNNT_SYS_DS_CD:" in link_url:
-            sys_ds_cd = link_url.split("CCR_CNNT_SYS_DS_CD:")[1].split(",")[0]
+        # 최신 API 응답에는 CCR_CNNT_SYS_DS_CD 필드가 직접 제공됨
+        sys_ds_cd = notice.get("CCR_CNNT_SYS_DS_CD")
+        if not sys_ds_cd:
+            link_url = notice.get("LINK_URL", "")
+            if "ccrCnntSysDsCd=" in link_url:
+                sys_ds_cd = link_url.split("ccrCnntSysDsCd=")[1].split("&")[0]
+            elif "CCR_CNNT_SYS_DS_CD:" in link_url:
+                sys_ds_cd = link_url.split("CCR_CNNT_SYS_DS_CD:")[1].split(",")[0]
+            else:
+                sys_ds_cd = "04"
             
         title = notice.get("BBS_TL", "제목없음")
         print(f"\n[{title}] 상세 조회 중...")
@@ -67,6 +70,11 @@ def main():
                 download_url = file_info.get("AHFL_URL", "")
                 
                 if file_name.lower().endswith(".pdf"):
+                    # 화이트리스트 키워드 필터링 적용
+                    whitelist = ["공고", "모집", "안내"]
+                    if not any(kw in file_name.lower() for kw in whitelist):
+                        continue
+                        
                     save_path = os.path.join(PDF_SAVE_DIR, file_name)
                     print(f" -> PDF 발견: {file_name}")
                     if os.path.exists(save_path):
