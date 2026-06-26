@@ -48,7 +48,8 @@ def get_notice_detail(sys_ds_cd, bbs_sn):
     return response.json()
 
 """분양임대공고문 목록 조회 API 호출"""
-def get_lease_notice_list(page_no=1, page_size=10, start_date=None, end_date=None, pan_nm=None, upp_ais_tp_cd=None):
+def get_lease_notice_list(page_no=1, page_size=10, start_date=None, end_date=None, pan_nm=None, 
+                           upp_ais_tp_cd=None, cnp_cd=None, pan_ss=None, clsg_st_dt=None, clsg_ed_dt=None):
     url = "http://apis.data.go.kr/B552555/lhLeaseNoticeInfo1/lhLeaseNoticeInfo1"
     
     service_key = os.getenv("LH_ROA_INFO_API_KEY")
@@ -69,13 +70,21 @@ def get_lease_notice_list(page_no=1, page_size=10, start_date=None, end_date=Non
         params["PAN_NM"] = pan_nm
     if upp_ais_tp_cd:
         params["UPP_AIS_TP_CD"] = upp_ais_tp_cd
+    if cnp_cd:
+        params["CNP_CD"] = cnp_cd
+    if pan_ss:
+        params["PAN_SS"] = pan_ss
+    if clsg_st_dt:
+        params["CLSG_ST_DT"] = clsg_st_dt
+    if clsg_ed_dt:
+        params["CLSG_ED_DT"] = clsg_ed_dt
         
     response = requests.get(url, params=params)
     response.raise_for_status()
     return response.json()
 
 """분양임대공고별 상세정보(첨부파일 포함) 조회 API 호출"""
-def get_lease_notice_detail(spl_inf_tp_cd, ccr_cnnt_sys_ds_cd, pan_id, upp_ais_tp_cd=None, ais_tp_cd=None):
+def get_lease_notice_detail(spl_inf_tp_cd, ccr_cnnt_sys_ds_cd, pan_id, upp_ais_tp_cd, ais_tp_cd=None):
     url = "http://apis.data.go.kr/B552555/lhLeaseNoticeDtlInfo1/getLeaseNoticeDtlInfo1"
     
     service_key = os.getenv("LH_ROA_DTL_API_KEY")
@@ -86,10 +95,9 @@ def get_lease_notice_detail(spl_inf_tp_cd, ccr_cnnt_sys_ds_cd, pan_id, upp_ais_t
         "serviceKey": urllib.parse.unquote(service_key),
         "SPL_INF_TP_CD": spl_inf_tp_cd,
         "CCR_CNNT_SYS_DS_CD": ccr_cnnt_sys_ds_cd,
-        "PAN_ID": pan_id
+        "PAN_ID": pan_id,
+        "UPP_AIS_TP_CD": upp_ais_tp_cd
     }
-    if upp_ais_tp_cd:
-        params["UPP_AIS_TP_CD"] = upp_ais_tp_cd
     if ais_tp_cd:
         params["AIS_TP_CD"] = ais_tp_cd
         
