@@ -37,6 +37,7 @@ export default function Sidebar({
   const [searchTerm, setSearchTerm] = useState('');
   const [complexSearchTerm, setComplexSearchTerm] = useState('');
   const [activeTabStatus, setActiveTabStatus] = useState<ApplicationStatus>('ONGOING');
+  const [activeRegion, setActiveRegion] = useState<string>('ALL'); // 💡 지역 필터 상태 추가
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
 
 
@@ -83,25 +84,14 @@ export default function Sidebar({
 
 
 
-  const getAnnouncementStatus = (ann: Announcement): ApplicationStatus => {
-    const applySchedules = ann.schedules.filter(s => s.schedule_type.includes('신청접수'));
-    if (applySchedules.length === 0) return 'CLOSED';
-    let minStart: Date | null = null, maxEnd: Date | null = null;
-    for (const s of applySchedules) {
-      if (s.start_date) {
-        const start = new Date(s.start_date);
-        if (!isNaN(start.getTime())) { if (!minStart || start < minStart) minStart = start; }
-      }
-      if (s.end_date) {
-        const end = new Date(s.end_date);
-        if (!isNaN(end.getTime())) { if (!maxEnd || end > maxEnd) maxEnd = end; }
-      }
-    }
-    if (!minStart || !maxEnd) return 'CLOSED';
+  const getAnnouncementStatus = (ann: Announcement): 'UPCOMING' | 'ONGOING' | 'CLOSED' => {
+    const minStart = getAnnouncementMinStart(ann);
+    const maxEnd = getAnnouncementMaxEnd(ann);
     const now = new Date();
-    if (now < minStart) return 'UPCOMING';
-    else if (now >= minStart && now <= maxEnd) return 'ONGOING';
-    else return 'CLOSED';
+
+    if (minStart && now < minStart) return 'UPCOMING';
+    if (maxEnd && now > maxEnd) return 'CLOSED';
+    return 'ONGOING';
   };
 
   const getAnnouncementMinStart = (ann: Announcement): Date | null => {
@@ -134,11 +124,39 @@ export default function Sidebar({
     return maxEnd;
   };
 
+  // 💡 DB 행정구역 데이터 규격(서울특별시, 경기도 등)과 필터 탭 라벨을 매핑해주는 헬퍼 함수
+  const matchesActiveRegion = (annRegion: string | null | undefined, active: string): boolean => {
+    if (active === 'ALL') return true;
+    if (!annRegion) return false;
+    
+    if (active === '서울') return annRegion.startsWith('서울');
+    if (active === '경기') return annRegion.startsWith('경기');
+    if (active === '인천') return annRegion.startsWith('인천');
+    
+    if (active === '기타') {
+      // 서울, 경기, 인천으로 시작하지 않는 모든 나머지 행정구역들을 기타로 분류
+      return !annRegion.startsWith('서울') && 
+             !annRegion.startsWith('경기') && 
+             !annRegion.startsWith('인천');
+    }
+    
+    return annRegion === active;
+  };
+
+  // 💡 지역 구분을 반영한 공고 목록 정렬 및 필터링 함수
   const getSortedAnnouncements = () => {
     const filtered = announcements.filter(ann => {
+      // ① 검색어 필터
       const matchesSearch = ann.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                             ann.institution.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesSearch && getAnnouncementStatus(ann) === activeTabStatus;
+      
+      // ② 접수 상태 필터
+      const matchesStatus = getAnnouncementStatus(ann) === activeTabStatus;
+
+      // ③ 지역 구분 필터 (정밀 매퍼 연동)
+      const matchesRegion = matchesActiveRegion(ann.region, activeRegion);
+
+      return matchesSearch && matchesStatus && matchesRegion;
     });
 
     if (activeTabStatus === 'UPCOMING') {
@@ -177,18 +195,25 @@ export default function Sidebar({
     return filtered;
   };
 
-  const getStatusCount = (status: ApplicationStatus) => announcements.filter(ann => getAnnouncementStatus(ann) === status).length;
+  // 💡 지역 구분을 연계하여 접수 상태별 개수를 동적으로 집계하는 함수
+  const getStatusCount = (status: string) => {
+    return announcements.filter(ann => {
+      const matchesStatus = getAnnouncementStatus(ann) === status;
+      const matchesRegion = matchesActiveRegion(ann.region, activeRegion);
+      return matchesStatus && matchesRegion;
+    }).length;
+  };
 
   const toggleSection = (key: string, annId: number) => {
-    setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
+    setExpandedSections((prev) => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
   };
 
   const handleCardClick = (annId: number) => {
-    if (activeAnnId === annId) return; 
     onSelectAnnouncement(annId);
   };
-
-
 
   const filteredComplexes = displayComplexes.filter(c => 
     c.name.toLowerCase().includes(complexSearchTerm.toLowerCase()) ||
@@ -196,8 +221,6 @@ export default function Sidebar({
   );
 
   const activeAnn = announcements.find(a => a.id === activeAnnId);
-
-
 
   // 약관 상수 텍스트
   const PRIVACY_POLICY = `제 1 조 (목적)
@@ -229,7 +252,6 @@ export default function Sidebar({
       }}
     >
 
-
       {/* 브랜드 로고 헤더 (모든 탭에서 공통 표시) */}
       <div className={styles['sidebar-brand']}>
         <div className={styles['brand-logo-wrap']}>
@@ -257,6 +279,24 @@ export default function Sidebar({
                   </button>
                 )}
               </div>
+              
+              {/* ① 지역 구분 필터 태그 (순서 조정: 전체 지역 -> 서울 -> 인천 -> 경기 -> 기타) */}
+              <div className={styles['region-tags']}>
+                {['ALL', '서울', '인천', '경기', '기타'].map((r) => {
+                  const label = r === 'ALL' ? '전체 지역' : r;
+                  return (
+                    <span 
+                      key={r}
+                      className={`${styles['region-tag']} ${activeRegion === r ? styles.active : ''}`}
+                      onClick={() => setActiveRegion(r)}
+                    >
+                      {label}
+                    </span>
+                  );
+                })}
+              </div>
+
+              {/* ② 접수 구분 필터 태그 (하단 노출) */}
               <div className={styles['filter-tags']}>
                 <span className={`${styles['filter-tag']} ${activeTabStatus === 'UPCOMING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('UPCOMING')}>
                   접수 예정 ({getStatusCount('UPCOMING')})

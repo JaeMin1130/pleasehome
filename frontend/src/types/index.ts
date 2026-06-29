@@ -33,6 +33,7 @@ export interface Announcement {
   institution: string;
   subscription_type: string;
   doc_path: string;
+  region?: string | null; // 💡 DB region 컬럼 매핑 타입 추가
   schedules: Schedule[];
   details: Detail[];
   limits: Limit[];
