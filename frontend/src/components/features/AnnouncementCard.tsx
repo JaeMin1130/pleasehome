@@ -26,7 +26,9 @@ export default function AnnouncementCard({
       ? 'lh' 
       : ann.institution.includes('HUG')
         ? 'hug'
-        : 'gh';
+        : ann.institution.includes('경기') || ann.institution.includes('GH')
+          ? 'gh'
+          : 'private';
 
   const getDDayText = () => {
     const applySchedules = ann.schedules.filter(s => s.schedule_type.includes('신청접수'));

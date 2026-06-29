@@ -35,6 +35,10 @@
     border-color: var(--color-hug);
 }
 
+.announcement-card.active.private {
+    border-color: var(--color-private);
+}
+
 .section-title-wrap {
     display: flex;
     align-items: center;
@@ -117,6 +121,11 @@
 .hug .card-type {
     color: var(--color-hug);
     background-color: var(--color-hug-bg);
+}
+
+.private .card-type {
+    color: var(--color-private);
+    background-color: var(--color-private-bg);
 }
 
 .d-day-badge {

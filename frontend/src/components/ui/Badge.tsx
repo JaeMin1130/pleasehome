@@ -11,7 +11,9 @@ export default function Badge({ institution }: BadgeProps) {
       ? 'badge-lh' 
       : institution.includes('HUG')
         ? 'badge-hug'
-        : 'badge-gh';
+        : institution.includes('경기') || institution.includes('GH')
+          ? 'badge-gh'
+          : 'badge-private';
 
   return <span className={`badge ${badgeClass}`}>{institution}</span>;
 }
