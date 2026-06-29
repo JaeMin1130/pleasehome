@@ -136,21 +136,7 @@
   flex-shrink: 0;
 }
 
-.header-resizer {
-  height: calc(var(--spacing-xs) * 1.25);
-  cursor: ns-resize;
-  background-color: var(--border-light);
-  z-index: calc(var(--z-index-dropdown) + 10);
-  flex-shrink: 0;
-  transition: background-color var(--transition-fast);
-  border-top: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
-  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
-}
 
-.header-resizer:hover,
-.header-resizer.resizing {
-  background-color: var(--primary);
-}
 
 /* 섹션 타이틀 바 */
 .section-title-bar {
@@ -810,30 +796,7 @@
   color: var(--text-secondary);
 }
 
-/* 공급주택 목록 제어 토글 버튼 스타일 */
-.complex-list-trigger-btn {
-  width: 100%;
-  height: 50px;
-  background-color: #f8fafc; /* 부드럽고 차분한 뉴트럴 스노우 그레이 */
-  color: var(--text-secondary);
-  border: none;
-  border-top: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-sm);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  transition: all var(--transition-normal);
-  flex-shrink: 0;
-}
 
-.complex-list-trigger-btn:hover {
-  background-color: var(--primary-bg); /* 호버 시 세련되게 피어나는 라이트 블루 */
-  color: var(--primary);
-  border-top-color: rgba(26, 86, 219, 0.2);
-}
 
 .sidebar-content {
   display: flex;

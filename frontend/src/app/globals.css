@@ -149,10 +149,10 @@ body { background-color: var(--bg-body); color: var(--text-primary); font-family
 .custom-marker { display: flex; align-items: center; justify-content: center; position: relative; }
 .marker-pin { width: var(--spacing-lg); height: var(--spacing-lg); border-radius: var(--radius-full); background: tomato; border: calc(var(--spacing-xs) * 0.5) solid var(--color-white); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); transition: transform var(--transition-fast), background-color var(--transition-fast); }
 .custom-marker:hover .marker-pin { transform: scale(1.15); z-index: var(--z-index-base); }
-.custom-marker.active .marker-pin { background: var(--color-sh); transform: scale(1.4); z-index: calc(var(--z-index-base) + 10); }
+.custom-marker.active .marker-pin { background: #800000; transform: scale(1.4); z-index: calc(var(--z-index-base) + 10); }
 .marker-pin svg { display: block; }
 .window-hole { fill: tomato; transition: fill var(--transition-fast); }
-.custom-marker.active .window-hole { fill: var(--color-sh); }
+.custom-marker.active .window-hole { fill: #800000; }
 .popup-title { font-weight: var(--font-weight-bold); font-size: var(--font-size-base); margin-bottom: var(--spacing-xs); color: var(--text-primary); }
 .popup-address { font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: calc(var(--spacing-md) * 0.75); }
 .popup-btn { display: block; width: 100%; text-align: center; background-color: var(--primary); color: var(--color-white) !important; padding: var(--spacing-sm) calc(var(--spacing-md) * 0.75); border-radius: var(--radius-sm); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); text-decoration: none; cursor: pointer; border: none; }

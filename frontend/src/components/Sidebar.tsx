@@ -38,10 +38,7 @@ export default function Sidebar({
   const [complexSearchTerm, setComplexSearchTerm] = useState('');
   const [activeTabStatus, setActiveTabStatus] = useState<ApplicationStatus>('ONGOING');
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
-  
-  // 높이 조절 상태 추가 (기본 높이로 초기화)
-  const [headerHeight, setHeaderHeight] = useState(HEADER_ACCORDION_DEFAULT_HEIGHT);
-  const [isResizingHeader, setIsResizingHeader] = useState(false);
+
 
   // 공급 주택 목록 개폐 상태 추가
   const [isComplexListOpen, setIsComplexListOpen] = useState(false);
@@ -84,33 +81,7 @@ export default function Sidebar({
   // 모달 약관 노출 상태
   const [activeModal, setActiveModal] = useState<'privacy' | 'terms' | null>(null);
 
-  const startResizingHeader = (mouseDownEvent: React.MouseEvent) => {
-    mouseDownEvent.preventDefault();
-    setIsResizingHeader(true);
-    document.body.style.userSelect = 'none';
-    document.body.style.cursor = 'ns-resize';
 
-    const startHeight = headerHeight;
-    const startY = mouseDownEvent.clientY;
-
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      const newHeight = Math.max(HEADER_ACCORDION_MIN_HEIGHT, Math.min(HEADER_ACCORDION_MAX_HEIGHT, startHeight + (moveEvent.clientY - startY)));
-      setHeaderHeight(newHeight);
-    };
-
-
-
-    const handleMouseUp = () => {
-      setIsResizingHeader(false);
-      document.body.style.userSelect = '';
-      document.body.style.cursor = '';
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-  };
 
   const getAnnouncementStatus = (ann: Announcement): ApplicationStatus => {
     const applySchedules = ann.schedules.filter(s => s.schedule_type.includes('신청접수'));
@@ -226,12 +197,6 @@ export default function Sidebar({
 
   const activeAnn = announcements.find(a => a.id === activeAnnId);
 
-  // 아코디언이 하나라도 열려 있는지 체크
-  const isAnyAccordionOpen = Object.values(expandedSections).some(isOpen => isOpen === true);
-
-    // 드래그 조절된 높이값을 아코디언 개폐 여부와 무관하게 항상 사용
-  const currentHeaderHeight = headerHeight;
-
 
 
   // 약관 상수 텍스트
@@ -322,18 +287,13 @@ export default function Sidebar({
           <div className={styles['sidebar-content']}>
             <div 
               className={styles['announcement-detail-wrapper']}
-              style={isComplexListOpen ? {
-                height: `${currentHeaderHeight}px`,
-                flex: 'none',
-                marginBottom: 'calc(var(--spacing-md) * 0.75)',
-                transition: isResizingHeader
-                  ? 'none'
-                  : 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin-bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-              } : {
-                height: 'calc(100% - 50px)',
-                flex: 'none',
-                marginBottom: '0px',
-                transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin-bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+              style={{
+                flex: 1,
+                minHeight: 0,
+                height: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                marginBottom: 0
               }}
             >
               <div className={styles['announcement-detail-header']}>
@@ -347,103 +307,54 @@ export default function Sidebar({
               <div className={styles['announcement-detail-body']}>
                 {activeAnn && (
                   <AnnouncementCard
-                    ann={activeAnn} isActive={true}
+                    ann={activeAnn} 
+                    isActive={true}
                     onClick={() => {}}
-                    expandedSections={expandedSections} onToggleSection={(key) => toggleSection(key, activeAnn.id)}
-                  />
+                    expandedSections={expandedSections} 
+                    onToggleSection={(key) => toggleSection(key, activeAnn.id)}
+                    isComplexListOpen={isComplexListOpen}
+                    onToggleComplexList={() => setIsComplexListOpen(!isComplexListOpen)}
+                  >
+                    <div style={{ marginTop: 'calc(var(--spacing-sm) * 0.5)' }}>
+                      <div className={styles['complex-search-wrapper']} style={{ display: 'flex', alignItems: 'center', position: 'relative', width: '100%' }}>
+                        <input 
+                          type="text" 
+                          placeholder="주택명 검색..." 
+                          value={complexSearchTerm}
+                          onChange={(e) => setComplexSearchTerm(e.target.value)}
+                          className={styles['complex-search-input']}
+                          style={{ width: '100%', outline: 'none' }}
+                        />
+                        {complexSearchTerm && (
+                          <button 
+                            onClick={() => setComplexSearchTerm('')}
+                            className={styles['complex-clear-btn']}
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)', marginTop: 'var(--spacing-sm)' }}>
+                        {filteredComplexes.length === 0 ? (
+                          <div className={styles['complex-empty-msg']}>
+                            {complexSearchTerm ? '검색 결과가 없습니다.' : '이 공고는 특정 단지 없이 개별적으로 지원되는 전세임대형 정책이거나, 필터 조건에 맞는 주택이 없습니다.'}
+                          </div>
+                        ) : (
+                          filteredComplexes.map((complex) => (
+                            <ComplexCard
+                              key={complex.id}
+                              complex={complex}
+                              isActive={activeComplexId === complex.id}
+                              onClick={() => onSelectComplex(complex)}
+                            />
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </AnnouncementCard>
                 )}
               </div>
             </div>
-
-            {isComplexListOpen && (
-              <div 
-                onMouseDown={startResizingHeader}
-                className={`${styles['header-resizer']} ${isResizingHeader ? styles.resizing : ''}`}
-              />
-            )}
-
-            <div 
-              className={styles['sidebar-list']}
-              style={isComplexListOpen ? {
-                height: `calc(100% - ${currentHeaderHeight}px - 50px - 4px - 12px)`,
-                flex: 'none',
-                minHeight: 0,
-                opacity: 1,
-                overflowY: 'auto',
-                transition: isResizingHeader
-                  ? 'none'
-                  : 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease'
-              } : {
-                height: '0px',
-                flex: 'none',
-                minHeight: 0,
-                opacity: 0,
-                overflowY: 'hidden',
-                paddingTop: 0,
-                paddingBottom: 0,
-                borderTopWidth: 0,
-                borderBottomWidth: 0,
-                transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, padding 0.3s ease, border 0.3s ease'
-              }}
-            >
-              <div className={styles['complex-list-header']}>
-                <div className={styles['complex-list-title']}>
-                  공급 주택 목록 ({filteredComplexes.length})
-                </div>
-                <div className={styles['complex-search-wrapper']}>
-                  <input 
-                    type="text" 
-                    placeholder="주택명 검색..." 
-                    value={complexSearchTerm}
-                    onChange={(e) => setComplexSearchTerm(e.target.value)}
-                    className={styles['complex-search-input']}
-                  />
-                  {complexSearchTerm && (
-                    <button 
-                      onClick={() => setComplexSearchTerm('')}
-                      className={styles['complex-clear-btn']}
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              </div>
-              {filteredComplexes.length === 0 ? (
-                <div className={styles['complex-empty-msg']}>
-                  {complexSearchTerm ? '검색 결과가 없습니다.' : '이 공고는 특정 단지 없이 개별적으로 지원되는 전세임대형 정책이거나, 필터 조건에 맞는 주택이 없습니다.'}
-                </div>
-              ) : (
-                filteredComplexes.map((complex) => (
-                  <ComplexCard
-                    key={complex.id}
-                    complex={complex}
-                    isActive={activeComplexId === complex.id}
-                    onClick={() => onSelectComplex(complex)}
-                  />
-                ))
-              )}
-            </div>
-
-            <button 
-              className={styles['complex-list-trigger-btn']}
-              onClick={() => setIsComplexListOpen(!isComplexListOpen)}
-            >
-              {isComplexListOpen ? (
-                <>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                  </svg>
-                  공급 주택 목록 접기
-                </>
-              ) : (
-                <>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
-                    <polyline points="18 15 12 9 6 15"></polyline>
-                  </svg>
-                  공급 주택 목록 열기
-                </>
-              )}
-            </button>
           </div>
         )
       )}
