@@ -259,3 +259,8 @@
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-medium);
 }
+
+.section-content-wrapper {
+    transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease-in-out;
+    box-sizing: border-box;
+}
