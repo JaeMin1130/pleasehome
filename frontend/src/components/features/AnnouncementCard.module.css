@@ -84,25 +84,53 @@
     margin-bottom: calc(var(--spacing-sm) * 1.25);
 }
 
+.header-badges {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
 .card-type {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
+    padding: calc(var(--spacing-xs) * 0.75) calc(var(--spacing-sm) * 0.75);
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
 }
 
 .lh .card-type {
     color: var(--color-lh);
+    background-color: var(--color-lh-bg);
 }
 
 .sh .card-type {
     color: var(--color-sh);
+    background-color: var(--color-sh-bg);
 }
 
 .gh .card-type {
     color: var(--color-gh);
+    background-color: var(--color-gh-bg);
 }
 
 .hug .card-type {
     color: var(--color-hug);
+    background-color: var(--color-hug-bg);
+}
+
+.d-day-badge {
+    background-color: #fff0ec;
+    color: #ff4d20;
+    border: 1px solid #ffded5;
+    padding: calc(var(--spacing-xs) * 0.75) calc(var(--spacing-sm) * 1.25);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    box-shadow: var(--shadow-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .card-title {
@@ -204,4 +232,23 @@
 
 .limits-table tr:last-child td {
     border-bottom: none;
+}
+
+.card-period-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    margin-top: calc(var(--spacing-xs) * -1.5);
+    margin-bottom: var(--spacing-md);
+    color: var(--text-secondary);
+}
+
+.period-icon {
+    flex-shrink: 0;
+    color: var(--icon-color);
+}
+
+.period-text {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
 }

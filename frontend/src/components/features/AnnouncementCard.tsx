@@ -28,6 +28,95 @@ export default function AnnouncementCard({
         ? 'hug'
         : 'gh';
 
+  const getDDayText = () => {
+    const applySchedules = ann.schedules.filter(s => s.schedule_type.includes('신청접수'));
+    if (applySchedules.length === 0) return null;
+    let minStart: Date | null = null;
+    for (const s of applySchedules) {
+      if (s.start_date) {
+        const start = new Date(s.start_date);
+        if (!isNaN(start.getTime())) {
+          if (!minStart || start < minStart) minStart = start;
+        }
+      }
+    }
+    if (!minStart) return null;
+    
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startDate = new Date(minStart.getFullYear(), minStart.getMonth(), minStart.getDate());
+    
+    const diffTime = startDate.getTime() - today.getTime();
+    if (diffTime <= 0) return null; 
+    
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return `D-${diffDays}`;
+  };
+
+  const getAnnouncementStatus = () => {
+    const applySchedules = ann.schedules.filter(s => s.schedule_type.includes('신청접수'));
+    if (applySchedules.length === 0) return 'CLOSED';
+    let minStart: Date | null = null, maxEnd: Date | null = null;
+    for (const s of applySchedules) {
+      if (s.start_date) {
+        const start = new Date(s.start_date);
+        if (!isNaN(start.getTime())) { if (!minStart || start < minStart) minStart = start; }
+      }
+      if (s.end_date) {
+        const end = new Date(s.end_date);
+        if (!isNaN(end.getTime())) { if (!maxEnd || end > maxEnd) maxEnd = end; }
+      }
+    }
+    if (!minStart || !maxEnd) return 'CLOSED';
+    const now = new Date();
+    if (now < minStart) return 'UPCOMING';
+    else if (now >= minStart && now <= maxEnd) return 'ONGOING';
+    else return 'CLOSED';
+  };
+
+  const getApplyPeriodText = () => {
+    const applySchedules = ann.schedules.filter(s => s.schedule_type.includes('신청접수'));
+    if (applySchedules.length === 0) return null;
+    let minStart: Date | null = null, maxEnd: Date | null = null;
+    let minStartStr: string | null = null, maxEndStr: string | null = null;
+    for (const s of applySchedules) {
+      if (s.start_date) {
+        const start = new Date(s.start_date);
+        if (!isNaN(start.getTime())) {
+          if (!minStart || start < minStart) {
+            minStart = start;
+            minStartStr = s.start_date;
+          }
+        }
+      }
+      if (s.end_date) {
+        const end = new Date(s.end_date);
+        if (!isNaN(end.getTime())) {
+          if (!maxEnd || end > maxEnd) {
+            maxEnd = end;
+            maxEndStr = s.end_date;
+          }
+        }
+      }
+    }
+    if (minStartStr && maxEndStr) {
+      return `${formatDate(minStartStr)} ~ ${formatDate(maxEndStr)}`;
+    }
+    const firstSchedule = applySchedules[0];
+    if (firstSchedule) {
+      if (firstSchedule.start_date || firstSchedule.end_date) {
+        return `${formatDate(firstSchedule.start_date)} ~ ${formatDate(firstSchedule.end_date)}`;
+      }
+      return firstSchedule.raw_text || null;
+    }
+    return null;
+  };
+
+  const dDayText = getDDayText();
+  const status = getAnnouncementStatus();
+  const periodText = getApplyPeriodText();
+  const showPeriodText = status === 'ONGOING';
+
   return (
     <div 
       id={`ann-card-${ann.id}`}
@@ -35,10 +124,21 @@ export default function AnnouncementCard({
       onClick={onClick}
     >
       <div className={styles['card-header']}>
-        <Badge institution={ann.institution} />
-        <span className={styles['card-type']}>{ann.subscription_type}</span>
+        <div className={styles['header-badges']}>
+          <Badge institution={ann.institution} />
+          <span className={styles['card-type']}>{ann.subscription_type}</span>
+        </div>
+        {dDayText && (
+          <span className={styles['d-day-badge']}>{dDayText}</span>
+        )}
       </div>
       <h3 className={styles['card-title']}>{ann.title}</h3>
+      
+      {showPeriodText && periodText && (
+        <div className={styles['card-period-row']}>
+          <span className={styles['period-text']}>접수기간: {periodText}</span>
+        </div>
+      )}
       
       {isActive && (
         <div className={styles['card-accordion']} onClick={(e) => e.stopPropagation()}>

@@ -126,6 +126,79 @@ export default function Sidebar({
     else return 'CLOSED';
   };
 
+  const getAnnouncementMinStart = (ann: Announcement): Date | null => {
+    const applySchedules = ann.schedules.filter(s => s.schedule_type.includes('신청접수'));
+    if (applySchedules.length === 0) return null;
+    let minStart: Date | null = null;
+    for (const s of applySchedules) {
+      if (s.start_date) {
+        const start = new Date(s.start_date);
+        if (!isNaN(start.getTime())) {
+          if (!minStart || start < minStart) minStart = start;
+        }
+      }
+    }
+    return minStart;
+  };
+
+  const getAnnouncementMaxEnd = (ann: Announcement): Date | null => {
+    const applySchedules = ann.schedules.filter(s => s.schedule_type.includes('신청접수'));
+    if (applySchedules.length === 0) return null;
+    let maxEnd: Date | null = null;
+    for (const s of applySchedules) {
+      if (s.end_date) {
+        const end = new Date(s.end_date);
+        if (!isNaN(end.getTime())) {
+          if (!maxEnd || end > maxEnd) maxEnd = end;
+        }
+      }
+    }
+    return maxEnd;
+  };
+
+  const getSortedAnnouncements = () => {
+    const filtered = announcements.filter(ann => {
+      const matchesSearch = ann.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            ann.institution.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesSearch && getAnnouncementStatus(ann) === activeTabStatus;
+    });
+
+    if (activeTabStatus === 'UPCOMING') {
+      return [...filtered].sort((a, b) => {
+        const startA = getAnnouncementMinStart(a);
+        const startB = getAnnouncementMinStart(b);
+        if (!startA && !startB) return 0;
+        if (!startA) return 1;
+        if (!startB) return -1;
+        return startA.getTime() - startB.getTime();
+      });
+    }
+
+    if (activeTabStatus === 'ONGOING') {
+      return [...filtered].sort((a, b) => {
+        const endA = getAnnouncementMaxEnd(a);
+        const endB = getAnnouncementMaxEnd(b);
+        if (!endA && !endB) return 0;
+        if (!endA) return 1;
+        if (!endB) return -1;
+        return endA.getTime() - endB.getTime();
+      });
+    }
+
+    if (activeTabStatus === 'CLOSED') {
+      return [...filtered].sort((a, b) => {
+        const endA = getAnnouncementMaxEnd(a);
+        const endB = getAnnouncementMaxEnd(b);
+        if (!endA && !endB) return 0;
+        if (!endA) return 1;
+        if (!endB) return -1;
+        return endB.getTime() - endA.getTime();
+      });
+    }
+
+    return filtered;
+  };
+
   const getStatusCount = (status: ApplicationStatus) => announcements.filter(ann => getAnnouncementStatus(ann) === status).length;
 
   const toggleSection = (key: string, annId: number) => {
@@ -227,16 +300,10 @@ export default function Sidebar({
               </div>
             </div>
             <div className={styles['sidebar-list']}>
-              {announcements.filter(ann => {
-                const matchesSearch = ann.title.toLowerCase().includes(searchTerm.toLowerCase()) || ann.institution.toLowerCase().includes(searchTerm.toLowerCase());
-                return matchesSearch && getAnnouncementStatus(ann) === activeTabStatus;
-              }).length === 0 ? (
+              {getSortedAnnouncements().length === 0 ? (
                 <div className={styles['empty-msg']}>결과가 없습니다.</div>
               ) : (
-                announcements.filter(ann => {
-                  const matchesSearch = ann.title.toLowerCase().includes(searchTerm.toLowerCase()) || ann.institution.toLowerCase().includes(searchTerm.toLowerCase());
-                  return matchesSearch && getAnnouncementStatus(ann) === activeTabStatus;
-                }).map((ann) => (
+                getSortedAnnouncements().map((ann) => (
                   <AnnouncementCard
                     key={ann.id} ann={ann} isActive={false}
                     onClick={() => handleCardClick(ann.id)}
