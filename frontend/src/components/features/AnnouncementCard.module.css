@@ -176,8 +176,6 @@
     padding: var(--spacing-md);
     font-size: var(--font-size-base);
     color: var(--text-secondary);
-    max-height: calc(var(--spacing-xl) * 9.375);
-    overflow-y: auto;
     line-height: var(--line-height-loose);
 }
 

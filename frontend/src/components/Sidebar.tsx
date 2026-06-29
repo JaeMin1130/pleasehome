@@ -39,9 +39,16 @@ export default function Sidebar({
   const [activeTabStatus, setActiveTabStatus] = useState<ApplicationStatus>('ONGOING');
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
   
-  // 높이 조절 상태 추가 (아코디언을 열었을 때 적용할 최대 높이 상태)
-  const [headerHeight, setHeaderHeight] = useState(HEADER_ACCORDION_MAX_HEIGHT);
+  // 높이 조절 상태 추가 (기본 높이로 초기화)
+  const [headerHeight, setHeaderHeight] = useState(HEADER_ACCORDION_DEFAULT_HEIGHT);
   const [isResizingHeader, setIsResizingHeader] = useState(false);
+
+  // 공급 주택 목록 개폐 상태 추가
+  const [isComplexListOpen, setIsComplexListOpen] = useState(false);
+
+  useEffect(() => {
+    setIsComplexListOpen(false);
+  }, [activeAnnId]);
 
 
 
@@ -222,10 +229,8 @@ export default function Sidebar({
   // 아코디언이 하나라도 열려 있는지 체크
   const isAnyAccordionOpen = Object.values(expandedSections).some(isOpen => isOpen === true);
 
-    // 드래그 중인 경우에는 마우스 위치를 따르고, 그 외에는 아코디언 개폐 여부에 따라 최대 높이(headerHeight)와 초기 높이(HEADER_ACCORDION_DEFAULT_HEIGHT)로 설정
-  const currentHeaderHeight = isResizingHeader 
-    ? headerHeight 
-    : (isAnyAccordionOpen ? headerHeight : HEADER_ACCORDION_DEFAULT_HEIGHT);
+    // 드래그 조절된 높이값을 아코디언 개폐 여부와 무관하게 항상 사용
+  const currentHeaderHeight = headerHeight;
 
 
 
@@ -314,10 +319,22 @@ export default function Sidebar({
             </div>
           </>
         ) : (
-          <>
+          <div className={styles['sidebar-content']}>
             <div 
               className={styles['announcement-detail-wrapper']}
-              style={{ height: `${currentHeaderHeight}px` }}
+              style={isComplexListOpen ? {
+                height: `${currentHeaderHeight}px`,
+                flex: 'none',
+                marginBottom: 'calc(var(--spacing-md) * 0.75)',
+                transition: isResizingHeader
+                  ? 'none'
+                  : 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin-bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+              } : {
+                height: 'calc(100% - 50px)',
+                flex: 'none',
+                marginBottom: '0px',
+                transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin-bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+              }}
             >
               <div className={styles['announcement-detail-header']}>
                 <button 
@@ -338,14 +355,37 @@ export default function Sidebar({
               </div>
             </div>
 
-            {isAnyAccordionOpen && (
+            {isComplexListOpen && (
               <div 
                 onMouseDown={startResizingHeader}
                 className={`${styles['header-resizer']} ${isResizingHeader ? styles.resizing : ''}`}
               />
             )}
 
-            <div className={styles['sidebar-list']}>
+            <div 
+              className={styles['sidebar-list']}
+              style={isComplexListOpen ? {
+                height: `calc(100% - ${currentHeaderHeight}px - 50px - 4px - 12px)`,
+                flex: 'none',
+                minHeight: 0,
+                opacity: 1,
+                overflowY: 'auto',
+                transition: isResizingHeader
+                  ? 'none'
+                  : 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease'
+              } : {
+                height: '0px',
+                flex: 'none',
+                minHeight: 0,
+                opacity: 0,
+                overflowY: 'hidden',
+                paddingTop: 0,
+                paddingBottom: 0,
+                borderTopWidth: 0,
+                borderBottomWidth: 0,
+                transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, padding 0.3s ease, border 0.3s ease'
+              }}
+            >
               <div className={styles['complex-list-header']}>
                 <div className={styles['complex-list-title']}>
                   공급 주택 목록 ({filteredComplexes.length})
@@ -383,7 +423,28 @@ export default function Sidebar({
                 ))
               )}
             </div>
-          </>
+
+            <button 
+              className={styles['complex-list-trigger-btn']}
+              onClick={() => setIsComplexListOpen(!isComplexListOpen)}
+            >
+              {isComplexListOpen ? (
+                <>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                  공급 주택 목록 접기
+                </>
+              ) : (
+                <>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
+                    <polyline points="18 15 12 9 6 15"></polyline>
+                  </svg>
+                  공급 주택 목록 열기
+                </>
+              )}
+            </button>
+          </div>
         )
       )}
 
