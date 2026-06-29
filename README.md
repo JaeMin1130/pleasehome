@@ -214,6 +214,10 @@ npm run dev
    • 현상: 서버 배포 후 접속 시 CSS/JS 등 `.next/static` 에셋이 404 Not Found 에러를 반환하거나, `sites-enabled`의 심볼릭 링크가 깨져 Nginx 테스트(`-t`)가 실패하는 현상.
    • 해결: Nginx 설정 내 `location /_next/static/` 블록에 `alias /home/iru/app/pleasehome/frontend/.next/static/;` 절대 경로를 명확히 매핑하고, `sites-available` 원본 파일을 에디터로 확실히 저장한 뒤 링크를 생성하도록 배포 절차를 교정.
 
+6. 애드센스 심사용 정적 상세 라우팅 및 지도의 실시간 쿼리 상태 동기화
+   • 현상: 메인 지도가 CSR(클라이언트 렌더링) 방식으로 동작하여 검색 로봇(애드센스)이 1,000자 이상의 정보성 텍스트를 읽지 못해 승인이 거절되고, 상세 페이지 뷰포트 내 스크롤이 차단되거나 딥링크 진입 후 URL 모순이 발생함.
+   • 해결: `/announcements/details/[id]` 정적 상세 페이지를 개설해 SQLite DB를 서버 사이드에서 실시간 쿼리하여 마크다운 포맷으로 풀 텍스트(MarkdownViewer) 렌더링을 구현하고, `detail-layout.css` 스크롤 래퍼를 씌워 글로벌 `overflow: hidden` 간섭을 우회함. 동시에 메인 지도 탐색 시 선택된 공고 ID를 HTML5 replaceState 기반 Shallow Routing으로 실시간 양방향 URL 동기화하여 해결.
+
 ### [백엔드 (Backend)]
 
 1. SQLite 컬럼 Comment 속성 미지원 및 메타데이터 표출 한계
