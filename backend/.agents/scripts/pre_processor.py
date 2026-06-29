@@ -37,11 +37,16 @@ def detect_features(md_content):
     ]
     # 본문 내 주택 주소나 공급 세부 정보를 담은 표의 유무를 정교하게 판별
     has_housing_table = False
-    tables = re.findall(r'((?:\|.*\|(?:\n|$))+)', md_content)
+    tables = re.findall(r'((?:\|.*\|\s*(?:\n|$))+)', md_content)
     for table in tables:
-        if ("소재지" in table or "주소" in table or "단지명" in table) and \
-           ("면적" in table or "전용면적" in table) and \
-           ("보증금" in table or "임대료" in table):
+        # 1) 주소 표 혹은 주택형/타입을 명시하는 열 식별
+        is_housing_ident = any(k in table for k in ["소재지", "주소", "단지명", "주택형", "주택 타입", "주택타입", "형별", "주택형별"])
+        # 2) 면적 관련 열 식별
+        is_area_ident = any(k in table for k in ["면적", "전용면적", "계약면적", "공급면적"])
+        # 3) 가격 혹은 공급/모집 세대수 열 식별
+        is_price_or_supply = any(k in table for k in ["보증금", "임대료", "공급호수", "모집호수", "세대수"])
+        
+        if is_housing_ident and is_area_ident and is_price_or_supply:
             has_housing_table = True
             break
             
