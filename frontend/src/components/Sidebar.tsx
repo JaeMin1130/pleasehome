@@ -222,7 +222,7 @@ export default function Sidebar({
                   접수 중 ({getStatusCount('ONGOING')})
                 </span>
                 <span className={`${styles['filter-tag']} ${activeTabStatus === 'CLOSED' ? styles.active : ''}`} onClick={() => setActiveTabStatus('CLOSED')}>
-                  마감 ({getStatusCount('CLOSED')})
+                  접수 마감 ({getStatusCount('CLOSED')})
                 </span>
               </div>
             </div>
