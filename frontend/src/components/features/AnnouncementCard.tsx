@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Announcement } from '@/types';
+import Link from 'next/link';
 import Badge from '@/components/ui/Badge';
 import MarkdownViewer from '@/components/ui/MarkdownViewer';
 import { formatMoney, formatDate, formatInterestRate } from '@/utils/formatters';
@@ -196,6 +197,24 @@ export default function AnnouncementCard({
         )}
       </div>
       <h3 className={styles['card-title']}>{ann.title}</h3>
+      
+      {isActive && (
+        <div className={styles['detail-link-row']}>
+          <Link 
+            href={`/announcements/details/${ann.id}`} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className={styles['detail-link-btn']}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['link-icon']}>
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+            새 탭에서 보기
+          </Link>
+        </div>
+      )}
       
       {showPeriodText && periodText && (
         <div className={styles['card-period-row']}>

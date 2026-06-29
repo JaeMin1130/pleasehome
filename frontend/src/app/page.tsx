@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import dynamic from 'next/dynamic';
+import { useSearchParams } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import DetailPanel from '@/components/DetailPanel';
 import NavigationBar, { NavigationTabType } from '@/components/NavigationBar';
@@ -25,7 +26,7 @@ const Map = dynamic(() => import('@/components/Map'), {
   )
 });
 
-export default function Home() {
+function HomeContent() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [allComplexes, setAllComplexes] = useState<Complex[]>([]);
   const [announcementUnits, setAnnouncementUnits] = useState<any[]>([]);
@@ -49,10 +50,26 @@ export default function Home() {
     maxMonthlyRent: FILTER_DEFAULT_LIMITS.maxMonthlyRent
   });
 
+  const searchParams = useSearchParams();
+  const annIdParam = searchParams.get('announcement_id');
+
   useEffect(() => {
     fetch('/api/announcements').then(res => res.json()).then(data => setAnnouncements(data));
     fetch('/api/complexes').then(res => res.json()).then(data => setAllComplexes(data));
   }, []);
+
+  // 쿼리 파라미터가 유입되었을 때 해당 공고 활성화
+  useEffect(() => {
+    if (annIdParam && announcements.length > 0) {
+      const parsedId = parseInt(annIdParam, 10);
+      if (!isNaN(parsedId)) {
+        const exists = announcements.some(a => a.id === parsedId);
+        if (exists) {
+          setActiveAnnId(parsedId);
+        }
+      }
+    }
+  }, [annIdParam, announcements]);
 
   useEffect(() => {
     if (activeAnnId === null) { setAnnouncementUnits([]); return; }
@@ -97,7 +114,19 @@ export default function Home() {
   const activeAnn = announcements.find(a => a.id === activeAnnId);
   const isPolicyOnly = activeAnnId !== null && displayComplexes.length === 0;
 
-  const handleSelectAnnouncement = (id: number | null) => { setActiveAnnId(id); setActiveComplexId(null); setSelectedComplex(null); setIsPanelOpen(false); };
+  const handleSelectAnnouncement = (id: number | null) => {
+    setActiveAnnId(id);
+    setActiveComplexId(null);
+    setSelectedComplex(null);
+    setIsPanelOpen(false);
+
+    // URL 양방향 동기화 (Shallow Routing)
+    if (id !== null) {
+      window.history.replaceState(null, '', `/?announcement_id=${id}`);
+    } else {
+      window.history.replaceState(null, '', '/');
+    }
+  };
   const handleSelectComplex = (complex: Complex) => {
     if (activeComplexId === complex.id && isPanelOpen) {
       setSelectedComplex(null);
@@ -275,3 +304,16 @@ export default function Home() {
     </div>
   );
 }
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className={styles['loading-container']}>
+        데이터를 불러오는 중입니다...
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
+  );
+}
+
