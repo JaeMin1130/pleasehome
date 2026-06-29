@@ -5,6 +5,11 @@ import MarkdownViewer from '@/components/ui/MarkdownViewer';
 import { formatMoney, formatDate, formatInterestRate } from '@/utils/formatters';
 import styles from './AnnouncementCard.module.css';
 
+// 앞부분의 숫자 넘버링 패턴(예: 1. 2. )을 지우고 텍스트만 추출하는 헬퍼 함수
+const superClean = (str: string): string => {
+  return str.replace(/[#*_\-\[\]\(\)\d\.\s]/g, '').trim();
+};
+
 export interface AccordionSectionProps {
   title: React.ReactNode;
   isOpen: boolean;
@@ -253,22 +258,33 @@ export default function AnnouncementCard({
               </AccordionSection>
             )}
 
-            {ann.details && ann.details.length > 0 && ann.details.map((d) => (
-              <AccordionSection
-                key={d.id}
-                title={`${currentNum++}. ${d.section_title}`}
-                isOpen={!!expandedSections[`${ann.id}-detail-${d.id}`]}
-                onToggle={() => onToggleSection(`${ann.id}-detail-${d.id}`)}
-              >
-                <div className={styles['section-content-flex']}>
-                  <div className={styles['doc-item']}>
-                    <div className={styles['doc-desc']}>
-                      <MarkdownViewer content={d.section_content} />
-                    </div>
-                  </div>
-                </div>
-              </AccordionSection>
-            ))}
+            {ann.details && ann.details.length > 0 && ann.details.map((d) => {
+               const lines = d.section_content ? d.section_content.split('\n') : [];
+               const firstLine = lines[0] || '';
+               const cleanTitle = superClean(d.section_title || '');
+               const cleanFirstLine = superClean(firstLine);
+
+               const finalContent = (cleanTitle === cleanFirstLine && cleanTitle !== '')
+                 ? lines.slice(1).join('\n')
+                 : d.section_content;
+
+               return (
+                 <AccordionSection
+                   key={d.id}
+                   title={`${currentNum++}. ${d.section_title}`}
+                   isOpen={!!expandedSections[`${ann.id}-detail-${d.id}`]}
+                   onToggle={() => onToggleSection(`${ann.id}-detail-${d.id}`)}
+                 >
+                   <div className={styles['section-content-flex']}>
+                     <div className={styles['doc-item']}>
+                       <div className={styles['doc-desc']}>
+                         <MarkdownViewer content={finalContent} />
+                       </div>
+                     </div>
+                   </div>
+                 </AccordionSection>
+               );
+             })}
 
             {children && (
               <AccordionSection
