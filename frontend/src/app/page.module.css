@@ -1,20 +1,3 @@
-.resizer-bar {
-    width: var(--spacing-xs);
-    height: 100%;
-    cursor: ew-resize;
-    background-color: var(--border-light);
-    z-index: calc(var(--z-index-dropdown) + 1);
-    position: absolute;
-    top: 0;
-    flex-shrink: 0;
-    transition: background-color var(--transition-fast);
-}
-
-.resizer-bar:hover,
-.resizer-bar.dragging {
-    background-color: var(--primary);
-}
-
 .app-map-container {
     position: absolute;
     top: 0;

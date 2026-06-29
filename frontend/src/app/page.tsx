@@ -40,60 +40,8 @@ export default function Home() {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
 
-  const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_DEFAULT_WIDTH);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-
-  const [panelWidth, setPanelWidth] = useState(PANEL_DEFAULT_WIDTH);
-  const [isPanelDragging, setIsPanelDragging] = useState(false);
   const [activeTab, setActiveTab] = useState<NavigationTabType>('SEARCH');
-
-  const startResizing = (mouseDownEvent: React.MouseEvent) => {
-    mouseDownEvent.preventDefault();
-    setIsDragging(true);
-    document.body.style.userSelect = 'none';
-    document.body.style.cursor = 'ew-resize';
-
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      const newWidth = Math.max(SIDEBAR_MIN_WIDTH, Math.min(SIDEBAR_MAX_WIDTH, moveEvent.clientX - NAVIGATION_BAR_WIDTH));
-      setSidebarWidth(newWidth);
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-      document.body.style.userSelect = '';
-      document.body.style.cursor = '';
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-  };
-
-  const startResizingPanel = (mouseDownEvent: React.MouseEvent) => {
-    mouseDownEvent.preventDefault();
-    setIsPanelDragging(true);
-    document.body.style.userSelect = 'none';
-    document.body.style.cursor = 'ew-resize';
-
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      const sidebarOffset = (isSidebarCollapsed ? 0 : sidebarWidth) + NAVIGATION_BAR_WIDTH;
-      const newWidth = Math.max(PANEL_MIN_WIDTH, Math.min(PANEL_MAX_WIDTH, moveEvent.clientX - sidebarOffset));
-      setPanelWidth(newWidth);
-    };
-
-    const handleMouseUp = () => {
-      setIsPanelDragging(false);
-      document.body.style.userSelect = '';
-      document.body.style.cursor = '';
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-  };
 
   const [filterState, setFilterState] = useState<FilterState>({
     targetGroup: 'ALL',
@@ -279,16 +227,10 @@ export default function Home() {
 
         <Sidebar 
           announcements={announcements} activeAnnId={activeAnnId} onSelectAnnouncement={handleSelectAnnouncement} 
-          width={sidebarWidth} isCollapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          width={SIDEBAR_DEFAULT_WIDTH} isCollapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           displayComplexes={filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex}
           activeTab={activeTab} allComplexes={allComplexes}
           style={{ left: `${NAVIGATION_BAR_WIDTH}px` }}
-        />
-
-        <div 
-          className={`${styles['resizer-bar']} ${isDragging ? styles.dragging : ''}`} 
-          onMouseDown={startResizing} 
-          style={{ left: (isSidebarCollapsed ? 0 : sidebarWidth) + NAVIGATION_BAR_WIDTH }} 
         />
 
         <DetailPanel 
@@ -298,21 +240,13 @@ export default function Home() {
           announcements={announcements} 
           onClose={() => { setIsPanelOpen(false); setActiveComplexId(null); }} 
           style={{ 
-            left: (isSidebarCollapsed ? 0 : sidebarWidth) + NAVIGATION_BAR_WIDTH,
-            width: `${panelWidth}px`
+            left: (isSidebarCollapsed ? 0 : SIDEBAR_DEFAULT_WIDTH) + NAVIGATION_BAR_WIDTH,
+            width: `${PANEL_DEFAULT_WIDTH}px`
           }} 
         />
 
-        {isPanelOpen && (
-          <div 
-            className={`${styles['resizer-bar']} ${isPanelDragging ? styles.dragging : ''}`} 
-            onMouseDown={startResizingPanel} 
-            style={{ left: (isSidebarCollapsed ? 0 : sidebarWidth) + NAVIGATION_BAR_WIDTH + panelWidth }} 
-          />
-        )}
-
         <div className={styles['app-map-container']}>
-          <Map complexes={filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex} />
+          <Map complexes={filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex} isSidebarCollapsed={isSidebarCollapsed} />
           
 
           

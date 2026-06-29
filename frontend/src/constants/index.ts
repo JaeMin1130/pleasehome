@@ -6,12 +6,8 @@ export const PANEL_GAP = 0;
 // [2] 수직 네비게이션 탭 바 규격
 export const NAVIGATION_BAR_WIDTH = 60;
 
-// [3] 리사이저 드래그 너비 및 높이 제한 범위
-export const SIDEBAR_MIN_WIDTH = 280;
-export const SIDEBAR_MAX_WIDTH = 700;
-export const SIDEBAR_DEFAULT_WIDTH = 500;
-export const PANEL_MIN_WIDTH = 450;
-export const PANEL_MAX_WIDTH = 900;
+// [3] 사이드바 및 상세 패널 고정 너비 규격
+export const SIDEBAR_DEFAULT_WIDTH = 450;
 export const PANEL_DEFAULT_WIDTH = 550;
 export const HEADER_ACCORDION_MIN_HEIGHT = 150;
 export const HEADER_ACCORDION_MAX_HEIGHT = 600;
