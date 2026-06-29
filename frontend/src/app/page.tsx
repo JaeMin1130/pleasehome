@@ -9,15 +9,11 @@ import { formatMoney, formatRent, formatTargetGroup } from '@/utils/formatters';
 import { Announcement, Complex, FilterState } from '@/types';
 import styles from './page.module.css';
 import {
-  SIDEBAR_MIN_WIDTH,
-  SIDEBAR_MAX_WIDTH,
-  SIDEBAR_DEFAULT_WIDTH,
-  PANEL_MIN_WIDTH,
-  PANEL_MAX_WIDTH,
-  PANEL_DEFAULT_WIDTH,
   FILTER_DEFAULT_LIMITS,
   FILTER_SLIDER_STEPS,
   NAVIGATION_BAR_WIDTH,
+  SIDEBAR_DEFAULT_WIDTH,
+  PANEL_DEFAULT_WIDTH,
 } from '@/constants';
 
 const Map = dynamic(() => import('@/components/Map'), {
