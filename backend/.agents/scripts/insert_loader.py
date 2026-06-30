@@ -244,10 +244,10 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
             cleaned_addr = clean_address(comp["address"])
             cursor.execute(
                 """
-                INSERT INTO complexes (announcement_id, name, address, heating_type, has_elevator, parking_info)
-                VALUES (?, ?, ?, ?, ?, ?);
+                INSERT INTO complexes (announcement_id, name, address, heating_type, has_elevator, parking_info, complex_type)
+                VALUES (?, ?, ?, ?, ?, ?, ?);
                 """,
-                (ann_id, comp["name"], cleaned_addr, comp.get("heating_type"), comp.get("has_elevator"), comp.get("parking_info"))
+                (ann_id, comp["name"], cleaned_addr, comp.get("heating_type"), comp.get("has_elevator"), comp.get("parking_info"), comp.get("complex_type"))
             )
             complex_name_to_id[comp["name"]] = cursor.lastrowid
             

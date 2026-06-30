@@ -91,6 +91,7 @@ def init_db():
             heating_type VARCHAR(50),             -- 난방 방식 (예: '개별난방', '지역난방', '중앙난방')
             has_elevator BOOLEAN,                 -- 승강기(엘리베이터) 설치 여부 (1: 설치, 0: 미설치)
             parking_info VARCHAR(100),            -- 주차 구획 수 및 가능 여부 정보
+            complex_type VARCHAR(50),             -- 단지 유형 (예: '아파트', '오피스텔', '다가구주택')
             attributes TEXT,                      -- 비정형 추가 단지 속성
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 레코드 생성 일시
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 레코드 최종 수정 일시
