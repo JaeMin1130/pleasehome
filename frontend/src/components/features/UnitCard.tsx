@@ -22,6 +22,26 @@ export default function UnitCard({
     unit.min_monthly_rent !== null &&
     unit.max_deposit > unit.deposit;
 
+  const diffMax = unit.max_deposit !== null ? Math.abs(unit.max_deposit - unit.deposit) : 0;
+  const diffMin = unit.min_deposit !== null ? Math.abs(unit.deposit - unit.min_deposit) : 0;
+  const referenceDiff = diffMax > 0 ? diffMax : (diffMin > 0 ? diffMin : 0);
+
+  let step = 1000000;
+  let stepText = '100만원 단위';
+
+  if (referenceDiff > 0) {
+    if (referenceDiff % 1000000 === 0) {
+      step = 1000000;
+      stepText = '100만원 단위';
+    } else if (referenceDiff % 100000 === 0) {
+      step = 100000;
+      stepText = '10만원 단위';
+    } else {
+      step = 100000;
+      stepText = '10만원 단위';
+    }
+  }
+
   const converted = hasConversion
     ? calcConversion(
         unit.deposit,
@@ -60,15 +80,49 @@ export default function UnitCard({
       <div className={styles['unit-price-box']}>
         <div className={styles['price-item']}>
           <span className={styles['price-lbl']}>임대보증금</span>
-          <span className={styles['price-val']}>
-            {converted && diffAmount !== 0 ? formatMoney(converted.deposit) : formatMoney(unit.deposit)}
-          </span>
+          <div className={styles['price-val-wrap']}>
+            <span className={styles['price-val']}>
+              {converted && diffAmount !== 0 ? formatMoney(converted.deposit) : formatMoney(unit.deposit)}
+            </span>
+            {converted && diffAmount !== 0 && (
+              <span className={`${styles['conversion-diff']} ${diffAmount > 0 ? styles['up'] : styles['down']}`}>
+                {diffAmount > 0 ? (
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['diff-icon']}>
+                    <line x1="12" y1="19" x2="12" y2="5"></line>
+                    <polyline points="5 12 12 5 19 12"></polyline>
+                  </svg>
+                ) : (
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['diff-icon']}>
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <polyline points="19 12 12 19 5 12"></polyline>
+                  </svg>
+                )} {formatMoney(Math.abs(converted.deposit - unit.deposit))}
+              </span>
+            )}
+          </div>
         </div>
         <div className={styles['price-item']}>
           <span className={styles['price-lbl']}>월 임대료</span>
-          <span className={`${styles['price-val']} ${styles['primary']}`}>
-            {converted && diffAmount !== 0 ? formatRent(converted.rent) : formatRent(unit.monthly_rent)}
-          </span>
+          <div className={styles['price-val-wrap']}>
+            <span className={styles['price-val']}>
+              {converted && diffAmount !== 0 ? formatRent(converted.rent) : formatRent(unit.monthly_rent)}
+            </span>
+            {converted && diffAmount !== 0 && (
+              <span className={`${styles['conversion-diff']} ${diffAmount > 0 ? styles['down'] : styles['up']}`}>
+                {diffAmount > 0 ? (
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['diff-icon']}>
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <polyline points="19 12 12 19 5 12"></polyline>
+                  </svg>
+                ) : (
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['diff-icon']}>
+                    <line x1="12" y1="19" x2="12" y2="5"></line>
+                    <polyline points="5 12 12 5 19 12"></polyline>
+                  </svg>
+                )} {formatRent(Math.abs(converted.rent - unit.monthly_rent))}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -76,10 +130,10 @@ export default function UnitCard({
         <div className={styles['conversion-slider-box']}>
           <div className={styles['conversion-slider-header']}>
             <div className={styles['slider-title-wrap']}>
-              <span className={styles['conversion-slider-title']}>보증금 ↔ 월세 전환 (100만원 단위)</span>
-              {diffAmount !== 0 && (
+              <span className={styles['conversion-slider-title']}>보증금 ↔ 월세 전환</span>
+              {diffAmount !== 0 && converted && converted.effectiveRate !== null && (
                 <span className={styles['slider-diff-text']}>
-                  ({diffAmount > 0 ? `+${Math.round(diffAmount / 10000)}만원` : `${Math.round(diffAmount / 10000)}만원`})
+                  (적용 전환율: 연 {converted.effectiveRate.toFixed(2)}%)
                 </span>
               )}
             </div>
@@ -99,59 +153,12 @@ export default function UnitCard({
               className={styles['conversion-slider']}
               min={unit.min_deposit || 0}
               max={unit.max_deposit || 0}
-              step={1000000}
+              step={step}
               value={sliderVal}
               onChange={(e) => onSliderChange(unit.id, parseInt(e.target.value, 10))}
             />
             <span className={`${styles['conversion-slider-label']}`}>보증금↑</span>
           </div>
-          {diffAmount !== 0 && converted && (
-            <div className={styles['conversion-result']}>
-              {converted.effectiveRate !== null && (
-                <div className={styles['rate-text-wrap']}>
-                  적용 전환율: <span className={styles['rate-text-highlight']}>연 {converted.effectiveRate.toFixed(2)}%</span>
-                </div>
-              )}
-              <div className={styles['conversion-result-item']}>
-                <span className={styles['conversion-result-lbl']}>전환 후 보증금</span>
-                <span className={styles['conversion-result-val']}>
-                  <span>{formatMoney(converted.deposit)}</span>
-                  <span className={`${styles['conversion-diff']} ${diffAmount > 0 ? styles['up'] : styles['down']}`}>
-                    {diffAmount > 0 ? (
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['diff-icon']}>
-                        <line x1="12" y1="19" x2="12" y2="5"></line>
-                        <polyline points="5 12 12 5 19 12"></polyline>
-                      </svg>
-                    ) : (
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['diff-icon']}>
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <polyline points="19 12 12 19 5 12"></polyline>
-                      </svg>
-                    )} {formatMoney(Math.abs(converted.deposit - unit.deposit))}
-                  </span>
-                </span>
-              </div>
-              <div className={styles['conversion-result-item']}>
-                <span className={styles['conversion-result-lbl']}>전환 후 월 임대료</span>
-                <span className={styles['conversion-result-val']}>
-                  <span>{formatRent(converted.rent)}</span>
-                  <span className={`${styles['conversion-diff']} ${diffAmount > 0 ? styles['down'] : styles['up']}`}>
-                    {diffAmount > 0 ? (
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['diff-icon']}>
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <polyline points="19 12 12 19 5 12"></polyline>
-                      </svg>
-                    ) : (
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['diff-icon']}>
-                        <line x1="12" y1="19" x2="12" y2="5"></line>
-                        <polyline points="5 12 12 5 19 12"></polyline>
-                      </svg>
-                    )} {formatRent(Math.abs(converted.rent - unit.monthly_rent))}
-                  </span>
-                </span>
-              </div>
-            </div>
-          )}
         </div>
       )}
 

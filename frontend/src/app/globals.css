@@ -121,9 +121,9 @@
   --color-up: #e11d48;       /* 상승/증가 레드 */
   --color-down: #0284c7;     /* 하락/감소 블루 */
   --bg-light-gray: #f1f3f5;  /* 밝은 회색 배경 */
-  --text-gray-dark: #6b7280; /* 짙은 회색 텍스트 */
   --color-warning-bg: #fef3c7; /* 경고 연한 배경 */
   --color-warning-text: #d97706; /* 경고 텍스트 */
+  --color-tomato: #ff6347; /* 토마토색 전역 토큰 */
 
 }
 

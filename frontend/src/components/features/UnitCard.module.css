@@ -43,6 +43,12 @@
     gap: var(--spacing-xs);
 }
 
+.price-val-wrap {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
 .price-lbl {
     font-size: var(--font-size-sm);
     color: var(--text-secondary);
@@ -137,7 +143,7 @@
     width: var(--spacing-lg);
     height: var(--spacing-lg);
     border-radius: var(--radius-full);
-    background: var(--primary);
+    background: var(--text-secondary);
     cursor: pointer;
 }
 
@@ -178,7 +184,7 @@
 }
 
 .conversion-diff.up {
-    color: var(--color-sh);
+    color: var(--color-tomato);
 }
 
 .conversion-diff.down {
@@ -194,13 +200,20 @@
 .slider-diff-text {
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-bold);
-    color: var(--primary);
+    color: var(--text-muted);
 }
 
 .rate-text-wrap {
     font-size: var(--font-size-xs);
     color: var(--text-muted);
     margin-bottom: var(--spacing-sm);
+    text-align: right;
+}
+
+.conversion-rate-only {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    margin-top: var(--spacing-sm);
     text-align: right;
 }
 
