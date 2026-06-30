@@ -17,6 +17,25 @@ def clean_address(address):
     return address.strip()
 
 
+def get_urls_from_meta(relative_doc_path, base_dir):
+    """download_meta.json에서 doc_path와 연계된 공고 상세 URL 획득"""
+    meta_path = os.path.join(base_dir, "docs", "pdf", "download_meta.json")
+    if not os.path.exists(meta_path):
+        return None, None
+    try:
+        with open(meta_path, "r", encoding="utf-8") as f:
+            download_meta = json.load(f)
+        doc_path_lower = relative_doc_path.lower()
+        for file_name, info in download_meta.items():
+            base_name = os.path.splitext(file_name)[0]
+            # 마크다운 폴더명에 원본 파일명이 매칭되는지 대조
+            if base_name.lower() in doc_path_lower or doc_path_lower in base_name.lower():
+                return info.get("dtl_url"), info.get("dtl_url_mob")
+    except Exception as e:
+        print(f"[경고] download_meta.json 매칭 중 에러: {e}")
+    return None, None
+
+
 def get_db_path(base_dir):
     # 환경변수 또는 backend 디렉토리를 통해 DB 경로 동적 결정 (누적 규칙 #3)
     env_path = os.getenv("PUBLIC_HOUSING_DB_PATH")
@@ -63,12 +82,14 @@ def force_fail_log(db_path, doc_path, error_message, title=None, institution=Non
             final_inst = institution or "알수없음"
             final_sub_type = subscription_type or "알수없음"
             
+            dtl_url, dtl_url_mob = get_urls_from_meta(relative_doc_path, base_dir)
+            
             cursor.execute(
                 """
-                INSERT INTO announcements (title, institution, subscription_type, region, doc_path)
-                VALUES (?, ?, ?, ?, ?);
+                INSERT INTO announcements (title, institution, subscription_type, region, doc_path, dtl_url, dtl_url_mob)
+                VALUES (?, ?, ?, ?, ?, ?, ?);
                 """,
-                (final_title, final_inst, final_sub_type, region, relative_doc_path)
+                (final_title, final_inst, final_sub_type, region, relative_doc_path, dtl_url, dtl_url_mob)
             )
             ann_id = cursor.lastrowid
             
@@ -161,19 +182,23 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
             print(f"[기존 데이터 발견] 이전 공고 ID {existing[0]}의 데이터를 삭제하고 재적재합니다.")
             cursor.execute("DELETE FROM announcements WHERE id = ?", (existing[0],))
             
+        dtl_url, dtl_url_mob = get_urls_from_meta(relative_doc_path, base_dir)
+        
         cursor.execute(
             """
             INSERT INTO announcements (
-                title, institution, subscription_type, region, doc_path
+                title, institution, subscription_type, region, doc_path, dtl_url, dtl_url_mob
             )
-            VALUES (?, ?, ?, ?, ?);
+            VALUES (?, ?, ?, ?, ?, ?, ?);
             """,
             (
                 ann_info["title"],
                 ann_info["institution"],
                 ann_info["subscription_type"],
                 ann_info.get("region"),
-                relative_doc_path
+                relative_doc_path,
+                dtl_url,
+                dtl_url_mob
             )
         )
         ann_id = cursor.lastrowid

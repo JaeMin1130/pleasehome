@@ -206,7 +206,9 @@ def main():
                         "ais_tp_cd": ais_tp_cd,
                         "ais_tp_cd_nm": ais_tp_cd_nm,
                         "cnp_cd_nm": cnp_nm,
-                        "institution": "LH"
+                        "institution": "LH",
+                        "dtl_url": notice.get("DTL_URL", ""),
+                        "dtl_url_mob": notice.get("DTL_URL_MOB", "")
                     }
                     try:
                         with open(meta_path, "w", encoding="utf-8") as f:

@@ -35,6 +35,8 @@ def init_db():
             region VARCHAR(50),                   -- 대표 행정 구역명 (17개 고정 지역명)
             doc_path VARCHAR(255) NOT NULL,       -- 변환된 마크다운 및 리소스가 위치한 폴더 상대 경로
             attributes TEXT,                      -- 비정형 추가 공고 공통 속성
+            dtl_url TEXT,                         -- PC 버전 공고상세 URL
+            dtl_url_mob TEXT,                     -- 모바일 버전 공고상세 URL
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 레코드 생성 일시
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 레코드 최종 수정 일시
         );
