@@ -126,11 +126,19 @@ def audit_database():
         # 예: "docs/md/sh_youth_2026/document.md" -> "sh_youth_2026"
         loaded_folders = set()
         for path in loaded_paths:
-            parts = path.replace("\\", "/").split("/")
-            if len(parts) >= 3 and parts[0] == "docs" and parts[1] == "md":
-                loaded_folders.add(parts[2])
+            normalized_path = path.replace("\\", "/").strip("/")
+            parts = normalized_path.split("/")
+            # docs/md/folder_name/document.md 구조인 경우
+            if "docs/md" in normalized_path and len(parts) >= 3:
+                # docs/md 뒤에 오는 폴더명 추출
+                idx = parts.index("md")
+                if idx + 1 < len(parts):
+                    loaded_folders.add(parts[idx + 1])
+            # folder_name/document.md 또는 folder_name인 경우
+            elif len(parts) >= 2:
+                loaded_folders.add(parts[0])
             else:
-                # 폴더명을 직접 포함하고 있는지 유추 시도
+                # 마지막 예외 대비 매칭
                 for f in folders:
                     if f in path:
                         loaded_folders.add(f)

@@ -239,7 +239,7 @@ def convert_single_pdf(pdf_path, output_dir, folder_name):
         format="markdown"
     )
     
-    # 표준화 후처리 (document.md & images/ 로 리네임)
+    # 표준화 후처리 경로 지정
     generated_md = os.path.join(output_dir, f"{pdf_basename}.md")
     standard_md = os.path.join(output_dir, "document.md")
     generated_images = os.path.join(output_dir, f"{pdf_basename}_images")
@@ -252,7 +252,6 @@ def convert_single_pdf(pdf_path, output_dir, folder_name):
         os.rename(generated_md, standard_md)
         print(f"-> 마크다운 파일 표준화 완료: {standard_md}")
     else:
-        # 예외 상황: 변환된 다른 이름의 md가 있는지 탐색
         md_files = [f for f in os.listdir(output_dir) if f.endswith(".md") and f != "document.md"]
         if md_files:
             shutil.move(os.path.join(output_dir, md_files[0]), standard_md)
@@ -266,7 +265,6 @@ def convert_single_pdf(pdf_path, output_dir, folder_name):
         os.rename(generated_images, standard_images)
         print(f"-> 이미지 디렉토리 표준화 완료: {standard_images}")
 
-        # 마크다운 파일 내의 이미지 참조 경로 치환 (예: origin_images/ -> images/)
         if os.path.exists(standard_md):
             with open(standard_md, "r", encoding="utf-8") as f:
                 content = f.read()
@@ -281,226 +279,170 @@ def convert_single_pdf(pdf_path, output_dir, folder_name):
                 print("-> 마크다운 내 이미지 참조 링크 치환 완료.")
 
 def run_auto_scan():
+    import json
     base_pdf_dir = "/home/iru/app/pleasehome/backend/docs/pdf"
     base_md_dir = "/home/iru/app/pleasehome/backend/docs/md"
     
-    # download_meta.json 파일 로드
-    import json
-    meta_path = os.path.join(base_pdf_dir, "download_meta.json")
-    download_meta = {}
-    if os.path.exists(meta_path):
-        try:
-            with open(meta_path, "r", encoding="utf-8") as f:
-                download_meta = json.load(f)
-        except Exception as e:
-            print(f"[경고] download_meta.json 로드 실패: {e}")
-            
-    # 1. 미분류 PDF 및 엑셀 파일 목록 가져오기
-    raw_files = [
-        f for f in os.listdir(base_pdf_dir) 
-        if f.lower().endswith((".pdf", ".xlsx", ".xls")) and os.path.isfile(os.path.join(base_pdf_dir, f))
-    ]
+    # {기관명}_{PAN_ID}_{PAN_DT} 패턴 하위 폴더 스캔
+    import re
+    notice_folders = []
+    for d in os.listdir(base_pdf_dir):
+        dir_path = os.path.join(base_pdf_dir, d)
+        if os.path.isdir(dir_path):
+            # 영문/한글기관명_아이디_8자리날짜 패턴 체크
+            if re.match(r'^[A-Za-z가-힣]+_.+_\d{8}$', d):
+                notice_folders.append(d)
     
-    if not raw_files:
-        print("정리할 미분류 PDF 또는 엑셀 파일이 docs/pdf/ 루트에 존재하지 않습니다.")
+    if not notice_folders:
+        print("변환할 공고 폴더(예: LH_{PAN_ID}_{PAN_DT})가 docs/pdf/ 에 없습니다.")
         return
-        
-    print(f"미분류 파일 {len(raw_files)}개를 감지했습니다.")
     
-    # 가. 메타데이터 파싱 및 그룹화
-    from collections import defaultdict
-    groups = defaultdict(list)
-    for file_name in raw_files:
-        file_path = os.path.join(base_pdf_dir, file_name)
+    print(f"{len(notice_folders)}개 공고 폴더를 감지했습니다.")
+    
+    for folder_name in sorted(notice_folders):
+        folder_path = os.path.join(base_pdf_dir, folder_name)
+        output_dir = os.path.join(base_md_dir, folder_name)
         
-        # download_meta.json 매핑 여부 대조
-        if file_name in download_meta:
-            m = download_meta[file_name]
-            # UPP_AIS_TP_CD 및 AIS_TP_CD에 근거해 subscription_type 매핑
-            category = m.get("ais_tp_cd_nm", "공공임대")
-            # 표준 사전에 부합하도록 정규화
-            if "행복주택" in category:
-                category = "행복주택"
-            elif "매입임대" in category:
-                category = "매입임대"
-            elif "든든전세" in category:
-                category = "든든전세"
-            elif "전세임대" in category:
-                category = "전세임대"
-                
-            temp_inst = m.get("institution", "LH")
-            year = "2026"
-            # 차수 판정 (파일명 기반 판정 fallback 유지)
-            _, order, _, _ = parse_metadata(file_path)
-        else:
-            # SH, GH 수동 등록 등의 폴백: 기존의 텍스트 기반 판정 작동
-            year, order, category, temp_inst = parse_metadata(file_path)
-            
-        groups[(year, order, category)].append({
-            "name": file_name,
-            "path": file_path,
-            "temp_inst": temp_inst
-        })
+        # 이미 변환된 폴더 스킵 (document.md 존재 시)
+        if os.path.exists(os.path.join(output_dir, "document.md")):
+            print(f"\n[{folder_name}] 이미 변환된 폴더입니다. 건너뜁니다.")
+            continue
         
-    for (year, order, category), files in groups.items():
-        print(f"\n==========================================")
-        print(f"그룹 처리 중: {year}_{order}_{category} (파일 수: {len(files)})")
-        for f in files:
-            print(f" - {f['name']} (가판정 기관: {f['temp_inst']})")
-            
-        # 나. 대표 기관명 결정
-        final_inst = None
-        anchor_files = [f for f in files if "공고문" in f["name"] or "모집공고" in f["name"]]
-        if anchor_files:
-            for f in anchor_files:
-                if f["temp_inst"] in ["LH", "SH", "GH", "iH", "HUG", "민간"]:
-                    final_inst = f["temp_inst"]
-                    break
-            if not final_inst:
-                final_inst = anchor_files[0]["temp_inst"]
-        if not final_inst:
-            for f in files:
-                if f["temp_inst"] in ["LH", "SH", "GH", "iH", "HUG", "민간"]:
-                    final_inst = f["temp_inst"]
-                    break
-        if not final_inst:
-            final_inst = files[0]["temp_inst"] or "LH"
-            
-        # 다. 시퀀스 번호 결정 (동일 조합 존재 시 자동 증가)
-        prefix = f"{year}_{order}_{category}_{final_inst}_"
-        existing_seqs = []
-        for d in os.listdir(base_pdf_dir):
-            if os.path.isdir(os.path.join(base_pdf_dir, d)) and d.startswith(prefix):
-                try:
-                    seq_str = d[len(prefix):]
-                    existing_seqs.append(int(seq_str))
-                except ValueError:
-                    pass
+        print(f"\n{'='*50}")
+        print(f"공고 폴더 변환 중: {folder_name}")
         
-        if existing_seqs:
-            next_seq = max(existing_seqs) + 1
-        else:
-            next_seq = 1
-            
-        std_folder_name = f"{year}_{order}_{category}_{final_inst}_{next_seq:02d}"
-        print(f"-> 판정된 표준 공고명: {std_folder_name}")
+        # download_meta.json 로드
+        meta_path = os.path.join(folder_path, "download_meta.json")
+        download_meta = {}
+        if os.path.exists(meta_path):
+            try:
+                with open(meta_path, "r", encoding="utf-8") as f:
+                    download_meta = json.load(f)
+            except Exception as e:
+                print(f"[경고] download_meta.json 로드 실패: {e}")
         
-        target_folder = os.path.join(base_pdf_dir, std_folder_name)
-        os.makedirs(target_folder, exist_ok=True)
+        # 변환 대상 파일 수집 (PDF + 엑셀)
+        target_files = [
+            f for f in os.listdir(folder_path)
+            if f.lower().endswith((".pdf", ".xlsx", ".xls"))
+        ]
         
-        # 라. 파일 이동 (PDF 및 엑셀 모두 타겟 폴더로 이동)
-        for f in files:
-            target_pdf_path = os.path.join(target_folder, f["name"])
-            shutil.move(f["path"], target_pdf_path)
-            print(f"-> 표준 폴더로 이동 완료: {target_pdf_path}")
-            f["target_pdf_path"] = target_pdf_path
-            
-        # 마. 변환 및 결과 병합
-        output_dir = os.path.join(base_md_dir, std_folder_name)
+        if not target_files:
+            print(f"[경고] {folder_name} 폴더에 변환할 파일이 없습니다.")
+            continue
+        
+        print(f"대상 파일 {len(target_files)}개:")
+        for f in target_files:
+            print(f" - {f}")
+        
         os.makedirs(output_dir, exist_ok=True)
         
-        # 순서 정렬: 공고문 PDF 우선, 일반 PDF 중간, 엑셀 파일은 마지막에 오도록 배치
+        # 정렬: 공고문 PDF 우선, 일반 PDF 중간, 엑셀 마지막
         sorted_files = sorted(
-            files,
+            target_files,
             key=lambda x: (
-                0 if "공고문" in x["name"] or "모집공고" in x["name"] else (
-                    2 if x["name"].lower().endswith((".xlsx", ".xls")) else 1
+                0 if "공고문" in x or "모집공고" in x else (
+                    2 if x.lower().endswith((".xlsx", ".xls")) else 1
                 ),
-                x["name"]
+                x
             )
         )
         
         merged_md_parts = []
         final_images_dir = os.path.join(output_dir, "images")
         
-        # 임시 변환 디렉토리들 생성 후 변환
-        for idx, f in enumerate(sorted_files):
-            # 엑셀 파일의 경우 마크다운 표 변환 처리
-            if f["target_pdf_path"].lower().endswith((".xlsx", ".xls")):
+        for idx, file_name in enumerate(sorted_files):
+            file_path = os.path.join(folder_path, file_name)
+            
+            # 엑셀 파일 변환
+            if file_name.lower().endswith((".xlsx", ".xls")):
                 try:
-                    excel_md = convert_excel_to_md(f["target_pdf_path"])
+                    excel_md = convert_excel_to_md(file_path)
                     merged_md_parts.append(excel_md)
-                    print(f"-> 엑셀 파일 마크다운 표 변환 완료: {f['name']}")
+                    print(f"-> 엑셀 변환 완료: {file_name}")
                 except Exception as e:
-                    print(f"-> 엑셀 {f['name']} 변환 실패! 에러: {e}", file=sys.stderr)
+                    print(f"-> 엑셀 {file_name} 변환 실패: {e}", file=sys.stderr)
                 continue
-                
+            
+            # PDF 변환
             temp_out = os.path.join(output_dir, f"_temp_{idx}")
             try:
-                # 개별 PDF를 임시 폴더로 변환
-                convert_single_pdf(f["target_pdf_path"], temp_out, std_folder_name)
+                convert_single_pdf(file_path, temp_out, folder_name)
                 
                 temp_md_path = os.path.join(temp_out, "document.md")
                 if os.path.exists(temp_md_path):
                     with open(temp_md_path, "r", encoding="utf-8") as md_f:
                         part_content = md_f.read()
-                        
-                    # 이미지 정리 및 경로 치환
+                    
                     temp_images_dir = os.path.join(temp_out, "images")
                     if os.path.exists(temp_images_dir):
                         os.makedirs(final_images_dir, exist_ok=True)
                         for img_name in os.listdir(temp_images_dir):
                             src_img = os.path.join(temp_images_dir, img_name)
-                            # 중복 방지를 위한 이미지명 접두사화
                             new_img_name = f"part_{idx}_{img_name}"
                             dst_img = os.path.join(final_images_dir, new_img_name)
                             shutil.move(src_img, dst_img)
-                            
-                            # 마크다운 내 이미지 경로 치환
                             part_content = part_content.replace(f"images/{img_name}", f"images/{new_img_name}")
-                            
+                    
                     merged_md_parts.append(part_content)
                 else:
-                    print(f"-> 경고: {f['name']}의 마크다운 파일 변환 결과를 찾을 수 없습니다.", file=sys.stderr)
+                    print(f"-> 경고: {file_name} 변환 결과 마크다운 없음", file=sys.stderr)
             except Exception as e:
-                print(f"-> {f['name']} 변환 실패! 에러: {e}", file=sys.stderr)
+                print(f"-> {file_name} 변환 실패: {e}", file=sys.stderr)
             finally:
-                # 임시 디렉토리 삭제
                 if os.path.exists(temp_out):
                     shutil.rmtree(temp_out)
-                    
-        # 최종 파일 저장
-        if merged_md_parts:
-            final_md_path = os.path.join(output_dir, "document.md")
-            final_content = "\n\n---\n\n".join(merged_md_parts)
-            with open(final_md_path, "w", encoding="utf-8") as final_md_f:
-                final_md_f.write(final_content)
-            print(f"-> 최종 변환 성공! 병합 경로: docs/md/{std_folder_name}/document.md")
-            
-            # 개별 공고 폴더 내에 api_meta.json 생성 (하이브리드용)
-            first_file_name = sorted_files[0]["name"]
-            if first_file_name in download_meta:
-                m = download_meta[first_file_name]
+        
+        if not merged_md_parts:
+            print(f"-> 오류: 변환된 마크다운이 없습니다.", file=sys.stderr)
+            continue
+        
+        # 최종 document.md 병합 저장
+        final_md_path = os.path.join(output_dir, "document.md")
+        final_content = "\n\n---\n\n".join(merged_md_parts)
+        with open(final_md_path, "w", encoding="utf-8") as f:
+            f.write(final_content)
+        print(f"-> 최종 변환 성공: docs/md/{folder_name}/document.md")
+        
+        # api_meta.json 생성 (하이브리드 포맷)
+        if download_meta:
+            api_meta_path = os.path.join(output_dir, "api_meta.json")
+            try:
+                # 전세임대 여부에 따른 has_complexes 동적 판별
                 has_complexes = True
-                if m.get("ais_tp_cd") == "062" or "전세임대" in m.get("ais_tp_cd_nm", ""):
+                ais_tp_cd = download_meta.get("AIS_TP_CD", "")
+                ais_tp_cd_nm = download_meta.get("AIS_TP_CD_NM", "")
+                if ais_tp_cd == "062" or "전세임대" in ais_tp_cd_nm:
                     has_complexes = False
                 
+                # 청약 유형 정규화
+                category = ais_tp_cd_nm or "공공임대"
+                if "행복주택" in category:
+                    category = "행복주택"
+                elif "매입임대" in category:
+                    category = "매입임대"
+                elif "든든전세" in category:
+                    category = "든든전세"
+                elif "전세임대" in category:
+                    category = "전세임대"
+                
                 api_meta_content = {
-                    "pan_id": m.get("pan_id"),
-                    "title": m.get("title"),
-                    "api_metadata": {
-                        "upp_ais_tp_cd": m.get("upp_ais_tp_cd"),
-                        "ais_tp_cd": m.get("ais_tp_cd"),
-                        "ais_tp_nm": m.get("ais_tp_cd_nm"),
-                        "cnp_cd_nm": m.get("cnp_cd_nm")
-                    },
+                    "pan_id": download_meta.get("PAN_ID", ""),
+                    "title": download_meta.get("PAN_NM", ""),
+                    "api_metadata": download_meta,
                     "inferred_standards": {
                         "subscription_type": category,
-                        "institution": final_inst,
+                        "institution": download_meta.get("_institution", "LH"),
                         "has_complexes": has_complexes,
                         "is_distributed": False
                     }
                 }
                 
-                api_meta_path = os.path.join(output_dir, "api_meta.json")
-                try:
-                    with open(api_meta_path, "w", encoding="utf-8") as af:
-                        json.dump(api_meta_content, af, ensure_ascii=False, indent=2)
-                    print(f"-> 개별 메타데이터 생성 성공: docs/md/{std_folder_name}/api_meta.json")
-                except Exception as ae:
-                    print(f"[경고] api_meta.json 생성 실패: {ae}", file=sys.stderr)
-        else:
-            print(f"-> 오류: 변환된 결과 마크다운이 존재하지 않습니다.", file=sys.stderr)
+                with open(api_meta_path, "w", encoding="utf-8") as af:
+                    json.dump(api_meta_content, af, ensure_ascii=False, indent=2)
+                print(f"-> api_meta.json 하이브리드 포맷 생성 성공: docs/md/{folder_name}/api_meta.json")
+            except Exception as ae:
+                print(f"[경고] api_meta.json 생성 실패: {ae}", file=sys.stderr)
 
 def main():
     parser = argparse.ArgumentParser(

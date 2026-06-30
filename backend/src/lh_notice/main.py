@@ -46,6 +46,8 @@ def main():
     parser.add_argument("--start-date", required=True, help="조회 시작일 (YYYY-MM-DD)")
     parser.add_argument("--end-date", required=True, help="조회 종료일 (YYYY-MM-DD)")
     parser.add_argument("--regions", nargs="*", default=[], help="필터링할 지역 키워드 목록 (예: 서울 경기 인천)")
+    parser.add_argument("--pan-nm", help="검색할 공고명 키워드 (예: 양주회천)")
+    parser.add_argument("--pan-ss", help="공고상태 필터 (예: 공고중, 접수중, 접수마감, 정정공고중)")
     
     args = parser.parse_args()
     
@@ -90,7 +92,13 @@ def main():
         
         for ais_type in residential_types:
             type_desc = type_desc_map.get(ais_type, ais_type)
-            print(f"\n1. 분양임대공고 목록 조회 중... (지역: {region_desc}, 유형: {type_desc}, 기간: {start_date_formatted} ~ {end_date_formatted})")
+            extra_log = ""
+            if args.pan_nm:
+                extra_log += f", 공고명필터: '{args.pan_nm}'"
+            if args.pan_ss:
+                extra_log += f", 상태필터: '{args.pan_ss}'"
+                
+            print(f"\n1. 분양임대공고 목록 조회 중... (지역: {region_desc}, 유형: {type_desc}, 기간: {start_date_formatted} ~ {end_date_formatted}{extra_log})")
             try:
                 list_data = get_lease_notice_list(
                     page_no=1, 
@@ -98,7 +106,9 @@ def main():
                     start_date=start_date_formatted, 
                     end_date=end_date_formatted,
                     cnp_cd=cnp_code,
-                    upp_ais_tp_cd=ais_type
+                    upp_ais_tp_cd=ais_type,
+                    pan_nm=args.pan_nm,
+                    pan_ss=args.pan_ss
                 )
                 
                 # dsList 파싱
@@ -133,6 +143,7 @@ def main():
                 continue
                 
         pan_id = notice.get("PAN_ID")
+        pan_dt = notice.get("PAN_DT", "")
         spl_inf_tp_cd = notice.get("SPL_INF_TP_CD")
         sys_ds_cd = notice.get("CCR_CNNT_SYS_DS_CD")
         upp_ais_tp_cd = notice.get("UPP_AIS_TP_CD")
@@ -148,10 +159,26 @@ def main():
                 upp_ais_tp_cd=upp_ais_tp_cd, 
                 ais_tp_cd=ais_tp_cd
             )
+            
+            # 공고별 전용 폴더 생성: LH_{PAN_ID}_{PAN_DT}
+            folder_name = f"LH_{pan_id}_{pan_dt}"
+            notice_dir = os.path.join(PDF_SAVE_DIR, folder_name)
+            os.makedirs(notice_dir, exist_ok=True)
+            
+            # 목록 응답 + 상세 응답을 공고 단위로 flat merge
+            merged_meta = dict(notice)
+            for item in detail_data:
+                if isinstance(item, dict):
+                    for key, val in item.items():
+                        if key != "dsSch":  # 요청 파라미터 echo 제외
+                            merged_meta[key] = val
+            merged_meta["_institution"] = "LH"
+            merged_meta["_files"] = []
+            
+            # 첨부파일 추출 및 다운로드
             attachments = []
             for item in detail_data:
                 if isinstance(item, dict):
-                    # 첨부파일 정보가 담긴 배열 추출 (예: dsAhflInfo, dsSbdAhfl 등)
                     for key, val in item.items():
                         if isinstance(val, list) and "Ahfl" in key:
                             attachments.extend(val)
@@ -169,52 +196,54 @@ def main():
                     if not any(kw in file_name.lower() for kw in whitelist):
                         continue
                         
-                    save_path = os.path.join(PDF_SAVE_DIR, file_name)
+                    save_path = os.path.join(notice_dir, file_name)
                     print(f" -> 파일 발견: {file_name}")
                     if os.path.exists(save_path):
                         print("    이미 존재하는 파일입니다. 건너뜁니다.")
                     else:
                         download_file(download_url, save_path)
-                        
-                    # download_meta.json 기록 및 갱신
-                    meta_path = os.path.join(PDF_SAVE_DIR, "download_meta.json")
-                    download_meta = {}
-                    if os.path.exists(meta_path):
-                        try:
-                            with open(meta_path, "r", encoding="utf-8") as f:
-                                download_meta = json.load(f)
-                        except Exception:
-                            pass
                     
-                    ais_tp_cd_nm = notice.get("AIS_TP_CD_NM", "")
-                    if not ais_tp_cd_nm:
-                        if ais_tp_cd == "066" or "든든전세" in title:
-                            ais_tp_cd_nm = "든든전세"
-                        elif "행복주택" in title:
-                            ais_tp_cd_nm = "행복주택"
-                        elif "매입임대" in title:
-                            ais_tp_cd_nm = "매입임대"
-                        elif "전세임대" in title:
-                            ais_tp_cd_nm = "전세임대"
-                        else:
-                            ais_tp_cd_nm = "공공임대"
-                            
-                    download_meta[file_name] = {
-                        "pan_id": pan_id,
-                        "title": title,
-                        "upp_ais_tp_cd": upp_ais_tp_cd,
-                        "ais_tp_cd": ais_tp_cd,
-                        "ais_tp_cd_nm": ais_tp_cd_nm,
-                        "cnp_cd_nm": cnp_nm,
-                        "institution": "LH",
-                        "dtl_url": notice.get("DTL_URL", ""),
-                        "dtl_url_mob": notice.get("DTL_URL_MOB", "")
-                    }
-                    try:
-                        with open(meta_path, "w", encoding="utf-8") as f:
-                            json.dump(download_meta, f, ensure_ascii=False, indent=2)
-                    except Exception as me:
-                        print(f"[경고] download_meta.json 작성 실패: {me}")
+                    if file_name not in merged_meta["_files"]:
+                        merged_meta["_files"].append(file_name)
+            
+            # 공고별 download_meta.json 저장
+            meta_path = os.path.join(notice_dir, "download_meta.json")
+            try:
+                with open(meta_path, "w", encoding="utf-8") as f:
+                    json.dump(merged_meta, f, ensure_ascii=False, indent=2)
+                print(f" -> download_meta.json 저장 완료: {meta_path}")
+            except Exception as me:
+                print(f"[경고] download_meta.json 작성 실패: {me}")
+            
+            # docs/pdf/announcement_map.json 공고 매핑 기록 갱신
+            map_path = os.path.join(PDF_SAVE_DIR, "announcement_map.json")
+            map_data = {"LH": {}, "SH": {}, "GH": {}, "민간": {}, "기타": {}}
+            if os.path.exists(map_path):
+                try:
+                    with open(map_path, "r", encoding="utf-8") as f:
+                        loaded_data = json.load(f)
+                        # 로드된 데이터 복사 및 누락된 키 보강
+                        for k, v in map_data.items():
+                            map_data[k] = loaded_data.get(k, {})
+                except Exception as re:
+                    print(f"[경고] announcement_map.json 읽기 실패: {re}")
+            
+            # 기관 분류 매핑
+            inst_key = merged_meta.get("_institution", "기타").upper()
+            if inst_key not in ["LH", "SH", "GH", "민간"]:
+                if "민간" in inst_key:
+                    inst_key = "민간"
+                else:
+                    inst_key = "기타"
+            
+            map_data[inst_key][pan_id] = title
+            
+            try:
+                with open(map_path, "w", encoding="utf-8") as f:
+                    json.dump(map_data, f, ensure_ascii=False, indent=2)
+                print(f" -> announcement_map.json 매핑 기록 완료 (기관: {inst_key})")
+            except Exception as we:
+                print(f"[경고] announcement_map.json 쓰기 실패: {we}")
                     
         except Exception as e:
             print(f"상세 조회/다운로드 실패: {e}")

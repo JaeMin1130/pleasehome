@@ -17,23 +17,24 @@ def clean_address(address):
     return address.strip()
 
 
-def get_urls_from_meta(relative_doc_path, base_dir):
-    """download_meta.json에서 doc_path와 연계된 공고 상세 URL 획득"""
-    meta_path = os.path.join(base_dir, "docs", "pdf", "download_meta.json")
+def get_meta_from_folder(relative_doc_path, base_dir):
+    """doc_path(LH_{PAN_ID}_{PAN_DT} 패턴)에서 PAN_ID를 추출하여
+    해당 공고 폴더의 download_meta.json을 로드하여 반환합니다."""
+    import re
+    # doc_path에서 {기관명}_{PAN_ID}_{PAN_DT} 폴더명 추출
+    match = re.search(r'(([A-Za-z가-힣]+)_(.+)_(\d{8}))', relative_doc_path.replace(os.sep, '/'))
+    if not match:
+        return {}
+    folder_name = match.group(1)
+    meta_path = os.path.join(base_dir, "docs", "pdf", folder_name, "download_meta.json")
     if not os.path.exists(meta_path):
-        return None, None
+        return {}
     try:
         with open(meta_path, "r", encoding="utf-8") as f:
-            download_meta = json.load(f)
-        doc_path_lower = relative_doc_path.lower()
-        for file_name, info in download_meta.items():
-            base_name = os.path.splitext(file_name)[0]
-            # 마크다운 폴더명에 원본 파일명이 매칭되는지 대조
-            if base_name.lower() in doc_path_lower or doc_path_lower in base_name.lower():
-                return info.get("dtl_url"), info.get("dtl_url_mob")
+            return json.load(f)
     except Exception as e:
-        print(f"[경고] download_meta.json 매칭 중 에러: {e}")
-    return None, None
+        print(f"[경고] download_meta.json 로드 실패 ({folder_name}): {e}")
+        return {}
 
 
 def get_db_path(base_dir):
@@ -77,19 +78,22 @@ def force_fail_log(db_path, doc_path, error_message, title=None, institution=Non
                 print(f"[강제 실패 로깅] 이전 공고 ID {existing[0]}의 기존 데이터를 초기화합니다.")
                 cursor.execute("DELETE FROM announcements WHERE id = ?", (existing[0],))
             
-            # 최소한의 정보로 announcement 생성
-            final_title = title or f"데이터 추출 실패 공고 ({os.path.basename(doc_path)})"
-            final_inst = institution or "알수없음"
-            final_sub_type = subscription_type or "알수없음"
+            # API 메타데이터에서 필드 직접 회득
+            api_meta = get_meta_from_folder(relative_doc_path, base_dir)
             
-            dtl_url, dtl_url_mob = get_urls_from_meta(relative_doc_path, base_dir)
+            final_title = api_meta.get("PAN_NM") or title or f"데이터 추출 실패 공고 ({os.path.basename(doc_path)})"
+            final_inst = api_meta.get("_institution") or institution or "알수없음"
+            final_sub_type = api_meta.get("AIS_TP_CD_NM") or subscription_type or "알수없음"
+            final_region = api_meta.get("CNP_CD_NM") or region
+            dtl_url = api_meta.get("DTL_URL", "")
+            dtl_url_mob = api_meta.get("DTL_URL_MOB", "")
             
             cursor.execute(
                 """
                 INSERT INTO announcements (title, institution, subscription_type, region, doc_path, dtl_url, dtl_url_mob)
                 VALUES (?, ?, ?, ?, ?, ?, ?);
                 """,
-                (final_title, final_inst, final_sub_type, region, relative_doc_path, dtl_url, dtl_url_mob)
+                (final_title, final_inst, final_sub_type, final_region, relative_doc_path, dtl_url, dtl_url_mob)
             )
             ann_id = cursor.lastrowid
             
@@ -182,7 +186,8 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
             print(f"[기존 데이터 발견] 이전 공고 ID {existing[0]}의 데이터를 삭제하고 재적재합니다.")
             cursor.execute("DELETE FROM announcements WHERE id = ?", (existing[0],))
             
-        dtl_url, dtl_url_mob = get_urls_from_meta(relative_doc_path, base_dir)
+        # API 메타데이터를 우선 적용하여 announcements 테이블 적재
+        api_meta = get_meta_from_folder(relative_doc_path, base_dir)
         
         cursor.execute(
             """
@@ -192,13 +197,13 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
             VALUES (?, ?, ?, ?, ?, ?, ?);
             """,
             (
-                ann_info["title"],
-                ann_info["institution"],
-                ann_info["subscription_type"],
-                ann_info.get("region"),
+                api_meta.get("PAN_NM") or ann_info["title"],
+                api_meta.get("_institution") or ann_info["institution"],
+                api_meta.get("AIS_TP_CD_NM") or ann_info["subscription_type"],
+                api_meta.get("CNP_CD_NM") or ann_info.get("region"),
                 relative_doc_path,
-                dtl_url,
-                dtl_url_mob
+                api_meta.get("DTL_URL") or "",
+                api_meta.get("DTL_URL_MOB") or ""
             )
         )
         ann_id = cursor.lastrowid
@@ -210,7 +215,7 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
                 INSERT INTO announcement_schedules (announcement_id, schedule_type, start_date, end_date, raw_text, notes)
                 VALUES (?, ?, ?, ?, ?, ?);
                 """,
-                (ann_id, sched["schedule_type"], sched["start_date"], sched["end_date"], sched["raw_text"], sched["notes"])
+                (ann_id, sched["schedule_type"], sched.get("start_date"), sched.get("end_date"), sched["raw_text"], sched.get("notes"))
             )
             
         # 5. announcement_limits 테이블 적재
