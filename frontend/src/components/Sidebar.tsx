@@ -88,8 +88,12 @@ export default function Sidebar({
     const minStart = getAnnouncementMinStart(ann);
     const maxEnd = getAnnouncementMaxEnd(ann);
     const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    if (minStart && now < minStart) return 'UPCOMING';
+    if (minStart) {
+      const startDate = new Date(minStart.getFullYear(), minStart.getMonth(), minStart.getDate());
+      if (today < startDate) return 'UPCOMING';
+    }
     if (maxEnd && now > maxEnd) return 'CLOSED';
     return 'ONGOING';
   };

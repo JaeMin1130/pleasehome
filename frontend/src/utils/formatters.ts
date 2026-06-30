@@ -22,6 +22,27 @@ export const formatDate = (dateStr: string | null | undefined): string => {
   }
 };
 
+export const formatDateWithTime = (dateStr: string | null | undefined): string => {
+  if (!dateStr) return '-';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const ymd = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+    const hours = d.getHours();
+    const minutes = d.getMinutes();
+    const seconds = d.getSeconds();
+    
+    // 시/분/초가 모두 0이면 날짜만 표시 (예: 2026.06.30)
+    if (hours === 0 && minutes === 0 && seconds === 0) {
+      return ymd;
+    }
+    // 시간 정보가 존재하면 시:분까지 포맷에 추가 (예: 2026.06.30 10:00)
+    return `${ymd} ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  } catch {
+    return dateStr;
+  }
+};
+
 export const formatInterestRate = (rate: number | null | undefined): string => {
   if (rate === null || rate === undefined) return '-';
   return `${rate.toFixed(1)}%`;

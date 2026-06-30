@@ -3,7 +3,7 @@ import { Announcement } from '@/types';
 import Link from 'next/link';
 import Badge from '@/components/ui/Badge';
 import MarkdownViewer from '@/components/ui/MarkdownViewer';
-import { formatMoney, formatDate, formatInterestRate } from '@/utils/formatters';
+import { formatMoney, formatDate, formatInterestRate, formatDateWithTime } from '@/utils/formatters';
 import styles from './AnnouncementCard.module.css';
 
 // 앞부분의 숫자 넘버링 패턴(예: 1. 2. )을 지우고 텍스트만 추출하는 헬퍼 함수
@@ -133,8 +133,11 @@ export default function AnnouncementCard({
     }
     if (!minStart || !maxEnd) return 'CLOSED';
     const now = new Date();
-    if (now < minStart) return 'UPCOMING';
-    else if (now >= minStart && now <= maxEnd) return 'ONGOING';
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startDate = new Date(minStart.getFullYear(), minStart.getMonth(), minStart.getDate());
+    
+    if (today < startDate) return 'UPCOMING';
+    else if (now <= maxEnd) return 'ONGOING';
     else return 'CLOSED';
   };
 
@@ -164,12 +167,12 @@ export default function AnnouncementCard({
       }
     }
     if (minStartStr && maxEndStr) {
-      return `${formatDate(minStartStr)} ~ ${formatDate(maxEndStr)}`;
+      return `${formatDateWithTime(minStartStr)} ~ ${formatDateWithTime(maxEndStr)}`;
     }
     const firstSchedule = applySchedules[0];
     if (firstSchedule) {
       if (firstSchedule.start_date || firstSchedule.end_date) {
-        return `${formatDate(firstSchedule.start_date)} ~ ${formatDate(firstSchedule.end_date)}`;
+        return `${formatDateWithTime(firstSchedule.start_date)} ~ ${formatDateWithTime(firstSchedule.end_date)}`;
       }
       return firstSchedule.raw_text || null;
     }
