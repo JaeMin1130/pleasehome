@@ -188,6 +188,14 @@ def slice_noise(md_content):
     공고문 본문이 끝나고 후반부에 수록되는 제출 양식/서식(위임장, 동의서 등) 노이즈를 찾아내어
     그 시점부터 문서 끝까지를 슬라이싱(절삭)합니다.
     """
+    # 엑셀 변환 데이터(### [주택목록 시트: ...)가 병합되어 있는 경우, 절삭 전 미리 추출하여 보존
+    excel_marker = "### [주택목록 시트:"
+    excel_content = ""
+    if excel_marker in md_content:
+        parts = md_content.split(excel_marker, 1)
+        md_content = parts[0]
+        excel_content = "\n\n" + excel_marker + parts[1]
+
     lines = md_content.split('\n')
     cutoff_idx = len(lines)
     
@@ -222,8 +230,8 @@ def slice_noise(md_content):
         # 에러 로그 방출 방지를 위해 표준 에러(sys.stderr)로 로깅하거나 단순 표시
         import sys
         print(f"[슬라이싱] 라인 {cutoff_idx}부터 문서 끝까지 절삭하였습니다. (매칭 라인: '{lines[cutoff_idx]}')", file=sys.stderr)
-        return '\n'.join(lines[:cutoff_idx])
-    return md_content
+        return '\n'.join(lines[:cutoff_idx]) + excel_content
+    return md_content + excel_content
 
 def main():
     if len(sys.argv) < 2:
@@ -243,6 +251,19 @@ def main():
         
     # 7대 특성 판별
     features = detect_features(content)
+    
+    # api_meta.json이 존재하면 특성 정보 강제 재정의 (하이브리드용)
+    dir_path = os.path.dirname(md_path)
+    api_meta_path = os.path.join(dir_path, "api_meta.json")
+    if os.path.exists(api_meta_path):
+        try:
+            with open(api_meta_path, "r", encoding="utf-8") as af:
+                meta = json.load(af)
+            inferred = meta.get("inferred_standards", {})
+            if "has_complexes" in inferred:
+                features["has_complexes"] = inferred["has_complexes"]
+        except Exception as e:
+            print(f"[경고] pre_processor 내 api_meta.json 읽기 실패: {e}", file=sys.stderr)
     
     # 마크다운 테이블 평탄화 전처리
     flat_content = process_table_flatting(content)

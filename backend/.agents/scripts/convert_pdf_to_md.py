@@ -196,9 +196,7 @@ def parse_metadata(pdf_path):
                     
                     # 기관명 재검증 및 강제 보정 - 대소문자 무관 및 명칭 보완
                     text_lower = text.lower()
-                    if "민간" in filename_lower or "민간임대" in text_lower or "민간임대주택" in text_lower:
-                        institution = "민간"
-                    elif "한국토지주택" in text_lower or "lh" in text_lower or "l.h" in text_lower:
+                    if "한국토지주택" in text_lower or "lh" in text_lower or "l.h" in text_lower:
                         institution = "LH"
                     elif "서울주택도시" in text_lower or "sh" in text_lower:
                         institution = "SH"
@@ -208,6 +206,8 @@ def parse_metadata(pdf_path):
                         institution = "iH"
                     elif "주택도시보증" in text_lower or "hug" in text_lower:
                         institution = "HUG"
+                    elif "민간" in filename_lower or "민간임대" in text_lower or "민간임대주택" in text_lower:
+                        institution = "민간"
         except Exception as e:
             pass
 
@@ -284,6 +284,17 @@ def run_auto_scan():
     base_pdf_dir = "/home/iru/app/pleasehome/backend/docs/pdf"
     base_md_dir = "/home/iru/app/pleasehome/backend/docs/md"
     
+    # download_meta.json 파일 로드
+    import json
+    meta_path = os.path.join(base_pdf_dir, "download_meta.json")
+    download_meta = {}
+    if os.path.exists(meta_path):
+        try:
+            with open(meta_path, "r", encoding="utf-8") as f:
+                download_meta = json.load(f)
+        except Exception as e:
+            print(f"[경고] download_meta.json 로드 실패: {e}")
+            
     # 1. 미분류 PDF 및 엑셀 파일 목록 가져오기
     raw_files = [
         f for f in os.listdir(base_pdf_dir) 
@@ -301,8 +312,30 @@ def run_auto_scan():
     groups = defaultdict(list)
     for file_name in raw_files:
         file_path = os.path.join(base_pdf_dir, file_name)
-        # 엑셀 파일명 파싱도 parse_metadata로 지원
-        year, order, category, temp_inst = parse_metadata(file_path)
+        
+        # download_meta.json 매핑 여부 대조
+        if file_name in download_meta:
+            m = download_meta[file_name]
+            # UPP_AIS_TP_CD 및 AIS_TP_CD에 근거해 subscription_type 매핑
+            category = m.get("ais_tp_cd_nm", "공공임대")
+            # 표준 사전에 부합하도록 정규화
+            if "행복주택" in category:
+                category = "행복주택"
+            elif "매입임대" in category:
+                category = "매입임대"
+            elif "든든전세" in category:
+                category = "든든전세"
+            elif "전세임대" in category:
+                category = "전세임대"
+                
+            temp_inst = m.get("institution", "LH")
+            year = "2026"
+            # 차수 판정 (파일명 기반 판정 fallback 유지)
+            _, order, _, _ = parse_metadata(file_path)
+        else:
+            # SH, GH 수동 등록 등의 폴백: 기존의 텍스트 기반 판정 작동
+            year, order, category, temp_inst = parse_metadata(file_path)
+            
         groups[(year, order, category)].append({
             "name": file_name,
             "path": file_path,
@@ -433,6 +466,39 @@ def run_auto_scan():
             with open(final_md_path, "w", encoding="utf-8") as final_md_f:
                 final_md_f.write(final_content)
             print(f"-> 최종 변환 성공! 병합 경로: docs/md/{std_folder_name}/document.md")
+            
+            # 개별 공고 폴더 내에 api_meta.json 생성 (하이브리드용)
+            first_file_name = sorted_files[0]["name"]
+            if first_file_name in download_meta:
+                m = download_meta[first_file_name]
+                has_complexes = True
+                if m.get("ais_tp_cd") == "062" or "전세임대" in m.get("ais_tp_cd_nm", ""):
+                    has_complexes = False
+                
+                api_meta_content = {
+                    "pan_id": m.get("pan_id"),
+                    "title": m.get("title"),
+                    "api_metadata": {
+                        "upp_ais_tp_cd": m.get("upp_ais_tp_cd"),
+                        "ais_tp_cd": m.get("ais_tp_cd"),
+                        "ais_tp_nm": m.get("ais_tp_cd_nm"),
+                        "cnp_cd_nm": m.get("cnp_cd_nm")
+                    },
+                    "inferred_standards": {
+                        "subscription_type": category,
+                        "institution": final_inst,
+                        "has_complexes": has_complexes,
+                        "is_distributed": False
+                    }
+                }
+                
+                api_meta_path = os.path.join(output_dir, "api_meta.json")
+                try:
+                    with open(api_meta_path, "w", encoding="utf-8") as af:
+                        json.dump(api_meta_content, af, ensure_ascii=False, indent=2)
+                    print(f"-> 개별 메타데이터 생성 성공: docs/md/{std_folder_name}/api_meta.json")
+                except Exception as ae:
+                    print(f"[경고] api_meta.json 생성 실패: {ae}", file=sys.stderr)
         else:
             print(f"-> 오류: 변환된 결과 마크다운이 존재하지 않습니다.", file=sys.stderr)
 

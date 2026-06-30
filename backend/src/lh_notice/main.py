@@ -1,6 +1,7 @@
 import os
 import argparse
 import requests
+import json
 from dotenv import load_dotenv
 from api import get_lease_notice_list, get_lease_notice_detail
 
@@ -172,8 +173,46 @@ def main():
                     print(f" -> 파일 발견: {file_name}")
                     if os.path.exists(save_path):
                         print("    이미 존재하는 파일입니다. 건너뜁니다.")
-                        continue
-                    download_file(download_url, save_path)
+                    else:
+                        download_file(download_url, save_path)
+                        
+                    # download_meta.json 기록 및 갱신
+                    meta_path = os.path.join(PDF_SAVE_DIR, "download_meta.json")
+                    download_meta = {}
+                    if os.path.exists(meta_path):
+                        try:
+                            with open(meta_path, "r", encoding="utf-8") as f:
+                                download_meta = json.load(f)
+                        except Exception:
+                            pass
+                    
+                    ais_tp_cd_nm = notice.get("AIS_TP_CD_NM", "")
+                    if not ais_tp_cd_nm:
+                        if ais_tp_cd == "066" or "든든전세" in title:
+                            ais_tp_cd_nm = "든든전세"
+                        elif "행복주택" in title:
+                            ais_tp_cd_nm = "행복주택"
+                        elif "매입임대" in title:
+                            ais_tp_cd_nm = "매입임대"
+                        elif "전세임대" in title:
+                            ais_tp_cd_nm = "전세임대"
+                        else:
+                            ais_tp_cd_nm = "공공임대"
+                            
+                    download_meta[file_name] = {
+                        "pan_id": pan_id,
+                        "title": title,
+                        "upp_ais_tp_cd": upp_ais_tp_cd,
+                        "ais_tp_cd": ais_tp_cd,
+                        "ais_tp_cd_nm": ais_tp_cd_nm,
+                        "cnp_cd_nm": cnp_nm,
+                        "institution": "LH"
+                    }
+                    try:
+                        with open(meta_path, "w", encoding="utf-8") as f:
+                            json.dump(download_meta, f, ensure_ascii=False, indent=2)
+                    except Exception as me:
+                        print(f"[경고] download_meta.json 작성 실패: {me}")
                     
         except Exception as e:
             print(f"상세 조회/다운로드 실패: {e}")

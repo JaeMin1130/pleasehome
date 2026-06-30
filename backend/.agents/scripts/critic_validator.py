@@ -163,6 +163,38 @@ def validate_announcement(data, features):
                 # 비록 예비자수만 뽑는다 해도 모집 인원이 있어야 하므로 경고/에러 처리
                 errors.append(f"is_reserve_only가 True이나 units[{idx}]의 reserve_count({res_cnt})가 0 이하입니다.")
 
+    # 7. 데이터베이스 물리적 NOT NULL 제약조건 및 스키마 검증
+    # schedules 검증
+    for idx, sched in enumerate(schedules):
+        if "raw_text" not in sched or sched.get("raw_text") is None:
+            errors.append(f"schedules[{idx}]에 필수 필드 'raw_text'가 누락되었거나 null입니다.")
+            
+    # details 검증
+    details = data.get("details", [])
+    for idx, dt in enumerate(details):
+        if "section_content" not in dt or dt.get("section_content") is None:
+            errors.append(f"details[{idx}]에 필수 필드 'section_content'가 누락되었거나 null입니다. ('content' 키를 사용했는지 확인하십시오.)")
+        if "sort_order" not in dt or dt.get("sort_order") is None:
+            errors.append(f"details[{idx}]에 필수 필드 'sort_order'가 누락되었거나 null입니다.")
+        s_title = dt.get("section_title", "")
+        valid_sections = ['신청 자격 요건', '소득 및 자산 기준', '임대 조건 및 융자 혜택', '선정 및 배점 기준', '신청 방법 및 제출 서류', '기관별 특화 및 유의사항']
+        if s_title not in valid_sections:
+            errors.append(f"details[{idx}]의 section_title '{s_title}'이 6대 표준 명칭에 부합하지 않습니다.")
+
+    # complexes 검증
+    for idx, cp in enumerate(complexes):
+        if not cp.get("name"):
+            errors.append(f"complexes[{idx}]의 단지명(name)이 누락되었거나 빈 값입니다.")
+        if not cp.get("address"):
+            errors.append(f"complexes[{idx}]의 주소(address)가 누락되었거나 빈 값입니다.")
+
+    # units 검증 (NOT NULL 컬럼 검사)
+    for idx, ut in enumerate(units):
+        if "exclusive_area" not in ut or ut.get("exclusive_area") is None:
+            errors.append(f"units[{idx}]의 전용면적(exclusive_area)이 누락되었거나 null입니다. (DB NOT NULL 제약조건 충족을 위해 값이 없을 시 0.0을 입력해야 합니다.)")
+        if "deposit" not in ut or ut.get("deposit") is None:
+            errors.append(f"units[{idx}]의 기본 보증금(deposit)이 누락되었거나 null입니다. (DB NOT NULL 제약조건 충족을 위해 값이 없을 시 0을 입력해야 합니다.)")
+
     return errors
 
 def main():
