@@ -49,6 +49,7 @@ export interface Complex {
   heating_type?: string;
   has_elevator?: boolean;
   parking_info?: string;
+  complex_type?: string;
   latitude: number | null;
   longitude: number | null;
   is_imprecise: number;

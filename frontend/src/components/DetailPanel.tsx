@@ -93,6 +93,10 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
           <h4 className={styles['panel-section-title']}>단지 기본 정보</h4>
           <div className={styles['info-grid']}>
             <div className={styles['info-card']}>
+              <span className={styles['info-label']}>단지 유형</span>
+              <span className={styles['info-val']}>{complex.complex_type || '정보 없음'}</span>
+            </div>
+            <div className={styles['info-card']}>
               <span className={styles['info-label']}>난방 방식</span>
               <span className={styles['info-val']}>{complex.heating_type || '정보 없음'}</span>
             </div>
@@ -102,7 +106,7 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
                 {complex.has_elevator === undefined || complex.has_elevator === null ? '정보 없음' : complex.has_elevator ? '있음' : '없음'}
               </span>
             </div>
-            <div className={`${styles['info-card']} ${styles['full-width']}`}>
+            <div className={styles['info-card']}>
               <span className={styles['info-label']}>주차 정보</span>
               <span className={styles['info-val']}>{complex.parking_info || '정보 없음'}</span>
             </div>

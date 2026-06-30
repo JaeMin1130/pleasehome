@@ -179,11 +179,6 @@ export default function UnitCard({
             <span>{unit.room_count}개</span>
           </div>
         )}
-        {unit.attributes && (
-          <div className={styles['meta-attr']}>
-            * {unit.attributes}
-          </div>
-        )}
       </div>
     </div>
   );
