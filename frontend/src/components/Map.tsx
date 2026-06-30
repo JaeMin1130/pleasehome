@@ -269,7 +269,7 @@ export default function Map({ complexes, activeComplexId, onSelectComplex, isSid
     <>
       {naverClientId && (
         <Script
-          src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverClientId}&submodules=geocoding`}
+          src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverClientId}&submodules=geocoder`}
           onLoad={initMap}
           strategy="afterInteractive"
         />

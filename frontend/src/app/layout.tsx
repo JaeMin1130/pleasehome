@@ -19,11 +19,6 @@ export default function RootLayout({
       <head>
         {/* Google Fonts Link */}
         <script
-          type="text/javascript"
-          src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${process.env.NEXT_PUBLIC_NAVER_CLIENT_ID}&submodules=geocoder`}
-          defer
-        />
-        <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7402127086926987"
           crossOrigin="anonymous"
