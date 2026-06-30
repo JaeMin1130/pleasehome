@@ -34,6 +34,8 @@ export interface Announcement {
   subscription_type: string;
   doc_path: string;
   region?: string | null; // 💡 DB region 컬럼 매핑 타입 추가
+  dtl_url?: string | null;
+  dtl_url_mob?: string | null;
   schedules: Schedule[];
   details: Detail[];
   limits: Limit[];

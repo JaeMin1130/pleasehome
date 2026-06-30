@@ -129,9 +129,9 @@
 }
 
 .d-day-badge {
-    background-color: #fff0ec;
-    color: #ff4d20;
-    border: 1px solid #ffded5;
+    background-color: var(--color-dday-bg);
+    color: var(--color-dday);
+    border: calc(var(--spacing-xs) * 0.25) solid var(--color-dday-border);
     padding: calc(var(--spacing-xs) * 0.75) calc(var(--spacing-sm) * 1.25);
     border-radius: var(--radius-sm);
     font-size: var(--font-size-xs);
@@ -269,15 +269,17 @@
     margin-top: calc(var(--spacing-xs) * -1.5);
     margin-bottom: var(--spacing-md);
     display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
 }
 
 .detail-link-btn {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: calc(var(--spacing-xs) * 1.5);
     background-color: var(--bg-light-gray);
     color: var(--text-gray-dark);
-    border: 1px solid var(--border-light);
+    border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
     padding: calc(var(--spacing-xs) * 1.5) calc(var(--spacing-sm) * 1.5);
     border-radius: var(--radius-md);
     font-size: var(--font-size-xs);
