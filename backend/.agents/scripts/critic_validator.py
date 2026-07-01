@@ -188,12 +188,26 @@ def validate_announcement(data, features):
         if not cp.get("address"):
             errors.append(f"complexes[{idx}]의 주소(address)가 누락되었거나 빈 값입니다.")
 
-    # units 검증 (NOT NULL 컬럼 검사)
+    # units 검증 (NOT NULL 컬럼 검사 및 room_type 정규성 검증)
+    forbidden_room_type_keywords = [
+        "아파트", "오피스텔", "연립주택", "다세대주택", "다가구주택", 
+        "기숙사", "생활주택", "단독(1인)", "혼합형", "투룸형", "원룸형"
+    ]
     for idx, ut in enumerate(units):
         if "exclusive_area" not in ut or ut.get("exclusive_area") is None:
             errors.append(f"units[{idx}]의 전용면적(exclusive_area)이 누락되었거나 null입니다. (DB NOT NULL 제약조건 충족을 위해 값이 없을 시 0.0을 입력해야 합니다.)")
         if "deposit" not in ut or ut.get("deposit") is None:
             errors.append(f"units[{idx}]의 기본 보증금(deposit)이 누락되었거나 null입니다. (DB NOT NULL 제약조건 충족을 위해 값이 없을 시 0을 입력해야 합니다.)")
+        
+        rt = ut.get("room_type")
+        if rt:
+            for kw in forbidden_room_type_keywords:
+                if kw in rt:
+                    errors.append(
+                        f"units[{idx}]의 room_type '{rt}'에 금지된 키워드 '{kw}'가 포함되어 있습니다. "
+                        f"단지 유형명(아파트, 오피스텔 등)이나 세부 신청 제한 조건(단독, 혼합형 등)은 room_type 대신 complexes.complex_type 이나 units.target_group, attributes 필드로 분류하고, room_type은 59A, 39형 등 고유 주택형/평형만 기재해 주십시오."
+                    )
+                    break
 
     return errors
 

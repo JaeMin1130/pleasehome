@@ -26,10 +26,8 @@ backend/
 ├── .agents/                        # AI 에이전트 개발 지침 및 자동화 스크립트 폴더
 │   ├── agent/                      # 에이전트 설정 템플릿
 │   │   └── markdown_sql_parser/    # 마크다운 데이터 파싱용 agent.json 정의 경로
-│   ├── scripts/                    # 파이프라인 코어 스크립트 7종
+│   ├── scripts/                    # 파이프라인 코어 스크립트 5종
 │   │   ├── convert_pdf_to_md.py    # PDF/엑셀 파일을 표준 마크다운 및 리소스로 변환/정리하는 도구
-│   │   ├── pre_processor.py        # 7대 특성 플래그 감지 및 노이즈 슬라이싱, 표 평탄화 전처리
-│   │   ├── hybrid_parser.py        # table_map의 이중 맵 조인 또는 단일 매핑 가이드에 의거해 complexes/units 병합을 완결하는 도구
 │   │   ├── critic_validator.py     # 데이터 적재 전 실시간 룰 기반 정합성 물리 검증
 │   │   ├── insert_loader.py        # SQLite DB 정상 적재 및 Fail-Safe 이중 로깅 적재 완결
 │   │   ├── db_init.py              # SQLite DB 스키마 초기 선언 및 리셋 스크립트
@@ -55,19 +53,18 @@ backend/
 ## 3. 핵심 데이터 적재 파이프라인 (Data Pipeline Flow)
 
 ### 3.1. 파이프라인 전체 워크플로우 개요
-본 파이프라인은 LH OpenAPI 등을 통해 수집한 분양/임대 공고문(PDF, Excel)을 마크다운으로 구조화한 후, 7대 기본 특성에 맞춰 LLM 서브에이전트가 정제하고, 룰 기반 검증을 거쳐 SQLite3 관계형 DB([public_housing.db](file:///home/iru/app/pleasehome/backend/public_housing.db))에 최종 적재하는 파이프라인입니다.
+본 파이프라인은 LH OpenAPI 등을 통해 수집한 분양/임대 공고문(PDF, Excel)을 마크다운으로 구조화한 후, 7대 기본 특성에 맞춰 본체 에이전트가 직접 data.json 및 features.json을 추출하고, 룰 기반 검증을 거쳐 SQLite3 관계형 DB([public_housing.db](file:///home/iru/app/pleasehome/backend/public_housing.db))에 최종 적재하는 파이프라인입니다.
 
 전체적인 처리 흐름은 아래와 같습니다.
 
 ```mermaid
 graph TD
     A[1. OpenAPI 수집 & PDF 다운로드] --> B[2. 마크다운 & 엑셀 병합 변환]
-    B --> C[3. 7대 특성 플래그 감지 및 표 평탄화 전처리]
-    C --> D[4. 본체 에이전트 data.json 직접 추출]
-    D --> E{5. 룰 기반 실시간 정합성 검증}
-    E -- SUCCESS --> F[6a. DB 정상 적재 & 이중 로깅]
-    E -- FAIL <최대 3회 재추출> --> D
-    E -- FAIL 한도 초과 --> G[6b. Fail-Safe 우아한 성능 저하 적재]
+    B --> C[3. 본체 에이전트 data.json 및 features.json 직접 추출]
+    C --> D{4. 룰 기반 실시간 정합성 검증}
+    D -- SUCCESS --> E[5a. DB 정상 적재 & 이중 로깅]
+    D -- FAIL <최대 3회 재추출> --> C
+    D -- FAIL 한도 초과 --> F[5b. Fail-Safe 우아한 성능 저하 적재]
 ```
 
 ### 3.2. 단계별 스크립트 역할 및 핵심 로직 분석
@@ -86,10 +83,11 @@ graph TD
   * PDF는 `opendataloader-pdf` 패키지를 사용해 마크다운 텍스트와 이미지 리소스로 분리 변환하고, 엑셀(`xlsx`) 주택 목록 등은 마크다운 표(`Table`) 형태로 파싱합니다.
   * 공고문 PDF → 일반 PDF → 엑셀 시트 순으로 정렬 후 단일 마크다운 파일(document.md)로 최종 병합합니다.
 
-#### 3단계: 기본 특성 감지 및 전처리
-* **수행 모듈**: [pre_processor.py](file:///home/iru/app/pleasehome/backend/.agents/scripts/pre_processor.py)
+#### 3단계: 본체 에이전트의 정제 JSON 데이터 및 7대 특성 플래그 직접 추출
+* **수행 모듈**: 본체 에이전트 (Antigravity)
 * **동작 방식**:
-  * **7대 기본 특성 플래그 감지**: 본문 텍스트와 제목을 기반으로 아래의 비즈니스적 특성을 정밀 분석하여 판별합니다.
+  * [document.md](file:///home/iru/app/pleasehome/backend/docs/md/{공고_폴더}/document.md)를 바탕으로 비즈니스 룰 및 DB 제약 조건에 적합한 JSON 스펙 데이터를 추출하여 [data.json](file:///home/iru/app/pleasehome/backend/docs/md/{공고_폴더}/data.json)으로 저장합니다.
+  * 동시에 7대 기본 특성 플래그를 정밀 분석 및 판별하여 [features.json](file:///home/iru/app/pleasehome/backend/docs/md/{공고_폴더}/features.json)을 생성합니다.
     1. `has_complexes`: 실물 단지가 존재하는지 여부 (예: '전세임대'는 물리 단지가 부재하므로 `False`)
     2. `is_distributed`: 상세 주택 내역이 본문이 아닌 외부 링크/첨부파일 등으로 분산되었는지 여부
     3. `is_income_linked`: 소득 분위별 임대조건 차등 조건 존재 여부
@@ -97,16 +95,9 @@ graph TD
     5. `is_reserve_only`: 신규 입주가 아닌 예비 입주자 모집 공고 여부
     6. `has_mutual_conversion`: 상호전환 가능 여부
     7. `has_unstandardized_address`: 임시 지구 블록명 등 비정형 주소 사용 여부
-  * **표 평탄화 (Table Flatting)**: 빈 셀 병합으로 인해 LLM이 텍스트 구조를 오해하는 것을 방지하고자, 전방 충전(Forward Fill) 알고리즘으로 빈 셀을 위 셀의 값으로 보완한 [document_flat.md](file:///home/iru/app/pleasehome/backend/docs/md/document_flat.md)를 생성합니다.
-  * **노이즈 절삭 (Noise Slicing)**: 문서 후반부의 불필요한 행정 서식(위임장, 동의서 등)을 절삭(Cutoff)하여 토큰 낭비를 차단합니다.
-
-#### 4단계: 본체 에이전트의 정제 JSON 데이터 직접 추출
-* **수행 모듈**: 본체 에이전트 (Antigravity)
-* **동작 방식**:
-  * 직접 감지한 7대 특성 플래그와 [document_flat.md](file:///home/iru/app/pleasehome/backend/docs/md/document_flat.md)를 바탕으로, 비즈니스 룰 및 DB 제약 조건에 적합한 JSON 스펙 데이터를 추출하여 [data.json](file:///home/iru/app/pleasehome/backend/docs/md/data.json)으로 저장합니다.
   * 예: `is_reserve_only`가 True면 모든 유닛의 공급 수(`supply_count`)를 0으로 맞추고 예비 수(`reserve_count`)를 매핑하며, `has_unstandardized_address`가 True면 웹 검색을 가동해 정식 번지 주소를 보완합니다.
 
-#### 5단계: 룰 기반 실시간 정합성 물리 검증
+#### 4단계: 룰 기반 실시간 정합성 물리 검증
 * **수행 모듈**: [critic_validator.py](file:///home/iru/app/pleasehome/backend/.agents/scripts/critic_validator.py)
 * **동작 방식**:
   * DB 적재 직전에 비즈니스 정합성을 엄격하게 강제 검증합니다.
@@ -114,9 +105,9 @@ graph TD
   * `has_complexes` 플래그의 상호 배타성(True 시 `limits`는 반드시 `[]`, False 시 `complexes`/`units`는 반드시 `[]`인지 등) 검증.
   * 날짜 형식 준수 및 순서 논리(신청접수 → 당첨자발표 → 계약체결) 검증.
   * 상호전환 범위와 보증금 증액 시 임대료 감액 등의 수학적 관계 검증.
-  * 오류 발생 시 서브에이전트에게 구체적인 텍스트 피드백을 전달하여 최대 3회까지 재작업을 요청(피드백 루프)합니다.
+  * 오류 발생 시 본체 에이전트에게 구체적인 텍스트 피드백을 전달하여 최대 3회까지 재작업을 요청(피드백 루프)합니다.
 
-#### 6단계: DB 적재 및 안전 격리 (Fail-Safe)
+#### 5단계: DB 적재 및 안전 격리 (Fail-Safe)
 * **수행 모듈**: [insert_loader.py](file:///home/iru/app/pleasehome/backend/.agents/scripts/insert_loader.py)
 * **동작 방식**:
   * **정상 적재 (SUCCESS)**: 실시간 검증을 통과한 JSON 정제 데이터를 DB 트랜잭션 단위로 최종 적재합니다. 이때, 기존에 매치되는 문서 경로(`doc_path`)가 이미 존재하면 CASCADE 형태로 말끔하게 정리(Delete & Insert)합니다.
@@ -144,13 +135,7 @@ python .agents/scripts/convert_pdf_to_md.py
 python .agents/scripts/convert_pdf_to_md.py docs/pdf/{공고_폴더}/origin.pdf
 ```
 
-### 4.3. 7대 기본 특성 감지 및 노이즈 절삭/표 평탄화 전처리
-```bash
-# 특정 공고 마크다운 파일에 대해 전처리 실행 (features.json 및 document_flat.md 생성)
-python .agents/scripts/pre_processor.py docs/md/{공고_폴더}/document.md
-```
-
-### 4.4. 추출 데이터 실시간 검증 및 DB 적재
+### 4.3. 추출 데이터 실시간 검증 및 DB 적재
 ```bash
 # 1. 룰 기반 실시간 정합성 검증 실행
 python .agents/scripts/critic_validator.py docs/md/{공고_폴더}/data.json docs/md/{공고_폴더}/features.json
