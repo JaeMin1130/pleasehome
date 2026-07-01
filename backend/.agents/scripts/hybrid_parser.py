@@ -255,15 +255,18 @@ def parse_tables_by_map(lines, table_map, sub_type, inst, api_meta_data):
         
         for line in lines:
             stripped = line.strip()
-            if stripped.startswith('|') and stripped.endswith('|'):
-                if "대상주택" in stripped and "공급호수" in stripped:
+            line_clean = re.sub(r'^(?:<br\s*/?>\s*)+', '', stripped).strip()
+            line_clean = re.sub(r'(?:<br\s*/?>\s*)+$', '', line_clean).strip()
+            
+            if line_clean.startswith('|') and line_clean.endswith('|'):
+                if "대상주택" in line_clean and "공급호수" in line_clean:
                     in_summary_table = True
                     continue
-                if re.match(r'^\|[\s\-\|:]+\|$', stripped):
+                if re.match(r'^\|[\s\-\|:]+\|$', line_clean):
                     continue
                 
                 if in_summary_table:
-                    cells = [c.strip() for c in stripped.split('|')[1:-1]]
+                    cells = [c.strip() for c in line_clean.split('|')[1:-1]]
                     if len(cells) < 8 or cells[0] == "합계" or cells[1] == "합계" or cells[0] == "연번":
                         continue
                     gu = cells[0]
@@ -319,10 +322,15 @@ def parse_tables_by_map(lines, table_map, sub_type, inst, api_meta_data):
         
         for line in lines:
             stripped = line.strip()
-            if stripped.startswith('|') and stripped.endswith('|'):
-                if re.match(r'^\|[\s\-\|:]+\|$', stripped):
+            line_clean = re.sub(r'^(?:<br\s*/?>\s*)+', '', stripped).strip()
+            line_clean = re.sub(r'(?:<br\s*/?>\s*)+$', '', line_clean).strip()
+            
+            if line_clean.startswith('|') and line_clean.endswith('|'):
+                if re.match(r'^\|[\s\-\|:]+\|$', line_clean):
                     continue
-                cells = [c.strip() for c in stripped.split('|')[1:-1]]
+                cells = [c.strip() for c in line_clean.split('|')[1:-1]]
+                if len(cells) > 0 and ("주택형" in cells[0] or "구분" in cells[0] or "블록" in cells[0] or "단지명" in cells[0]):
+                    in_table = False
                 
                 # 테이블 시작 감지 및 타입 추론
                 if not in_table:
