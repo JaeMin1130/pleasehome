@@ -246,7 +246,7 @@
 
 .badge-closed {
   background-color: var(--bg-light-gray);
-  color: var(--text-gray-dark);
+  color: var(--text-secondary);
 }
 
 .badge-default {

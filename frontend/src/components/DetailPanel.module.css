@@ -140,7 +140,7 @@
   font-weight: var(--font-weight-semibold);
   border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
   background-color: var(--bg-light-gray);
-  color: var(--text-gray-dark);
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
@@ -152,9 +152,9 @@
 }
 
 .filter-tab-btn.active {
-  background-color: var(--text-primary);
-  color: var(--bg-surface);
-  border-color: var(--text-primary);
+  background-color: var(--bg-light-gray);
+  color: var(--text-secondary);
+  border-color: var(--primary);
 }
 
 .loading-msg,

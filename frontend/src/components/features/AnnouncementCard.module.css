@@ -278,7 +278,7 @@
     align-items: center;
     gap: calc(var(--spacing-xs) * 1.5);
     background-color: var(--bg-light-gray);
-    color: var(--text-gray-dark);
+    color: var(--text-secondary);
     border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
     padding: calc(var(--spacing-xs) * 1.5) calc(var(--spacing-sm) * 1.5);
     border-radius: var(--radius-md);
