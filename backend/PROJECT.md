@@ -63,7 +63,7 @@ backend/
 graph TD
     A[1. OpenAPI 수집 & PDF 다운로드] --> B[2. 마크다운 & 엑셀 병합 변환]
     B --> C[3. 7대 특성 플래그 감지 및 표 평탄화 전처리]
-    C --> D[4. LLM 서브에이전트 data.json 추출]
+    C --> D[4. 본체 에이전트 data.json 직접 추출]
     D --> E{5. 룰 기반 실시간 정합성 검증}
     E -- SUCCESS --> F[6a. DB 정상 적재 & 이중 로깅]
     E -- FAIL <최대 3회 재추출> --> D
@@ -100,10 +100,10 @@ graph TD
   * **표 평탄화 (Table Flatting)**: 빈 셀 병합으로 인해 LLM이 텍스트 구조를 오해하는 것을 방지하고자, 전방 충전(Forward Fill) 알고리즘으로 빈 셀을 위 셀의 값으로 보완한 [document_flat.md](file:///home/iru/app/pleasehome/backend/docs/md/document_flat.md)를 생성합니다.
   * **노이즈 절삭 (Noise Slicing)**: 문서 후반부의 불필요한 행정 서식(위임장, 동의서 등)을 절삭(Cutoff)하여 토큰 낭비를 차단합니다.
 
-#### 4단계: 서브에이전트 가동을 통한 정제 JSON 데이터 추출
-* **수행 모듈**: [agent.json](file:///home/iru/app/pleasehome/backend/.agents/agent/markdown_sql_parser/agent.json) 기반의 서브에이전트(`markdown_sql_parser_v4`)
+#### 4단계: 본체 에이전트의 정제 JSON 데이터 직접 추출
+* **수행 모듈**: 본체 에이전트 (Antigravity)
 * **동작 방식**:
-  * 부모 에이전트로부터 전달받은 7대 특성 플래그와 [document_flat.md](file:///home/iru/app/pleasehome/backend/docs/md/document_flat.md)를 바탕으로, 비즈니스 룰 및 DB 제약 조건에 적합한 JSON 스펙 데이터를 추출하여 [data.json](file:///home/iru/app/pleasehome/backend/docs/md/data.json)으로 저장합니다.
+  * 직접 감지한 7대 특성 플래그와 [document_flat.md](file:///home/iru/app/pleasehome/backend/docs/md/document_flat.md)를 바탕으로, 비즈니스 룰 및 DB 제약 조건에 적합한 JSON 스펙 데이터를 추출하여 [data.json](file:///home/iru/app/pleasehome/backend/docs/md/data.json)으로 저장합니다.
   * 예: `is_reserve_only`가 True면 모든 유닛의 공급 수(`supply_count`)를 0으로 맞추고 예비 수(`reserve_count`)를 매핑하며, `has_unstandardized_address`가 True면 웹 검색을 가동해 정식 번지 주소를 보완합니다.
 
 #### 5단계: 룰 기반 실시간 정합성 물리 검증
@@ -197,7 +197,7 @@ python .agents/scripts/insert_loader.py --doc_path docs/md/{공고_폴더}/docum
 6. **`has_mutual_conversion` (상호전환 지원 여부)**:
    * `False`: 상호전환 범위 금액 필드(`max_deposit`, `min_deposit`, `max_monthly_rent`, `min_monthly_rent`)를 모두 `null`로 지정합니다.
 7. **`has_unstandardized_address` (비정형 주소 여부)**:
-   * `True` (예: "도내동 외 일원 고양창릉 공공주택지구 내 A-4블록" 등): 서브에이전트가 주소를 추출하는 시점에 반드시 웹 검색(`search_web`)을 수행하여 공식 지번/도로명 주소를 찾아 대체하여 기재합니다.
+   * `True` (예: "도내동 외 일원 고양창릉 공공주택지구 내 A-4블록" 등): 본체 에이전트가 주소를 추출하는 시점에 반드시 웹 검색(`search_web`)을 수행하여 공식 지번/도로명 주소를 찾아 대체하여 기재합니다.
 
 ### 6.3. 대표 지역(region) 명세 표준화
 * `region` 필드는 임의의 줄임말(예: "서울", "경기")이나 다중 텍스트를 배제하고, 오직 대한민국의 **17대 표준 광역지방자치단체명** 중 정확히 하나로 정규화하여 기재합니다:

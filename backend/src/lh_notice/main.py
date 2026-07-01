@@ -191,8 +191,14 @@ def main():
                     continue
                     
                 if file_name.lower().endswith((".pdf", ".xls", ".xlsx")):
+                    # 블랙리스트 필터링: 제외 키워드
+                    blacklist = ["팸플릿"]
+                    if any(kw in file_name for kw in blacklist):
+                        print(f" -> 파일 제외 (블랙리스트): {file_name}")
+                        continue
+
                     # 화이트리스트 필터링: 무관한 파일 제외
-                    whitelist = ["공고", "모집", "안내", "목록", "주택"]
+                    whitelist = ["공고", "모집", "안내", "목록", "주택", "입주자격"]
                     if not any(kw in file_name.lower() for kw in whitelist):
                         continue
                         
