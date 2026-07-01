@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { Complex, HousingUnit, Announcement, FilterState } from '@/types';
-import UnitCard from '@/components/features/UnitCard';
+import UnitTable from '@/components/features/UnitTable';
+import { formatTargetGroup } from '@/utils/formatters';
 import styles from './DetailPanel.module.css';
 
 interface DetailPanelProps {
@@ -19,12 +20,16 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
   const [loading, setLoading] = useState(false);
   const [sliderValues, setSliderValues] = useState<Record<number, number>>({});
   const [selectedType, setSelectedType] = useState<string>('ALL');
+  const [selectedTarget, setSelectedTarget] = useState<string>('ALL');
+  const [selectedIncome, setSelectedIncome] = useState<string>('ALL');
 
   useEffect(() => {
     if (!complex) return;
     setLoading(true);
     setSliderValues({});
     setSelectedType('ALL');
+    setSelectedTarget('ALL');
+    setSelectedIncome('ALL');
     fetch(`/api/housing-units?complex_id=${complex.id}`)
       .then((res) => res.json())
       .then((data) => {
@@ -43,6 +48,13 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
     if (unit.exclusive_area < filterState.minArea || unit.exclusive_area > filterState.maxArea) return false;
     if (unit.deposit < filterState.minDeposit || unit.deposit > filterState.maxDeposit) return false;
     if (unit.monthly_rent < filterState.minMonthlyRent || unit.monthly_rent > filterState.maxMonthlyRent) return false;
+    
+    // 신청 전형(대상) 필터링
+    if (selectedTarget !== 'ALL' && unit.target_group !== selectedTarget) return false;
+    
+    // 소득 기준 필터링
+    if (selectedIncome !== 'ALL' && unit.income_group !== selectedIncome) return false;
+    
     return true;
   });
 
@@ -55,6 +67,16 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
   // Extract unique base supply types (e.g. "51A", "59A")
   const baseTypes = Array.from(
     new Set(units.map((u) => u.room_type?.split(' ')[0]).filter((t): t is string => !!t))
+  ).sort();
+
+  // 고유 신청 전형(대상) 목록 추출
+  const targetGroups = Array.from(
+    new Set(units.map((u) => u.target_group).filter((g): g is string => !!g))
+  ).sort();
+
+  // 고유 소득 기준 목록 추출
+  const incomeGroups = Array.from(
+    new Set(units.map((u) => u.income_group).filter((g): g is string => !!g))
   ).sort();
 
   return (
@@ -116,42 +138,90 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
         <div>
           <h4 className={styles['panel-section-title']}>주택형별 공급 및 가격 정보</h4>
           
-          {/* 주택형 필터 칩 탭 */}
-          {!loading && units.length > 0 && (
-            <div className={styles['filter-tabs-container']}>
-              <button
-                className={`${styles['filter-tab-btn']} ${selectedType === 'ALL' ? styles.active : ''}`}
-                onClick={() => setSelectedType('ALL')}
-              >
-                전체
-              </button>
-              {baseTypes.map((type) => (
-                <button
-                  key={type}
-                  className={`${styles['filter-tab-btn']} ${selectedType === type ? styles.active : ''}`}
-                  onClick={() => setSelectedType(type)}
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
-          )}
+          <div className={styles['panel-filter-row']}>
+            {/* 주택형 필터 칩 탭 */}
+            {!loading && units.length > 0 && (
+              <div className={styles['filter-group-wrap']}>
+                <span className={styles['filter-label']}>주택형:</span>
+                <div className={styles['filter-tabs-container']}>
+                  <button
+                    className={`${styles['filter-tab-btn']} ${selectedType === 'ALL' ? styles.active : ''}`}
+                    onClick={() => setSelectedType('ALL')}
+                  >
+                    전체
+                  </button>
+                  {baseTypes.map((type) => (
+                    <button
+                      key={type}
+                      className={`${styles['filter-tab-btn']} ${selectedType === type ? styles.active : ''}`}
+                      onClick={() => setSelectedType(type)}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 신청 대상 필터 칩 탭 */}
+            {!loading && targetGroups.length > 0 && (
+              <div className={styles['filter-group-wrap']}>
+                <span className={styles['filter-label']}>신청 대상:</span>
+                <div className={styles['filter-tabs-container']}>
+                  <button
+                    className={`${styles['filter-tab-btn']} ${selectedTarget === 'ALL' ? styles.active : ''}`}
+                    onClick={() => setSelectedTarget('ALL')}
+                  >
+                    전체
+                  </button>
+                  {targetGroups.map((target) => (
+                    <button
+                      key={target}
+                      className={`${styles['filter-tab-btn']} ${selectedTarget === target ? styles.active : ''}`}
+                      onClick={() => setSelectedTarget(target)}
+                    >
+                      {formatTargetGroup(target)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 소득 기준 필터 칩 탭 */}
+            {!loading && incomeGroups.length > 0 && (
+              <div className={styles['filter-group-wrap']}>
+                <span className={styles['filter-label']}>소득 기준:</span>
+                <div className={styles['filter-tabs-container']}>
+                  <button
+                    className={`${styles['filter-tab-btn']} ${selectedIncome === 'ALL' ? styles.active : ''}`}
+                    onClick={() => setSelectedIncome('ALL')}
+                  >
+                    전체
+                  </button>
+                  {incomeGroups.map((income) => (
+                    <button
+                      key={income}
+                      className={`${styles['filter-tab-btn']} ${selectedIncome === income ? styles.active : ''}`}
+                      onClick={() => setSelectedIncome(income)}
+                    >
+                      {income}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
           {loading ? (
             <div className={styles['loading-msg']}>공급 정보를 불러오는 중입니다...</div>
           ) : filteredUnits.length === 0 ? (
             <div className={styles['empty-msg']}>조건에 맞는 공급 주택형이 없습니다.</div>
           ) : (
-            <div className={styles['units-container']}>
-              {filteredUnits.map((unit) => (
-                <UnitCard
-                  key={unit.id}
-                  unit={unit}
-                  sliderVal={sliderValues[unit.id] ?? unit.deposit}
-                  onSliderChange={handleSliderChange}
-                />
-              ))}
-            </div>
+            <UnitTable
+              units={filteredUnits}
+              sliderValues={sliderValues}
+              onSliderChange={handleSliderChange}
+            />
           )}
         </div>
       </div>
