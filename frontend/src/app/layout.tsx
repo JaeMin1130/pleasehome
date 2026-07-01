@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "공공맵 - 공공청약 맞춤 정보 지도 서비스",
-  description: "SQLite3 기반 공공청약 데이터를 연계하여 전국 청약 공고 일정 및 아파트 공급 단지를 한눈에 확인하는 맞춤형 정보 지도 서비스입니다.",
+  description: "공공청약(LH, SH, GH) 데이터를 연계하여 전국 청약 공고 일정 및 공급 주택 단지를 한눈에 확인하는 맞춤형 정보 지도 서비스입니다.",
   verification: {
     google: "YUZHBi2LfMvirt-ywiRdfTD2TOteXHgnjbHczGX2kXo",
   },
