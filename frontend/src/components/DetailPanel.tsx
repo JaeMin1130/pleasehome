@@ -108,17 +108,7 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
     });
   };
 
-  // 신청 대상(공급유형+신청대상 결합) 칩 활성화 판별
-  const isTargetValid = (comboKey: string) => {
-    return units.some((u) => {
-      const uComboKey = `${u.supply_type || ''}_${u.target_group || ''}`;
-      return (selectedType === 'ALL' || (u.room_type && u.room_type.startsWith(selectedType))) &&
-             (selectedIncome === 'ALL' || u.income_group === selectedIncome) &&
-             (uComboKey === comboKey);
-    });
-  };
-
-  // 소득/순위 칩 활성화 판별
+  // 소득/순위 칩 활성화 판별 (현재 선택된 신청 대상 기준)
   const isIncomeValid = (income: string) => {
     return units.some((u) => {
       const comboKey = `${u.supply_type || ''}_${u.target_group || ''}`;
@@ -210,12 +200,10 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
                   {targetCombos.map((combo) => {
                     const [supplyType, targetGroup] = combo.split('_');
                     const label = getTargetLabel(supplyType || null, targetGroup || null);
-                    const isValid = isTargetValid(combo);
                     return (
                       <button
                         key={combo}
                         className={`${styles['filter-tab-btn']} ${selectedTarget === combo ? styles.active : ''}`}
-                        disabled={!isValid}
                         onClick={() => setSelectedTarget(combo)}
                       >
                         {label}
@@ -247,6 +235,7 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
                 </div>
               </div>
             )}
+
 
             {/* 주택형 필터 칩 탭 */}
             {!loading && units.length > 0 && (
