@@ -19,10 +19,12 @@
 !/frontend/package.json
 !/backend/package.json
 !/backend/.agents/
-/backend/.agents/*
-!/backend/.agents/scripts/
 
 # Ignore build artifacts and caches
 **/__pycache__/
 *.pyc
 *.pyo
+
+# Ignore local databases inside .agents
+/backend/.agents/*.db
+/backend/.agents/*.db-*

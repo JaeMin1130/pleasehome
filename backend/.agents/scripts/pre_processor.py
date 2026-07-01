@@ -378,6 +378,11 @@ def main():
     with open(meta_only_path, "w", encoding="utf-8") as f:
         f.write(meta_only_content)
         
+    # 3. features.json 물리 파일 생성 (가이드 규약 충족)
+    features_path = os.path.join(os.path.dirname(md_path), "features.json")
+    with open(features_path, "w", encoding="utf-8") as f:
+        json.dump(features, f, ensure_ascii=False, indent=2)
+        
     result = {
         "features": features,
         "flat_markdown_path": flat_path,

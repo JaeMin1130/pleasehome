@@ -342,6 +342,13 @@ def parse_tables_by_map(lines, table_map, sub_type, inst, api_meta_data):
                         in_housing_detail_table = True
                     else:
                         in_housing_detail_table = False
+                else:
+                    if not in_housing_detail_table:
+                        header_str = " ".join(cells)
+                        exclude_words = ["구비서류", "신분증", "융자", "HUG", "인증서", "배점", "접수", "일정", "신청자"]
+                        include_words = ["주택형", "타입", "면적", "분양가", "공급금액", "세대수", "공급구분", "동·호", "보증금", "임대료"]
+                        if any(w in header_str for w in include_words) and not any(w in header_str for w in exclude_words):
+                            in_housing_detail_table = True
                         
                 if not in_housing_detail_table:
                     continue
@@ -635,6 +642,16 @@ def main():
     # table_map 은 최종 data.json에 적재되지 않도록 제거
     meta_data.pop("table_map", None)
     
+    # 시행기관 오기 방어 정규화 가드
+    if "announcement" in meta_data:
+        inst_raw = meta_data["announcement"].get("institution", "")
+        if "SH" in inst_raw or "서울주택" in inst_raw:
+            meta_data["announcement"]["institution"] = "SH"
+        elif "LH" in inst_raw or "한국토지" in inst_raw:
+            meta_data["announcement"]["institution"] = "LH"
+        elif "GH" in inst_raw or "경기주택" in inst_raw:
+            meta_data["announcement"]["institution"] = "GH"
+            
     if not meta_data.get("announcement", {}).get("title"):
         title = meta_data.get("api_metadata", {}).get("PAN_NM", "")
         if not title:
