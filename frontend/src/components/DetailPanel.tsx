@@ -34,6 +34,19 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
       .then((res) => res.json())
       .then((data) => {
         setUnits(data);
+        
+        // 고유 결합 키 및 소득 등급 추출하여 첫 번째 값을 기본 선택값으로 적용
+        const combos = Array.from(
+          new Set(data.map((u: any) => `${u.supply_type || ''}_${u.target_group || ''}`))
+        ).filter(combo => combo !== '_').sort();
+        
+        const incomes = Array.from(
+          new Set(data.map((u: any) => u.income_group).filter((g): g is string => !!g))
+        ).sort();
+
+        setSelectedTarget(combos.length > 0 ? (combos[0] as string) : 'ALL');
+        setSelectedIncome(incomes.length > 0 ? (incomes[0] as string) : 'ALL');
+        
         setLoading(false);
       })
       .catch((err) => {
@@ -44,16 +57,21 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
 
   const filteredUnits = units.filter((unit) => {
     if (selectedType !== 'ALL' && (!unit.room_type || !unit.room_type.startsWith(selectedType))) return false;
+    
+    // 1. 공급 유형 + 신청 대상 그룹화 필터링
+    if (selectedTarget !== 'ALL') {
+      const comboKey = `${unit.supply_type || ''}_${unit.target_group || ''}`;
+      if (comboKey !== selectedTarget) return false;
+    }
+    
+    // 2. 소득/순위 필터링
+    if (selectedIncome !== 'ALL' && unit.income_group !== selectedIncome) return false;
+    
+    // 지도 뷰의 슬라이더/인적 자격 공통 필터링
     if (filterState.targetGroup !== 'ALL' && unit.target_group !== filterState.targetGroup) return false;
     if (unit.exclusive_area < filterState.minArea || unit.exclusive_area > filterState.maxArea) return false;
     if (unit.deposit < filterState.minDeposit || unit.deposit > filterState.maxDeposit) return false;
     if (unit.monthly_rent < filterState.minMonthlyRent || unit.monthly_rent > filterState.maxMonthlyRent) return false;
-    
-    // 신청 전형(대상) 필터링
-    if (selectedTarget !== 'ALL' && unit.target_group !== selectedTarget) return false;
-    
-    // 소득 기준 필터링
-    if (selectedIncome !== 'ALL' && unit.income_group !== selectedIncome) return false;
     
     return true;
   });
@@ -64,20 +82,65 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
 
   if (!complex) return null;
 
-  // Extract unique base supply types (e.g. "51A", "59A")
+  // 1. 주택형 고유 목록
   const baseTypes = Array.from(
     new Set(units.map((u) => u.room_type?.split(' ')[0]).filter((t): t is string => !!t))
   ).sort();
 
-  // 고유 신청 전형(대상) 목록 추출
-  const targetGroups = Array.from(
-    new Set(units.map((u) => u.target_group).filter((g): g is string => !!g))
-  ).sort();
+  // 2. 공급 유형 + 신청 대상 고유 결합 키 목록 추출
+  const targetCombos = Array.from(
+    new Set(units.map((u) => `${u.supply_type || ''}_${u.target_group || ''}`))
+  ).filter(combo => combo !== '_').sort();
 
-  // 고유 소득 기준 목록 추출
+  // 3. 소득/순위 고유 목록
   const incomeGroups = Array.from(
     new Set(units.map((u) => u.income_group).filter((g): g is string => !!g))
   ).sort();
+
+  // --- 교차 연동 유효성 체크 함수 (Cascading Intersection) ---
+  // 주택형 칩 활성화 판별
+  const isTypeValid = (type: string) => {
+    return units.some((u) => {
+      const comboKey = `${u.supply_type || ''}_${u.target_group || ''}`;
+      return (selectedTarget === 'ALL' || comboKey === selectedTarget) &&
+             (selectedIncome === 'ALL' || u.income_group === selectedIncome) &&
+             (u.room_type && u.room_type.startsWith(type));
+    });
+  };
+
+  // 신청 대상(공급유형+신청대상 결합) 칩 활성화 판별
+  const isTargetValid = (comboKey: string) => {
+    return units.some((u) => {
+      const uComboKey = `${u.supply_type || ''}_${u.target_group || ''}`;
+      return (selectedType === 'ALL' || (u.room_type && u.room_type.startsWith(selectedType))) &&
+             (selectedIncome === 'ALL' || u.income_group === selectedIncome) &&
+             (uComboKey === comboKey);
+    });
+  };
+
+  // 소득/순위 칩 활성화 판별
+  const isIncomeValid = (income: string) => {
+    return units.some((u) => {
+      const comboKey = `${u.supply_type || ''}_${u.target_group || ''}`;
+      return (selectedType === 'ALL' || (u.room_type && u.room_type.startsWith(selectedType))) &&
+             (selectedTarget === 'ALL' || comboKey === selectedTarget) &&
+             (u.income_group === income);
+    });
+  };
+
+  // 공급유형 + 신청대상 결합 한글 라벨 생성 헬퍼 함수
+  const getTargetLabel = (supplyType: string | null, targetGroup: string | null) => {
+    if (!supplyType && !targetGroup) return '정보 없음';
+    
+    const formattedTarget = targetGroup ? formatTargetGroup(targetGroup) : null;
+    
+    if (supplyType && formattedTarget) {
+      if (supplyType === formattedTarget) return supplyType;
+      if (formattedTarget === '상관없음') return supplyType;
+      return `${supplyType} (${formattedTarget})`;
+    }
+    return supplyType || formattedTarget || '정보 없음';
+  };
 
   return (
     <div className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''}`} style={style}>
@@ -139,6 +202,52 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
           <h4 className={styles['panel-section-title']}>주택형별 공급 및 가격 정보</h4>
           
           <div className={styles['panel-filter-row']}>
+            {/* 신청 대상 (공급유형+신청대상 그룹화) 필터 칩 탭 */}
+            {!loading && targetCombos.length > 0 && (
+              <div className={styles['filter-group-wrap']}>
+                <span className={styles['filter-label']}>신청 대상:</span>
+                <div className={styles['filter-tabs-container']}>
+                  {targetCombos.map((combo) => {
+                    const [supplyType, targetGroup] = combo.split('_');
+                    const label = getTargetLabel(supplyType || null, targetGroup || null);
+                    const isValid = isTargetValid(combo);
+                    return (
+                      <button
+                        key={combo}
+                        className={`${styles['filter-tab-btn']} ${selectedTarget === combo ? styles.active : ''}`}
+                        disabled={!isValid}
+                        onClick={() => setSelectedTarget(combo)}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 소득/순위 필터 칩 탭 */}
+            {!loading && incomeGroups.length > 0 && (
+              <div className={styles['filter-group-wrap']}>
+                <span className={styles['filter-label']}>소득/순위:</span>
+                <div className={styles['filter-tabs-container']}>
+                  {incomeGroups.map((income) => {
+                    const isValid = isIncomeValid(income);
+                    return (
+                      <button
+                        key={income}
+                        className={`${styles['filter-tab-btn']} ${selectedIncome === income ? styles.active : ''}`}
+                        disabled={!isValid}
+                        onClick={() => setSelectedIncome(income)}
+                      >
+                        {income}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* 주택형 필터 칩 탭 */}
             {!loading && units.length > 0 && (
               <div className={styles['filter-group-wrap']}>
@@ -150,63 +259,19 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
                   >
                     전체
                   </button>
-                  {baseTypes.map((type) => (
-                    <button
-                      key={type}
-                      className={`${styles['filter-tab-btn']} ${selectedType === type ? styles.active : ''}`}
-                      onClick={() => setSelectedType(type)}
-                    >
-                      {type}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 신청 대상 필터 칩 탭 */}
-            {!loading && targetGroups.length > 0 && (
-              <div className={styles['filter-group-wrap']}>
-                <span className={styles['filter-label']}>신청 대상:</span>
-                <div className={styles['filter-tabs-container']}>
-                  <button
-                    className={`${styles['filter-tab-btn']} ${selectedTarget === 'ALL' ? styles.active : ''}`}
-                    onClick={() => setSelectedTarget('ALL')}
-                  >
-                    전체
-                  </button>
-                  {targetGroups.map((target) => (
-                    <button
-                      key={target}
-                      className={`${styles['filter-tab-btn']} ${selectedTarget === target ? styles.active : ''}`}
-                      onClick={() => setSelectedTarget(target)}
-                    >
-                      {formatTargetGroup(target)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 소득 기준 필터 칩 탭 */}
-            {!loading && incomeGroups.length > 0 && (
-              <div className={styles['filter-group-wrap']}>
-                <span className={styles['filter-label']}>소득 기준:</span>
-                <div className={styles['filter-tabs-container']}>
-                  <button
-                    className={`${styles['filter-tab-btn']} ${selectedIncome === 'ALL' ? styles.active : ''}`}
-                    onClick={() => setSelectedIncome('ALL')}
-                  >
-                    전체
-                  </button>
-                  {incomeGroups.map((income) => (
-                    <button
-                      key={income}
-                      className={`${styles['filter-tab-btn']} ${selectedIncome === income ? styles.active : ''}`}
-                      onClick={() => setSelectedIncome(income)}
-                    >
-                      {income}
-                    </button>
-                  ))}
+                  {baseTypes.map((type) => {
+                    const isValid = isTypeValid(type);
+                    return (
+                      <button
+                        key={type}
+                        className={`${styles['filter-tab-btn']} ${selectedType === type ? styles.active : ''}`}
+                        disabled={!isValid}
+                        onClick={() => setSelectedType(type)}
+                      >
+                        {type}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -228,5 +293,4 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
     </div>
   );
 }
-
 

@@ -129,26 +129,26 @@
 .filter-tabs-container {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-lg);
+  gap: calc(var(--spacing-xs) * 1.5);
+  margin-bottom: 0;
 }
 
 .filter-tab-btn {
-  padding: calc(var(--spacing-xs) * 1.5) var(--spacing-md);
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
-  background-color: var(--bg-surface);
-  color: var(--text-secondary);
+  background-color: var(--bg-light-gray);
+  color: var(--text-gray-dark);
   cursor: pointer;
-  transition: all var(--transition-normal);
+  transition: all var(--transition-fast);
 }
 
 .filter-tab-btn:hover {
-  background-color: var(--bg-surface-hover);
-  color: var(--text-primary);
-  border-color: var(--text-muted);
+  background-color: var(--primary-bg);
+  color: var(--primary);
+  border-color: var(--border-strong);
 }
 
 .filter-tab-btn.active {
@@ -180,16 +180,16 @@
 .panel-filter-row {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
   border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
-  padding-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
 }
 
 .filter-group-wrap {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
 }
 
 .filter-label {
@@ -197,5 +197,5 @@
   font-weight: var(--font-weight-bold);
   color: var(--text-secondary);
   white-space: nowrap;
-  min-width: calc(var(--spacing-xl) * 2.5);
+  min-width: calc(var(--spacing-xl) * 1.7);
 }
