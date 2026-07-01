@@ -183,6 +183,103 @@ def process_table_flatting(md_content):
             
     return '\n'.join(output_lines)
 
+def strip_housing_tables(md_content):
+    """
+    마크다운 텍스트에서 소형 일정, 배점 기준, 소득 자산 표 등은 살려두고,
+    주택명, 단지명, 소재지 주소, 보증금/임대료, 주택형/면적 등 
+    complexes 및 housing_units 테이블 적재 소스가 되는 테이블만 감지하여 제거합니다.
+    이때, 테이블 헤더 영역(구분선 행 및 그 위쪽 라인들)은 지우지 않고 그대로 보존하여
+    document_llm_source.md에 남겨둡니다.
+    """
+    lines = md_content.split('\n')
+    output_lines = []
+    
+    in_table = False
+    table_block = []
+    
+    # 단지/주택 정보 테이블 판단 키워드
+    housing_keywords = ["소재지 주소", "주택명", "단지명", "건물명", "전용면적", "공급면적", "임대료", "보증금", "주택형", "타입", "세대수", "공급호수", "임대보증금"]
+    # 보존해야 할 일정/자격 요건 테이블 판단 키워드
+    preserve_keywords = ["신청접수", "서류제출", "계약체결", "당첨자 발표", "소득구분", "소득기준", "자산기준", "배점기준", "가점", "제출서류", "신청 자격"]
+    
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith('|') and stripped.endswith('|'):
+            if not in_table:
+                in_table = True
+                table_block = [line]
+            else:
+                table_block.append(line)
+        else:
+            if in_table:
+                in_table = False
+                
+                # 테이블의 텍스트 분석
+                combined_table_text = " ".join(table_block)
+                
+                # 키워드 체크
+                has_housing = any(k in combined_table_text for k in housing_keywords)
+                has_preserve = any(k in combined_table_text for k in preserve_keywords)
+                
+                is_housing_table = False
+                if has_housing:
+                    if not has_preserve:
+                        is_housing_table = True
+                    else:
+                        # 두 유형의 키워드가 혼재된 경우 데이터 행 수와 결합하여 판단
+                        data_rows = [r for r in table_block if not re.match(r'^\|[\s\-\|:]+\|$', r.strip())]
+                        if len(data_rows) >= 5:
+                            is_housing_table = True
+                
+                if is_housing_table:
+                    # [헤더 보존 소거 로직]
+                    delimiter_idx = -1
+                    for idx, row_line in enumerate(table_block):
+                        if re.match(r'^\|[\s\-\|:]+\|$', row_line.strip()):
+                            delimiter_idx = idx
+                            break
+                    if delimiter_idx != -1:
+                        header_block = table_block[:delimiter_idx + 1]
+                        output_lines.extend(header_block)
+                    else:
+                        output_lines.extend(table_block[:2])
+                    output_lines.append("")
+                else:
+                    # 보존
+                    output_lines.extend(table_block)
+                table_block = []
+            output_lines.append(line)
+            
+    if in_table:
+        combined_table_text = " ".join(table_block)
+        has_housing = any(k in combined_table_text for k in housing_keywords)
+        has_preserve = any(k in combined_table_text for k in preserve_keywords)
+        is_housing_table = False
+        if has_housing:
+            if not has_preserve:
+                is_housing_table = True
+            else:
+                data_rows = [r for r in table_block if not re.match(r'^\|[\s\-\|:]+\|$', r.strip())]
+                if len(data_rows) >= 5:
+                    is_housing_table = True
+                    
+        if is_housing_table:
+            delimiter_idx = -1
+            for idx, row_line in enumerate(table_block):
+                if re.match(r'^\|[\s\-\|:]+\|$', row_line.strip()):
+                    delimiter_idx = idx
+                    break
+            if delimiter_idx != -1:
+                header_block = table_block[:delimiter_idx + 1]
+                output_lines.extend(header_block)
+            else:
+                output_lines.extend(table_block[:2])
+            output_lines.append("")
+        else:
+            output_lines.extend(table_block)
+            
+    return '\n'.join(output_lines)
+
 def slice_noise(md_content):
     """
     공고문 본문이 끝나고 후반부에 수록되는 제출 양식/서식(위임장, 동의서 등) 노이즈를 찾아내어
@@ -268,16 +365,23 @@ def main():
     # 마크다운 테이블 평탄화 전처리
     flat_content = process_table_flatting(content)
     
-    # 평탄화된 파일 생성
+    # 평탄화된 파일 생성 (2번 이름 규칙: document_parser_source.md)
     base, ext = os.path.splitext(md_path)
-    flat_path = f"{base}_flat{ext}"
+    flat_path = os.path.join(os.path.dirname(md_path), f"document_parser_source{ext}")
     
     with open(flat_path, "w", encoding="utf-8") as f:
         f.write(flat_content)
         
+    # 비정형 LLM 파싱용 테이블 소거 파일 생성 (2번 이름 규칙: document_llm_source.md)
+    meta_only_content = strip_housing_tables(content)
+    meta_only_path = os.path.join(os.path.dirname(md_path), f"document_llm_source{ext}")
+    with open(meta_only_path, "w", encoding="utf-8") as f:
+        f.write(meta_only_content)
+        
     result = {
         "features": features,
-        "flat_markdown_path": flat_path
+        "flat_markdown_path": flat_path,
+        "meta_only_markdown_path": meta_only_path
     }
     
     print(json.dumps(result, ensure_ascii=False, indent=2))
