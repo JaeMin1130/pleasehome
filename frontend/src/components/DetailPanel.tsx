@@ -32,16 +32,16 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
     setSelectedIncome('ALL');
     fetch(`/api/housing-units?complex_id=${complex.id}`)
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: HousingUnit[]) => {
         setUnits(data);
         
         // 고유 결합 키 및 소득 등급 추출하여 첫 번째 값을 기본 선택값으로 적용
         const combos = Array.from(
-          new Set(data.map((u: any) => `${u.supply_type || ''}_${u.target_group || ''}`))
+          new Set(data.map((u) => `${u.supply_type || ''}_${u.target_group || ''}`))
         ).filter(combo => combo !== '_').sort();
         
         const incomes = Array.from(
-          new Set(data.map((u: any) => u.income_group).filter((g): g is string => !!g))
+          new Set(data.map((u) => u.income_group).filter((g): g is string => !!g))
         ).sort();
 
         setSelectedTarget(combos.length > 0 ? (combos[0] as string) : 'ALL');
