@@ -7,8 +7,8 @@ export const PANEL_GAP = 0;
 export const NAVIGATION_BAR_WIDTH = 60;
 
 // [3] 사이드바 및 상세 패널 고정 너비 규격
-export const SIDEBAR_DEFAULT_WIDTH = 450;
-export const PANEL_DEFAULT_WIDTH = 550;
+export const SIDEBAR_DEFAULT_WIDTH = 400;
+export const PANEL_DEFAULT_WIDTH = 600;
 export const HEADER_ACCORDION_MIN_HEIGHT = 150;
 export const HEADER_ACCORDION_MAX_HEIGHT = 600;
 export const HEADER_ACCORDION_DEFAULT_HEIGHT = 300;
