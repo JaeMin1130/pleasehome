@@ -856,6 +856,8 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
   background-color: var(--bg-body);
 }
@@ -1073,6 +1075,8 @@
   flex-direction: column;
   gap: var(--spacing-sm);
   padding: var(--spacing-md);
+  flex: 1;
+  overflow-y: auto;
 }
 
 .folder-card {
@@ -1280,4 +1284,88 @@
 .sidebar-color-picker-item.active {
   border-color: var(--text-primary);
   transform: scale(1.2);
+}
+
+/* 아코디언 관련 스타일 */
+.accordion-item {
+  margin-bottom: var(--spacing-sm);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-surface);
+  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.accordion-item:hover {
+  border-color: var(--border-strong);
+}
+
+.folder-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  cursor: pointer;
+  background-color: transparent;
+  border: none;
+  transition: background-color var(--transition-fast);
+}
+
+.folder-card:hover {
+  background-color: var(--bg-surface-hover);
+}
+
+/* 아코디언이 확장되었을 때 감싸는 아이템 헤더의 스타일 변화 */
+.folder-card.expanded {
+  background-color: var(--bg-surface-hover);
+  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+}
+
+.accordion-body {
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  background-color: var(--bg-body);
+}
+
+
+.empty-bookmark-msg {
+  padding: var(--spacing-md);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-md);
+  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  line-height: var(--line-height-base);
+}
+
+.folder-info-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* 삭제 버튼 상시 노출 설정 */
+.folder-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast);
+}
+
+.folder-delete-btn:hover {
+  color: var(--color-tomato);
 }
