@@ -198,7 +198,7 @@ def main():
                         continue
 
                     # 화이트리스트 필터링: 무관한 파일 제외
-                    whitelist = ["공고", "모집", "안내", "목록", "주택", "입주자격"]
+                    whitelist = ["공고", "모집", "안내", "목록", "주택", "입주자격", "내역", "임대조건"]
                     if not any(kw in file_name.lower() for kw in whitelist):
                         continue
                         
