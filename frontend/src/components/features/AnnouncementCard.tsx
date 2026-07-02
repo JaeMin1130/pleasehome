@@ -202,7 +202,7 @@ export default function AnnouncementCard({
       <h3 className={styles['card-title']}>{ann.title}</h3>
       
       {isActive && (
-        <div className={styles['detail-link-row']}>
+        <div className={styles['detail-link-row']} onClick={(e) => e.stopPropagation()}>
           <Link 
             href={`/announcements/details/${ann.id}`} 
             className={styles['detail-link-btn']}

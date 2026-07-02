@@ -158,6 +158,7 @@
 }
 
 .sidebar-list {
+  position: relative;
   flex: var(--layout-flex-1);
   overflow-y: auto;
   padding: var(--spacing-md);

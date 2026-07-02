@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Announcement, ApplicationStatus, Complex } from '@/types';
 import AnnouncementCard from '@/components/features/AnnouncementCard';
@@ -39,6 +39,24 @@ export default function Sidebar({
   const [activeTabStatus, setActiveTabStatus] = useState<ApplicationStatus>('ONGOING');
   const [activeRegion, setActiveRegion] = useState<string>('ALL'); // 💡 지역 필터 상태 추가
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // 선택된 공고가 활성화되었을 때 해당 카드로 부드럽게 스크롤 포커스 이동
+  useEffect(() => {
+    if (activeAnnId !== null) {
+      const timer = setTimeout(() => {
+        const cardElement = document.getElementById(`ann-card-${activeAnnId}`);
+        if (cardElement && listRef.current) {
+          const targetScrollTop = cardElement.offsetTop - 16; // 상단 여백 고려
+          listRef.current.scrollTo({
+            top: targetScrollTop >= 0 ? targetScrollTop : 0,
+            behavior: 'smooth'
+          });
+        }
+      }, 150); // 아코디언 애니메이션 딜레이 감안
+      return () => clearTimeout(timer);
+    }
+  }, [activeAnnId]);
 
 
   // 공급 주택 목록 개폐 상태 추가
@@ -216,7 +234,11 @@ export default function Sidebar({
   };
 
   const handleCardClick = (annId: number) => {
-    onSelectAnnouncement(annId);
+    if (activeAnnId === annId) {
+      onSelectAnnouncement(null);
+    } else {
+      onSelectAnnouncement(annId);
+    }
   };
 
   const filteredComplexes = displayComplexes.filter(c => 
@@ -266,141 +288,113 @@ export default function Sidebar({
 
       {/* 탭 분기 렌더링 */}
       {activeTab === 'SEARCH' && (
-        activeAnnId === null ? (
-          <>
-            <div className={styles['sidebar-search']}>
-              <div className={styles['search-wrapper']}>
-                <input 
-                  type="text" placeholder="공고명 또는 공급기관 검색..." 
-                  className={styles['search-input']} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                {searchTerm && (
-                  <button 
-                    onClick={() => setSearchTerm('')}
-                    className={styles['clear-btn']}
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-              
-              {/* ① 지역 구분 필터 태그 (순서 조정: 전체 지역 -> 서울 -> 인천 -> 경기 -> 기타) */}
-              <div className={styles['region-tags']}>
-                {['ALL', '서울', '인천', '경기', '기타'].map((r) => {
-                  const label = r === 'ALL' ? '전체 지역' : r;
-                  return (
-                    <span 
-                      key={r}
-                      className={`${styles['region-tag']} ${activeRegion === r ? styles.active : ''}`}
-                      onClick={() => setActiveRegion(r)}
-                    >
-                      {label}
-                    </span>
-                  );
-                })}
-              </div>
-
-              {/* ② 접수 구분 필터 태그 (하단 노출) */}
-              <div className={styles['filter-tags']}>
-                <span className={`${styles['filter-tag']} ${activeTabStatus === 'UPCOMING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('UPCOMING')}>
-                  접수 예정 ({getStatusCount('UPCOMING')})
-                </span>
-                <span className={`${styles['filter-tag']} ${activeTabStatus === 'ONGOING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('ONGOING')}>
-                  접수 중 ({getStatusCount('ONGOING')})
-                </span>
-                <span className={`${styles['filter-tag']} ${activeTabStatus === 'CLOSED' ? styles.active : ''}`} onClick={() => setActiveTabStatus('CLOSED')}>
-                  접수 마감 ({getStatusCount('CLOSED')})
-                </span>
-              </div>
-            </div>
-            <div className={styles['sidebar-list']}>
-              {getSortedAnnouncements().length === 0 ? (
-                <div className={styles['empty-msg']}>결과가 없습니다.</div>
-              ) : (
-                getSortedAnnouncements().map((ann) => (
-                  <AnnouncementCard
-                    key={ann.id} ann={ann} isActive={false}
-                    onClick={() => handleCardClick(ann.id)}
-                    expandedSections={expandedSections} onToggleSection={(key) => toggleSection(key, ann.id)}
-                  />
-                ))
+        <>
+          <div className={styles['sidebar-search']}>
+            <div className={styles['search-wrapper']}>
+              <input 
+                type="text" placeholder="공고명 또는 공급기관 검색..." 
+                className={styles['search-input']} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              {searchTerm && (
+                <button 
+                  onClick={() => setSearchTerm('')}
+                  className={styles['clear-btn']}
+                >
+                  ✕
+                </button>
               )}
             </div>
-          </>
-        ) : (
-          <div className={styles['sidebar-content']}>
-            <div 
-              className={styles['announcement-detail-wrapper']}
-              style={{
-                flex: 1,
-                minHeight: 0,
-                height: 'auto',
-                display: 'flex',
-                flexDirection: 'column',
-                marginBottom: 0
-              }}
-            >
-              <div className={styles['announcement-detail-header']}>
-                <button 
-                  onClick={() => onSelectAnnouncement(null)}
-                  className={styles['back-btn']}
-                >
-                  ← 다른 공고 목록으로
-                </button>
-              </div>
-              <div className={styles['announcement-detail-body']}>
-                {activeAnn && (
+            
+            {/* ① 지역 구분 필터 태그 */}
+            <div className={styles['region-tags']}>
+              {['ALL', '서울', '인천', '경기', '기타'].map((r) => {
+                const label = r === 'ALL' ? '전체 지역' : r;
+                return (
+                  <span 
+                    key={r}
+                    className={`${styles['region-tag']} ${activeRegion === r ? styles.active : ''}`}
+                    onClick={() => setActiveRegion(r)}
+                  >
+                    {label}
+                  </span>
+                );
+              })}
+            </div>
+
+            {/* ② 접수 구분 필터 태그 */}
+            <div className={styles['filter-tags']}>
+              <span className={`${styles['filter-tag']} ${activeTabStatus === 'UPCOMING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('UPCOMING')}>
+                접수 예정 ({getStatusCount('UPCOMING')})
+              </span>
+              <span className={`${styles['filter-tag']} ${activeTabStatus === 'ONGOING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('ONGOING')}>
+                접수 중 ({getStatusCount('ONGOING')})
+              </span>
+              <span className={`${styles['filter-tag']} ${activeTabStatus === 'CLOSED' ? styles.active : ''}`} onClick={() => setActiveTabStatus('CLOSED')}>
+                접수 마감 ({getStatusCount('CLOSED')})
+              </span>
+            </div>
+          </div>
+          <div ref={listRef} className={styles['sidebar-list']}>
+            {getSortedAnnouncements().length === 0 ? (
+              <div className={styles['empty-msg']}>결과가 없습니다.</div>
+            ) : (
+              getSortedAnnouncements().map((ann) => {
+                const isCurrentActive = ann.id === activeAnnId;
+                return (
                   <AnnouncementCard
-                    ann={activeAnn} 
-                    isActive={true}
-                    onClick={() => {}}
+                    key={ann.id} 
+                    ann={ann} 
+                    isActive={isCurrentActive}
+                    onClick={() => handleCardClick(ann.id)}
                     expandedSections={expandedSections} 
-                    onToggleSection={(key) => toggleSection(key, activeAnn.id)}
+                    onToggleSection={(key) => toggleSection(key, ann.id)}
                     isComplexListOpen={isComplexListOpen}
                     onToggleComplexList={() => setIsComplexListOpen(!isComplexListOpen)}
                   >
-                    <div style={{ marginTop: 'calc(var(--spacing-sm) * 0.5)' }}>
-                      <div className={styles['complex-search-wrapper']} style={{ display: 'flex', alignItems: 'center', position: 'relative', width: '100%' }}>
-                        <input 
-                          type="text" 
-                          placeholder="주택명 검색..." 
-                          value={complexSearchTerm}
-                          onChange={(e) => setComplexSearchTerm(e.target.value)}
-                          className={styles['complex-search-input']}
-                          style={{ width: '100%', outline: 'none' }}
-                        />
-                        {complexSearchTerm && (
-                          <button 
-                            onClick={() => setComplexSearchTerm('')}
-                            className={styles['complex-clear-btn']}
-                          >
-                            ✕
-                          </button>
-                        )}
+                    {isCurrentActive && (
+                      <div style={{ marginTop: 'calc(var(--spacing-sm) * 0.5)' }}>
+                        <div className={styles['complex-search-wrapper']} style={{ display: 'flex', alignItems: 'center', position: 'relative', width: '100%' }}>
+                          <input 
+                            type="text" 
+                            placeholder="주택명 검색..." 
+                            value={complexSearchTerm}
+                            onChange={(e) => setComplexSearchTerm(e.target.value)}
+                            className={styles['complex-search-input']}
+                            style={{ width: '100%', outline: 'none' }}
+                          />
+                          {complexSearchTerm && (
+                            <button 
+                              onClick={() => setComplexSearchTerm('')}
+                              className={styles['complex-clear-btn']}
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)', marginTop: 'var(--spacing-sm)' }}>
+                          {filteredComplexes.length === 0 ? (
+                            <div className={styles['complex-empty-msg']}>
+                              {complexSearchTerm ? '검색 결과가 없습니다.' : '이 공고는 특정 단지 없이 개별적으로 지원되는 전세임대형 정책이거나, 필터 조건에 맞는 주택이 없습니다.'}
+                            </div>
+                          ) : (
+                            filteredComplexes.map((complex) => (
+                              <ComplexCard
+                                key={complex.id}
+                                complex={complex}
+                                isActive={activeComplexId === complex.id}
+                                onClick={() => onSelectComplex(complex)}
+                              />
+                            ))
+                          )}
+                        </div>
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)', marginTop: 'var(--spacing-sm)' }}>
-                        {filteredComplexes.length === 0 ? (
-                          <div className={styles['complex-empty-msg']}>
-                            {complexSearchTerm ? '검색 결과가 없습니다.' : '이 공고는 특정 단지 없이 개별적으로 지원되는 전세임대형 정책이거나, 필터 조건에 맞는 주택이 없습니다.'}
-                          </div>
-                        ) : (
-                          filteredComplexes.map((complex) => (
-                            <ComplexCard
-                              key={complex.id}
-                              complex={complex}
-                              isActive={activeComplexId === complex.id}
-                              onClick={() => onSelectComplex(complex)}
-                            />
-                          ))
-                        )}
-                      </div>
-                    </div>
+                    )}
                   </AnnouncementCard>
-                )}
-              </div>
-            </div>
+                );
+              })
+            )}
           </div>
-        )
+        </>
       )}
 
 
