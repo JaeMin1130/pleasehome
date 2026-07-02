@@ -19,19 +19,25 @@
 }
 
 .panel-header {
-  padding: var(--spacing-lg);
+  height: var(--header-height);
+  box-sizing: border-box;
+  padding: 0 var(--spacing-lg);
   border-bottom: var(--spacing-3xs) solid var(--border-light);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   background-color: var(--bg-surface);
+  flex-shrink: 0;
 }
 
 .panel-title-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   gap: var(--spacing-sm);
   flex: var(--layout-flex-1);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .panel-title {
@@ -39,13 +45,7 @@
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   word-break: keep-all;
-}
-
-.panel-title-row {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  width: 100%;
+  white-space: nowrap;
 }
 
 .bookmark-btn {
@@ -74,12 +74,25 @@
 .panel-subtitle {
   font-size: var(--font-size-base);
   color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
 }
 
 .panel-subtitle-icon {
   margin-right: var(--spacing-xs);
+  flex-shrink: 0;
   display: inline-block;
   vertical-align: middle;
+}
+
+.panel-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-shrink: 0;
 }
 
 .panel-close-btn {
