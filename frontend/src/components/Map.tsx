@@ -22,15 +22,19 @@ declare global {
   }
 }
 
+import { BookmarkFolder, BookmarkItem } from '@/types';
+
 interface MapProps {
   complexes: Complex[];
   activeComplexId: number | null;
   onSelectComplex: (complex: Complex) => void;
   isSidebarCollapsed: boolean;
   bookmarkedIds: number[];
+  bookmarkItems: BookmarkItem[];
+  bookmarkFolders: BookmarkFolder[];
 }
 
-export default function Map({ complexes, activeComplexId, onSelectComplex, isSidebarCollapsed, bookmarkedIds }: MapProps) {
+export default function Map({ complexes, activeComplexId, onSelectComplex, isSidebarCollapsed, bookmarkedIds, bookmarkItems, bookmarkFolders }: MapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [naverMap, setNaverMap] = useState<any>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -91,6 +95,13 @@ export default function Map({ complexes, activeComplexId, onSelectComplex, isSid
 
       const isBookmarked = bookmarkedIds.includes(mapped.id);
       const isActive = mapped.id === activeComplexId;
+
+      // 💡 저장 폴더의 테마 컬러를 핀 마커 배경색으로 동적 일치시킴
+      const bookmarkItem = bookmarkItems.find(item => item.complexId === mapped.id);
+      const folderColor = bookmarkItem
+        ? (bookmarkFolders.find(f => f.id === bookmarkItem.folderId)?.color || 'var(--primary, #3B82F6)')
+        : 'var(--primary, #3B82F6)';
+
       const marker = new window.naver.maps.Marker({
         position: new window.naver.maps.LatLng(mapped.latitude, mapped.longitude),
         map: naverMap,
@@ -98,7 +109,7 @@ export default function Map({ complexes, activeComplexId, onSelectComplex, isSid
         icon: {
           content: `
             <div class="custom-marker ${isActive ? 'active' : ''} ${isBookmarked ? 'bookmarked' : ''}" style="cursor: pointer;">
-              <div class="marker-pin">
+              <div class="marker-pin" style="${isBookmarked ? `background-color: ${folderColor};` : ''}">
                 ${isBookmarked ? `
                   <svg viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg">
                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="white" />
@@ -130,7 +141,7 @@ export default function Map({ complexes, activeComplexId, onSelectComplex, isSid
     });
 
     setMarkers(newMarkers);
-  }, [complexes, mapLoaded, naverMap, bookmarkedIds]);
+  }, [complexes, mapLoaded, naverMap, bookmarkedIds, bookmarkItems, bookmarkFolders, activeComplexId]);
 
   // 3. 현재 화면에 실제로 렌더링되어 지도를 덮고 있는 왼쪽 패널 영역의 실시간 총 가로폭을 동적으로 반환하는 헬퍼 함수
   const getActiveCoveredWidth = (isPanelOpening: boolean): number => {

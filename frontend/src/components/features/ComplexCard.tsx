@@ -8,6 +8,9 @@ interface ComplexCardProps {
   onClick: () => void;
   isBookmarked: boolean;
   onBookmarkToggle: () => void;
+  announcementTitle?: string;
+  announcementStatus?: string;
+  announcementInstitution?: string;
 }
 
 export default function ComplexCard({ 
@@ -15,7 +18,10 @@ export default function ComplexCard({
   isActive, 
   onClick,
   isBookmarked,
-  onBookmarkToggle
+  onBookmarkToggle,
+  announcementTitle,
+  announcementStatus,
+  announcementInstitution
 }: ComplexCardProps) {
   return (
     <div 
@@ -53,6 +59,20 @@ export default function ComplexCard({
         </svg>
         {complex.address}
       </span>
+
+      {announcementTitle && (
+        <div className={styles['card-ann-info']}>
+          <span className={styles['ann-badge']}>{announcementInstitution || '공고'}</span>
+          <span className={styles['ann-title']} title={announcementTitle}>
+            {announcementTitle}
+          </span>
+          {announcementStatus && (
+            <span className={`${styles['status-badge']} ${styles[announcementStatus.toLowerCase()]}`}>
+              {announcementStatus === 'ONGOING' ? '접수중' : announcementStatus === 'UPCOMING' ? '접수예정' : '접수마감'}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

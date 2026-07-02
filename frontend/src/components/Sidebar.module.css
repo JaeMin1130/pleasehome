@@ -1003,3 +1003,248 @@
 .comp-view-btn:hover {
   background-color: var(--primary-hover);
 }
+
+/* 북마크 관련 추가 스타일 */
+.add-folder-btn {
+  background-color: var(--primary-bg);
+  color: var(--primary);
+  border: calc(var(--spacing-xs) * 0.25) solid var(--primary);
+  padding: calc(var(--spacing-sm) * 0.5) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.add-folder-btn:hover {
+  background-color: var(--primary);
+  color: var(--color-white);
+}
+
+.sidebar-folder-form-wrap {
+  display: flex;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--bg-surface-hover);
+  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  align-items: center;
+}
+
+.sidebar-folder-input {
+  flex: 1;
+  background-color: var(--bg-body);
+  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  color: var(--text-primary);
+  padding: calc(var(--spacing-sm) * 0.75) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  outline: none;
+}
+
+.sidebar-folder-input:focus {
+  border-color: var(--primary);
+}
+
+.sidebar-folder-submit {
+  background-color: var(--primary);
+  color: var(--color-white);
+  border: none;
+  padding: calc(var(--spacing-sm) * 0.75) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.sidebar-folder-submit:hover {
+  background-color: var(--primary-hover);
+}
+
+.folders-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+}
+
+.folder-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  background-color: var(--bg-surface);
+  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.folder-card:hover {
+  border-color: var(--primary);
+  background-color: var(--bg-surface-hover);
+}
+
+.folder-info-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.folder-color-badge {
+  width: calc(var(--spacing-sm) * 1.5);
+  height: calc(var(--spacing-sm) * 1.5);
+  border-radius: var(--radius-full);
+  display: inline-block;
+}
+
+.folder-card-name {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.folder-count-badge {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  background-color: var(--bg-body);
+  padding: calc(var(--spacing-xs) * 0.5) var(--spacing-sm);
+  border-radius: var(--radius-full);
+  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+}
+
+.folder-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.folder-delete-btn:hover {
+  background-color: var(--color-tomato-bg);
+  color: var(--color-tomato);
+}
+
+.folder-detail-header {
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-md) var(--spacing-md) var(--spacing-sm) var(--spacing-md);
+  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  background-color: var(--bg-surface);
+  gap: var(--spacing-xs);
+  flex-shrink: 0;
+}
+
+.folder-detail-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.folder-title-dot {
+  width: calc(var(--spacing-xs) * 3.5);
+  height: calc(var(--spacing-xs) * 3.5);
+  border-radius: var(--radius-full);
+  display: inline-block;
+}
+
+.folder-detail-title {
+  font-size: calc(var(--font-size-lg) * 1.15);
+  font-weight: var(--font-weight-extrabold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.toggle-comp-btn {
+  align-self: flex-end;
+  background-color: var(--bg-body);
+  border: calc(var(--spacing-xs) * 0.25) solid var(--border-strong);
+  color: var(--text-secondary);
+  padding: calc(var(--spacing-sm) * 0.75) calc(var(--spacing-md) * 1.25);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-top: var(--spacing-sm);
+}
+
+.toggle-comp-btn:hover {
+  background-color: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+.toggle-comp-btn.active {
+  background-color: var(--primary);
+  color: var(--color-white);
+  border-color: var(--primary);
+}
+
+.bookmark-card-wrapper {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-md);
+  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+.bookmark-card-wrapper:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-light);
+}
+
+.bookmark-card-wrapper :global([class*="complex-card"]) {
+  border: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  margin-bottom: 0 !important;
+}
+
+.bookmark-card-memo {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  padding: calc(var(--spacing-sm) * 1.25) var(--spacing-md);
+  background-color: var(--color-warning-bg);
+  border-top: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+}
+
+.memo-icon {
+  color: var(--color-warning-text);
+  margin-top: calc(var(--spacing-xs) * 0.25);
+  flex-shrink: 0;
+}
+
+.memo-text {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: var(--line-height-base);
+  word-break: break-all;
+}
+
+.comp-memo-text {
+  text-align: center;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  max-width: calc(var(--spacing-xl) * 4.5);
+  padding: var(--spacing-sm);
+  line-height: var(--line-height-base);
+  white-space: normal;
+  word-break: break-all;
+}
+
+.no-memo {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: var(--font-size-xs);
+}

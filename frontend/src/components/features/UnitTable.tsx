@@ -22,10 +22,9 @@ export default function UnitTable({
   onSliderChange,
 }: UnitTableProps) {
   const [expandedUnitId, setExpandedUnitId] = useState<number | null>(null);
-  const [tableRows, setTableRows] = useState<TableRowItem[]>([]);
 
-  // 주택 목록을 정렬 및 rowspan 처리를 위한 가공
-  useEffect(() => {
+  // 💡 useEffect와 State 대신 useMemo를 통해 렌더링에 필요한 가공 데이터를 계산 (cascading render 방지)
+  const tableRows = React.useMemo(() => {
     const sorted = [...units].sort((a, b) => {
       const typeA = a.room_type || '';
       const typeB = b.room_type || '';
@@ -65,7 +64,7 @@ export default function UnitTable({
         });
       }
     }
-    setTableRows(rows);
+    return rows;
   }, [units]);
 
   const toggleExpand = (unitId: number) => {

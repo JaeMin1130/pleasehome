@@ -6,8 +6,9 @@ import { useSearchParams } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import DetailPanel from '@/components/DetailPanel';
 import NavigationBar, { NavigationTabType } from '@/components/NavigationBar';
+import BookmarkModal from '@/components/ui/BookmarkModal';
 import { formatMoney, formatRent, formatTargetGroup } from '@/utils/formatters';
-import { Announcement, Complex, FilterState } from '@/types';
+import { Announcement, Complex, FilterState, BookmarkFolder, BookmarkItem } from '@/types';
 import styles from './page.module.css';
 import {
   FILTER_DEFAULT_LIMITS,
@@ -36,35 +37,147 @@ function HomeContent() {
   const [selectedComplex, setSelectedComplex] = useState<Complex | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
-  const [bookmarkedIds, setBookmarkedIds] = useState<number[]>([]);
 
-  // 마운트 시 localStorage에서 북마크 불러오기
+  // 북마크 폴더 및 아이템 관리 상태
+  const [bookmarkFolders, setBookmarkFolders] = useState<BookmarkFolder[]>([]);
+  const [bookmarkItems, setBookmarkItems] = useState<BookmarkItem[]>([]);
+  const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
+
+  // 북마크 모달 설정 상태
+  const [bookmarkModalState, setBookmarkModalState] = useState<{
+    isOpen: boolean;
+    complexId: number | null;
+    complexName: string;
+  }>({
+    isOpen: false,
+    complexId: null,
+    complexName: ''
+  });
+
+  const bookmarkedIds = bookmarkItems.map(item => item.complexId);
+
+  const DEFAULT_FOLDERS: BookmarkFolder[] = [
+    { id: 'default', name: '내 저장 목록', color: '#3B82F6', createdAt: new Date().toISOString() }
+  ];
+
+  // 마운트 시 localStorage에서 폴더 및 북마크 로드 및 마이그레이션
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
-        const stored = localStorage.getItem('bookmarkedComplexIds');
-        if (stored) {
-          setBookmarkedIds(JSON.parse(stored));
+        const storedFolders = localStorage.getItem('bookmarkFolders');
+        let currentFolders: BookmarkFolder[] = [];
+        if (storedFolders) {
+          currentFolders = JSON.parse(storedFolders);
+        } else {
+          currentFolders = DEFAULT_FOLDERS;
+          localStorage.setItem('bookmarkFolders', JSON.stringify(currentFolders));
         }
+        setBookmarkFolders(currentFolders);
+
+        const storedItems = localStorage.getItem('bookmarkItems');
+        let currentItems: BookmarkItem[] = [];
+        if (storedItems) {
+          currentItems = JSON.parse(storedItems);
+        } else {
+          const storedOld = localStorage.getItem('bookmarkedComplexIds');
+          if (storedOld) {
+            const oldIds: number[] = JSON.parse(storedOld);
+            currentItems = oldIds.map(id => ({
+              complexId: id,
+              folderId: 'default',
+              createdAt: new Date().toISOString()
+            }));
+            localStorage.setItem('bookmarkItems', JSON.stringify(currentItems));
+          }
+        }
+        setBookmarkItems(currentItems);
       } catch (e) {
-        console.error('Failed to load bookmarks', e);
+        console.error('Failed to load bookmarks or folders', e);
       }
     }
   }, []);
 
-  // 북마크 상태 토글 및 저장
+  // 북마크 클릭 시 설정 팝업 호출 (이름 유지)
   const toggleBookmark = (complexId: number) => {
-    setBookmarkedIds((prev) => {
-      const next = prev.includes(complexId)
-        ? prev.filter((id) => id !== complexId)
-        : [...prev, complexId];
-      try {
-        localStorage.setItem('bookmarkedComplexIds', JSON.stringify(next));
-      } catch (e) {
-        console.error('Failed to save bookmarks', e);
+    // 💡 이미 저장되어 있는 단지라면 팝업 없이 즉시 목록에서 제외
+    const isBookmarked = bookmarkItems.some(item => item.complexId === complexId);
+    if (isBookmarked) {
+      setBookmarkItems((prev) => {
+        const next = prev.filter(item => item.complexId !== complexId);
+        localStorage.setItem('bookmarkItems', JSON.stringify(next));
+        return next;
+      });
+      return;
+    }
+
+    // 💡 저장되지 않은 단지라면 설정 폴더/메모 선택 팝업 오픈
+    const compName = allComplexes.find(c => c.id === complexId)?.name || '알 수 없는 단지';
+    setBookmarkModalState({
+      isOpen: true,
+      complexId,
+      complexName: compName
+    });
+  };
+
+  const handleSaveBookmark = (folderId: string, memo: string) => {
+    if (bookmarkModalState.complexId === null) return;
+    const targetId = bookmarkModalState.complexId;
+
+    setBookmarkItems((prev) => {
+      const exists = prev.some(item => item.complexId === targetId);
+      let next: BookmarkItem[] = [];
+      if (exists) {
+        next = prev.map(item =>
+          item.complexId === targetId ? { ...item, folderId, memo } : item
+        );
+      } else {
+        next = [
+          ...prev,
+          {
+            complexId: targetId,
+            folderId,
+            memo,
+            createdAt: new Date().toISOString()
+          }
+        ];
       }
+      localStorage.setItem('bookmarkItems', JSON.stringify(next));
       return next;
     });
+    setBookmarkModalState(prev => ({ ...prev, isOpen: false }));
+  };
+
+  const handleRemoveBookmark = () => {
+    if (bookmarkModalState.complexId === null) return;
+    const targetId = bookmarkModalState.complexId;
+
+    setBookmarkItems((prev) => {
+      const next = prev.filter(item => item.complexId !== targetId);
+      localStorage.setItem('bookmarkItems', JSON.stringify(next));
+      return next;
+    });
+    setBookmarkModalState(prev => ({ ...prev, isOpen: false }));
+  };
+
+  const handleAddFolder = (name: string): string => {
+    const newId = `folder_${Date.now()}`;
+    const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
+    const color = colors[bookmarkFolders.length % colors.length];
+
+    const newFolder: BookmarkFolder = {
+      id: newId,
+      name,
+      color,
+      createdAt: new Date().toISOString()
+    };
+
+    setBookmarkFolders((prev) => {
+      const next = [...prev, newFolder];
+      localStorage.setItem('bookmarkFolders', JSON.stringify(next));
+      return next;
+    });
+
+    return newId;
   };
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -141,6 +254,22 @@ function HomeContent() {
     });
   });
 
+  // 저장 탭(BOOKMARK) 필터 조건 분기: 상세 필터와 무관하게 저장된 단지만 매핑
+  let mapComplexes = filteredComplexes;
+  if (activeTab === 'BOOKMARK') {
+    if (activeFolderId === null) {
+      // 1단계: 전체 저장 단지
+      const allBookmarkedIds = bookmarkItems.map(item => item.complexId);
+      mapComplexes = allComplexes.filter(c => allBookmarkedIds.includes(c.id));
+    } else {
+      // 2단계: 특정 폴더 내 저장 단지
+      const folderBookmarkedIds = bookmarkItems
+        .filter(item => item.folderId === activeFolderId)
+        .map(item => item.complexId);
+      mapComplexes = allComplexes.filter(c => folderBookmarkedIds.includes(c.id));
+    }
+  }
+
   const activeAnn = announcements.find(a => a.id === activeAnnId);
   const isPolicyOnly = activeAnnId !== null && displayComplexes.length === 0;
 
@@ -175,6 +304,9 @@ function HomeContent() {
     } else {
       setActiveTab(tab);
       setIsSidebarCollapsed(false);
+      if (tab === 'BOOKMARK') {
+        setActiveFolderId(null);
+      }
     }
   };
 
@@ -283,9 +415,31 @@ function HomeContent() {
         <Sidebar 
           announcements={announcements} activeAnnId={activeAnnId} onSelectAnnouncement={handleSelectAnnouncement} 
           width={SIDEBAR_DEFAULT_WIDTH} isCollapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          displayComplexes={filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex}
+          displayComplexes={activeTab === 'BOOKMARK' ? mapComplexes : filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex}
           activeTab={activeTab} allComplexes={allComplexes}
           bookmarkedIds={bookmarkedIds} onToggleBookmark={toggleBookmark}
+          bookmarkFolders={bookmarkFolders}
+          bookmarkItems={bookmarkItems}
+          activeFolderId={activeFolderId}
+          setActiveFolderId={setActiveFolderId}
+          onAddFolder={handleAddFolder}
+          onRemoveFolder={(folderId) => {
+            setBookmarkFolders(prev => {
+              const next = prev.filter(f => f.id !== folderId);
+              localStorage.setItem('bookmarkFolders', JSON.stringify(next));
+              return next;
+            });
+            setBookmarkItems(prev => {
+              const next = prev.map(item => 
+                item.folderId === folderId ? { ...item, folderId: 'default' } : item
+              );
+              localStorage.setItem('bookmarkItems', JSON.stringify(next));
+              return next;
+            });
+            if (activeFolderId === folderId) {
+              setActiveFolderId(null);
+            }
+          }}
           style={{ left: `${NAVIGATION_BAR_WIDTH}px` }}
         />
 
@@ -304,7 +458,15 @@ function HomeContent() {
         />
 
         <div className={styles['app-map-container']}>
-          <Map complexes={filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex} isSidebarCollapsed={isSidebarCollapsed} bookmarkedIds={bookmarkedIds} />
+          <Map 
+            complexes={mapComplexes} 
+            activeComplexId={activeComplexId} 
+            onSelectComplex={handleSelectComplex} 
+            isSidebarCollapsed={isSidebarCollapsed} 
+            bookmarkedIds={bookmarkedIds} 
+            bookmarkItems={bookmarkItems}
+            bookmarkFolders={bookmarkFolders}
+          />
           
 
           
@@ -334,6 +496,20 @@ function HomeContent() {
           )}
         </div>
       </main>
+      {bookmarkModalState.isOpen && bookmarkModalState.complexId !== null && (
+        <BookmarkModal
+          key={`${bookmarkModalState.complexId}_${bookmarkModalState.isOpen}`}
+          isOpen={bookmarkModalState.isOpen}
+          complexId={bookmarkModalState.complexId}
+          complexName={bookmarkModalState.complexName}
+          folders={bookmarkFolders}
+          bookmarkItems={bookmarkItems}
+          onClose={() => setBookmarkModalState(prev => ({ ...prev, isOpen: false }))}
+          onSave={handleSaveBookmark}
+          onRemove={handleRemoveBookmark}
+          onAddFolder={handleAddFolder}
+        />
+      )}
     </div>
   );
 }
@@ -349,4 +525,5 @@ export default function Home() {
     </Suspense>
   );
 }
+
 

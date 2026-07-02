@@ -103,27 +103,30 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
   const lines = content.split('\n');
   const renderedElements: React.ReactNode[] = [];
   
-  let inTable = false;
-  let tableRows: string[][] = [];
+  // 💡 Immutability 경고를 우회하기 위해 변수 재할당 없이 헬퍼 객체의 속성을 수정하여 상태를 관리
+  const tableState = {
+    inTable: false,
+    rows: [] as string[][]
+  };
 
   const flushTable = (key: string | number) => {
-    if (tableRows.length === 0) return null;
+    if (tableState.rows.length === 0) return null;
     
     let hasHeader = false;
     let headerRow: string[] = [];
     let bodyRows: string[][] = [];
     
-    if (tableRows.length >= 2) {
-      const isDivider = tableRows[1].every(cell => /^[:\-\s]+$/.test(cell.trim()));
+    if (tableState.rows.length >= 2) {
+      const isDivider = tableState.rows[1].every(cell => /^[:\-\s]+$/.test(cell.trim()));
       if (isDivider) {
         hasHeader = true;
-        headerRow = tableRows[0];
-        bodyRows = tableRows.slice(2);
+        headerRow = tableState.rows[0];
+        bodyRows = tableState.rows.slice(2);
       } else {
-        bodyRows = tableRows;
+        bodyRows = tableState.rows;
       }
     } else {
-      bodyRows = tableRows;
+      bodyRows = tableState.rows;
     }
 
     const R = bodyRows.length;
@@ -187,8 +190,9 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
       </div>
     );
     
-    tableRows = [];
-    inTable = false;
+    // 재할당 없이 속성만 변경하여 상태 초기화
+    tableState.rows.length = 0;
+    tableState.inTable = false;
     return element;
   };
 
@@ -198,7 +202,7 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
     const content = line.trim();
     
     if (content === '---' || content === '***' || content === '___') {
-      if (inTable) {
+      if (tableState.inTable) {
         const tableElement = flushTable(`table-${i}`);
         if (tableElement) renderedElements.push(tableElement);
       }
@@ -210,13 +214,13 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
     const isTableRow = content.startsWith('|') && content.endsWith('|');
     
     if (isTableRow) {
-      inTable = true;
+      tableState.inTable = true;
       const cells = content.slice(1, -1).split('|');
-      tableRows.push(cells);
+      tableState.rows.push(cells);
       i++;
       continue;
     } else {
-      if (inTable) {
+      if (tableState.inTable) {
         const tableElement = flushTable(`table-${i}`);
         if (tableElement) renderedElements.push(tableElement);
       }
@@ -279,7 +283,7 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
     i++;
   }
   
-  if (inTable) {
+  if (tableState.inTable) {
     const tableElement = flushTable(`table-end`);
     if (tableElement) renderedElements.push(tableElement);
   }

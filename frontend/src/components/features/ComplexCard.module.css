@@ -61,5 +61,56 @@
   color: var(--color-warning-text);
 }
 
+.card-ann-info {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing-xs) * 1.5);
+  border-top: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  padding-top: calc(var(--spacing-xs) * 1.5);
+  margin-top: calc(var(--spacing-xs) * 1);
+}
+
+.ann-badge {
+  font-size: var(--font-size-xs);
+  background-color: var(--primary-bg);
+  color: var(--primary);
+  padding: calc(var(--spacing-xs) * 0.5) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.ann-title {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  flex: var(--layout-flex-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status-badge {
+  font-size: var(--font-size-xs);
+  padding: calc(var(--spacing-xs) * 0.5) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+}
+
+.status-badge.ongoing {
+  background-color: var(--primary-bg);
+  color: var(--primary);
+}
+
+.status-badge.upcoming {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}
+
+.status-badge.closed {
+  background-color: var(--border-light);
+  color: var(--text-muted);
+}
+
 
 

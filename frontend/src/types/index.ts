@@ -87,3 +87,18 @@ export interface FilterState {
   minMonthlyRent: number;
   maxMonthlyRent: number;
 }
+
+export interface BookmarkFolder {
+  id: string;
+  name: string;
+  color: string;
+  createdAt: string;
+}
+
+export interface BookmarkItem {
+  complexId: number;
+  folderId: string;
+  memo?: string;
+  createdAt: string;
+}
+
