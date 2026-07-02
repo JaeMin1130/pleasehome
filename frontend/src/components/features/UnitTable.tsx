@@ -69,6 +69,13 @@ export default function UnitTable({
   }, [units]);
 
   const toggleExpand = (unitId: number) => {
+    // 현재 열려 있는 아코디언의 슬라이더 값을 기본 보증금으로 초기화
+    if (expandedUnitId !== null) {
+      const prevUnit = units.find((u) => u.id === expandedUnitId);
+      if (prevUnit) {
+        onSliderChange(expandedUnitId, prevUnit.deposit);
+      }
+    }
     setExpandedUnitId((prev) => (prev === unitId ? null : unitId));
   };
 
