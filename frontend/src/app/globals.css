@@ -1,169 +1,340 @@
 /* globals.css - Clean, Professional Light Mode for Public Service */
 
 :root {
-  /* 신규 디자인 토큰 (하드코딩 박멸용) */
-  --color-white: #ffffff;
-  --bg-overlay: rgba(15, 23, 42, 0.6);
-  --font-weight-medium: 500;
-  --font-weight-extrabold: 800;
-  --z-index-bg: 0;
-  --z-index-base: 10;
-  --z-index-panel: 80;
-  --z-index-dropdown: 100;
-  --z-index-sticky: 120;
-  --z-index-modal: 500;
-  --z-index-tooltip: 1000;
-  --transition-panel: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-fast-all: all 0.15s ease;
-  --bg-body: #f5f7f9;
-  --bg-surface: #ffffff;
-  --bg-surface-hover: rgba(26, 86, 219, 0.03);
-  --bg-surface-active: rgba(26, 86, 219, 0.06);
-  --text-primary: #1e293b;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
-  --primary: #1a56db;
-  --primary-hover: #1e40af;
-  --primary-bg: #eff6ff;
-  --border-light: #e2e8f0;
-  --border-strong: #cbd5e1;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.03);
-  --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.03);
-  --font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-  --header-height: calc(var(--spacing-xl) * 2.25);
-  
-  /* =========================================
+   /* 신규 디자인 토큰 (하드코딩 박멸용) */
+   --color-white: #ffffff;
+   --bg-overlay: rgba(15, 23, 42, 0.6);
+   --font-weight-medium: 500;
+   --font-weight-extrabold: 800;
+   --z-index-bg: 0;
+   --z-index-base: 10;
+   --z-index-panel: 80;
+   --z-index-dropdown: 100;
+   --z-index-sticky: 120;
+   --z-index-modal: 500;
+   --z-index-tooltip: 1000;
+   --transition-panel: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+   --transition-fast-all: all 0.15s ease;
+   --bg-body: #f5f7f9;
+   --bg-surface: #ffffff;
+   --bg-surface-hover: rgba(26, 86, 219, 0.03);
+   --bg-surface-active: rgba(26, 86, 219, 0.06);
+   --text-primary: #1e293b;
+   --text-secondary: #475569;
+   --text-muted: #94a3b8;
+   --primary: #1a56db;
+   --primary-hover: #1e40af;
+   --primary-bg: #eff6ff;
+   --border-light: #e2e8f0;
+   --border-strong: #cbd5e1;
+   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.03);
+   --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.03);
+   --font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+   --header-height: 72px;
+
+   /* =========================================
      [ 레이아웃 전역 뼈대 수치 ]
      ========================================= */
-  --layout-sidebar-width: 400px;
-  --layout-panel-width: 400px;
-  --layout-nav-width: 60px;
-  --layout-overlay-max: 480px;
-  --layout-modal-width: 90%;
-  --layout-modal-max-height: 80vh;
-  --position-center: 50%;
-  --transform-half: -50%;
-  --layout-height-full: 100vh;
-  --layout-flex-1: 1;
-  --layout-flex-basis-45: 1 1 45%;
-  --layout-flex-basis-100: 1 1 100%;
-  
-  /* =========================================
+   --layout-sidebar-width: 400px;
+   --layout-panel-width: 400px;
+   --layout-nav-width: 60px;
+   --layout-overlay-max: 480px;
+   --layout-modal-width: 90%;
+   --layout-modal-max-height: 80vh;
+   --position-center: 50%;
+   --transform-half: -50%;
+   --layout-height-full: 100vh;
+   --layout-flex-1: 1;
+   --layout-flex-basis-45: 1 1 45%;
+   --layout-flex-basis-100: 1 1 100%;
+
+   /* =========================================
      [ 공간/여백 및 모서리 (Spacing & Radius) ]
      ========================================= */
-  --spacing-3xs: 1px;
-  --spacing-2xs: 2px;
-  --spacing-xs: 4px;
-  --spacing-6px: 6px;
-  --spacing-sm: 8px;
-  --spacing-10px: 10px;
-  --spacing-12px: 12px;
-  --spacing-md: 16px;
-  --spacing-20px: 20px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
-  
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-full: 50%;
+   --spacing-3xs: 1px;
+   --spacing-2xs: 2px;
+   --spacing-xs: 4px;
+   --spacing-6px: 6px;
+   --spacing-sm: 8px;
+   --spacing-10px: 10px;
+   --spacing-12px: 12px;
+   --spacing-md: 16px;
+   --spacing-20px: 20px;
+   --spacing-lg: 24px;
+   --spacing-xl: 32px;
 
-  /* =========================================
+   --radius-sm: 4px;
+   --radius-md: 8px;
+   --radius-lg: 12px;
+   --radius-full: 50%;
+
+   /* =========================================
      [ 타이포그래피 (글꼴 크기 및 굵기) ]
      ========================================= */
-  --font-size-xs: 0.75rem;    /* 뱃지, 부가 설명용 최소형 글씨 */
-  --font-size-sm: 0.85rem;    /* 작은 라벨, 서브 타이틀용 */
-  --font-size-base: 0.95rem;  /* 본문 기본 텍스트 크기 */
-  --font-size-md: 1.05rem;    /* 약간 큰 강조형 텍스트 */
-  --font-size-lg: 1.125rem;
-  --font-size-xl: 1.25rem;
-  --letter-spacing-tight: -0.02em;
+   --font-size-xs: 0.75rem;
+   /* 뱃지, 부가 설명용 최소형 글씨 */
+   --font-size-sm: 0.85rem;
+   /* 작은 라벨, 서브 타이틀용 */
+   --font-size-base: 0.95rem;
+   /* 본문 기본 텍스트 크기 */
+   --font-size-md: 1.05rem;
+   /* 약간 큰 강조형 텍스트 */
+   --font-size-lg: 1.125rem;
+   --font-size-xl: 1.25rem;
+   --letter-spacing-tight: -0.02em;
 
-  /* Line Heights */
-  --line-height-tight: 1.4;
-  --line-height-base: 1.5;
-  --line-height-loose: 1.6;    /* 대제목, 모달 타이틀 등 */
-  
-  --font-weight-regular: 400; /* 일반 본문용 굵기 */
-  --font-weight-semibold: 600;/* 강조, 버튼 텍스트용 굵기 */
-  --font-weight-bold: 700;    /* 대제목, 중요 숫자 강조용 굵기 */
-  
-  /* =========================================
+   /* Line Heights */
+   --line-height-tight: 1.4;
+   --line-height-base: 1.5;
+   --line-height-loose: 1.6;
+   /* 대제목, 모달 타이틀 등 */
+
+   --font-weight-regular: 400;
+   /* 일반 본문용 굵기 */
+   --font-weight-semibold: 600;
+   /* 강조, 버튼 텍스트용 굵기 */
+   --font-weight-bold: 700;
+   /* 대제목, 중요 숫자 강조용 굵기 */
+
+   /* =========================================
      [ 애니메이션 및 트랜지션 (화면 전환 효과) ]
      ========================================= */
-  --transition-fast: 0.15s ease;                          /* 마우스 오버 등 빠른 반응용 */
-  --transition-normal: 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* 일반 상태 변화(버튼 클릭, 탭 전환)용 */
-  
-  /* =========================================
+   --transition-fast: 0.15s ease;
+   /* 마우스 오버 등 빠른 반응용 */
+   --transition-normal: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+   /* 일반 상태 변화(버튼 클릭, 탭 전환)용 */
+
+   /* =========================================
      [ 포인트 테마 및 아이콘 색상 팔레트 ]
      ========================================= */
-  --brand-blue: #0068ff;       /* 네이버 블루 - 활성화 탭, 주요 버튼 포인트 색상 */
-  --icon-color: #70757a;       /* 비활성 아이콘 및 보조 텍스트 기본 회색 */
-  --icon-hover-color: #242424; /* 마우스 오버 시 진해지는 강조 회색/검정 */
+   --brand-blue: #0068ff;
+   /* 네이버 블루 - 활성화 탭, 주요 버튼 포인트 색상 */
+   --icon-color: #70757a;
+   /* 비활성 아이콘 및 보조 텍스트 기본 회색 */
+   --icon-hover-color: #242424;
+   /* 마우스 오버 시 진해지는 강조 회색/검정 */
 
-  /* =========================================
+   /* =========================================
      [ 기관별 브랜드 및 특수 상태 색상 ]
      ========================================= */
-  --color-lh: #0055A2;       /* LH 메인 블루 */
-  --color-lh-bg: #e6f2ff;    /* LH 연한 배경 (맑은 파스텔 블루) */
-  --color-sh: #62BA46;       /* SH 메인 그린 */
-  --color-sh-bg: #f2faf0;    /* SH 연한 배경 (산뜻한 파스텔 연두) */
-  --color-gh: #009BDF;       /* GH 메인 하늘색 */
-  --color-gh-bg: #e6f6ff;    /* GH 연한 배경 (청량한 파스텔 하늘) */
-  --color-hug: #0f766e;      /* HUG 메인 그린 */
-  --color-hug-bg: #ccfbf1;   /* HUG 연한 배경 */
+   --color-lh: #0055A2;
+   /* LH 메인 블루 */
+   --color-lh-bg: #e6f2ff;
+   /* LH 연한 배경 (맑은 파스텔 블루) */
+   --color-sh: #62BA46;
+   /* SH 메인 그린 */
+   --color-sh-bg: #f2faf0;
+   /* SH 연한 배경 (산뜻한 파스텔 연두) */
+   --color-gh: #009BDF;
+   /* GH 메인 하늘색 */
+   --color-gh-bg: #e6f6ff;
+   /* GH 연한 배경 (청량한 파스텔 하늘) */
+   --color-hug: #0f766e;
+   /* HUG 메인 그린 */
+   --color-hug-bg: #ccfbf1;
+   /* HUG 연한 배경 */
 
-  /* D-Day 뱃지 전용 전역 디자인 토큰 */
-  --color-dday: #ff4d20;
-  --color-dday-bg: #fff0ec;
-  --color-dday-border: #ffded5;
+   /* D-Day 뱃지 전용 전역 디자인 토큰 */
+   --color-dday: #ff4d20;
+   --color-dday-bg: #fff0ec;
+   --color-dday-border: #ffded5;
 
-  /* 민간 공급자 전용 전역 디자인 토큰 */
-  --color-private: #d97706;
-  --color-private-bg: #fef3c7;    /* 민간 연한 배경 (부드러운 파스텔 골드) */
-  
-  --color-gold: var(--color-gold);     /* 골드 (즐겨찾기, 포인트) */
-  --color-up: #e11d48;       /* 상승/증가 레드 */
-  --color-down: #0284c7;     /* 하락/감소 블루 */
-  --bg-light-gray: #f1f3f5;  /* 밝은 회색 배경 */
-  --color-warning-bg: #fef3c7; /* 경고 연한 배경 */
-  --color-warning-text: #d97706; /* 경고 텍스트 */
-  --color-tomato: #ff6347; /* 토마토색 전역 토큰 */
-  --color-warning-dark: #b45309; /* 어두운 오렌지/골드 액티브 토큰 */
+   /* 민간 공급자 전용 전역 디자인 토큰 */
+   --color-private: #d97706;
+   --color-private-bg: #fef3c7;
+   /* 민간 연한 배경 (부드러운 파스텔 골드) */
+
+   --color-gold: var(--color-gold);
+   /* 골드 (즐겨찾기, 포인트) */
+   --color-up: #e11d48;
+   /* 상승/증가 레드 */
+   --color-down: #0284c7;
+   /* 하락/감소 블루 */
+   --bg-light-gray: #f1f3f5;
+   /* 밝은 회색 배경 */
+   --color-warning-bg: #fef3c7;
+   /* 경고 연한 배경 */
+   --color-warning-text: #d97706;
+   /* 경고 텍스트 */
+   --color-tomato: #ff6347;
+   /* 토마토색 전역 토큰 */
+   --color-warning-dark: #b45309;
+   /* 어두운 오렌지/골드 액티브 토큰 */
 
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* {
+   box-sizing: border-box;
+   margin: 0;
+   padding: 0;
+}
 
-body { background-color: var(--bg-body); color: var(--text-primary); font-family: var(--font-family); font-size: var(--font-size-base); line-height: 1.5; overflow: hidden; height: 100vh; width: 100vw; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body {
+   background-color: var(--bg-body);
+   color: var(--text-primary);
+   font-family: var(--font-family);
+   font-size: var(--font-size-base);
+   line-height: 1.5;
+   overflow: hidden;
+   height: 100vh;
+   width: 100vw;
+   -webkit-font-smoothing: antialiased;
+   -moz-osx-font-smoothing: grayscale;
+}
 
-::-webkit-scrollbar { width: calc(var(--spacing-sm) * 0.75); height: calc(var(--spacing-sm) * 0.75); }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: calc(var(--radius-sm) * 0.75); }
-::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+::-webkit-scrollbar {
+   width: var(--spacing-sm);
+   height: var(--spacing-sm);
+}
 
-.app-container { display: flex; flex-direction: column; height: 100vh; width: 100vw; overflow: hidden; }
-.app-main { display: flex; flex: var(--layout-flex-1); height: var(--layout-height-full); position: relative; overflow: hidden; }
+::-webkit-scrollbar-track {
+   background: transparent;
+}
 
-.badge { padding: calc(var(--spacing-xs) * 0.75) calc(var(--spacing-sm) * 0.75); border-radius: var(--radius-sm); font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); }
-.badge-sh { background-color: var(--color-sh-bg); color: var(--color-sh); }
-.badge-lh { background-color: var(--color-lh-bg); color: var(--color-lh); }
-.badge-gh { background-color: var(--color-gh-bg); color: var(--color-gh); }
-.badge-hug { background-color: var(--color-hug-bg); color: var(--color-hug); }
-.badge-private { background-color: var(--color-private-bg); color: var(--color-private); }
+::-webkit-scrollbar-thumb {
+   background: var(--border-strong);
+   border-radius: var(--radius-sm);
+}
 
-.custom-marker { display: flex; align-items: center; justify-content: center; position: relative; }
-.marker-pin { width: var(--spacing-lg); height: var(--spacing-lg); border-radius: var(--radius-full); background: tomato; border: calc(var(--spacing-xs) * 0.5) solid var(--color-white); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); transition: transform var(--transition-fast), background-color var(--transition-fast); }
-.custom-marker:hover .marker-pin { transform: scale(1.15); z-index: var(--z-index-base); }
-.custom-marker.active .marker-pin { background: #800000; transform: scale(1.4); z-index: calc(var(--z-index-base) + 10); }
-.custom-marker.bookmarked .marker-pin { background: var(--color-warning-text); }
-.custom-marker.bookmarked:hover .marker-pin { transform: scale(1.15); }
-.custom-marker.bookmarked.active .marker-pin { background: var(--color-warning-dark); transform: scale(1.4); z-index: calc(var(--z-index-base) + 10); }
-.marker-pin svg { display: block; }
-.window-hole { fill: tomato; transition: fill var(--transition-fast); }
-.custom-marker.active .window-hole { fill: #800000; }
-.popup-title { font-weight: var(--font-weight-bold); font-size: var(--font-size-base); margin-bottom: var(--spacing-xs); color: var(--text-primary); }
-.popup-address { font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: calc(var(--spacing-md) * 0.75); }
-.popup-btn { display: block; width: 100%; text-align: center; background-color: var(--primary); color: var(--color-white) !important; padding: var(--spacing-sm) calc(var(--spacing-md) * 0.75); border-radius: var(--radius-sm); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); text-decoration: none; cursor: pointer; border: none; }
-.popup-btn:hover { background-color: var(--primary-hover); }
+::-webkit-scrollbar-thumb:hover {
+   background: var(--text-muted);
+}
+
+.app-container {
+   display: flex;
+   flex-direction: column;
+   height: 100vh;
+   width: 100vw;
+   overflow: hidden;
+}
+
+.app-main {
+   display: flex;
+   flex: var(--layout-flex-1);
+   height: var(--layout-height-full);
+   position: relative;
+   overflow: hidden;
+}
+
+.badge {
+   padding: var(--spacing-xs) var(--spacing-sm);
+   border-radius: var(--radius-sm);
+   font-size: var(--font-size-xs);
+   font-weight: var(--font-weight-semibold);
+}
+
+.badge-sh {
+   background-color: var(--color-sh-bg);
+   color: var(--color-sh);
+}
+
+.badge-lh {
+   background-color: var(--color-lh-bg);
+   color: var(--color-lh);
+}
+
+.badge-gh {
+   background-color: var(--color-gh-bg);
+   color: var(--color-gh);
+}
+
+.badge-hug {
+   background-color: var(--color-hug-bg);
+   color: var(--color-hug);
+}
+
+.badge-private {
+   background-color: var(--color-private-bg);
+   color: var(--color-private);
+}
+
+.custom-marker {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   position: relative;
+}
+
+.marker-pin {
+   width: var(--spacing-lg);
+   height: var(--spacing-lg);
+   border-radius: var(--radius-full);
+   background: tomato;
+   border: var(--spacing-2xs) solid var(--color-white);
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   box-shadow: var(--shadow-sm);
+   transition: transform var(--transition-fast), background-color var(--transition-fast);
+}
+
+.custom-marker:hover .marker-pin {
+   transform: scale(1.15);
+   z-index: var(--z-index-base);
+}
+
+.custom-marker.active .marker-pin {
+   background: #800000;
+   transform: scale(1.4);
+   z-index: calc(var(--z-index-base) + 10);
+}
+
+.custom-marker.bookmarked .marker-pin {
+   background: var(--color-warning-text);
+}
+
+.custom-marker.bookmarked:hover .marker-pin {
+   transform: scale(1.15);
+}
+
+.custom-marker.bookmarked.active .marker-pin {
+   background: var(--color-warning-dark);
+   transform: scale(1.4);
+   z-index: calc(var(--z-index-base) + 10);
+}
+
+.marker-pin svg {
+   display: block;
+}
+
+.window-hole {
+   fill: tomato;
+   transition: fill var(--transition-fast);
+}
+
+.custom-marker.active .window-hole {
+   fill: #800000;
+}
+
+.popup-title {
+   font-weight: var(--font-weight-bold);
+   font-size: var(--font-size-base);
+   margin-bottom: var(--spacing-xs);
+   color: var(--text-primary);
+}
+
+.popup-address {
+   font-size: var(--font-size-sm);
+   color: var(--text-secondary);
+   margin-bottom: var(--spacing-md);
+}
+
+.popup-btn {
+   display: block;
+   width: 100%;
+   text-align: center;
+   background-color: var(--primary);
+   color: var(--color-white) !important;
+   padding: var(--spacing-sm) var(--spacing-md);
+   border-radius: var(--radius-sm);
+   font-size: var(--font-size-sm);
+   font-weight: var(--font-weight-semibold);
+   text-decoration: none;
+   cursor: pointer;
+   border: none;
+}
+
+.popup-btn:hover {
+   background-color: var(--primary-hover);
+}
