@@ -124,6 +124,7 @@
   --color-warning-bg: #fef3c7; /* 경고 연한 배경 */
   --color-warning-text: #d97706; /* 경고 텍스트 */
   --color-tomato: #ff6347; /* 토마토색 전역 토큰 */
+  --color-warning-dark: #b45309; /* 어두운 오렌지/골드 액티브 토큰 */
 
 }
 
@@ -150,6 +151,9 @@ body { background-color: var(--bg-body); color: var(--text-primary); font-family
 .marker-pin { width: var(--spacing-lg); height: var(--spacing-lg); border-radius: var(--radius-full); background: tomato; border: calc(var(--spacing-xs) * 0.5) solid var(--color-white); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); transition: transform var(--transition-fast), background-color var(--transition-fast); }
 .custom-marker:hover .marker-pin { transform: scale(1.15); z-index: var(--z-index-base); }
 .custom-marker.active .marker-pin { background: #800000; transform: scale(1.4); z-index: calc(var(--z-index-base) + 10); }
+.custom-marker.bookmarked .marker-pin { background: var(--color-warning-text); }
+.custom-marker.bookmarked:hover .marker-pin { transform: scale(1.15); }
+.custom-marker.bookmarked.active .marker-pin { background: var(--color-warning-dark); transform: scale(1.4); z-index: calc(var(--z-index-base) + 10); }
 .marker-pin svg { display: block; }
 .window-hole { fill: tomato; transition: fill var(--transition-fast); }
 .custom-marker.active .window-hole { fill: #800000; }

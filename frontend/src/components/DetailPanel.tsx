@@ -13,9 +13,14 @@ interface DetailPanelProps {
   announcements: Announcement[];
   onClose: () => void;
   style?: React.CSSProperties;
+  bookmarkedIds: number[];
+  onToggleBookmark: (complexId: number) => void;
 }
 
-export default function DetailPanel({ complex, isOpen, filterState, announcements, onClose, style }: DetailPanelProps) {
+export default function DetailPanel({ 
+  complex, isOpen, filterState, announcements, onClose, style,
+  bookmarkedIds, onToggleBookmark 
+}: DetailPanelProps) {
   const [units, setUnits] = useState<HousingUnit[]>([]);
   const [loading, setLoading] = useState(false);
   const [sliderValues, setSliderValues] = useState<Record<number, number>>({});
@@ -132,11 +137,24 @@ export default function DetailPanel({ complex, isOpen, filterState, announcement
     return supplyType || formattedTarget || '정보 없음';
   };
 
+  const isBookmarked = bookmarkedIds.includes(complex.id);
+
   return (
     <div className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''}`} style={style}>
       <div className={styles['panel-header']}>
         <div className={styles['panel-title-container']}>
-          <span className={styles['panel-title']}>{complex.name}</span>
+          <div className={styles['panel-title-row']}>
+            <span className={styles['panel-title']}>{complex.name}</span>
+            <button 
+              className={`${styles['bookmark-btn']} ${isBookmarked ? styles.bookmarked : ''}`}
+              onClick={() => onToggleBookmark(complex.id)}
+              title={isBookmarked ? "저장한 단지 해제" : "단지 저장하기"}
+            >
+              <svg className={styles['star-icon']} width="20" height="20" viewBox="0 0 24 24" fill={isBookmarked ? 'var(--color-warning-text)' : 'none'} stroke={isBookmarked ? 'var(--color-warning-text)' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+            </button>
+          </div>
           <span className={styles['panel-subtitle']}>
             <svg 
               className={styles['panel-subtitle-icon']}

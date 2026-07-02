@@ -6,6 +6,7 @@ import { Announcement, ApplicationStatus, Complex } from '@/types';
 import AnnouncementCard from '@/components/features/AnnouncementCard';
 import ComplexCard from '@/components/features/ComplexCard';
 import styles from './Sidebar.module.css';
+import { formatMoney, formatRent } from '@/utils/formatters';
 import {
   HEADER_ACCORDION_MIN_HEIGHT,
   HEADER_ACCORDION_MAX_HEIGHT,
@@ -23,16 +24,19 @@ interface SidebarProps {
   displayComplexes: Complex[];
   activeComplexId: number | null;
   onSelectComplex: (complex: Complex) => void;
-  activeTab: 'SEARCH' | 'MORE';
+  activeTab: 'SEARCH' | 'BOOKMARK' | 'MORE';
   allComplexes: Complex[];
   style?: React.CSSProperties;
+  bookmarkedIds: number[];
+  onToggleBookmark: (complexId: number) => void;
 }
 
 export default function Sidebar({ 
   announcements, activeAnnId, onSelectAnnouncement, 
   width, isCollapsed, onToggleCollapse,
   displayComplexes, activeComplexId, onSelectComplex,
-  activeTab, allComplexes, style
+  activeTab, allComplexes, style,
+  bookmarkedIds, onToggleBookmark
 }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [complexSearchTerm, setComplexSearchTerm] = useState('');
@@ -40,6 +44,21 @@ export default function Sidebar({
   const [activeRegion, setActiveRegion] = useState<string>('ALL'); // 💡 지역 필터 상태 추가
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
   const listRef = useRef<HTMLDivElement>(null);
+  const [bookmarkUnits, setBookmarkUnits] = useState<Record<number, any[]>>({});
+
+  // 찜한 단지가 늘어날 때 주택 상세 정보를 동적으로 로드
+  useEffect(() => {
+    bookmarkedIds.forEach((id) => {
+      if (!bookmarkUnits[id]) {
+        fetch(`/api/housing-units?complex_id=${id}`)
+          .then((res) => res.json())
+          .then((data) => {
+            setBookmarkUnits((prev) => ({ ...prev, [id]: data }));
+          })
+          .catch((err) => console.error('Failed to load bookmark unit data', err));
+      }
+    });
+  }, [bookmarkedIds, bookmarkUnits]);
 
   // 선택된 공고가 활성화되었을 때 해당 카드로 부드럽게 스크롤 포커스 이동
   useEffect(() => {
@@ -383,6 +402,8 @@ export default function Sidebar({
                                 complex={complex}
                                 isActive={activeComplexId === complex.id}
                                 onClick={() => onSelectComplex(complex)}
+                                isBookmarked={bookmarkedIds.includes(complex.id)}
+                                onBookmarkToggle={() => onToggleBookmark(complex.id)}
                               />
                             ))
                           )}
@@ -398,6 +419,150 @@ export default function Sidebar({
       )}
 
 
+
+      {activeTab === 'BOOKMARK' && (() => {
+        const bookmarkedComplexes = allComplexes.filter(c => bookmarkedIds.includes(c.id));
+        return (
+          <div className={styles['bookmark-panel-container']}>
+            <div className={styles['bookmark-header']}>
+              <h3 className={styles['bookmark-title']}>저장한 단지 대조 비교 ({bookmarkedComplexes.length})</h3>
+            </div>
+            
+            {bookmarkedComplexes.length === 0 ? (
+              <div className={styles['empty-state']}>
+                <div className={styles['empty-icon']}>★</div>
+                <h4 className={styles['empty-text']}>저장한 단지가 없습니다.</h4>
+                <p className={styles['empty-subtext']}>공고 상세 보기에서 관심 있는 공급 단지를 저장해 보세요.</p>
+              </div>
+            ) : (
+              <div className={styles['comparison-scroll-wrapper']}>
+                <table className={styles['comparison-table']}>
+                  <thead>
+                    <tr>
+                      <th>비교 항목</th>
+                      {bookmarkedComplexes.map((c) => (
+                        <th key={c.id} className={styles['comp-col-header']}>
+                          <div className={styles['comp-title-wrap']}>
+                            <span className={styles['comp-name']}>{c.name}</span>
+                            <button 
+                              className={styles['comp-remove-btn']} 
+                              onClick={() => onToggleBookmark(c.id)}
+                              title="저장 해제"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className={styles['comp-label']}>소속 공고</td>
+                      {bookmarkedComplexes.map((c) => {
+                        const ann = announcements.find(a => a.id === c.announcement_id);
+                        return <td key={c.id} className={styles['comp-val-text']} title={ann?.title}>{ann?.title || '-'}</td>;
+                      })}
+                    </tr>
+                    <tr>
+                      <td className={styles['comp-label']}>단지 유형</td>
+                      {bookmarkedComplexes.map((c) => (
+                        <td key={c.id} className={styles['comp-val']}>{c.complex_type || '정보 없음'}</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className={styles['comp-label']}>임대 보증금</td>
+                      {bookmarkedComplexes.map((c) => {
+                        const units = bookmarkUnits[c.id] || [];
+                        if (units.length === 0) return <td key={c.id} className={styles['comp-val']}>로딩 중...</td>;
+                        const deposits = units.map(u => u.deposit).filter(d => d !== null);
+                        if (deposits.length === 0) return <td key={c.id} className={styles['comp-val']}>-</td>;
+                        const minDep = Math.min(...deposits);
+                        const maxDep = Math.max(...deposits);
+                        return (
+                          <td key={c.id} className={styles['comp-val']}>
+                            {minDep === maxDep ? formatMoney(minDep) : `${formatMoney(minDep)} ~ ${formatMoney(maxDep)}`}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                    <tr>
+                      <td className={styles['comp-label']}>월 임대료</td>
+                      {bookmarkedComplexes.map((c) => {
+                        const units = bookmarkUnits[c.id] || [];
+                        if (units.length === 0) return <td key={c.id} className={styles['comp-val']}>로딩 중...</td>;
+                        const rents = units.map(u => u.monthly_rent).filter(r => r !== null);
+                        if (rents.length === 0) return <td key={c.id} className={styles['comp-val']}>-</td>;
+                        const minRent = Math.min(...rents);
+                        const maxRent = Math.max(...rents);
+                        return (
+                          <td key={c.id} className={styles['comp-val']}>
+                            {minRent === maxRent ? formatRent(minRent) : `${formatRent(minRent)} ~ ${formatRent(maxRent)}`}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                    <tr>
+                      <td className={styles['comp-label']}>전용 면적</td>
+                      {bookmarkedComplexes.map((c) => {
+                        const units = bookmarkUnits[c.id] || [];
+                        if (units.length === 0) return <td key={c.id} className={styles['comp-val']}>로딩 중...</td>;
+                        const areas = units.map(u => u.exclusive_area).filter(a => a !== null);
+                        if (areas.length === 0) return <td key={c.id} className={styles['comp-val']}>-</td>;
+                        const minArea = Math.min(...areas);
+                        const maxArea = Math.max(...areas);
+                        return (
+                          <td key={c.id} className={styles['comp-val']}>
+                            {minArea === maxArea ? `${minArea.toFixed(2)}㎡` : `${minArea.toFixed(2)}㎡ ~ ${maxArea.toFixed(2)}㎡`}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                    <tr>
+                      <td className={styles['comp-label']}>주차 정보</td>
+                      {bookmarkedComplexes.map((c) => (
+                        <td key={c.id} className={styles['comp-val']}>{c.parking_info || '정보 없음'}</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className={styles['comp-label']}>난방 방식</td>
+                      {bookmarkedComplexes.map((c) => (
+                        <td key={c.id} className={styles['comp-val']}>{c.heating_type || '정보 없음'}</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className={styles['comp-label']}>엘리베이터</td>
+                      {bookmarkedComplexes.map((c) => (
+                        <td key={c.id} className={styles['comp-val']}>
+                          {c.has_elevator === null ? '정보 없음' : c.has_elevator ? '있음' : '없음'}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className={styles['comp-label']}>상세 정보</td>
+                      {bookmarkedComplexes.map((c) => (
+                        <td key={c.id} className={styles['comp-val-action']}>
+                          <button 
+                            className={styles['comp-view-btn']}
+                            onClick={() => {
+                              onSelectAnnouncement(c.announcement_id);
+                              setTimeout(() => {
+                                onSelectComplex(c);
+                              }, 200);
+                            }}
+                          >
+                            위치 및 상세
+                          </button>
+                        </td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {activeTab === 'MORE' && (
         <>

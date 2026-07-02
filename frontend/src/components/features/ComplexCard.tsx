@@ -6,12 +6,16 @@ interface ComplexCardProps {
   complex: Complex;
   isActive: boolean;
   onClick: () => void;
+  isBookmarked: boolean;
+  onBookmarkToggle: () => void;
 }
 
 export default function ComplexCard({ 
   complex, 
   isActive, 
-  onClick 
+  onClick,
+  isBookmarked,
+  onBookmarkToggle
 }: ComplexCardProps) {
   return (
     <div 
@@ -20,6 +24,18 @@ export default function ComplexCard({
     >
       <div className={styles['card-top-row']}>
         <span className={styles['complex-name']}>{complex.name}</span>
+        <button 
+          className={`${styles['bookmark-btn']} ${isBookmarked ? styles.bookmarked : ''}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onBookmarkToggle();
+          }}
+          title={isBookmarked ? "저장한 단지 해제" : "단지 저장하기"}
+        >
+          <svg className={styles['star-icon']} width="16" height="16" viewBox="0 0 24 24" fill={isBookmarked ? 'var(--color-warning-text)' : 'none'} stroke={isBookmarked ? 'var(--color-warning-text)' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+        </button>
       </div>
       <span className={styles['complex-address']}>
         <svg 

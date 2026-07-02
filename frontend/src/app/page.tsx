@@ -36,6 +36,36 @@ function HomeContent() {
   const [selectedComplex, setSelectedComplex] = useState<Complex | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
+  const [bookmarkedIds, setBookmarkedIds] = useState<number[]>([]);
+
+  // 마운트 시 localStorage에서 북마크 불러오기
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('bookmarkedComplexIds');
+        if (stored) {
+          setBookmarkedIds(JSON.parse(stored));
+        }
+      } catch (e) {
+        console.error('Failed to load bookmarks', e);
+      }
+    }
+  }, []);
+
+  // 북마크 상태 토글 및 저장
+  const toggleBookmark = (complexId: number) => {
+    setBookmarkedIds((prev) => {
+      const next = prev.includes(complexId)
+        ? prev.filter((id) => id !== complexId)
+        : [...prev, complexId];
+      try {
+        localStorage.setItem('bookmarkedComplexIds', JSON.stringify(next));
+      } catch (e) {
+        console.error('Failed to save bookmarks', e);
+      }
+      return next;
+    });
+  };
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState<NavigationTabType>('SEARCH');
@@ -255,6 +285,7 @@ function HomeContent() {
           width={SIDEBAR_DEFAULT_WIDTH} isCollapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           displayComplexes={filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex}
           activeTab={activeTab} allComplexes={allComplexes}
+          bookmarkedIds={bookmarkedIds} onToggleBookmark={toggleBookmark}
           style={{ left: `${NAVIGATION_BAR_WIDTH}px` }}
         />
 
@@ -263,6 +294,8 @@ function HomeContent() {
           isOpen={isPanelOpen} 
           filterState={filterState} 
           announcements={announcements} 
+          bookmarkedIds={bookmarkedIds}
+          onToggleBookmark={toggleBookmark}
           onClose={() => { setIsPanelOpen(false); setActiveComplexId(null); }} 
           style={{ 
             left: (isSidebarCollapsed ? 0 : SIDEBAR_DEFAULT_WIDTH) + NAVIGATION_BAR_WIDTH,
@@ -271,7 +304,7 @@ function HomeContent() {
         />
 
         <div className={styles['app-map-container']}>
-          <Map complexes={filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex} isSidebarCollapsed={isSidebarCollapsed} />
+          <Map complexes={filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex} isSidebarCollapsed={isSidebarCollapsed} bookmarkedIds={bookmarkedIds} />
           
 
           

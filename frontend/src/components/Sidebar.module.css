@@ -850,3 +850,156 @@
   overflow: hidden;
   position: relative;
 }
+
+/* 찜 비교 패널 전용 스타일 */
+.bookmark-panel-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-body);
+}
+
+.bookmark-header {
+  padding: var(--spacing-md);
+  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  background-color: var(--bg-surface);
+  flex-shrink: 0;
+}
+
+.bookmark-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.comparison-scroll-wrapper {
+  flex: var(--layout-flex-1);
+  overflow-x: auto;
+  overflow-y: auto;
+  padding: var(--spacing-md);
+}
+
+.comparison-table {
+  border-collapse: collapse;
+  width: max-content;
+  min-width: 100%;
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+}
+
+.comparison-table th,
+.comparison-table td {
+  padding: calc(var(--spacing-sm) * 1.25) var(--spacing-md);
+  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border-right: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  font-size: var(--font-size-base);
+}
+
+.comparison-table th:last-child,
+.comparison-table td:last-child {
+  border-right: none;
+}
+
+.comparison-table tr:last-child td {
+  border-bottom: none;
+}
+
+.comparison-table th {
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+.comp-col-header {
+  min-width: calc(var(--spacing-xl) * 4.5);
+  max-width: calc(var(--spacing-xl) * 6);
+  text-align: left;
+}
+
+.comp-title-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.comp-name {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  word-break: keep-all;
+}
+
+.comp-remove-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: var(--font-size-md);
+  padding: calc(var(--spacing-xs) * 0.5);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.comp-remove-btn:hover {
+  background-color: var(--bg-surface-active);
+  color: var(--color-tomato);
+}
+
+.comp-label {
+  position: sticky;
+  left: 0;
+  background-color: var(--bg-surface);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-secondary);
+  z-index: var(--z-index-base);
+  width: calc(var(--spacing-xl) * 3);
+  min-width: calc(var(--spacing-xl) * 3);
+  border-right: calc(var(--spacing-xs) * 0.25) solid var(--border-light) !important;
+}
+
+.comp-val {
+  text-align: center;
+  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.comp-val-text {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  max-width: calc(var(--spacing-xl) * 4.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+}
+
+.comp-val-action {
+  text-align: center;
+}
+
+.comp-view-btn {
+  background-color: var(--primary);
+  color: var(--color-white);
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.comp-view-btn:hover {
+  background-color: var(--primary-hover);
+}

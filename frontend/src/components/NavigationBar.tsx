@@ -3,7 +3,7 @@
 import styles from './NavigationBar.module.css';
 import { UI_SIZES, UI_STROKE_WIDTHS } from '@/constants';
 
-export type NavigationTabType = 'SEARCH' | 'MORE';
+export type NavigationTabType = 'SEARCH' | 'BOOKMARK' | 'MORE';
 
 interface NavigationBarProps {
   activeTab: NavigationTabType;
@@ -42,6 +42,17 @@ export default function NavigationBar({
             <path d="M9 6h6M9 10h6"></path>
           </svg>
           <span className={styles['nav-label']}>공고</span>
+        </button>
+
+        <button
+          className={`${styles['nav-item']} ${!isSidebarCollapsed && activeTab === 'BOOKMARK' ? styles.active : ''}`}
+          onClick={() => onTabSelect('BOOKMARK')}
+          title="저장한 단지"
+        >
+          <svg className={styles['nav-icon']} width={UI_SIZES.ICON_XL} height={UI_SIZES.ICON_XL} viewBox="0 0 24 24" fill={!isSidebarCollapsed && activeTab === 'BOOKMARK' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.BOLD} strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+          <span className={styles['nav-label']}>저장</span>
         </button>
 
         <button

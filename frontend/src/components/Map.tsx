@@ -27,9 +27,10 @@ interface MapProps {
   activeComplexId: number | null;
   onSelectComplex: (complex: Complex) => void;
   isSidebarCollapsed: boolean;
+  bookmarkedIds: number[];
 }
 
-export default function Map({ complexes, activeComplexId, onSelectComplex, isSidebarCollapsed }: MapProps) {
+export default function Map({ complexes, activeComplexId, onSelectComplex, isSidebarCollapsed, bookmarkedIds }: MapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [naverMap, setNaverMap] = useState<any>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -88,6 +89,7 @@ export default function Map({ complexes, activeComplexId, onSelectComplex, isSid
         return; // 지오코딩 좌표가 없거나 올바르지 않은 단지는 마커를 렌더링하지 않음
       }
 
+      const isBookmarked = bookmarkedIds.includes(mapped.id);
       const isActive = mapped.id === activeComplexId;
       const marker = new window.naver.maps.Marker({
         position: new window.naver.maps.LatLng(mapped.latitude, mapped.longitude),
@@ -95,15 +97,21 @@ export default function Map({ complexes, activeComplexId, onSelectComplex, isSid
         title: mapped.name,
         icon: {
           content: `
-            <div class="custom-marker ${isActive ? 'active' : ''}" style="cursor: pointer;">
+            <div class="custom-marker ${isActive ? 'active' : ''} ${isBookmarked ? 'bookmarked' : ''}" style="cursor: pointer;">
               <div class="marker-pin">
-                <svg viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 3L3 10.5h2v10h14v-10h2L12 3z" fill="white" />
-                  <rect x="9" y="11" width="2.5" height="2.5" class="window-hole" />
-                  <rect x="12.5" y="11" width="2.5" height="2.5" class="window-hole" />
-                  <rect x="9" y="14.5" width="2.5" height="2.5" class="window-hole" />
-                  <rect x="12.5" y="14.5" width="2.5" height="2.5" class="window-hole" />
-                </svg>
+                ${isBookmarked ? `
+                  <svg viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="white" />
+                  </svg>
+                ` : `
+                  <svg viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 3L3 10.5h2v10h14v-10h2L12 3z" fill="white" />
+                    <rect x="9" y="11" width="2.5" height="2.5" class="window-hole" />
+                    <rect x="12.5" y="11" width="2.5" height="2.5" class="window-hole" />
+                    <rect x="9" y="14.5" width="2.5" height="2.5" class="window-hole" />
+                    <rect x="12.5" y="14.5" width="2.5" height="2.5" class="window-hole" />
+                  </svg>
+                `}
               </div>
             </div>
           `,
@@ -122,7 +130,7 @@ export default function Map({ complexes, activeComplexId, onSelectComplex, isSid
     });
 
     setMarkers(newMarkers);
-  }, [complexes, mapLoaded, naverMap]);
+  }, [complexes, mapLoaded, naverMap, bookmarkedIds]);
 
   // 3. 현재 화면에 실제로 렌더링되어 지도를 덮고 있는 왼쪽 패널 영역의 실시간 총 가로폭을 동적으로 반환하는 헬퍼 함수
   const getActiveCoveredWidth = (isPanelOpening: boolean): number => {
