@@ -96,7 +96,7 @@ export default function UnitTable({
               unit.min_deposit !== null &&
               unit.max_monthly_rent !== null &&
               unit.min_monthly_rent !== null &&
-              unit.max_deposit > unit.deposit;
+              (unit.max_deposit > unit.deposit || unit.min_deposit < unit.deposit);
 
             const diffMax = unit.max_deposit !== null ? Math.abs(unit.max_deposit - unit.deposit) : 0;
             const diffMin = unit.min_deposit !== null ? Math.abs(unit.deposit - unit.min_deposit) : 0;
