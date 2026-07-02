@@ -234,3 +234,104 @@
   white-space: nowrap;
   min-width: calc(var(--spacing-xl) * 1.7);
 }
+
+.comparison-body {
+  flex: var(--layout-flex-1);
+  overflow-y: auto;
+  padding: var(--spacing-md);
+}
+
+.empty-comparison-msg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: calc(var(--spacing-md) * 3) var(--spacing-md);
+  color: var(--text-muted);
+  font-size: var(--font-size-md);
+  border: var(--spacing-3xs) dashed var(--border-light);
+  border-radius: var(--radius-lg);
+  line-height: var(--line-height-base);
+}
+
+.comparison-table-wrapper {
+  width: var(--layout-modal-width);
+  overflow-x: auto;
+  border: var(--spacing-3xs) solid var(--border-light);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  background-color: var(--bg-surface);
+}
+
+.comparison-table {
+  width: var(--layout-modal-width);
+  border-collapse: collapse;
+  text-align: left;
+  font-size: var(--font-size-sm);
+}
+
+.comparison-table th,
+.comparison-table td {
+  padding: var(--spacing-12px) var(--spacing-md);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
+  border-right: var(--spacing-3xs) solid var(--border-light);
+  white-space: nowrap;
+}
+
+.comparison-table th:last-child,
+.comparison-table td:last-child {
+  border-right: none;
+}
+
+.comparison-table tr:last-child td {
+  border-bottom: none;
+}
+
+.comp-header-label {
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-bold);
+  position: sticky;
+  left: 0;
+  z-index: var(--z-index-base);
+  box-shadow: var(--spacing-3xs) 0 0 var(--border-light);
+  min-width: calc(var(--spacing-xl) * 3.75);
+}
+
+.comp-header-val {
+  background-color: var(--primary-bg);
+  color: var(--primary);
+  font-weight: var(--font-weight-bold);
+  min-width: calc(var(--spacing-xl) * 6.25);
+  text-align: center;
+}
+
+.comp-name {
+  font-size: var(--font-size-sm);
+  display: block;
+}
+
+.comp-label {
+  background-color: var(--bg-body);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-semibold);
+  position: sticky;
+  left: 0;
+  z-index: var(--z-index-base);
+  box-shadow: var(--spacing-3xs) 0 0 var(--border-light);
+}
+
+.comp-val {
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.comp-val-text {
+  color: var(--text-primary);
+  max-width: calc(var(--spacing-xl) * 6.25);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+}

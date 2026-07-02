@@ -961,3 +961,37 @@
 .folder-delete-btn:hover {
   color: var(--color-tomato);
 }
+
+.folder-actions-row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 var(--spacing-md) var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
+}
+
+.comp-toggle-mini-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background-color: var(--primary-bg);
+  color: var(--primary);
+  border: var(--spacing-3xs) solid var(--border-light);
+  padding: var(--spacing-6px) var(--spacing-12px);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: var(--transition-fast-all);
+}
+
+.comp-toggle-mini-btn:hover {
+  background-color: var(--primary);
+  color: var(--color-white);
+  border-color: var(--primary);
+}
+
+.comp-toggle-mini-btn.active {
+  background-color: var(--color-tomato);
+  color: var(--color-white);
+  border-color: var(--color-tomato);
+}

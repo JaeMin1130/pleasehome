@@ -181,6 +181,7 @@ function HomeContent() {
   };
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [activeComparisonFolderId, setActiveComparisonFolderId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<NavigationTabType>('SEARCH');
 
   const [filterState, setFilterState] = useState<FilterState>({
@@ -287,6 +288,15 @@ function HomeContent() {
     }
   };
   const handleSelectComplex = (complex: Complex) => {
+    // 💡 비교 표가 열린 상태였다면 비교 모드를 자동 해제하고 해당 단지 상세 정보로 자연스럽게 이행
+    if (activeComparisonFolderId !== null) {
+      setActiveComparisonFolderId(null);
+      setSelectedComplex(complex);
+      setActiveComplexId(complex.id);
+      setIsPanelOpen(true);
+      return;
+    }
+
     if (activeComplexId === complex.id && isPanelOpen) {
       setSelectedComplex(null);
       setActiveComplexId(null);
@@ -430,14 +440,28 @@ function HomeContent() {
               return next;
             });
             setBookmarkItems(prev => {
-              const next = prev.map(item => 
-                item.folderId === folderId ? { ...item, folderId: 'default' } : item
-              );
+              const next = prev.filter(item => item.folderId !== folderId); // default 이전 대신 영구 동반 해제
               localStorage.setItem('bookmarkItems', JSON.stringify(next));
               return next;
             });
             if (activeFolderId === folderId) {
               setActiveFolderId(null);
+            }
+            if (activeComparisonFolderId === folderId) {
+              setActiveComparisonFolderId(null);
+              setIsPanelOpen(false);
+            }
+          }}
+          activeComparisonFolderId={activeComparisonFolderId}
+          onToggleComparison={(folderId) => {
+            if (activeComparisonFolderId === folderId) {
+              setActiveComparisonFolderId(null);
+              setIsPanelOpen(false);
+            } else {
+              setActiveComparisonFolderId(folderId);
+              setActiveComplexId(null);
+              setSelectedComplex(null); // 💡 단일 선택 단지 객체 리셋
+              setIsPanelOpen(true);     // 상세 패널 오픈
             }
           }}
           style={{ left: `${NAVIGATION_BAR_WIDTH}px` }}
@@ -450,11 +474,31 @@ function HomeContent() {
           announcements={announcements} 
           bookmarkedIds={bookmarkedIds}
           onToggleBookmark={toggleBookmark}
-          onClose={() => { setIsPanelOpen(false); setActiveComplexId(null); }} 
+          onClose={() => { 
+            setIsPanelOpen(false); 
+            setActiveComplexId(null); 
+            setSelectedComplex(null); // 💡 단일 선택 단지 객체 리셋
+            setActiveComparisonFolderId(null); // 패널 닫을 때 스펙비교 모드도 해제
+          }} 
           style={{ 
             left: (isSidebarCollapsed ? 0 : SIDEBAR_DEFAULT_WIDTH) + NAVIGATION_BAR_WIDTH,
             width: `${PANEL_DEFAULT_WIDTH}px`
-          }} 
+          }}
+          comparisonFolder={
+            activeComparisonFolderId === 'default'
+              ? { id: 'default', name: '내 저장 목록', color: '#3B82F6', createdAt: new Date().toISOString() }
+              : (bookmarkFolders.find(f => f.id === activeComparisonFolderId) || null)
+          }
+          comparisonComplexes={
+            activeComparisonFolderId 
+              ? allComplexes.filter(c => 
+                  bookmarkItems
+                    .filter(item => item.folderId === activeComparisonFolderId)
+                    .map(item => item.complexId)
+                    .includes(c.id)
+                )
+              : []
+          }
         />
 
         <div className={styles['app-map-container']}>

@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Complex, HousingUnit, Announcement, FilterState } from '@/types';
+import { Complex, HousingUnit, Announcement, FilterState, BookmarkFolder } from '@/types';
 import UnitTable from '@/components/features/UnitTable';
-import { formatTargetGroup } from '@/utils/formatters';
+import { formatTargetGroup, formatMoney, formatRent } from '@/utils/formatters';
 import styles from './DetailPanel.module.css';
 
 interface DetailPanelProps {
@@ -15,11 +15,15 @@ interface DetailPanelProps {
   style?: React.CSSProperties;
   bookmarkedIds: number[];
   onToggleBookmark: (complexId: number) => void;
+  comparisonFolder?: BookmarkFolder | null;
+  comparisonComplexes?: Complex[];
 }
 
 export default function DetailPanel({ 
   complex, isOpen, filterState, announcements, onClose, style,
-  bookmarkedIds, onToggleBookmark 
+  bookmarkedIds, onToggleBookmark,
+  comparisonFolder = null,
+  comparisonComplexes = []
 }: DetailPanelProps) {
   const [units, setUnits] = useState<HousingUnit[]>([]);
   const [loading, setLoading] = useState(false);
@@ -27,6 +31,9 @@ export default function DetailPanel({
   const [selectedType, setSelectedType] = useState<string>('ALL');
   const [selectedTarget, setSelectedTarget] = useState<string>('ALL');
   const [selectedIncome, setSelectedIncome] = useState<string>('ALL');
+
+  // 스펙 비교용 단지별 주택형 정보 상태
+  const [comparisonUnits, setComparisonUnits] = useState<Record<number, HousingUnit[]>>({});
 
   useEffect(() => {
     if (!complex) return;
@@ -60,6 +67,19 @@ export default function DetailPanel({
       });
   }, [complex]);
 
+  // 💡 비교 모드 시 각 단지들의 평형 유닛 데이터를 동적으로 로딩
+  useEffect(() => {
+    if (!comparisonFolder || comparisonComplexes.length === 0) return;
+    comparisonComplexes.forEach((c) => {
+      fetch(`/api/housing-units?complex_id=${c.id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setComparisonUnits((prev) => ({ ...prev, [c.id]: data }));
+        })
+        .catch((err) => console.error("Failed to load comparison units for complex " + c.id, err));
+    });
+  }, [comparisonFolder, comparisonComplexes]);
+
   const filteredUnits = units.filter((unit) => {
     if (selectedType !== 'ALL' && (!unit.room_type || !unit.room_type.startsWith(selectedType))) return false;
     
@@ -84,6 +104,147 @@ export default function DetailPanel({
   const handleSliderChange = (unitId: number, value: number) => {
     setSliderValues((prev) => ({ ...prev, [unitId]: value }));
   };
+
+  if (!complex && !comparisonFolder) return null;
+
+  // 💡 스펙 비교 패널을 렌더링할 때의 리턴 블록
+  if (comparisonFolder) {
+    return (
+      <aside 
+        className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''}`}
+        style={style}
+      >
+        <div className={styles['panel-header']}>
+          <div className={styles['panel-title-wrapper']}>
+            <h2 className={styles['panel-title']}>
+              {comparisonFolder.name} 단지 비교
+            </h2>
+          </div>
+          <button className={styles['panel-close-btn']} onClick={onClose}>✕</button>
+        </div>
+
+        <div className={styles['comparison-body']}>
+          {comparisonComplexes.length === 0 ? (
+            <div className={styles['empty-comparison-msg']}>
+              비교할 단지가 없습니다.<br />폴더에 찜한 단지를 추가해 보세요.
+            </div>
+          ) : (
+            <div className={styles['comparison-table-wrapper']}>
+              <table className={styles['comparison-table']}>
+                <thead>
+                  <tr>
+                    <th className={styles['comp-header-label']}>단지명</th>
+                    {comparisonComplexes.map((c) => (
+                      <th key={c.id} className={styles['comp-header-val']}>
+                        <span className={styles['comp-name']}>{c.name}</span>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className={styles['comp-label']}>단지 유형</td>
+                    {comparisonComplexes.map((c) => (
+                      <td key={c.id} className={styles['comp-val']}>{c.complex_type || '정보 없음'}</td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className={styles['comp-label']}>소속 공고</td>
+                    {comparisonComplexes.map((c) => {
+                      const ann = announcements.find(a => a.id === c.announcement_id);
+                      return <td key={c.id} className={styles['comp-val-text']} title={ann?.title}>{ann?.title || '-'}</td>;
+                    })}
+                  </tr>
+                  <tr>
+                    <td className={styles['comp-label']}>임대 보증금</td>
+                    {comparisonComplexes.map((c) => {
+                      const unitsData = comparisonUnits[c.id] || [];
+                      if (unitsData.length === 0) return <td key={c.id} className={styles['comp-val']}>로딩 중...</td>;
+                      const deposits = unitsData.map(u => u.deposit).filter((d): d is number => d !== null);
+                      if (deposits.length === 0) return <td key={c.id} className={styles['comp-val']}>-</td>;
+                      const minDep = Math.min(...deposits);
+                      const maxDep = Math.max(...deposits);
+                      return (
+                        <td key={c.id} className={styles['comp-val']}>
+                          {minDep === maxDep ? formatMoney(minDep) : `${formatMoney(minDep)} ~ ${formatMoney(maxDep)}`}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                  <tr>
+                    <td className={styles['comp-label']}>월 임대료</td>
+                    {comparisonComplexes.map((c) => {
+                      const unitsData = comparisonUnits[c.id] || [];
+                      if (unitsData.length === 0) return <td key={c.id} className={styles['comp-val']}>로딩 중...</td>;
+                      const rents = unitsData.map(u => u.monthly_rent).filter((r): r is number => r !== null);
+                      if (rents.length === 0) return <td key={c.id} className={styles['comp-val']}>-</td>;
+                      const minRent = Math.min(...rents);
+                      const maxRent = Math.max(...rents);
+                      return (
+                        <td key={c.id} className={styles['comp-val']}>
+                          {minRent === maxRent ? formatRent(minRent) : `${formatRent(minRent)} ~ ${formatRent(maxRent)}`}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                  <tr>
+                    <td className={styles['comp-label']}>전용 면적</td>
+                    {comparisonComplexes.map((c) => {
+                      const unitsData = comparisonUnits[c.id] || [];
+                      if (unitsData.length === 0) return <td key={c.id} className={styles['comp-val']}>로딩 중...</td>;
+                      const areas = unitsData.map(u => u.exclusive_area).filter((a): a is number => a !== null);
+                      if (areas.length === 0) return <td key={c.id} className={styles['comp-val']}>-</td>;
+                      const minArea = Math.min(...areas);
+                      const maxArea = Math.max(...areas);
+                      return (
+                        <td key={c.id} className={styles['comp-val']}>
+                          {minArea === maxArea ? `${minArea.toFixed(2)}㎡` : `${minArea.toFixed(2)}㎡ ~ ${maxArea.toFixed(2)}㎡`}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                  <tr>
+                    <td className={styles['comp-label']}>공급 호수</td>
+                    {comparisonComplexes.map((c) => {
+                      const unitsData = comparisonUnits[c.id] || [];
+                      if (unitsData.length === 0) return <td key={c.id} className={styles['comp-val']}>로딩 중...</td>;
+                      const supplySum = unitsData.reduce((sum, u) => sum + (u.supply_count || 0), 0);
+                      const reserveSum = unitsData.reduce((sum, u) => sum + (u.reserve_count || 0), 0);
+                      return (
+                        <td key={c.id} className={styles['comp-val']}>
+                          {supplySum}호{reserveSum > 0 && ` (예비 ${reserveSum}호)`}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                  <tr>
+                    <td className={styles['comp-label']}>주차 정보</td>
+                    {comparisonComplexes.map((c) => (
+                      <td key={c.id} className={styles['comp-val']}>{c.parking_info || '정보 없음'}</td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className={styles['comp-label']}>난방 방식</td>
+                    {comparisonComplexes.map((c) => (
+                      <td key={c.id} className={styles['comp-val']}>{c.heating_type || '정보 없음'}</td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className={styles['comp-label']}>엘리베이터</td>
+                    {comparisonComplexes.map((c) => (
+                      <td key={c.id} className={styles['comp-val']}>
+                        {c.has_elevator === null ? '정보 없음' : c.has_elevator ? '있음' : '없음'}
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </aside>
+    );
+  }
 
   if (!complex) return null;
 

@@ -31,6 +31,8 @@ interface SidebarProps {
   setActiveFolderId: (folderId: string | null) => void;
   onAddFolder: (name: string, color?: string) => string;
   onRemoveFolder: (folderId: string) => void;
+  activeComparisonFolderId: string | null;
+  onToggleComparison: (folderId: string) => void;
 }
 
 export default function Sidebar({ 
@@ -40,7 +42,8 @@ export default function Sidebar({
   activeTab, allComplexes, style,
   bookmarkedIds, onToggleBookmark,
   bookmarkFolders, bookmarkItems, activeFolderId, setActiveFolderId,
-  onAddFolder, onRemoveFolder
+  onAddFolder, onRemoveFolder,
+  activeComparisonFolderId, onToggleComparison
 }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [complexSearchTerm, setComplexSearchTerm] = useState('');
@@ -51,20 +54,11 @@ export default function Sidebar({
   const bookmarkListRef = useRef<HTMLDivElement>(null);
   const [bookmarkUnits, setBookmarkUnits] = useState<Record<number, HousingUnit[]>>({});
 
-  // 대조 비교 토글 상태
-  const [showComparison, setShowComparison] = useState(false);
   // 사이드바 폴더 폼 상태
   const [newFolderName, setNewFolderName] = useState('');
   const [showNewFolderInput, setShowNewFolderInput] = useState(false);
   const PRESET_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
   const [selectedSidebarColor, setSelectedSidebarColor] = useState<string>(PRESET_COLORS[0]);
-
-  // 💡 폴더 이동 시 스펙 비교 토글 초기화 (렌더링 도중 리셋 기법 적용으로 린트 에러 차단)
-  const [prevActiveFolderId, setPrevActiveFolderId] = useState<string | null>(activeFolderId);
-  if (activeFolderId !== prevActiveFolderId) {
-    setPrevActiveFolderId(activeFolderId);
-    setShowComparison(false);
-  }
 
   // 찜한 단지가 늘어날 때 주택 상세 정보를 동적으로 로드
   useEffect(() => {
@@ -538,6 +532,17 @@ export default function Sidebar({
                       <span className={styles['folder-count-badge']}>{folderCount}</span>
                     </div>
                     <div className={styles['folder-info-right']} onClick={(e) => e.stopPropagation()}>
+                      {/* 💡 폴더가 열려있고 저장 단지가 있을 때만 노출되는 콤팩트 비교 토글 버튼 */}
+                      {isExpanded && folderCount > 0 && (
+                        <button 
+                          className={`${styles['comp-toggle-mini-btn']} ${activeComparisonFolderId === folder.id ? styles.active : ''}`}
+                          onClick={() => onToggleComparison(folder.id)}
+                          title="상세 패널에서 단지 스펙 비교표를 엽니다"
+                        >
+                          {activeComparisonFolderId === folder.id ? '비교 표 닫기' : '단지 스펙 비교'}
+                        </button>
+                      )}
+
                       {folder.id !== 'default' && (
                         <button 
                           className={styles['folder-delete-btn']}
@@ -555,7 +560,7 @@ export default function Sidebar({
                     </div>
                   </div>
 
-                  {/* 💡 아코디언 바디: 단지 목록 & 스펙 대조 테이블 */}
+                  {/* 💡 아코디언 바디: 단지 목록 */}
                   {isExpanded && (
                     <div className={styles['accordion-body']}>
                       {folderCount === 0 ? (
@@ -564,201 +569,44 @@ export default function Sidebar({
                         </div>
                       ) : (
                         <>
-                          <button 
-                            className={`${styles['toggle-comp-btn']} ${showComparison ? styles.active : ''}`}
-                            onClick={() => setShowComparison(!showComparison)}
-                          >
-                            {showComparison ? '← 목록 뷰로 돌아가기' : '단지 스펙 비교하기'}
-                          </button>
 
-                          {showComparison ? (
-                            <div className={styles['comparison-table-wrapper']}>
-                              <table className={styles['comparison-table']}>
-                                <thead>
-                                  <tr>
-                                    <th className={styles['comp-header-label']}>단지명</th>
-                                    {folderComplexes.map((c) => (
-                                      <th key={c.id} className={styles['comp-header-val']}>
-                                        <div className={styles['comp-header-inner']}>
-                                          <span className={styles['comp-name']}>{c.name}</span>
-                                          <button 
-                                            className={styles['comp-remove-btn']} 
-                                            onClick={() => onToggleBookmark(c.id)}
-                                            title="저장 수정/해제"
-                                          >
-                                            ⚙
-                                          </button>
-                                        </div>
-                                      </th>
-                                    ))}
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  <tr>
-                                    <td className={styles['comp-label']}>나의 메모</td>
-                                    {folderComplexes.map((c) => {
-                                      const item = bookmarkItems.find(i => i.complexId === c.id);
-                                      return (
-                                        <td key={c.id} className={styles['comp-memo-text']} title={item?.memo}>
-                                          {item?.memo || <span className={styles['no-memo']}>메모 없음</span>}
-                                        </td>
-                                      );
-                                    })}
-                                  </tr>
-                                  <tr>
-                                    <td className={styles['comp-label']}>소속 공고</td>
-                                    {folderComplexes.map((c) => {
-                                      const ann = announcements.find(a => a.id === c.announcement_id);
-                                      return <td key={c.id} className={styles['comp-val-text']} title={ann?.title}>{ann?.title || '-'}</td>;
-                                    })}
-                                  </tr>
-                                  <tr>
-                                    <td className={styles['comp-label']}>단지 유형</td>
-                                    {folderComplexes.map((c) => (
-                                      <td key={c.id} className={styles['comp-val']}>{c.complex_type || '정보 없음'}</td>
-                                    ))}
-                                  </tr>
-                                  <tr>
-                                    <td className={styles['comp-label']}>임대 보증금</td>
-                                    {folderComplexes.map((c) => {
-                                      const units = bookmarkUnits[c.id] || [];
-                                      if (units.length === 0) return <td key={c.id} className={styles['comp-val']}>로딩 중...</td>;
-                                      const deposits = units.map(u => u.deposit).filter(d => d !== null);
-                                      if (deposits.length === 0) return <td key={c.id} className={styles['comp-val']}>-</td>;
-                                      const minDep = Math.min(...deposits);
-                                      const maxDep = Math.max(...deposits);
-                                      return (
-                                        <td key={c.id} className={styles['comp-val']}>
-                                          {minDep === maxDep ? formatMoney(minDep) : `${formatMoney(minDep)} ~ ${formatMoney(maxDep)}`}
-                                        </td>
-                                      );
-                                    })}
-                                  </tr>
-                                  <tr>
-                                    <td className={styles['comp-label']}>월 임대료</td>
-                                    {folderComplexes.map((c) => {
-                                      const units = bookmarkUnits[c.id] || [];
-                                      if (units.length === 0) return <td key={c.id} className={styles['comp-val']}>로딩 중...</td>;
-                                      const rents = units.map(u => u.monthly_rent).filter(r => r !== null);
-                                      if (rents.length === 0) return <td key={c.id} className={styles['comp-val']}>-</td>;
-                                      const minRent = Math.min(...rents);
-                                      const maxRent = Math.max(...rents);
-                                      return (
-                                        <td key={c.id} className={styles['comp-val']}>
-                                          {minRent === maxRent ? formatRent(minRent) : `${formatRent(minRent)} ~ ${formatRent(maxRent)}`}
-                                        </td>
-                                      );
-                                    })}
-                                  </tr>
-                                  <tr>
-                                    <td className={styles['comp-label']}>전용 면적</td>
-                                    {folderComplexes.map((c) => {
-                                      const units = bookmarkUnits[c.id] || [];
-                                      if (units.length === 0) return <td key={c.id} className={styles['comp-val']}>로딩 중...</td>;
-                                      const areas = units.map(u => u.exclusive_area).filter(a => a !== null);
-                                      if (areas.length === 0) return <td key={c.id} className={styles['comp-val']}>-</td>;
-                                      const minArea = Math.min(...areas);
-                                      const maxArea = Math.max(...areas);
-                                      return (
-                                        <td key={c.id} className={styles['comp-val']}>
-                                          {minArea === maxArea ? `${minArea.toFixed(2)}㎡` : `${minArea.toFixed(2)}㎡ ~ ${maxArea.toFixed(2)}㎡`}
-                                        </td>
-                                      );
-                                    })}
-                                  </tr>
-                                  <tr>
-                                    <td className={styles['comp-label']}>주차 정보</td>
-                                    {folderComplexes.map((c) => (
-                                      <td key={c.id} className={styles['comp-val']}>{c.parking_info || '정보 없음'}</td>
-                                    ))}
-                                  </tr>
-                                  <tr>
-                                    <td className={styles['comp-label']}>난방 방식</td>
-                                    {folderComplexes.map((c) => (
-                                      <td key={c.id} className={styles['comp-val']}>{c.heating_type || '정보 없음'}</td>
-                                    ))}
-                                  </tr>
-                                  <tr>
-                                    <td className={styles['comp-label']}>공급 호수</td>
-                                    {folderComplexes.map((c) => {
-                                      const units = bookmarkUnits[c.id] || [];
-                                      if (units.length === 0) return <td key={c.id} className={styles['comp-val']}>로딩 중...</td>;
-                                      const supplySum = units.reduce((sum, u) => sum + (u.supply_count || 0), 0);
-                                      const reserveSum = units.reduce((sum, u) => sum + (u.reserve_count || 0), 0);
-                                      return (
-                                        <td key={c.id} className={styles['comp-val']}>
-                                          {supplySum}호{reserveSum > 0 && ` (예비 ${reserveSum}호)`}
-                                        </td>
-                                      );
-                                    })}
-                                  </tr>
-                                  <tr>
-                                    <td className={styles['comp-label']}>엘리베이터</td>
-                                    {folderComplexes.map((c) => (
-                                      <td key={c.id} className={styles['comp-val']}>
-                                        {c.has_elevator === null ? '정보 없음' : c.has_elevator ? '있음' : '없음'}
-                                      </td>
-                                    ))}
-                                  </tr>
-                                  <tr>
-                                    <td className={styles['comp-label']}>상세 정보</td>
-                                    {folderComplexes.map((c) => (
-                                      <td key={c.id} className={styles['comp-val-action']}>
-                                        <button 
-                                          className={styles['comp-view-btn']}
-                                          onClick={() => {
-                                            onSelectAnnouncement(c.announcement_id);
-                                            setTimeout(() => {
-                                              onSelectComplex(c);
-                                            }, 100);
-                                          }}
-                                        >
-                                          단지 상세
-                                        </button>
-                                      </td>
-                                    ))}
-                                  </tr>
-                                </tbody>
-                              </table>
+
+                          <div className={styles['sidebar-list']}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+                              {folderComplexes.map((complex) => {
+                                const item = bookmarkItems.find(i => i.complexId === complex.id);
+                                const ann = announcements.find(a => a.id === complex.announcement_id);
+                                return (
+                                  <div key={complex.id} className={styles['bookmark-card-wrapper']}>
+                                    <ComplexCard
+                                      complex={complex}
+                                      isActive={activeComplexId === complex.id}
+                                      onClick={() => {
+                                        onSelectAnnouncement(complex.announcement_id);
+                                        setTimeout(() => {
+                                          onSelectComplex(complex);
+                                        }, 100);
+                                      }}
+                                      isBookmarked={true}
+                                      onBookmarkToggle={() => onToggleBookmark(complex.id)}
+                                      announcementTitle={ann?.title}
+                                      announcementStatus={ann ? getAnnouncementStatus(ann) : undefined}
+                                      announcementInstitution={ann?.institution}
+                                    />
+                                    {item?.memo && (
+                                      <div className={styles['bookmark-card-memo']}>
+                                        <svg className={styles['memo-icon']} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                          <path d="M12 20h9"></path>
+                                          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                        </svg>
+                                        <span className={styles['memo-text']}>{item.memo}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
                             </div>
-                          ) : (
-                            <div className={styles['sidebar-list']}>
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
-                                {folderComplexes.map((complex) => {
-                                  const item = bookmarkItems.find(i => i.complexId === complex.id);
-                                  const ann = announcements.find(a => a.id === complex.announcement_id);
-                                  return (
-                                    <div key={complex.id} className={styles['bookmark-card-wrapper']}>
-                                      <ComplexCard
-                                        complex={complex}
-                                        isActive={activeComplexId === complex.id}
-                                        onClick={() => {
-                                          onSelectAnnouncement(complex.announcement_id);
-                                          setTimeout(() => {
-                                            onSelectComplex(complex);
-                                          }, 100);
-                                        }}
-                                        isBookmarked={true}
-                                        onBookmarkToggle={() => onToggleBookmark(complex.id)}
-                                        announcementTitle={ann?.title}
-                                        announcementStatus={ann ? getAnnouncementStatus(ann) : undefined}
-                                        announcementInstitution={ann?.institution}
-                                      />
-                                      {item?.memo && (
-                                        <div className={styles['bookmark-card-memo']}>
-                                          <svg className={styles['memo-icon']} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M12 20h9"></path>
-                                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                                          </svg>
-                                          <span className={styles['memo-text']}>{item.memo}</span>
-                                        </div>
-                                      )}
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
+                          </div>
                         </>
                       )}
                     </div>
