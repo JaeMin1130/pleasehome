@@ -17,7 +17,6 @@ interface SidebarProps {
   onSelectAnnouncement: (id: number | null) => void;
   width?: number;
   isCollapsed?: boolean;
-  onToggleCollapse?: () => void;
   displayComplexes: Complex[];
   activeComplexId: number | null;
   onSelectComplex: (complex: Complex) => void;
@@ -36,7 +35,7 @@ interface SidebarProps {
 
 export default function Sidebar({ 
   announcements, activeAnnId, onSelectAnnouncement, 
-  width, isCollapsed, onToggleCollapse,
+  width, isCollapsed,
   displayComplexes, activeComplexId, onSelectComplex,
   activeTab, allComplexes, style,
   bookmarkedIds, onToggleBookmark,

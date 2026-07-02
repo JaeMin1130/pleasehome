@@ -414,7 +414,7 @@ function HomeContent() {
 
         <Sidebar 
           announcements={announcements} activeAnnId={activeAnnId} onSelectAnnouncement={handleSelectAnnouncement} 
-          width={SIDEBAR_DEFAULT_WIDTH} isCollapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          width={SIDEBAR_DEFAULT_WIDTH} isCollapsed={isSidebarCollapsed}
           displayComplexes={activeTab === 'BOOKMARK' ? mapComplexes : filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex}
           activeTab={activeTab} allComplexes={allComplexes}
           bookmarkedIds={bookmarkedIds} onToggleBookmark={toggleBookmark}
