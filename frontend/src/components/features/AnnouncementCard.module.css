@@ -1,6 +1,6 @@
 .announcement-card {
     background-color: var(--bg-surface);
-    border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+    border: var(--spacing-3xs) solid var(--border-light);
     border-radius: var(--spacing-sm);
     padding: var(--spacing-sm);
     cursor: pointer;
@@ -15,7 +15,7 @@
 }
 
 .announcement-card.active {
-    border-width: calc(var(--spacing-xs) * 0.5);
+    border-width: var(--spacing-2xs);
     padding: calc(var(--spacing-sm) * 1.875);
 }
 
@@ -53,7 +53,7 @@
 .note-text {
     font-size: var(--font-size-xs);
     color: var(--primary);
-    margin-top: calc(var(--spacing-xs) * 0.5);
+    margin-top: var(--spacing-2xs);
 }
 
 .limit-text {
@@ -72,7 +72,7 @@
 }
 
 .doc-item {
-    border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+    border-bottom: var(--spacing-3xs) solid var(--border-light);
     padding-bottom: var(--spacing-sm);
 }
 
@@ -85,7 +85,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: calc(var(--spacing-sm) * 1.25);
+    margin-bottom: var(--spacing-10px);
 }
 
 .header-badges {
@@ -97,7 +97,7 @@
 .card-type {
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
-    padding: calc(var(--spacing-xs) * 0.75) calc(var(--spacing-sm) * 0.75);
+    padding: calc(var(--spacing-xs) * 0.75) var(--spacing-6px);
     border-radius: var(--radius-sm);
     display: inline-flex;
     align-items: center;
@@ -131,8 +131,8 @@
 .d-day-badge {
     background-color: var(--color-dday-bg);
     color: var(--color-dday);
-    border: calc(var(--spacing-xs) * 0.25) solid var(--color-dday-border);
-    padding: calc(var(--spacing-xs) * 0.75) calc(var(--spacing-sm) * 1.25);
+    border: var(--spacing-3xs) solid var(--color-dday-border);
+    padding: calc(var(--spacing-xs) * 0.75) var(--spacing-10px);
     border-radius: var(--radius-sm);
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-bold);
@@ -153,7 +153,7 @@
 
 .card-accordion {
     margin-top: var(--spacing-md);
-    border-top: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+    border-top: var(--spacing-3xs) solid var(--border-light);
     padding-top: var(--spacing-md);
     display: flex;
     flex-direction: column;
@@ -162,18 +162,18 @@
 
 .accordion-section {
     background-color: var(--bg-body);
-    border-radius: calc(var(--spacing-sm) * 0.75);
+    border-radius: var(--spacing-6px);
     overflow: hidden;
-    border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+    border: var(--spacing-3xs) solid var(--border-light);
 }
 
 .section-header {
-    padding: calc(var(--spacing-sm) * 1.25) var(--spacing-md);
+    padding: var(--spacing-10px) var(--spacing-md);
     background-color: var(--bg-surface);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
     color: var(--text-primary);
-    border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+    border-bottom: var(--spacing-3xs) solid var(--border-light);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -192,7 +192,7 @@
     display: flex;
     flex-direction: column;
     padding: var(--spacing-sm) 0;
-    border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+    border-bottom: var(--spacing-3xs) solid var(--border-light);
 }
 
 .schedule-item:last-child {
@@ -208,7 +208,7 @@
     font-weight: var(--font-weight-semibold);
     color: var(--text-primary);
     font-size: var(--font-size-base);
-    margin-bottom: calc(var(--spacing-xs) * 0.5);
+    margin-bottom: var(--spacing-2xs);
 }
 
 .schedule-val {
@@ -220,14 +220,14 @@
     width: 100%;
     border-collapse: collapse;
     margin-top: var(--spacing-sm);
-    border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+    border: var(--spacing-3xs) solid var(--border-light);
 }
 
 .limits-table th,
 .limits-table td {
     padding: var(--spacing-sm);
     text-align: left;
-    border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+    border-bottom: var(--spacing-3xs) solid var(--border-light);
     font-size: var(--font-size-sm);
 }
 
@@ -276,11 +276,11 @@
 .detail-link-btn {
     display: inline-flex;
     align-items: center;
-    gap: calc(var(--spacing-xs) * 1.5);
+    gap: var(--spacing-6px);
     background-color: var(--bg-light-gray);
     color: var(--text-secondary);
-    border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
-    padding: calc(var(--spacing-xs) * 1.5) calc(var(--spacing-sm) * 1.5);
+    border: var(--spacing-3xs) solid var(--border-light);
+    padding: var(--spacing-6px) var(--spacing-12px);
     border-radius: var(--radius-md);
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);

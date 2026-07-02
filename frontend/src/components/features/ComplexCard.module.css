@@ -1,13 +1,13 @@
 .complex-card {
   background-color: var(--bg-surface);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
   border-radius: var(--spacing-sm);
   padding: calc(var(--spacing-md) * 0.6) var(--spacing-md);
   cursor: pointer;
   transition: var(--transition-fast-all);
   display: flex;
   flex-direction: column;
-  gap: calc(var(--spacing-sm) * 0.75);
+  gap: var(--spacing-6px);
   box-shadow: var(--shadow-sm);
 }
 .complex-card:hover {
@@ -64,17 +64,17 @@
 .card-ann-info {
   display: flex;
   align-items: center;
-  gap: calc(var(--spacing-xs) * 1.5);
-  border-top: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
-  padding-top: calc(var(--spacing-xs) * 1.5);
-  margin-top: calc(var(--spacing-xs) * 1);
+  gap: var(--spacing-6px);
+  border-top: var(--spacing-3xs) solid var(--border-light);
+  padding-top: var(--spacing-6px);
+  margin-top: var(--spacing-xs);
 }
 
 .ann-badge {
   font-size: var(--font-size-xs);
   background-color: var(--primary-bg);
   color: var(--primary);
-  padding: calc(var(--spacing-xs) * 0.5) var(--spacing-sm);
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: var(--radius-sm);
   font-weight: var(--font-weight-semibold);
   white-space: nowrap;
@@ -91,7 +91,7 @@
 
 .status-badge {
   font-size: var(--font-size-xs);
-  padding: calc(var(--spacing-xs) * 0.5) var(--spacing-sm);
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: var(--radius-sm);
   font-weight: var(--font-weight-bold);
   white-space: nowrap;

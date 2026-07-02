@@ -10,7 +10,7 @@
   justify-content: center;
   align-items: center;
   z-index: var(--z-index-tooltip);
-  backdrop-filter: blur(calc(var(--spacing-xs) * 0.5));
+  backdrop-filter: blur(var(--spacing-2xs));
 }
 
 .modal-content {
@@ -22,7 +22,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
   animation: modal-fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -42,7 +42,7 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-md);
-  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
 }
 
 .modal-title {
@@ -86,14 +86,14 @@
   background-color: var(--bg-body);
   padding: var(--spacing-sm);
   border-radius: var(--radius-md);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
 }
 
 .complex-label {
   font-size: var(--font-size-xs);
   color: var(--text-muted);
   font-weight: var(--font-weight-semibold);
-  margin-bottom: calc(var(--spacing-xs) * 0.5);
+  margin-bottom: var(--spacing-2xs);
 }
 
 .complex-name {
@@ -127,7 +127,7 @@
   font-weight: var(--font-weight-semibold);
   color: var(--primary);
   cursor: pointer;
-  padding: calc(var(--spacing-xs) * 0.5) calc(var(--spacing-xs) * 1.5);
+  padding: var(--spacing-2xs) var(--spacing-6px);
   border-radius: var(--radius-sm);
   transition: background-color var(--transition-fast);
 }
@@ -156,9 +156,9 @@
 
 .folder-input {
   flex: 1;
-  padding: calc(var(--spacing-xs) * 1.5) calc(var(--spacing-sm) * 1.5);
+  padding: var(--spacing-6px) var(--spacing-12px);
   font-size: var(--font-size-sm);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
   border-radius: var(--radius-md);
   background-color: var(--bg-surface);
   color: var(--text-primary);
@@ -167,11 +167,11 @@
 
 .folder-input:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 calc(var(--spacing-xs) * 0.5) var(--primary-bg);
+  box-shadow: 0 0 0 var(--spacing-2xs) var(--primary-bg);
 }
 
 .folder-submit-btn {
-  padding: calc(var(--spacing-xs) * 1.5) calc(var(--spacing-sm) * 1.5);
+  padding: var(--spacing-6px) var(--spacing-12px);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   background-color: var(--primary);
@@ -188,18 +188,18 @@
 .folders-list {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--spacing-xs) * 1.5);
+  gap: var(--spacing-6px);
   max-height: calc(var(--spacing-xl) * 5);
   overflow-y: auto;
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
   border-radius: var(--radius-md);
-  padding: calc(var(--spacing-xs) * 1.5);
+  padding: var(--spacing-6px);
 }
 
 .folder-item {
   display: flex;
   align-items: center;
-  padding: calc(var(--spacing-xs) * 2) var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-sm);
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: background-color var(--transition-fast);
@@ -220,10 +220,10 @@
 }
 
 .folder-color-dot {
-  width: calc(var(--spacing-xs) * 2.5);
-  height: calc(var(--spacing-xs) * 2.5);
+  width: var(--spacing-10px);
+  height: var(--spacing-10px);
   border-radius: var(--radius-full);
-  margin-right: calc(var(--spacing-xs) * 2);
+  margin-right: var(--spacing-sm);
   flex-shrink: 0;
 }
 
@@ -236,9 +236,9 @@
 .memo-textarea {
   width: 100%;
   height: calc(var(--spacing-xl) * 2.8);
-  padding: calc(var(--spacing-xs) * 2.5);
+  padding: var(--spacing-10px);
   font-size: var(--font-size-sm);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
   border-radius: var(--radius-md);
   background-color: var(--bg-surface);
   color: var(--text-primary);
@@ -248,7 +248,7 @@
 
 .memo-textarea:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 calc(var(--spacing-xs) * 0.5) var(--primary-bg);
+  box-shadow: 0 0 0 var(--spacing-2xs) var(--primary-bg);
 }
 
 .char-count {
@@ -262,7 +262,7 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-md);
-  border-top: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border-top: var(--spacing-3xs) solid var(--border-light);
   background-color: var(--bg-body);
 }
 
@@ -276,7 +276,7 @@
   padding: var(--spacing-sm) var(--spacing-md);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
   border-radius: var(--radius-md);
   background-color: var(--bg-surface);
   color: var(--text-secondary);
@@ -327,23 +327,23 @@
   background-color: var(--bg-body);
   padding: var(--spacing-sm);
   border-radius: var(--radius-md);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
   margin-bottom: var(--spacing-xs);
 }
 
 .color-picker-list {
   display: flex;
-  gap: calc(var(--spacing-xs) * 1.5);
-  padding: calc(var(--spacing-xs) * 0.5) 0;
+  gap: var(--spacing-6px);
+  padding: var(--spacing-2xs) 0;
   align-items: center;
 }
 
 .color-picker-item {
-  width: calc(var(--spacing-sm) * 2);
-  height: calc(var(--spacing-sm) * 2);
+  width: var(--spacing-md);
+  height: var(--spacing-md);
   border-radius: var(--radius-full);
   cursor: pointer;
-  border: calc(var(--spacing-xs) * 0.5) solid transparent;
+  border: var(--spacing-2xs) solid transparent;
   transition: transform var(--transition-fast), border-color var(--transition-fast);
 }
 

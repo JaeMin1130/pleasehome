@@ -52,9 +52,15 @@
   /* =========================================
      [ 공간/여백 및 모서리 (Spacing & Radius) ]
      ========================================= */
+  --spacing-3xs: 1px;
+  --spacing-2xs: 2px;
   --spacing-xs: 4px;
+  --spacing-6px: 6px;
   --spacing-sm: 8px;
+  --spacing-10px: 10px;
+  --spacing-12px: 12px;
   --spacing-md: 16px;
+  --spacing-20px: 20px;
   --spacing-lg: 24px;
   --spacing-xl: 32px;
   

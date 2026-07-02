@@ -4,7 +4,7 @@
   height: 100%;
   width: var(--layout-panel-width);
   background-color: var(--bg-surface);
-  border-right: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border-right: var(--spacing-3xs) solid var(--border-light);
   box-shadow: var(--shadow-lg);
   z-index: var(--z-index-panel);
   display: flex;
@@ -20,7 +20,7 @@
 
 .panel-header {
   padding: var(--spacing-lg);
-  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -115,7 +115,7 @@
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   padding-bottom: var(--spacing-sm);
-  border-bottom: calc(var(--spacing-xs) * 0.5) solid var(--text-primary);
+  border-bottom: var(--spacing-2xs) solid var(--text-primary);
   margin-bottom: var(--spacing-md);
 }
 
@@ -126,7 +126,7 @@
   background-color: var(--bg-surface);
   padding: var(--spacing-md);
   border-radius: var(--radius-md);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
 }
 
 .info-card {
@@ -159,7 +159,7 @@
 .filter-tabs-container {
   display: flex;
   flex-wrap: wrap;
-  gap: calc(var(--spacing-xs) * 1.5);
+  gap: var(--spacing-6px);
   margin-bottom: 0;
 }
 
@@ -168,7 +168,7 @@
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
   background-color: var(--bg-light-gray);
   color: var(--text-secondary);
   cursor: pointer;
@@ -203,7 +203,7 @@
   display: inline-block;
   vertical-align: middle;
   margin-left: var(--spacing-sm);
-  padding: calc(var(--spacing-xs) * 0.75) calc(var(--spacing-sm) * 0.75);
+  padding: calc(var(--spacing-xs) * 0.75) var(--spacing-6px);
   background-color: var(--color-warning-bg);
   color: var(--color-warning-text);
   border-radius: var(--radius-sm);
@@ -217,7 +217,7 @@
   flex-direction: column;
   gap: var(--spacing-sm);
   margin-bottom: var(--spacing-md);
-  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
   padding-bottom: var(--spacing-sm);
 }
 

@@ -1,6 +1,6 @@
 .unit-card {
     background-color: var(--bg-surface);
-    border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+    border: var(--spacing-3xs) solid var(--border-light);
     border-radius: var(--spacing-sm);
     padding: var(--spacing-xl);
     display: flex;
@@ -32,7 +32,7 @@
 .unit-price-box {
     display: flex;
     gap: calc(var(--spacing-lg) * 1.5);
-    border-top: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+    border-top: var(--spacing-3xs) solid var(--border-light);
     padding-top: var(--spacing-md);
     margin-top: var(--spacing-xs);
 }
@@ -75,13 +75,13 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--spacing-sm);
-    border-top: calc(var(--spacing-xs) * 0.25) dashed var(--border-light);
+    border-top: var(--spacing-3xs) dashed var(--border-light);
     padding-top: var(--spacing-sm);
     margin-top: var(--spacing-xs);
 }
 
 .conversion-slider-box {
-    border-top: calc(var(--spacing-xs) * 0.25) dashed var(--border-strong);
+    border-top: var(--spacing-3xs) dashed var(--border-strong);
     margin-top: var(--spacing-sm);
     padding-top: var(--spacing-lg);
 }
@@ -103,7 +103,7 @@
     font-size: var(--font-size-sm);
     padding: var(--spacing-xs) var(--spacing-sm);
     border-radius: var(--spacing-xs);
-    border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+    border: var(--spacing-3xs) solid var(--border-light);
     background: var(--bg-surface);
     color: var(--text-secondary);
     cursor: pointer;
@@ -154,7 +154,7 @@
     padding: var(--spacing-md) var(--spacing-lg);
     background: var(--primary-bg);
     border-radius: var(--radius-md);
-    border: calc(var(--spacing-xs) * 0.25) solid var(--color-lh-bg);
+    border: var(--spacing-3xs) solid var(--color-lh-bg);
 }
 
 .conversion-result-item {
@@ -225,7 +225,7 @@
 .diff-icon {
     display: inline-block;
     vertical-align: middle;
-    margin-right: calc(var(--spacing-xs) * 0.5);
+    margin-right: var(--spacing-2xs);
 }
 
 .meta-item {

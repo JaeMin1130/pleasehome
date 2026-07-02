@@ -5,7 +5,7 @@
   bottom: 0;
   width: calc(var(--spacing-md) * 3.75);
   background-color: var(--bg-surface);
-  border-right: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border-right: var(--spacing-3xs) solid var(--border-light);
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -19,7 +19,7 @@
 .nav-group {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--spacing-md) * 0.75);
+  gap: var(--spacing-12px);
   align-items: center;
   width: 100%;
 }
@@ -27,12 +27,12 @@
 
 
 .nav-brand-wrapper {
-  width: calc(100% + calc(var(--spacing-xs) * 0.25));
+  width: calc(100% + var(--spacing-3xs));
   height: var(--header-height);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
   background-color: var(--bg-surface);
   position: relative;
   z-index: calc(var(--z-index-sticky) + 10);

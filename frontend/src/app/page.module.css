@@ -14,7 +14,7 @@
     left: var(--position-center);
     transform: translate(var(--transform-half), var(--transform-half));
     background-color: var(--bg-surface);
-    border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+    border: var(--spacing-3xs) solid var(--border-light);
     box-shadow: var(--shadow-lg);
     border-radius: var(--radius-lg);
     padding: calc(var(--spacing-xl) * 1.25) var(--spacing-xl);
@@ -34,13 +34,13 @@
     align-items: center;
     justify-content: center;
     font-size: var(--font-size-lg);
-    margin: 0 auto calc(var(--spacing-md) * 1.25);
+    margin: 0 auto var(--spacing-20px);
 }
 
 .policy-title {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
-    margin-bottom: calc(var(--spacing-md) * 0.75);
+    margin-bottom: var(--spacing-12px);
     color: var(--text-primary);
 }
 
@@ -54,7 +54,7 @@
 
 .policy-limits-box {
     background-color: var(--bg-body);
-    border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+    border: var(--spacing-3xs) solid var(--border-light);
     border-radius: var(--radius-md);
     padding: var(--spacing-md);
     text-align: left;
@@ -65,7 +65,7 @@
     justify-content: space-between;
     font-size: var(--font-size-sm);
     padding: var(--spacing-sm) 0;
-    border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+    border-bottom: var(--spacing-3xs) solid var(--border-light);
 }
 
 .policy-limit-item:last-child {
@@ -84,8 +84,8 @@
 
 .floating-filter-container {
     position: absolute;
-    top: calc(var(--spacing-md) * 1.25);
-    right: calc(var(--spacing-md) * 1.25);
+    top: var(--spacing-20px);
+    right: var(--spacing-20px);
     z-index: var(--z-index-modal);
     display: flex;
     flex-direction: column;
@@ -94,9 +94,9 @@
 
 .floating-filter-btn {
     background: var(--bg-surface);
-    border: calc(var(--spacing-xs) * 0.25) solid var(--border-strong);
+    border: var(--spacing-3xs) solid var(--border-strong);
     border-radius: var(--radius-md);
-    padding: calc(var(--spacing-sm) * 1.25) calc(var(--spacing-md) * 1.125);
+    padding: var(--spacing-10px) calc(var(--spacing-md) * 1.125);
     font-size: var(--font-size-md);
     font-weight: var(--font-weight-bold);
     color: var(--text-primary);
@@ -140,11 +140,11 @@
 
 .floating-filter-dropdown {
     position: absolute;
-    top: calc(100% + calc(var(--spacing-md) * 0.75));
+    top: calc(100% + var(--spacing-12px));
     right: 0;
     width: var(--layout-sidebar-width);
     background-color: var(--bg-surface);
-    border: calc(var(--spacing-xs) * 0.25) solid var(--border-strong);
+    border: var(--spacing-3xs) solid var(--border-strong);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     z-index: var(--z-index-tooltip);
@@ -179,7 +179,7 @@
 .filter-group {
     display: flex;
     flex-direction: column;
-    gap: calc(var(--spacing-sm) * 1.25);
+    gap: var(--spacing-10px);
 }
 
 .filter-label-row {
@@ -208,9 +208,9 @@
 
 .filter-chip {
     background-color: var(--bg-surface);
-    border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+    border: var(--spacing-3xs) solid var(--border-light);
     color: var(--text-secondary);
-    padding: calc(var(--spacing-sm) * 0.75) calc(var(--spacing-sm) * 1.25);
+    padding: var(--spacing-6px) var(--spacing-10px);
     border-radius: var(--radius-sm);
     font-size: var(--font-size-xs);
     cursor: pointer;
@@ -228,15 +228,15 @@
     justify-content: space-between;
     align-items: center;
     margin-top: var(--spacing-sm);
-    border-top: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+    border-top: var(--spacing-3xs) solid var(--border-light);
     padding-top: var(--spacing-md);
 }
 
 .filter-reset-btn {
     background: transparent;
-    border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+    border: var(--spacing-3xs) solid var(--border-light);
     border-radius: var(--radius-sm);
-    padding: calc(var(--spacing-xs) * 1.5) calc(var(--spacing-sm) * 1.5);
+    padding: var(--spacing-6px) var(--spacing-12px);
     color: var(--text-secondary);
     font-size: var(--font-size-sm);
     cursor: pointer;
@@ -252,7 +252,7 @@
 .double-slider-container {
     position: relative;
     width: 100%;
-    height: calc(var(--spacing-md) * 1.25);
+    height: var(--spacing-20px);
     display: flex;
     align-items: center;
     margin-top: var(--spacing-sm);
@@ -272,7 +272,7 @@
 
 .double-slider-container .thumb::-webkit-slider-thumb {
     background-color: var(--primary);
-    border: calc(var(--spacing-xs) * 0.5) solid var(--bg-surface);
+    border: var(--spacing-2xs) solid var(--bg-surface);
     border-radius: var(--radius-full);
     cursor: pointer;
     height: var(--spacing-md);
@@ -286,7 +286,7 @@
 .slider-track-track {
     position: absolute;
     height: var(--spacing-xs);
-    border-radius: calc(var(--spacing-xs) * 0.5);
+    border-radius: var(--spacing-2xs);
     background-color: var(--border-strong);
     width: 100%;
     z-index: calc(var(--z-index-base) - 9);
@@ -295,7 +295,7 @@
 .slider-track-range {
     position: absolute;
     height: var(--spacing-xs);
-    border-radius: calc(var(--spacing-xs) * 0.5);
+    border-radius: var(--spacing-2xs);
     background-color: var(--primary);
     z-index: calc(var(--z-index-base) - 8);
 }

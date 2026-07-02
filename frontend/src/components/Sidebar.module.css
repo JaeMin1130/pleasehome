@@ -1,7 +1,7 @@
 .app-sidebar {
   width: var(--layout-sidebar-width);
   background-color: var(--bg-surface);
-  border-right: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border-right: var(--spacing-3xs) solid var(--border-light);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -19,11 +19,11 @@
 
 .sidebar-brand {
   height: var(--header-height);
-  padding: 0 calc(var(--spacing-md) * 1.25) 0 0;
-  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  padding: 0 var(--spacing-20px) 0 0;
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
   display: flex;
   align-items: center;
-  gap: calc(var(--spacing-sm) * 0.75);
+  gap: var(--spacing-6px);
   background-color: var(--bg-surface);
   flex-shrink: 0;
 }
@@ -49,24 +49,24 @@
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   align-self: flex-end;
-  margin-bottom: calc(var(--spacing-md) * 1.25);
+  margin-bottom: var(--spacing-20px);
 }
 
 .sidebar-search {
   padding: var(--spacing-md);
-  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
   display: flex;
   flex-direction: column;
-  gap: calc(var(--spacing-sm) * 1.25);
+  gap: var(--spacing-10px);
   flex-shrink: 0;
 }
 
 .search-input {
   width: 100%;
   background-color: var(--bg-body);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
   color: var(--text-primary);
-  padding: calc(var(--spacing-sm) * 1.25) calc(var(--spacing-md) * 0.875);
+  padding: var(--spacing-10px) calc(var(--spacing-md) * 0.875);
   padding-right: var(--spacing-xl);
   border-radius: var(--radius-md);
   font-size: var(--font-size-base);
@@ -93,11 +93,11 @@
 .filter-tag {
   background-color: var(--bg-body);
   color: var(--text-secondary);
-  padding: calc(var(--spacing-sm) * 0.75) calc(var(--spacing-md) * 0.75);
+  padding: var(--spacing-6px) var(--spacing-12px);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
   cursor: pointer;
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
   transition: all var(--transition-fast);
   white-space: nowrap;
   display: flex;
@@ -132,11 +132,11 @@
 .region-tag {
   background-color: var(--bg-body);
   color: var(--text-secondary);
-  padding: calc(var(--spacing-sm) * 0.75) calc(var(--spacing-md) * 0.75);
+  padding: var(--spacing-6px) var(--spacing-12px);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
   cursor: pointer;
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
   transition: all var(--transition-fast);
   white-space: nowrap;
   display: flex;
@@ -164,13 +164,13 @@
   padding: var(--spacing-md);
   display: flex;
   flex-direction: column;
-  gap: calc(var(--spacing-md) * 0.75);
+  gap: var(--spacing-sm);
   background-color: var(--bg-body);
 }
 
 .sidebar-footer {
   padding: var(--spacing-md);
-  border-top: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border-top: var(--spacing-3xs) solid var(--border-light);
   font-size: var(--font-size-sm);
   text-align: center;
   color: var(--text-muted);
@@ -184,8 +184,8 @@
 
 /* 섹션 타이틀 바 */
 .section-title-bar {
-  padding: var(--spacing-lg) calc(var(--spacing-md) * 1.25) var(--spacing-sm);
-  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  padding: var(--spacing-lg) var(--spacing-20px) var(--spacing-sm);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
   background-color: var(--bg-surface);
   flex-shrink: 0;
 }
@@ -205,14 +205,14 @@
 /* 캘린더 일정 카드 */
 .calendar-card {
   background-color: var(--bg-surface);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
   border-radius: var(--radius-md);
   padding: var(--spacing-md);
   cursor: pointer;
   transition: all var(--transition-normal);
   display: flex;
   flex-direction: column;
-  gap: calc(var(--spacing-sm) * 1.25);
+  gap: var(--spacing-10px);
 }
 
 .calendar-card:hover {
@@ -273,9 +273,9 @@
 .calendar-info {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--spacing-xs) * 1.5);
-  border-top: calc(var(--spacing-xs) * 0.25) dashed var(--border-light);
-  padding-top: calc(var(--spacing-sm) * 1.25);
+  gap: var(--spacing-6px);
+  border-top: var(--spacing-3xs) dashed var(--border-light);
+  padding-top: var(--spacing-10px);
 }
 
 .info-row {
@@ -299,12 +299,12 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: calc(var(--spacing-md) * 3.75) calc(var(--spacing-md) * 1.25);
+  padding: calc(var(--spacing-md) * 3.75) var(--spacing-20px);
   text-align: center;
   background-color: var(--bg-surface);
   border-radius: var(--radius-lg);
-  border: calc(var(--spacing-xs) * 0.25) dashed var(--border-light);
-  margin-top: calc(var(--spacing-md) * 1.25);
+  border: var(--spacing-3xs) dashed var(--border-light);
+  margin-top: var(--spacing-20px);
 }
 
 .empty-icon {
@@ -334,7 +334,7 @@
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
-  margin-bottom: calc(var(--spacing-xs) * 1.5);
+  margin-bottom: var(--spacing-6px);
 }
 
 .empty-subtext {
@@ -348,21 +348,21 @@
 .more-container {
   flex: var(--layout-flex-1);
   overflow-y: auto;
-  padding: calc(var(--spacing-md) * 1.25);
+  padding: var(--spacing-20px);
   display: flex;
   flex-direction: column;
-  gap: calc(var(--spacing-md) * 1.25);
+  gap: var(--spacing-20px);
   background-color: var(--bg-body);
 }
 
 .more-section {
   background-color: var(--bg-surface);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
   border-radius: calc(var(--radius-lg) * 0.8);
   padding: var(--spacing-md);
   display: flex;
   flex-direction: column;
-  gap: calc(var(--spacing-md) * 0.75);
+  gap: var(--spacing-12px);
 }
 
 .more-section-title {
@@ -427,7 +427,7 @@
 }
 
 .theme-toggle-switch.active .switch-thumb {
-  transform: translateX(calc(var(--spacing-md) * 1.25));
+  transform: translateX(var(--spacing-20px));
 }
 
 /* 정보 박스 */
@@ -457,7 +457,7 @@
   font-size: var(--font-size-xs);
   color: var(--text-muted);
   margin-top: auto;
-  padding-top: calc(var(--spacing-md) * 1.25);
+  padding-top: var(--spacing-20px);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
@@ -491,7 +491,7 @@
 
 .modal-content {
   background-color: var(--bg-surface);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
   border-radius: var(--radius-xl);
   width: var(--layout-modal-width);
   max-width: var(--layout-overlay-max);
@@ -516,8 +516,8 @@
 }
 
 .modal-header {
-  padding: var(--spacing-md) calc(var(--spacing-md) * 1.25);
-  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  padding: var(--spacing-md) var(--spacing-20px);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -544,14 +544,14 @@
 }
 
 .modal-body {
-  padding: calc(var(--spacing-md) * 1.25);
+  padding: var(--spacing-20px);
   overflow-y: auto;
   flex: var(--layout-flex-1);
 }
 
 .modal-footer {
-  padding: calc(var(--spacing-sm) * 1.75) calc(var(--spacing-md) * 1.25);
-  border-top: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  padding: calc(var(--spacing-sm) * 1.75) var(--spacing-20px);
+  border-top: var(--spacing-3xs) solid var(--border-light);
   display: flex;
   justify-content: flex-end;
 }
@@ -576,10 +576,10 @@
 .more-profile-box {
   display: flex;
   align-items: center;
-  gap: calc(var(--spacing-md) * 0.75);
-  padding: var(--spacing-lg) calc(var(--spacing-md) * 1.25);
+  gap: var(--spacing-12px);
+  padding: var(--spacing-lg) var(--spacing-20px);
   background-color: var(--bg-surface);
-  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
   flex-shrink: 0;
 }
 
@@ -596,7 +596,7 @@
 .more-profile-info {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--spacing-xs) * 0.5);
+  gap: var(--spacing-2xs);
 }
 
 .more-profile-name {
@@ -620,7 +620,7 @@
 
 .more-menu-group {
   background-color: var(--bg-surface);
-  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
   display: flex;
   flex-direction: column;
   padding: var(--spacing-xs) 0;
@@ -630,11 +630,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: calc(var(--spacing-sm) * 1.75) calc(var(--spacing-md) * 1.25);
+  padding: calc(var(--spacing-sm) * 1.75) var(--spacing-20px);
   cursor: pointer;
   background-color: var(--bg-surface);
   transition: background-color var(--transition-fast);
-  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
 }
 
 .more-menu-item:last-child {
@@ -665,9 +665,9 @@
 .more-sub-menu-group {
   display: flex;
   flex-direction: column;
-  padding: var(--spacing-md) calc(var(--spacing-md) * 1.25);
-  gap: calc(var(--spacing-md) * 0.75);
-  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  padding: var(--spacing-md) var(--spacing-20px);
+  gap: var(--spacing-12px);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
 }
 
 .more-sub-item {
@@ -682,7 +682,7 @@
 }
 
 .more-info-box-wrapper {
-  padding: calc(var(--spacing-md) * 1.25);
+  padding: var(--spacing-20px);
 }
 
 /* 추가된 클래스들 */
@@ -693,7 +693,7 @@
 
 .clear-btn {
   position: absolute;
-  right: calc(var(--spacing-sm) * 1.25);
+  right: var(--spacing-10px);
   top: var(--position-center);
   transform: translateY(var(--transform-half));
   border: none;
@@ -724,7 +724,7 @@
   background-color: var(--bg-surface);
   flex-shrink: 0;
   overflow: hidden;
-  margin-bottom: calc(var(--spacing-md) * 0.75);
+  margin-bottom: var(--spacing-12px);
 }
 
 .announcement-detail-header {
@@ -740,7 +740,7 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: calc(var(--spacing-sm) * 0.75);
+  gap: var(--spacing-6px);
   font-size: var(--font-size-md);
   margin-bottom: var(--spacing-sm);
 }
@@ -775,10 +775,10 @@
 
 .complex-search-input {
   width: calc(var(--spacing-xl) * 5);
-  padding: calc(var(--spacing-sm) * 0.75) calc(var(--spacing-md) * 1.75) calc(var(--spacing-sm) * 0.75) calc(var(--spacing-sm) * 1.25);
+  padding: var(--spacing-6px) calc(var(--spacing-md) * 1.75) var(--spacing-6px) var(--spacing-10px);
   font-size: var(--font-size-sm);
   border-radius: var(--radius-md);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
   background-color: var(--bg-surface);
   color: var(--text-primary);
   outline: none;
@@ -802,7 +802,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: calc(var(--spacing-xs) * 0.5);
+  padding: var(--spacing-2xs);
   transition: color var(--transition-fast);
 }
 
@@ -817,7 +817,7 @@
   font-size: var(--font-size-base);
   background-color: var(--bg-surface);
   border-radius: var(--radius-md);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
 }
 
 .more-menu-value-wrapper {
@@ -827,7 +827,7 @@
 }
 
 .info-box-icon {
-  margin-right: calc(var(--spacing-sm) * 0.75);
+  margin-right: var(--spacing-6px);
   vertical-align: middle;
   display: inline-block;
 }
@@ -864,7 +864,7 @@
 
 .bookmark-header {
   padding: var(--spacing-md);
-  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
   background-color: var(--bg-surface);
   flex-shrink: 0;
 }
@@ -891,14 +891,14 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
 }
 
 .comparison-table th,
 .comparison-table td {
-  padding: calc(var(--spacing-sm) * 1.25) var(--spacing-md);
-  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
-  border-right: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  padding: var(--spacing-10px) var(--spacing-md);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
+  border-right: var(--spacing-3xs) solid var(--border-light);
   font-size: var(--font-size-base);
 }
 
@@ -943,7 +943,7 @@
   cursor: pointer;
   color: var(--text-muted);
   font-size: var(--font-size-md);
-  padding: calc(var(--spacing-xs) * 0.5);
+  padding: var(--spacing-2xs);
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
@@ -965,7 +965,7 @@
   z-index: var(--z-index-base);
   width: calc(var(--spacing-xl) * 3);
   min-width: calc(var(--spacing-xl) * 3);
-  border-right: calc(var(--spacing-xs) * 0.25) solid var(--border-light) !important;
+  border-right: var(--spacing-3xs) solid var(--border-light) !important;
 }
 
 .comp-val {
@@ -1010,8 +1010,8 @@
 .add-folder-btn {
   background-color: var(--primary-bg);
   color: var(--primary);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--primary);
-  padding: calc(var(--spacing-sm) * 0.5) var(--spacing-sm);
+  border: var(--spacing-3xs) solid var(--primary);
+  padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
@@ -1036,16 +1036,16 @@
   flex-direction: column;
   gap: var(--spacing-xs);
   background-color: var(--bg-surface-hover);
-  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
   padding: var(--spacing-sm) var(--spacing-md);
 }
 
 .sidebar-folder-input {
   flex: 1;
   background-color: var(--bg-body);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
   color: var(--text-primary);
-  padding: calc(var(--spacing-sm) * 0.75) var(--spacing-sm);
+  padding: var(--spacing-6px) var(--spacing-sm);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
   outline: none;
@@ -1059,7 +1059,7 @@
   background-color: var(--primary);
   color: var(--color-white);
   border: none;
-  padding: calc(var(--spacing-sm) * 0.75) var(--spacing-md);
+  padding: var(--spacing-6px) var(--spacing-md);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
@@ -1085,7 +1085,7 @@
   align-items: center;
   padding: var(--spacing-md);
   background-color: var(--bg-surface);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -1103,8 +1103,8 @@
 }
 
 .folder-color-badge {
-  width: calc(var(--spacing-md) * 1.5);
-  height: calc(var(--spacing-md) * 1.5);
+  width: var(--spacing-lg);
+  height: var(--spacing-lg);
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
@@ -1113,8 +1113,8 @@
 }
 
 .folder-color-badge svg {
-  width: calc(var(--spacing-md));
-  height: calc(var(--spacing-md));
+  width: var(--spacing-md);
+  height: var(--spacing-md);
 }
 
 .folder-card-name {
@@ -1127,9 +1127,9 @@
   font-size: var(--font-size-xs);
   color: var(--text-muted);
   background-color: var(--bg-body);
-  padding: calc(var(--spacing-xs) * 0.5) var(--spacing-sm);
+  padding: var(--spacing-2xs) var(--spacing-sm);
   border-radius: var(--radius-full);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
 }
 
 .folder-delete-btn {
@@ -1155,7 +1155,7 @@
   display: flex;
   flex-direction: column;
   padding: var(--spacing-md) var(--spacing-md) var(--spacing-sm) var(--spacing-md);
-  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
   background-color: var(--bg-surface);
   gap: var(--spacing-xs);
   flex-shrink: 0;
@@ -1184,9 +1184,9 @@
 .toggle-comp-btn {
   align-self: flex-end;
   background-color: var(--bg-body);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-strong);
+  border: var(--spacing-3xs) solid var(--border-strong);
   color: var(--text-secondary);
-  padding: calc(var(--spacing-sm) * 0.75) calc(var(--spacing-md) * 1.25);
+  padding: var(--spacing-6px) var(--spacing-20px);
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
@@ -1211,7 +1211,7 @@
   flex-direction: column;
   background-color: var(--bg-surface);
   border-radius: var(--radius-md);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
   transition: all var(--transition-fast);
@@ -1233,17 +1233,17 @@
   display: flex;
   align-items: flex-start;
   gap: var(--spacing-sm);
-  padding: calc(var(--spacing-sm) * 1.25) var(--spacing-md);
+  padding: var(--spacing-10px) var(--spacing-md);
   background-color: var(--color-warning-bg);
-  border-top: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border-top: var(--spacing-3xs) solid var(--border-light);
 }
 
 .memo-icon {
   color: var(--color-warning-text);
-  margin-top: calc(var(--spacing-xs) * 0.25);
+  margin-top: var(--spacing-3xs);
   flex-shrink: 0;
-  width: calc(var(--spacing-md) * 1);
-  height: calc(var(--spacing-md) * 1);
+  width: var(--spacing-md);
+  height: var(--spacing-md);
 }
 
 .memo-text {
@@ -1272,18 +1272,18 @@
 
 .sidebar-color-picker-list {
   display: flex;
-  gap: calc(var(--spacing-xs) * 1.5);
-  padding: calc(var(--spacing-xs) * 0.5) 0;
+  gap: var(--spacing-6px);
+  padding: var(--spacing-2xs) 0;
   align-items: center;
-  margin-top: calc(var(--spacing-xs) * 0.5);
+  margin-top: var(--spacing-2xs);
 }
 
 .sidebar-color-picker-item {
-  width: calc(var(--spacing-sm) * 2);
-  height: calc(var(--spacing-sm) * 2);
+  width: var(--spacing-md);
+  height: var(--spacing-md);
   border-radius: var(--radius-full);
   cursor: pointer;
-  border: calc(var(--spacing-xs) * 0.5) solid transparent;
+  border: var(--spacing-2xs) solid transparent;
   transition: transform var(--transition-fast), border-color var(--transition-fast);
 }
 
@@ -1298,11 +1298,10 @@
 
 /* 아코디언 관련 스타일 */
 .accordion-item {
-  margin-bottom: var(--spacing-sm);
   display: flex;
   flex-direction: column;
   background-color: var(--bg-surface);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
@@ -1332,7 +1331,7 @@
 /* 아코디언이 확장되었을 때 감싸는 아이템 헤더의 스타일 변화 */
 .folder-card.expanded {
   background-color: var(--bg-surface-hover);
-  border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
 }
 
 .accordion-body {
@@ -1351,7 +1350,7 @@
   font-size: var(--font-size-sm);
   background-color: var(--bg-surface);
   border-radius: var(--radius-md);
-  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  border: var(--spacing-3xs) solid var(--border-light);
   line-height: var(--line-height-base);
 }
 
