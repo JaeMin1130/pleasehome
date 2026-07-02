@@ -1103,10 +1103,18 @@
 }
 
 .folder-color-badge {
-  width: calc(var(--spacing-sm) * 1.5);
-  height: calc(var(--spacing-sm) * 1.5);
+  width: calc(var(--spacing-md) * 1.5);
+  height: calc(var(--spacing-md) * 1.5);
   border-radius: var(--radius-full);
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.folder-color-badge svg {
+  width: calc(var(--spacing-md));
+  height: calc(var(--spacing-md));
 }
 
 .folder-card-name {
@@ -1234,6 +1242,8 @@
   color: var(--color-warning-text);
   margin-top: calc(var(--spacing-xs) * 0.25);
   flex-shrink: 0;
+  width: calc(var(--spacing-md) * 1);
+  height: calc(var(--spacing-md) * 1);
 }
 
 .memo-text {

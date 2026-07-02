@@ -529,10 +529,10 @@ export default function Sidebar({
                     <div className={styles['folder-info-left']}>
                       <span 
                         className={styles['folder-color-badge']} 
-                        style={{ color: folder.color, display: 'flex', alignItems: 'center' }}
+                        style={{ backgroundColor: folder.color }}
                       >
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                          <path d="M12 3L3 10.5h2v10h14v-10h2L12 3z" />
+                        <svg viewBox="0 0 24 24" fill="var(--color-white)">
+                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                         </svg>
                       </span>
                       <span className={styles['folder-card-name']}>{folder.name}</span>
@@ -747,7 +747,7 @@ export default function Sidebar({
                                       />
                                       {item?.memo && (
                                         <div className={styles['bookmark-card-memo']}>
-                                          <svg className={styles['memo-icon']} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                          <svg className={styles['memo-icon']} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                             <path d="M12 20h9"></path>
                                             <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
                                           </svg>
