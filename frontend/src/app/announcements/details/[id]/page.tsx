@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/db';
-import { formatMoney, formatTargetGroup } from '@/utils/formatters';
+import { formatMoney, formatTargetGroup, formatDateWithTime } from '@/utils/formatters';
 import MarkdownViewer from '@/components/ui/MarkdownViewer';
 import styles from './detail.module.css';
 
@@ -118,7 +118,7 @@ export default async function AnnouncementDetailPage({ params }: PageProps) {
                       <td><strong>{sch.schedule_type}</strong></td>
                       <td>
                         {sch.start_date || sch.end_date ? (
-                          `${sch.start_date || ''} ~ ${sch.end_date || ''}`
+                          `${formatDateWithTime(sch.start_date)} ~ ${formatDateWithTime(sch.end_date)}`
                         ) : (
                           sch.raw_text || '-'
                         )}

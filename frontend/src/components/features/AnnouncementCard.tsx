@@ -255,7 +255,7 @@ export default function AnnouncementCard({
                     <div className={styles['schedule-label']}>{s.schedule_type}</div>
                     <div className={styles['schedule-val']}>
                       {s.start_date || s.end_date ? (
-                        <>{formatDate(s.start_date)} ~ {formatDate(s.end_date)}</>
+                        <>{formatDateWithTime(s.start_date)} ~ {formatDateWithTime(s.end_date)}</>
                       ) : (
                         s.raw_text || '공고 본문 참고'
                       )}
