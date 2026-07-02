@@ -34,7 +34,7 @@ interface SidebarProps {
   bookmarkItems: BookmarkItem[];
   activeFolderId: string | null;
   setActiveFolderId: (folderId: string | null) => void;
-  onAddFolder: (name: string) => string;
+  onAddFolder: (name: string, color?: string) => string;
   onRemoveFolder: (folderId: string) => void;
 }
 
@@ -60,6 +60,8 @@ export default function Sidebar({
   // 사이드바 폴더 폼 상태
   const [newFolderName, setNewFolderName] = useState('');
   const [showNewFolderInput, setShowNewFolderInput] = useState(false);
+  const PRESET_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
+  const [selectedSidebarColor, setSelectedSidebarColor] = useState<string>(PRESET_COLORS[0]);
 
   // 💡 폴더 이동 시 스펙 비교 토글 초기화 (렌더링 도중 리셋 기법 적용으로 린트 에러 차단)
   const [prevActiveFolderId, setPrevActiveFolderId] = useState<string | null>(activeFolderId);
@@ -468,27 +470,40 @@ export default function Sidebar({
               </div>
 
               {showNewFolderInput && (
-                <div className={styles['sidebar-folder-form-wrap']}>
-                  <input
-                    type="text"
-                    placeholder="새 폴더 이름..."
-                    value={newFolderName}
-                    onChange={(e) => setNewFolderName(e.target.value)}
-                    maxLength={15}
-                    className={styles['sidebar-folder-input']}
-                  />
-                  <button 
-                    className={styles['sidebar-folder-submit']}
-                    onClick={() => {
-                      if (newFolderName.trim()) {
-                        onAddFolder(newFolderName.trim());
-                        setNewFolderName('');
-                        setShowNewFolderInput(false);
-                      }
-                    }}
-                  >
-                    추가
-                  </button>
+                <div className={styles['sidebar-folder-add-container']}>
+                  <div className={styles['sidebar-folder-form-wrap']}>
+                    <input
+                      type="text"
+                      placeholder="새 폴더 이름..."
+                      value={newFolderName}
+                      onChange={(e) => setNewFolderName(e.target.value)}
+                      maxLength={15}
+                      className={styles['sidebar-folder-input']}
+                    />
+                    <button 
+                      className={styles['sidebar-folder-submit']}
+                      onClick={() => {
+                        if (newFolderName.trim()) {
+                          onAddFolder(newFolderName.trim(), selectedSidebarColor);
+                          setNewFolderName('');
+                          setShowNewFolderInput(false);
+                        }
+                      }}
+                    >
+                      추가
+                    </button>
+                  </div>
+                  <div className={styles['sidebar-color-picker-list']}>
+                    {PRESET_COLORS.map((color) => (
+                      <span
+                        key={color}
+                        className={`${styles['sidebar-color-picker-item']} ${selectedSidebarColor === color ? styles.active : ''}`}
+                        style={{ backgroundColor: color }}
+                        onClick={() => setSelectedSidebarColor(color)}
+                        title="폴더 색상 선택"
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
 

@@ -159,10 +159,10 @@ function HomeContent() {
     setBookmarkModalState(prev => ({ ...prev, isOpen: false }));
   };
 
-  const handleAddFolder = (name: string): string => {
+  const handleAddFolder = (name: string, customColor?: string): string => {
     const newId = `folder_${Date.now()}`;
     const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
-    const color = colors[bookmarkFolders.length % colors.length];
+    const color = customColor || colors[bookmarkFolders.length % colors.length];
 
     const newFolder: BookmarkFolder = {
       id: newId,

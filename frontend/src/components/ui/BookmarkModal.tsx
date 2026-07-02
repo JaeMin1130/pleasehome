@@ -13,7 +13,7 @@ interface BookmarkModalProps {
   onClose: () => void;
   onSave: (folderId: string, memo: string) => void;
   onRemove: () => void;
-  onAddFolder: (name: string) => string;
+  onAddFolder: (name: string, color?: string) => string;
 }
 
 export default function BookmarkModal({
@@ -29,7 +29,6 @@ export default function BookmarkModal({
 }: BookmarkModalProps) {
   const existingItem = bookmarkItems.find(item => item.complexId === complexId);
 
-  // 💡 key 바인딩을 통해 매번 새로 마운트되므로 useEffect 없이 초기값으로 셋팅
   const [selectedFolderId, setSelectedFolderId] = useState<string>(
     existingItem ? existingItem.folderId : (folders.length > 0 ? folders[0].id : 'default')
   );
@@ -37,12 +36,17 @@ export default function BookmarkModal({
   const [newFolderName, setNewFolderName] = useState<string>('');
   const [showAddFolderInput, setShowAddFolderInput] = useState<boolean>(false);
 
+  // 💡 새 폴더 추가 시 색상 선택을 위한 6가지 프리셋 지정
+  const PRESET_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
+  const [selectedNewFolderColor, setSelectedNewFolderColor] = useState<string>(PRESET_COLORS[0]);
+
   if (!isOpen) return null;
 
   const handleAddFolderSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newFolderName.trim()) return;
-    const addedId = onAddFolder(newFolderName.trim());
+    // 선택한 프리셋 컬러를 전달하여 폴더 생성
+    const addedId = onAddFolder(newFolderName.trim(), selectedNewFolderColor);
     setSelectedFolderId(addedId);
     setNewFolderName('');
     setShowAddFolderInput(false);
@@ -78,20 +82,34 @@ export default function BookmarkModal({
             </div>
 
             {showAddFolderInput && (
-              <form onSubmit={handleAddFolderSubmit} className={styles['add-folder-form']}>
-                <input
-                  type="text"
-                  placeholder="폴더 이름 입력..."
-                  value={newFolderName}
-                  onChange={(e) => setNewFolderName(e.target.value)}
-                  maxLength={15}
-                  className={styles['folder-input']}
-                  autoFocus
-                />
-                <button type="submit" className={styles['folder-submit-btn']}>
-                  추가
-                </button>
-              </form>
+              <div className={styles['add-folder-form-container']}>
+                <form onSubmit={handleAddFolderSubmit} className={styles['add-folder-form']}>
+                  <input
+                    type="text"
+                    placeholder="폴더 이름 입력..."
+                    value={newFolderName}
+                    onChange={(e) => setNewFolderName(e.target.value)}
+                    maxLength={15}
+                    className={styles['folder-input']}
+                    autoFocus
+                  />
+                  <button type="submit" className={styles['folder-submit-btn']}>
+                    추가
+                  </button>
+                </form>
+                {/* 💡 폴더 신규 생성용 테마 컬러 피커 */}
+                <div className={styles['color-picker-list']}>
+                  {PRESET_COLORS.map((color) => (
+                    <span
+                      key={color}
+                      className={`${styles['color-picker-item']} ${selectedNewFolderColor === color ? styles.active : ''}`}
+                      style={{ backgroundColor: color }}
+                      onClick={() => setSelectedNewFolderColor(color)}
+                      title="폴더 색상 선택"
+                    />
+                  ))}
+                </div>
+              </div>
             )}
 
             <div className={styles['folders-list']}>

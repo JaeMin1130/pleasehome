@@ -1025,10 +1025,17 @@
 .sidebar-folder-form-wrap {
   display: flex;
   gap: var(--spacing-xs);
-  padding: var(--spacing-sm) var(--spacing-md);
+  align-items: center;
+  width: 100%;
+}
+
+.sidebar-folder-add-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
   background-color: var(--bg-surface-hover);
   border-bottom: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
-  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
 }
 
 .sidebar-folder-input {
@@ -1247,4 +1254,30 @@
   color: var(--text-muted);
   font-style: italic;
   font-size: var(--font-size-xs);
+}
+
+.sidebar-color-picker-list {
+  display: flex;
+  gap: calc(var(--spacing-xs) * 1.5);
+  padding: calc(var(--spacing-xs) * 0.5) 0;
+  align-items: center;
+  margin-top: calc(var(--spacing-xs) * 0.5);
+}
+
+.sidebar-color-picker-item {
+  width: calc(var(--spacing-sm) * 2);
+  height: calc(var(--spacing-sm) * 2);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  border: calc(var(--spacing-xs) * 0.5) solid transparent;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.sidebar-color-picker-item:hover {
+  transform: scale(1.1);
+}
+
+.sidebar-color-picker-item.active {
+  border-color: var(--text-primary);
+  transform: scale(1.2);
 }

@@ -319,3 +319,39 @@
 .remove-btn:hover {
   background-color: var(--primary-hover);
 }
+
+.add-folder-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  background-color: var(--bg-body);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-md);
+  border: calc(var(--spacing-xs) * 0.25) solid var(--border-light);
+  margin-bottom: var(--spacing-xs);
+}
+
+.color-picker-list {
+  display: flex;
+  gap: calc(var(--spacing-xs) * 1.5);
+  padding: calc(var(--spacing-xs) * 0.5) 0;
+  align-items: center;
+}
+
+.color-picker-item {
+  width: calc(var(--spacing-sm) * 2);
+  height: calc(var(--spacing-sm) * 2);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  border: calc(var(--spacing-xs) * 0.5) solid transparent;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.color-picker-item:hover {
+  transform: scale(1.1);
+}
+
+.color-picker-item.active {
+  border-color: var(--text-primary);
+  transform: scale(1.2);
+}
