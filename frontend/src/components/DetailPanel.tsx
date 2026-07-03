@@ -308,28 +308,7 @@ export default function DetailPanel({
       <div className={styles['panel-header']}>
         <div className={styles['panel-title-container']}>
           <span className={styles['panel-title']}>{complex.name}</span>
-          <span className={styles['panel-subtitle']}>
-            <svg 
-              className={styles['panel-subtitle-icon']}
-              width="12" 
-              height="12" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-            >
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-              <circle cx="12" cy="10" r="3"></circle>
-            </svg>
-            {complex.address}
-            {complex.is_imprecise === 1 && (
-              <span className={styles['imprecise-badge']} title="해당 단지는 신도시 등 임시 주소 상태로, 지도 상의 대략적인 예정지 위치(도/동)에 마커가 매핑되었습니다.">
-                미확정 주소
-              </span>
-            )}
-          </span>
+
         </div>
         <div className={styles['panel-header-actions']}>
           <button 
@@ -349,6 +328,17 @@ export default function DetailPanel({
         <div>
           <h4 className={styles['panel-section-title']}>단지 기본 정보</h4>
           <div className={styles['info-grid']}>
+            <div className={`${styles['info-card']} ${styles['full-width']}`}>
+              <span className={styles['info-label']}>단지 주소</span>
+              <span className={`${styles['info-val']} ${styles['address-val-wrapper']}`}>
+                {complex.address}
+                {Number(complex.is_imprecise) === 1 && (
+                  <span className={styles['imprecise-badge']} title="해당 단지는 신도시 등 임시 주소 상태로, 지도 상의 대략적인 예정지 위치(도/동)에 마커가 매핑되었습니다.">
+                    미확정 주소
+                  </span>
+                )}
+              </span>
+            </div>
             <div className={styles['info-card']}>
               <span className={styles['info-label']}>단지 유형</span>
               <span className={styles['info-val']}>{complex.complex_type || '정보 없음'}</span>

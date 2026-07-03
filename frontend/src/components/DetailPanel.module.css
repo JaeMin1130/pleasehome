@@ -163,6 +163,13 @@
   color: var(--text-primary);
 }
 
+.address-val-wrapper {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
 .units-container {
   display: flex;
   flex-direction: column;
