@@ -459,7 +459,7 @@ export default function Sidebar({
           <div className={styles['bookmark-header']}>
             <h3 className={styles['bookmark-title']}>저장 목록</h3>
             <button 
-              className={styles['add-folder-btn']}
+              className="btn-outline-primary-mini"
               onClick={() => setShowNewFolderInput(!showNewFolderInput)}
             >
               {showNewFolderInput ? '취소' : '+ 폴더 추가'}
@@ -539,11 +539,11 @@ export default function Sidebar({
                       {/* 💡 폴더가 열려있고 저장 단지가 있을 때만 노출되는 콤팩트 비교 토글 버튼 */}
                       {isExpanded && folderCount > 0 && (
                         <button 
-                          className={`${styles['comp-toggle-mini-btn']} ${activeComparisonFolderId === folder.id ? styles.active : ''}`}
+                          className={`btn-outline-primary-mini ${activeComparisonFolderId === folder.id ? 'active' : ''}`}
                           onClick={() => onToggleComparison(folder.id)}
                           title="상세 패널에서 단지 스펙 비교표를 엽니다"
                         >
-                          {activeComparisonFolderId === folder.id ? '비교 표 닫기' : '단지 스펙 비교'}
+                          {activeComparisonFolderId === folder.id ? '비교 표 닫기' : '단지 비교'}
                         </button>
                       )}
 

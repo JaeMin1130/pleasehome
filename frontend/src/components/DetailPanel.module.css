@@ -233,7 +233,7 @@
 }
 
 .comparison-table-wrapper {
-  width: var(--layout-modal-width);
+  /* width: var(--layout-modal-width); */
   overflow-x: auto;
   border: var(--spacing-3xs) solid var(--border-light);
   border-radius: var(--radius-md);
@@ -274,14 +274,15 @@
   left: 0;
   z-index: var(--z-index-base);
   box-shadow: var(--spacing-3xs) 0 0 var(--border-light);
-  min-width: calc(var(--spacing-xl) * 3.75);
+  /* min-width: calc(var(--spacing-xl) * 3.75); */
 }
 
 .comp-header-val {
   background-color: var(--bg-body);
   color: var(--text-secondary);
   font-weight: var(--font-weight-bold);
-  min-width: calc(var(--spacing-xl) * 6.25);
+  /* min-width: calc(var(--spacing-xl) * 6.25); */
+  width: calc(var(--spacing-xl) * 6.25);
   text-align: center;
 }
 
@@ -290,6 +291,7 @@
   display: block;
 }
 
+/* 표 왼쪽 고정 열 */
 .comp-label {
   background-color: var(--bg-body);
   color: var(--text-secondary);

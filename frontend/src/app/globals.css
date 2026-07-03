@@ -504,3 +504,32 @@ table:not([class*="comparison-table"]):not([class*="unit-table"]) td:last-child 
 table:not([class*="comparison-table"]):not([class*="unit-table"]) tr:last-child td {
   border-bottom: none;
 }
+
+/* =========================================
+   [ 전역 공통 UI: 범용 미니 아웃라인 버튼 ]
+   ========================================= */
+.btn-outline-primary-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background-color: var(--primary-bg);
+  color: var(--primary);
+  border: var(--spacing-3xs) solid var(--primary);
+  padding: var(--spacing-6px) var(--spacing-12px);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: var(--transition-fast-all);
+}
+
+.btn-outline-primary-mini:hover {
+  background-color: var(--primary);
+  color: var(--color-white);
+  border-color: var(--primary);
+}
+
+.btn-outline-primary-mini.active {
+  background-color: var(--primary);
+  color: var(--color-white);
+}
