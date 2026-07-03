@@ -305,30 +305,32 @@ export default function DetailPanel({
 
   return (
     <div className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''}`} style={style}>
-      <div className={styles['panel-header']}>
-        <div className={styles['panel-title-container']}>
-          <span className={styles['panel-title']}>{complex.name}</span>
-
-        </div>
-        <div className={styles['panel-header-actions']}>
-          <button 
-            className={`${styles['bookmark-btn']} ${isBookmarked ? styles.bookmarked : ''}`}
-            onClick={() => onToggleBookmark(complex.id)}
-            title={isBookmarked ? "저장한 단지 해제" : "단지 저장하기"}
-          >
-            <svg className={styles['star-icon']} width="24" height="24" viewBox="0 0 24 24" fill={isBookmarked ? 'var(--color-warning-text)' : 'none'} stroke={isBookmarked ? 'var(--color-warning-text)' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-            </svg>
-          </button>
-          <button className={styles['panel-close-btn']} onClick={onClose}>✕</button>
-        </div>
-      </div>
-
       <div className={styles['panel-body']}>
         <div>
-          <h4 className={styles['panel-section-title']}>단지 기본 정보</h4>
+          <div className={styles['basic-info-header']}>
+            <h4 className={styles['panel-section-title']}>단지 기본 정보</h4>
+            <div className={styles['panel-header-actions']}>
+              <button 
+                className={`${styles['bookmark-btn']} ${isBookmarked ? styles.bookmarked : ''}`}
+                onClick={() => onToggleBookmark(complex.id)}
+                title={isBookmarked ? "저장한 단지 해제" : "단지 저장하기"}
+              >
+                <svg className={styles['star-icon']} width="24" height="24" viewBox="0 0 24 24" fill={isBookmarked ? 'var(--color-warning-text)' : 'none'} stroke={isBookmarked ? 'var(--color-warning-text)' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+              </button>
+              <button className={styles['panel-close-btn']} onClick={onClose}>✕</button>
+            </div>
+          </div>
+
           <div className={styles['info-grid']}>
-            <div className={`${styles['info-card']} ${styles['full-width']}`}>
+            <div className={styles['info-card']}>
+              <span className={styles['info-label']}>단지명</span>
+              <span className={styles['info-val']}>
+                {complex.name}
+              </span>
+            </div>
+            <div className={styles['info-card']}>
               <span className={styles['info-label']}>단지 주소</span>
               <span className={`${styles['info-val']} ${styles['address-val-wrapper']}`}>
                 {complex.address}

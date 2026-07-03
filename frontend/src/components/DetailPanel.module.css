@@ -1,15 +1,16 @@
 .app-detail-panel {
   position: absolute;
-  top: 0;
-  height: 100%;
+  top: var(--spacing-md);
+  height: calc(100% - var(--spacing-xl));
   width: var(--layout-panel-width);
   background-color: var(--bg-surface);
-  border-right: var(--spacing-3xs) solid var(--border-light);
   box-shadow: var(--shadow-lg);
   z-index: var(--z-index-panel);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
   transform: translateX(-100%);
   transition: var(--transition-panel);
 }
@@ -120,7 +121,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
-  background-color: var(--bg-body);
+  background-color: var(--bg-surface);
 }
 
 .panel-section-title {
@@ -354,4 +355,19 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: center;
+}
+
+.basic-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: var(--spacing-2xs) solid var(--text-primary);
+  padding-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.basic-info-header .panel-section-title {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
 }
