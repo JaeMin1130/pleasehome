@@ -1,14 +1,14 @@
-// [1] 플로팅 레이아웃 마진 및 패널 간의 갭 (px 단위) - 현재는 꽉 찬 화면 레이아웃이므로 0으로 설정
-export const LAYOUT_MARGIN = 0;
-export const LAYOUT_GAP = 0;
-export const PANEL_GAP = 0;
+// [1] 플로팅 레이아웃 마진 및 패널 간의 갭 (px 단위)
+export const LAYOUT_MARGIN = 16;
+export const LAYOUT_GAP = 16;
+export const PANEL_GAP = 16;
 
 // [2] 수직 네비게이션 탭 바 규격
 export const NAVIGATION_BAR_WIDTH = 60;
 
 // [3] 사이드바 및 상세 패널 고정 너비 규격
 export const SIDEBAR_DEFAULT_WIDTH = 400;
-export const PANEL_DEFAULT_WIDTH = 600;
+export const PANEL_DEFAULT_WIDTH = 550;
 export const HEADER_ACCORDION_MIN_HEIGHT = 150;
 export const HEADER_ACCORDION_MAX_HEIGHT = 600;
 export const HEADER_ACCORDION_DEFAULT_HEIGHT = 300;

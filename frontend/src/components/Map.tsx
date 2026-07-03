@@ -13,6 +13,7 @@ import {
   MAP_MARKER_ANCHOR,
   NAVIGATION_BAR_WIDTH,
   SIDEBAR_DEFAULT_WIDTH,
+  LAYOUT_GAP,
 } from '@/constants';
 
 // 전역 naver 객체 타입 정의
@@ -163,7 +164,7 @@ export default function Map({ complexes, activeComplexId, onSelectComplex, isSid
 
     // ③ 상세 정보 패널 너비 합산 (단, 상세패널이 새로 열리는 시점이 아닐 때만 렌더링 상태를 체크하여 반영)
     if (!isPanelOpening && detailPanel && detailPanel.offsetWidth > 0) {
-      widthSum += detailPanel.offsetWidth;
+      widthSum += detailPanel.offsetWidth + LAYOUT_GAP;
     }
 
     return widthSum;
