@@ -31,13 +31,6 @@
   overflow: hidden;
 }
 
-.panel-title {
-  font-size: calc(var(--font-size-lg) * 1.2);
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-  word-break: keep-all;
-  white-space: nowrap;
-}
 
 
 .panel-subtitle {
@@ -257,10 +250,11 @@
 
 .comparison-table th,
 .comparison-table td {
-  padding: var(--spacing-12px) var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-sm);
   border-bottom: var(--spacing-3xs) solid var(--border-light);
   border-right: var(--spacing-3xs) solid var(--border-light);
   white-space: nowrap;
+  vertical-align: middle;
 }
 
 .comparison-table th:last-child,
@@ -274,7 +268,7 @@
 
 .comp-header-label {
   background-color: var(--bg-body);
-  color: var(--text-primary);
+  color: var(--text-secondary);
   font-weight: var(--font-weight-bold);
   position: sticky;
   left: 0;
@@ -284,8 +278,8 @@
 }
 
 .comp-header-val {
-  background-color: var(--primary-bg);
-  color: var(--primary);
+  background-color: var(--bg-body);
+  color: var(--text-secondary);
   font-weight: var(--font-weight-bold);
   min-width: calc(var(--spacing-xl) * 6.25);
   text-align: center;
@@ -299,7 +293,7 @@
 .comp-label {
   background-color: var(--bg-body);
   color: var(--text-secondary);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-bold);
   position: sticky;
   left: 0;
   z-index: var(--z-index-base);

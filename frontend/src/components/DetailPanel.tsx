@@ -118,12 +118,9 @@ export default function DetailPanel({
           <div>
             <div className={styles['basic-info-header']}>
               <div className={styles['panel-title-wrapper']}>
-                <h2 className={styles['panel-title']}>
+                <h2 className={styles['panel-section-title']}>
                   {comparisonFolder.name} 단지 비교
                 </h2>
-                <p className={styles['panel-subtitle']}>
-                  폴더 내 저장된 단지들의 상세 스펙을 가로로 한눈에 대조합니다.
-                </p>
               </div>
               <button className={styles['panel-close-btn']} onClick={onClose}>✕</button>
             </div>
