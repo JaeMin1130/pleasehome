@@ -11,6 +11,7 @@
   flex-shrink: 0;
   border-radius: var(--radius-lg);
   overflow: hidden;
+  left: calc(var(--layout-nav-width) + var(--sidebar-offset-width, 0px) + var(--spacing-md));
   transform: translateX(-100%);
   transition: var(--transition-panel);
 }

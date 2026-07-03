@@ -35,9 +35,9 @@
    /* =========================================
      [ 레이아웃 전역 뼈대 수치 ]
      ========================================= */
-   --layout-sidebar-width: 400px;
-   --layout-panel-width: 400px;
-   --layout-nav-width: 60px;
+    --layout-sidebar-width: 380px;
+    --layout-panel-width: 380px;
+    --layout-nav-width: calc(var(--spacing-md) * 3.5);
    --layout-overlay-max: 480px;
    --layout-modal-width: 90%;
    --layout-modal-max-height: 80vh;

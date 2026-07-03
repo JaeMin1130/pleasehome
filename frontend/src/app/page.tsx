@@ -434,9 +434,6 @@ function HomeContent() {
           activeFolderId={activeFolderId}
           setActiveFolderId={setActiveFolderId}
           onAddFolder={handleAddFolder}
-          style={{
-            left: `${NAVIGATION_BAR_WIDTH}px`
-          }}
           onRemoveFolder={(folderId) => {
             setBookmarkFolders(prev => {
               const next = prev.filter(f => f.id !== folderId);
@@ -484,9 +481,9 @@ function HomeContent() {
             setActiveComparisonFolderId(null); // 패널 닫을 때 스펙비교 모드도 해제
           }} 
           style={{ 
-            left: NAVIGATION_BAR_WIDTH + (isSidebarCollapsed ? 0 : SIDEBAR_DEFAULT_WIDTH) + LAYOUT_GAP,
+            '--sidebar-offset-width': isSidebarCollapsed ? '0px' : 'var(--layout-sidebar-width)',
             width: `${PANEL_DEFAULT_WIDTH}px`
-          }}
+          } as React.CSSProperties}
           comparisonFolder={
             activeComparisonFolderId === 'default'
               ? { id: 'default', name: '내 저장 목록', color: '#3B82F6', createdAt: new Date().toISOString() }
