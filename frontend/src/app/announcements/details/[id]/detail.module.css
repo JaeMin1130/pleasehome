@@ -1,5 +1,5 @@
 .container {
-  max-width: 53.125rem;
+  max-width: calc(var(--spacing-xl) * 26.5);
   margin: calc(var(--spacing-xl) * 1.25) auto;
   padding: 0 var(--spacing-lg);
   font-family: var(--font-family);
@@ -29,7 +29,7 @@
 }
 
 .title {
-  font-size: 1.75rem;
+  font-size: calc(var(--font-size-xl) * 1.4);
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   line-height: var(--line-height-tight);
@@ -59,7 +59,7 @@
 }
 
 .sectionTitle {
-  font-size: 1.25rem;
+  font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   margin-top: calc(var(--spacing-xl) * 1.25);
@@ -77,30 +77,6 @@
   border: var(--spacing-3xs) solid var(--border-light);
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-sm);
-  text-align: left;
-}
-
-.table th {
-  background-color: var(--bg-body);
-  padding: calc(var(--spacing-sm) * 1.75) calc(var(--spacing-md) * 1.125);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-secondary);
-  border-bottom: var(--spacing-3xs) solid var(--border-light);
-}
-
-.table td {
-  padding: calc(var(--spacing-sm) * 1.75) calc(var(--spacing-md) * 1.125);
-  border-bottom: var(--spacing-3xs) solid var(--border-light);
-  color: var(--text-primary);
-}
-
-.table tr:last-child td {
-  border-bottom: none;
-}
 
 .detailSection {
   margin-bottom: var(--spacing-xl);
@@ -173,7 +149,7 @@
 }
 
 .notFound h1 {
-  font-size: 1.5rem;
+  font-size: calc(var(--font-size-xl) * 1.2);
   font-weight: var(--font-weight-bold);
   margin-bottom: var(--spacing-md);
   color: var(--text-primary);

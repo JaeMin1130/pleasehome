@@ -217,30 +217,6 @@
     color: var(--text-secondary);
 }
 
-.limits-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: var(--spacing-sm);
-    border: var(--spacing-3xs) solid var(--border-light);
-}
-
-.limits-table th,
-.limits-table td {
-    padding: var(--spacing-sm);
-    text-align: left;
-    border-bottom: var(--spacing-3xs) solid var(--border-light);
-    font-size: var(--font-size-sm);
-}
-
-.limits-table th {
-    background-color: var(--bg-surface);
-    color: var(--text-primary);
-    font-weight: var(--font-weight-semibold);
-}
-
-.limits-table tr:last-child td {
-    border-bottom: none;
-}
 
 .card-period-row {
     display: flex;

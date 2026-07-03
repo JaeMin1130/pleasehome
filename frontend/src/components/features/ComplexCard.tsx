@@ -31,7 +31,7 @@ export default function ComplexCard({
       <div className={styles['card-top-row']}>
         <span className={styles['complex-name']}>{complex.name}</span>
         <button 
-          className={`${styles['bookmark-btn']} ${isBookmarked ? styles.bookmarked : ''}`}
+          className={`bookmark-btn ${isBookmarked ? 'bookmarked' : ''}`}
           onClick={(e) => {
             e.stopPropagation();
             onBookmarkToggle();

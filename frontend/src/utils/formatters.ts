@@ -71,3 +71,7 @@ export const formatTargetGroup = (group: string | null | undefined): string => {
   };
   return mapping[group.trim()] || group;
 };
+
+export const superClean = (str: string): string => {
+  return str.replace(/[#*_\-\[\]\(\)\d\.\s]/g, '').trim();
+};

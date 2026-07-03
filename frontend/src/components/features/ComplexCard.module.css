@@ -38,28 +38,6 @@
   width: 100%;
 }
 
-.bookmark-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: calc(var(--spacing-xs) * 0.75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-full);
-  color: var(--text-muted);
-  transition: all var(--transition-fast);
-}
-
-.bookmark-btn:hover {
-  background-color: var(--bg-surface-active);
-  color: var(--color-warning-text);
-  transform: scale(1.15);
-}
-
-.bookmark-btn.bookmarked {
-  color: var(--color-warning-text);
-}
 
 .card-ann-info {
   display: flex;

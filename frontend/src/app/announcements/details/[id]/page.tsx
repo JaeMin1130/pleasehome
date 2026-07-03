@@ -2,17 +2,13 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/db';
-import { formatMoney, formatTargetGroup, formatDateWithTime } from '@/utils/formatters';
+import { formatMoney, formatTargetGroup, formatDateWithTime, superClean } from '@/utils/formatters';
 import MarkdownViewer from '@/components/ui/MarkdownViewer';
 import styles from './detail.module.css';
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
-
-const superClean = (str: string): string => {
-  return str.replace(/[#*_\-\[\]\(\)\d\.\s]/g, '').trim();
-};
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;

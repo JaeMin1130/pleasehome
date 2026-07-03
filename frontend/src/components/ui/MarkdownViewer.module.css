@@ -36,10 +36,6 @@
 }
 
 .md-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-sm);
-  border: var(--spacing-3xs) solid var(--border-light);
   color: var(--text-secondary);
 }
 
@@ -49,10 +45,6 @@
 }
 
 .md-th {
-  padding: var(--spacing-sm);
-  text-align: left;
-  font-weight: var(--font-weight-bold);
-  border-right: var(--spacing-3xs) solid var(--border-light);
   color: var(--text-primary);
 }
 
@@ -64,9 +56,6 @@
 }
 
 .md-td {
-  padding: var(--spacing-sm);
-  border-right: var(--spacing-3xs) solid var(--border-light);
-  line-height: var(--line-height-base);
   vertical-align: middle;
 }
 

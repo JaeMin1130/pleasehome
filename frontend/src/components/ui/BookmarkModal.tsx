@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { BookmarkFolder, BookmarkItem } from '@/types';
 import styles from './BookmarkModal.module.css';
+import { BOOKMARK_PRESET_COLORS } from '@/constants';
 
 interface BookmarkModalProps {
   isOpen: boolean;
@@ -37,8 +38,7 @@ export default function BookmarkModal({
   const [showAddFolderInput, setShowAddFolderInput] = useState<boolean>(false);
 
   // 💡 새 폴더 추가 시 색상 선택을 위한 6가지 프리셋 지정
-  const PRESET_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
-  const [selectedNewFolderColor, setSelectedNewFolderColor] = useState<string>(PRESET_COLORS[0]);
+  const [selectedNewFolderColor, setSelectedNewFolderColor] = useState<string>(BOOKMARK_PRESET_COLORS[0]);
 
   if (!isOpen) return null;
 
@@ -57,8 +57,8 @@ export default function BookmarkModal({
   };
 
   return (
-    <div className={styles['modal-backdrop']} onClick={onClose}>
-      <div className={styles['modal-content']} onClick={(e) => e.stopPropagation()}>
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className={styles['modal-header']}>
           <h3 className={styles['modal-title']}>저장 및 메모 남기기</h3>
           <button className={styles['close-btn']} onClick={onClose}>✕</button>
@@ -98,11 +98,11 @@ export default function BookmarkModal({
                   </button>
                 </form>
                 {/* 💡 폴더 신규 생성용 테마 컬러 피커 */}
-                <div className={styles['color-picker-list']}>
-                  {PRESET_COLORS.map((color) => (
+                <div className="color-picker-list">
+                  {BOOKMARK_PRESET_COLORS.map((color) => (
                     <span
                       key={color}
-                      className={`${styles['color-picker-item']} ${selectedNewFolderColor === color ? styles.active : ''}`}
+                      className={`color-picker-item ${selectedNewFolderColor === color ? 'active' : ''}`}
                       style={{ backgroundColor: color }}
                       onClick={() => setSelectedNewFolderColor(color)}
                       title="폴더 색상 선택"

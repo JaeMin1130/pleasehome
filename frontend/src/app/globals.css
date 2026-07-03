@@ -3,6 +3,8 @@
 :root {
    --color-white: #ffffff;
    --bg-overlay: rgba(15, 23, 42, 0.6);
+   --color-marker-default: #ff6347;
+   --color-marker-active: #800000;
    --font-weight-medium: 500;
    --font-weight-extrabold: 800;
    --z-index-bg: 0;
@@ -259,7 +261,7 @@ body {
    width: var(--spacing-lg);
    height: var(--spacing-lg);
    border-radius: var(--radius-full);
-   background: tomato;
+   background: var(--color-marker-default);
    border: var(--spacing-2xs) solid var(--color-white);
    display: flex;
    align-items: center;
@@ -274,7 +276,7 @@ body {
 }
 
 .custom-marker.active .marker-pin {
-   background: #800000;
+   background: var(--color-marker-active);
    transform: scale(1.4);
    z-index: calc(var(--z-index-base) + 10);
 }
@@ -298,12 +300,12 @@ body {
 }
 
 .window-hole {
-   fill: tomato;
+   fill: var(--color-marker-default);
    transition: fill var(--transition-fast);
 }
 
 .custom-marker.active .window-hole {
-   fill: #800000;
+   fill: var(--color-marker-active);
 }
 
 .popup-title {
@@ -336,4 +338,169 @@ body {
 
 .popup-btn:hover {
    background-color: var(--primary-hover);
+}
+
+/* =========================================
+   [ 전역 공통 UI: 즐겨찾기(찜) 버튼 ]
+   ========================================= */
+.bookmark-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: calc(var(--spacing-xs) * 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: var(--text-muted);
+  transition: all var(--transition-fast);
+}
+
+.bookmark-btn:hover {
+  background-color: var(--bg-surface-active);
+  color: var(--color-warning-text);
+  transform: scale(1.15);
+}
+
+.bookmark-btn.bookmarked {
+  color: var(--color-warning-text);
+}
+
+/* =========================================
+   [ 전역 공통 UI: 컬러 피커 ]
+   ========================================= */
+.color-picker-list {
+  display: flex;
+  gap: var(--spacing-6px);
+  padding: var(--spacing-2xs) 0;
+  align-items: center;
+}
+
+.color-picker-item {
+  width: var(--spacing-md);
+  height: var(--spacing-md);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  border: var(--spacing-2xs) solid transparent;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.color-picker-item:hover {
+  transform: scale(1.1);
+}
+
+.color-picker-item.active {
+  border-color: var(--text-primary);
+  transform: scale(1.2);
+}
+
+/* =========================================
+   [ 전역 공통 UI: 보증금/임대료 전환 슬라이더 ]
+   ========================================= */
+.conversion-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  background: var(--border-strong);
+  outline: none;
+  cursor: pointer;
+}
+
+.conversion-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--spacing-md);
+  height: var(--spacing-md);
+  border-radius: var(--radius-full);
+  background: var(--text-secondary);
+  cursor: pointer;
+}
+
+/* =========================================
+   [ 전역 공통 UI: 모달 및 백드롭 ]
+   ========================================= */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-overlay);
+  backdrop-filter: blur(var(--spacing-xs));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-index-tooltip);
+  animation: modal-fadeIn-anim 0.2s ease-out;
+}
+
+.modal-content {
+  background-color: var(--bg-surface);
+  border: var(--spacing-3xs) solid var(--border-light);
+  border-radius: var(--radius-lg);
+  width: var(--layout-modal-width);
+  max-width: var(--layout-overlay-max);
+  max-height: var(--layout-modal-max-height);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  animation: modal-zoomIn-anim 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+@keyframes modal-fadeIn-anim {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-zoomIn-anim {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* =========================================
+   [ 전역 공통 UI: 표준 표(Table) 스타일 ]
+   ========================================= */
+table:not([class*="comparison-table"]):not([class*="unit-table"]) {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+  border: var(--spacing-3xs) solid var(--border-light);
+  margin-top: var(--spacing-sm);
+  background-color: var(--bg-surface);
+}
+
+table:not([class*="comparison-table"]):not([class*="unit-table"]) th {
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-bold);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--spacing-2xs) solid var(--border-light);
+  border-right: var(--spacing-3xs) solid var(--border-light);
+}
+
+table:not([class*="comparison-table"]):not([class*="unit-table"]) td {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
+  border-right: var(--spacing-3xs) solid var(--border-light);
+  color: var(--text-secondary);
+  line-height: var(--line-height-base);
+  vertical-align: middle;
+}
+
+table:not([class*="comparison-table"]):not([class*="unit-table"]) th:last-child,
+table:not([class*="comparison-table"]):not([class*="unit-table"]) td:last-child {
+  border-right: none;
+}
+
+table:not([class*="comparison-table"]):not([class*="unit-table"]) tr:last-child td {
+  border-bottom: none;
 }

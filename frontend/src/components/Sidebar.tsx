@@ -9,6 +9,7 @@ import { formatMoney, formatRent } from '@/utils/formatters';
 import {
   UI_SIZES,
   UI_STROKE_WIDTHS,
+  BOOKMARK_PRESET_COLORS,
 } from '@/constants';
 
 interface SidebarProps {
@@ -57,8 +58,7 @@ export default function Sidebar({
   // 사이드바 폴더 폼 상태
   const [newFolderName, setNewFolderName] = useState('');
   const [showNewFolderInput, setShowNewFolderInput] = useState(false);
-  const PRESET_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
-  const [selectedSidebarColor, setSelectedSidebarColor] = useState<string>(PRESET_COLORS[0]);
+  const [selectedSidebarColor, setSelectedSidebarColor] = useState<string>(BOOKMARK_PRESET_COLORS[0]);
 
   // 찜한 단지가 늘어날 때 주택 상세 정보를 동적으로 로드
   useEffect(() => {
@@ -335,6 +335,18 @@ export default function Sidebar({
         <>
           <div className={styles['sidebar-search']}>
             <div className={styles['search-wrapper']}>
+              <svg
+                className={styles['search-icon']}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
               <input 
                 type="text" placeholder="공고명 또는 공급기관 검색..." 
                 className={styles['search-input']} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
@@ -396,15 +408,14 @@ export default function Sidebar({
                     onToggleComplexList={() => setIsComplexListOpen(!isComplexListOpen)}
                   >
                     {isCurrentActive && (
-                      <div style={{ marginTop: 'calc(var(--spacing-sm) * 0.5)' }}>
-                        <div className={styles['complex-search-wrapper']} style={{ display: 'flex', alignItems: 'center', position: 'relative', width: '100%' }}>
+                      <div className={styles['complex-search-container']}>
+                        <div className={styles['complex-search-wrapper']}>
                           <input 
                             type="text" 
                             placeholder="주택명 검색..." 
                             value={complexSearchTerm}
                             onChange={(e) => setComplexSearchTerm(e.target.value)}
                             className={styles['complex-search-input']}
-                            style={{ width: '100%', outline: 'none' }}
                           />
                           {complexSearchTerm && (
                             <button 
@@ -415,7 +426,7 @@ export default function Sidebar({
                             </button>
                           )}
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)', marginTop: 'var(--spacing-sm)' }}>
+                        <div className={styles['complexes-list-container']}>
                           {filteredComplexes.length === 0 ? (
                             <div className={styles['complex-empty-msg']}>
                               {complexSearchTerm ? '검색 결과가 없습니다.' : '이 공고는 특정 단지 없이 개별적으로 지원되는 전세임대형 정책이거나, 필터 조건에 맞는 주택이 없습니다.'}
@@ -479,11 +490,11 @@ export default function Sidebar({
                   추가
                 </button>
               </div>
-              <div className={styles['sidebar-color-picker-list']}>
-                {PRESET_COLORS.map((color) => (
+              <div className={`color-picker-list ${styles['sidebar-color-picker']}`}>
+                {BOOKMARK_PRESET_COLORS.map((color) => (
                   <span
                     key={color}
-                    className={`${styles['sidebar-color-picker-item']} ${selectedSidebarColor === color ? styles.active : ''}`}
+                    className={`color-picker-item ${selectedSidebarColor === color ? 'active' : ''}`}
                     style={{ backgroundColor: color }}
                     onClick={() => setSelectedSidebarColor(color)}
                     title="폴더 색상 선택"
@@ -672,8 +683,8 @@ export default function Sidebar({
       )}
 
       {activeModal && (
-        <div className={styles['modal-backdrop']} onClick={() => setActiveModal(null)}>
-          <div className={styles['modal-content']} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-backdrop" onClick={() => setActiveModal(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className={styles['modal-header']}>
               <h3 className={styles['modal-title']}>
                 {activeModal === 'privacy' ? '개인정보처리방침' : '이용약관'}

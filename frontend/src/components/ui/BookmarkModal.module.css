@@ -1,41 +1,4 @@
-.modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  --local-vw: 100vw;
-  width: var(--local-vw);
-  height: var(--layout-height-full);
-  background-color: var(--bg-overlay);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: var(--z-index-tooltip);
-  backdrop-filter: blur(var(--spacing-2xs));
-}
 
-.modal-content {
-  background-color: var(--bg-surface);
-  border-radius: var(--radius-lg);
-  width: calc(var(--spacing-xl) * 13);
-  max-width: var(--layout-overlay-max);
-  box-shadow: var(--shadow-lg);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: var(--spacing-3xs) solid var(--border-light);
-  animation: modal-fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes modal-fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
 
 .modal-header {
   display: flex;
@@ -331,27 +294,3 @@
   margin-bottom: var(--spacing-xs);
 }
 
-.color-picker-list {
-  display: flex;
-  gap: var(--spacing-6px);
-  padding: var(--spacing-2xs) 0;
-  align-items: center;
-}
-
-.color-picker-item {
-  width: var(--spacing-md);
-  height: var(--spacing-md);
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  border: var(--spacing-2xs) solid transparent;
-  transition: transform var(--transition-fast), border-color var(--transition-fast);
-}
-
-.color-picker-item:hover {
-  transform: scale(1.1);
-}
-
-.color-picker-item.active {
-  border-color: var(--text-primary);
-  transform: scale(1.2);
-}

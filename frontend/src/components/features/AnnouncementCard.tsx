@@ -3,13 +3,8 @@ import { Announcement } from '@/types';
 import Link from 'next/link';
 import Badge from '@/components/ui/Badge';
 import MarkdownViewer from '@/components/ui/MarkdownViewer';
-import { formatMoney, formatDate, formatInterestRate, formatDateWithTime } from '@/utils/formatters';
+import { formatMoney, formatDate, formatInterestRate, formatDateWithTime, superClean } from '@/utils/formatters';
 import styles from './AnnouncementCard.module.css';
-
-// 앞부분의 숫자 넘버링 패턴(예: 1. 2. )을 지우고 텍스트만 추출하는 헬퍼 함수
-const superClean = (str: string): string => {
-  return str.replace(/[#*_\-\[\]\(\)\d\.\s]/g, '').trim();
-};
 
 export interface AccordionSectionProps {
   title: React.ReactNode;

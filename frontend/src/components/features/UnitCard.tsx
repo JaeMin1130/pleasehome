@@ -150,7 +150,7 @@ export default function UnitCard({
             <span className={`${styles['conversion-slider-label']}`}>보증금↓</span>
             <input
               type="range"
-              className={styles['conversion-slider']}
+              className="conversion-slider"
               min={unit.min_deposit || 0}
               max={unit.max_deposit || 0}
               step={step}

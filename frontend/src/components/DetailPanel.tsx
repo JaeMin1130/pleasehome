@@ -114,20 +114,21 @@ export default function DetailPanel({
         className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''}`}
         style={style}
       >
-        <div className={styles['panel-header']}>
-          <div className={styles['panel-title-wrapper']}>
-            <h2 className={styles['panel-title']}>
-              {comparisonFolder.name} 단지 비교
-            </h2>
-            <p className={styles['panel-subtitle']}>
-              폴더 내 저장된 단지들의 상세 스펙을 가로로 한눈에 대조합니다.
-            </p>
-          </div>
-          <button className={styles['panel-close-btn']} onClick={onClose}>✕</button>
-        </div>
+        <div className={styles['panel-body']}>
+          <div>
+            <div className={styles['basic-info-header']}>
+              <div className={styles['panel-title-wrapper']}>
+                <h2 className={styles['panel-title']}>
+                  {comparisonFolder.name} 단지 비교
+                </h2>
+                <p className={styles['panel-subtitle']}>
+                  폴더 내 저장된 단지들의 상세 스펙을 가로로 한눈에 대조합니다.
+                </p>
+              </div>
+              <button className={styles['panel-close-btn']} onClick={onClose}>✕</button>
+            </div>
 
-        <div className={styles['comparison-body']}>
-          {comparisonComplexes.length === 0 ? (
+            {comparisonComplexes.length === 0 ? (
             <div className={styles['empty-comparison-msg']}>
               비교할 단지가 없습니다.<br />폴더에 찜한 단지를 추가해 보세요.
             </div>
@@ -244,6 +245,7 @@ export default function DetailPanel({
               </table>
             </div>
           )}
+          </div>
         </div>
       </aside>
     );
@@ -311,7 +313,7 @@ export default function DetailPanel({
             <h4 className={styles['panel-section-title']}>단지 기본 정보</h4>
             <div className={styles['panel-header-actions']}>
               <button 
-                className={`${styles['bookmark-btn']} ${isBookmarked ? styles.bookmarked : ''}`}
+                className={`bookmark-btn ${isBookmarked ? 'bookmarked' : ''}`}
                 onClick={() => onToggleBookmark(complex.id)}
                 title={isBookmarked ? "저장한 단지 해제" : "단지 저장하기"}
               >

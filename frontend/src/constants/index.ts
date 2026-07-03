@@ -75,3 +75,6 @@ export const UI_SPACING = {
   LG: 16, // 넓은 여백 (섹션 간 간격, 기본 컨테이너 패딩 등)
   XL: 24, // 매우 넓은 여백 (대형 레이아웃 분리용)
 };
+
+// [7] 즐겨찾기 폴더 프리셋 컬러 배열
+export const BOOKMARK_PRESET_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
