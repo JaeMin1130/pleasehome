@@ -331,14 +331,16 @@ export default function DetailPanel({
               </span>
             </div>
             <div className={styles['info-card']}>
-              <span className={styles['info-label']}>단지 주소</span>
-              <span className={`${styles['info-val']} ${styles['address-val-wrapper']}`}>
-                {complex.address}
+              <span className={`${styles['info-label']} ${styles['info-label-wrapper']}`}>
+                단지 주소
                 {Number(complex.is_imprecise) === 1 && (
                   <span className={styles['imprecise-badge']} title="해당 단지는 신도시 등 임시 주소 상태로, 지도 상의 대략적인 예정지 위치(도/동)에 마커가 매핑되었습니다.">
                     미확정 주소
                   </span>
                 )}
+              </span>
+              <span className={styles['info-val']}>
+                {complex.address}
               </span>
             </div>
             <div className={styles['info-card']}>
