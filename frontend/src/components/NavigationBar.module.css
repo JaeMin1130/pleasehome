@@ -3,7 +3,7 @@
   top: 0;
   left: 0;
   bottom: 0;
-  width: calc(var(--spacing-md) * 3.75);
+  width: calc(var(--spacing-md) * 3.5);
   background-color: var(--bg-surface);
   border-right: var(--spacing-3xs) solid var(--border-light);
   display: flex;
@@ -51,15 +51,14 @@
 }
 
 .nav-item {
-  width: calc(var(--spacing-md) * 3.75);
-  height: calc(var(--spacing-md) * 3.5);
+  width: 100%;
+  height: calc(var(--spacing-md) * 4);
   background: transparent;
   border: none;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: var(--spacing-xs);
   cursor: pointer;
   color: var(--icon-color);
   transition: all var(--transition-normal);

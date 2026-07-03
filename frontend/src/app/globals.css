@@ -1,7 +1,6 @@
 /* globals.css - Clean, Professional Light Mode for Public Service */
 
 :root {
-   /* 신규 디자인 토큰 (하드코딩 박멸용) */
    --color-white: #ffffff;
    --bg-overlay: rgba(15, 23, 42, 0.6);
    --font-weight-medium: 500;

@@ -468,7 +468,6 @@ function HomeContent() {
               setIsPanelOpen(true);     // 상세 패널 오픈
             }
           }}
-          style={{ left: `${NAVIGATION_BAR_WIDTH}px` }}
         />
 
         <DetailPanel 
