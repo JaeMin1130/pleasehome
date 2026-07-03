@@ -17,36 +17,6 @@
   transform: translateX(-100%);
 }
 
-.sidebar-brand {
-  height: var(--header-height);
-  padding: 0 var(--spacing-20px) 0 0;
-  border-bottom: var(--spacing-3xs) solid var(--border-light);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-6px);
-  background-color: var(--bg-surface);
-  flex-shrink: 0;
-}
-
-.brand-logo-wrap {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.brand-title {
-  font-size: calc(var(--font-size-lg) * 1.6);
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-  letter-spacing: var(--letter-spacing-tight);
-}
-
-.brand-desc {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  align-self: flex-end;
-  margin-bottom: var(--spacing-20px);
-}
 
 .sidebar-search {
   padding: var(--spacing-md);
