@@ -11,7 +11,7 @@
   box-shadow: var(--shadow-sm);
 }
 .complex-card:hover {
-  background-color: var(--bg-surface-hover);
+  background-color: var(--bg-body);
   border-color: var(--border-strong);
 }
 .complex-card.active {

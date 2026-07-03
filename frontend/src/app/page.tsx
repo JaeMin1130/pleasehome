@@ -481,7 +481,7 @@ function HomeContent() {
             setActiveComparisonFolderId(null); // 패널 닫을 때 스펙비교 모드도 해제
           }} 
           style={{ 
-            '--sidebar-offset-width': isSidebarCollapsed ? '0px' : 'var(--layout-sidebar-width)',
+            '--sidebar-offset-width': isSidebarCollapsed ? '0px' : `${SIDEBAR_DEFAULT_WIDTH}px`,
             width: `${PANEL_DEFAULT_WIDTH}px`
           } as React.CSSProperties}
           comparisonFolder={
