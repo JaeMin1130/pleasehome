@@ -304,6 +304,8 @@ export default function DetailPanel({
   };
 
   const isBookmarked = bookmarkedIds.includes(complex.id);
+  const totalSupplyCount = units.reduce((acc, u) => acc + (u.supply_count || 0), 0);
+  const totalReserveCount = units.reduce((acc, u) => acc + (u.reserve_count || 0), 0);
 
   return (
     <div className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''}`} style={style}>
@@ -333,6 +335,12 @@ export default function DetailPanel({
               </span>
             </div>
             <div className={styles['info-card']}>
+              <span className={styles['info-label']}>공급 호수 / 예비 호수</span>
+              <span className={styles['info-val']}>
+                {loading ? '계산 중...' : `${totalSupplyCount}호 / ${totalReserveCount}호`}
+              </span>
+            </div>
+            <div className={`${styles['info-card']} ${styles['full-width']}`}>
               <span className={`${styles['info-label']} ${styles['info-label-wrapper']}`}>
                 단지 주소
                 {Number(complex.is_imprecise) === 1 && (
