@@ -86,7 +86,7 @@ export default function UnitTable({
             <th>주택형 (면적)</th>
             <th>호실</th>
             <th>방 개수</th>
-            <th>공급 호수</th>
+            <th>공급 / 예비</th>
             <th>임대 보증금</th>
             <th>월 임대료</th>
           </tr>
@@ -150,7 +150,7 @@ export default function UnitTable({
                   <td>{unit.room_count ? `${unit.room_count}개` : '-'}</td>
                   <td>
                     <span className={styles['bold-text']}>{unit.supply_count}호</span>
-                    {unit.reserve_count > 0 && ` (예비 ${unit.reserve_count}호)`}
+                    {unit.reserve_count > 0 && ` / ${unit.reserve_count}호`}
                   </td>
                   <td>
                     {converted && diffAmount !== 0 ? formatMoney(converted.deposit) : formatMoney(unit.deposit)}

@@ -205,7 +205,7 @@ export default function DetailPanel({
                     })}
                   </tr>
                   <tr>
-                    <td className={styles['comp-label']}>공급 호수</td>
+                    <td className={styles['comp-label']}>공급 / 예비</td>
                     {comparisonComplexes.map((c) => {
                       const unitsData = comparisonUnits[c.id] || [];
                       if (unitsData.length === 0) return <td key={c.id} className={styles['comp-val']}>로딩 중...</td>;
@@ -213,7 +213,7 @@ export default function DetailPanel({
                       const reserveSum = unitsData.reduce((sum, u) => sum + (u.reserve_count || 0), 0);
                       return (
                         <td key={c.id} className={styles['comp-val']}>
-                          {supplySum}호{reserveSum > 0 && ` (예비 ${reserveSum}호)`}
+                          {supplySum}호{reserveSum > 0 && ` /예비 ${reserveSum}호`}
                         </td>
                       );
                     })}
@@ -332,7 +332,7 @@ export default function DetailPanel({
               </span>
             </div>
             <div className={styles['info-card']}>
-              <span className={styles['info-label']}>공급 호수 / 예비 호수</span>
+              <span className={styles['info-label']}>공급 / 예비</span>
               <span className={styles['info-val']}>
                 {loading ? '계산 중...' : `${totalSupplyCount}호 / ${totalReserveCount}호`}
               </span>

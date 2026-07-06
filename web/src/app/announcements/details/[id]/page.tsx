@@ -182,7 +182,7 @@ export default async function AnnouncementDetailPage({ params }: PageProps) {
                     <th>소재지 주소</th>
                     <th>공급 면적 범위</th>
                     <th>임대조건 범위</th>
-                    <th>모집 규모</th>
+                    <th>공급 / 예비</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -195,8 +195,8 @@ export default async function AnnouncementDetailPage({ params }: PageProps) {
                     const hasCount = totalSupply > 0 || totalReserve > 0;
                     
                     const countText = [
-                      totalSupply > 0 ? `${totalSupply}호` : '',
-                      totalReserve > 0 ? `예비: ${totalReserve}호` : ''
+                      totalSupply > 0 ? `${totalSupply}호` : '0호',
+                      totalReserve > 0 ? ` / ${totalReserve}호` : '0호'
                     ].filter(Boolean).join(' ');
 
                     // 면적 최소~최대 범위
@@ -235,33 +235,38 @@ export default async function AnnouncementDetailPage({ params }: PageProps) {
           </section>
         )}
 
-        {/* 4. 상세 세부 공고 정보 */}
-        {details.length > 0 && (
-          <section>
-            <h2 className={styles.sectionTitle}>
-              📝 세부 모집 조건 가이드
-            </h2>
-            {details.map((det) => {
-              const lines = det.section_content ? det.section_content.split('\n') : [];
-              const firstLine = lines[0] || '';
-              const cleanTitle = superClean(det.section_title || '');
-              const cleanFirstLine = superClean(firstLine);
+        {/* 4. 상세 세부 공고 정보 (개별 섹션으로 승격) */}
+        {details.map((det) => {
+          const lines = det.section_content ? det.section_content.split('\n') : [];
+          const firstLine = lines[0] || '';
+          const cleanTitle = superClean(det.section_title || '');
+          const cleanFirstLine = superClean(firstLine);
 
-              const finalContent = (cleanTitle === cleanFirstLine && cleanTitle !== '')
-                ? lines.slice(1).join('\n')
-                : det.section_content;
+          const finalContent = (cleanTitle === cleanFirstLine && cleanTitle !== '')
+            ? lines.slice(1).join('\n')
+            : det.section_content;
 
-              return (
-                <div key={det.id} className={styles.detailSection}>
-                  <h3 className={styles.detailTitle}>{det.section_title}</h3>
-                  <div className={styles.detailContent}>
-                    <MarkdownViewer content={finalContent} />
-                  </div>
-                </div>
-              );
-            })}
-          </section>
-        )}
+          // 타이틀명에 따른 매칭 이모지 선택
+          const title = det.section_title || '';
+          let emoji = '📝';
+          if (title.includes('자격') || title.includes('요건')) emoji = '✅';
+          else if (title.includes('소득') || title.includes('자산')) emoji = '💰';
+          else if (title.includes('선정') || title.includes('배점')) emoji = '📊';
+          else if (title.includes('임대') || title.includes('융자') || title.includes('혜택')) emoji = '🏠';
+          else if (title.includes('방법') || title.includes('서류') || title.includes('제출')) emoji = '📄';
+          else if (title.includes('특화') || title.includes('유의') || title.includes('주의')) emoji = '⚠️';
+
+          return (
+            <section key={det.id} className={styles.detailSection}>
+              <h2 className={styles.sectionTitle}>
+                {emoji} {title}
+              </h2>
+              <div className={styles.detailContent}>
+                <MarkdownViewer content={finalContent} />
+              </div>
+            </section>
+          );
+        })}
       </article>
       </div>
     </div>

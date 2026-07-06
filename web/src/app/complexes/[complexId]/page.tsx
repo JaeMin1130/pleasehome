@@ -114,7 +114,7 @@ export default async function ComplexDetailPage({ params }: PageProps) {
                   <tr>
                     <th>전용면적</th>
                     <th>공급대상</th>
-                    <th>모집 세대수</th>
+                    <th>공급 / 예비</th>
                     <th>임대보증금</th>
                     <th>월임대료</th>
                     <th>비고</th>
@@ -124,8 +124,8 @@ export default async function ComplexDetailPage({ params }: PageProps) {
                   {units.map((unit) => {
                     const hasCount = (unit.supply_count && unit.supply_count > 0) || (unit.reserve_count && unit.reserve_count > 0);
                     const countText = [
-                      unit.supply_count > 0 ? `${unit.supply_count}세대` : '',
-                      unit.reserve_count > 0 ? `(예비: ${unit.reserve_count}세대)` : ''
+                      unit.supply_count > 0 ? `${unit.supply_count}호` : '0호',
+                      unit.reserve_count > 0 ? ` / ${unit.reserve_count}호` : '0호'
                     ].filter(Boolean).join(' ');
 
                     return (

@@ -10,7 +10,7 @@
 }
 
 .container {
-  max-width: calc(var(--spacing-xl) * 26.5);
+  max-width: calc(var(--spacing-xl) * 25);
   margin: calc(var(--spacing-xl) * 1.25) auto;
   padding: 0 var(--spacing-lg);
   font-family: var(--font-family);
@@ -93,16 +93,7 @@
   margin-bottom: var(--spacing-xl);
 }
 
-.detailTitle {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--primary);
-  margin-bottom: var(--spacing-12px);
-  background-color: var(--primary-bg);
-  display: inline-block;
-  padding: var(--spacing-xs) var(--spacing-12px);
-  border-radius: calc(var(--radius-md) * 0.75);
-}
+
 
 .detailContent {
   font-size: var(--font-size-base);
@@ -192,4 +183,8 @@
 
 .tableRow:hover {
   background-color: var(--bg-surface-hover) !important;
+}
+
+.table th {
+  white-space: nowrap;
 }
