@@ -5,6 +5,20 @@ import { db } from '@/lib/db';
 import { formatMoney, formatTargetGroup } from '@/utils/formatters';
 import styles from './complex.module.css';
 
+export const revalidate = 3600; // 1시간 주기로 점진적 정적 재생성(ISR) 활성화
+
+export async function generateStaticParams() {
+  try {
+    const complexes = db.prepare('SELECT id FROM complexes').all() as { id: number }[];
+    return complexes.map((c) => ({
+      complexId: String(c.id),
+    }));
+  } catch (error) {
+    console.error('Failed to generate static params for complexes:', error);
+    return [];
+  }
+}
+
 interface PageProps {
   params: Promise<{ complexId: string }>;
 }
@@ -104,7 +118,7 @@ export default async function ComplexDetailPage({ params }: PageProps) {
       <main className={styles.mainLayout}>
         {/* 왼쪽: 세부 평형 목록 */}
         <section className={styles.contentSection}>
-          <h2 className={styles.sectionTitle}>📐 세부 공급 평형 정보 ({units.length}개 타입)</h2>
+          <h2 className={styles.sectionTitle}>📐 세부 공급 평형 정보</h2>
           {units.length === 0 ? (
             <div className={styles.noData}>등록된 세부 평형 정보가 없습니다.</div>
           ) : (
