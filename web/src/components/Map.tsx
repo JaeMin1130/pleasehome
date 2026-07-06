@@ -144,33 +144,7 @@ export default function Map({ complexes, activeComplexId, onSelectComplex, isSid
     setMarkers(newMarkers);
   }, [complexes, mapLoaded, naverMap, bookmarkedIds, bookmarkItems, bookmarkFolders, activeComplexId]);
 
-  // 2-2. 단지 목록이 변경되었을 때 지도의 경계(Bounds)를 맞춰주는 자동 핏 바운드 로직
-  useEffect(() => {
-    if (!naverMap || !window.naver || complexes.length === 0 || activeComplexId) return;
 
-    const bounds = new window.naver.maps.LatLngBounds();
-    let validCount = 0;
-
-    complexes.forEach(c => {
-      if (c.latitude !== null && c.longitude !== null && !isNaN(c.latitude) && !isNaN(c.longitude)) {
-        bounds.extend(new window.naver.maps.LatLng(c.latitude, c.longitude));
-        validCount++;
-      }
-    });
-
-    if (validCount > 0) {
-      setTimeout(() => {
-        if (!naverMap) return;
-        naverMap.fitBounds(bounds);
-
-        // 💡 단지가 1~2개 수준으로 극도로 좁은 범위일 때 과도한 근접 확대를 방지하기 위해 최대 줌 제한
-        const MAX_FIT_ZOOM = 12; 
-        if (naverMap.getZoom() > MAX_FIT_ZOOM) {
-          naverMap.setZoom(MAX_FIT_ZOOM);
-        }
-      }, 100);
-    }
-  }, [complexes, naverMap, activeComplexId]);
 
   // 3. 현재 화면에 실제로 렌더링되어 지도를 덮고 있는 왼쪽 패널 영역의 실시간 총 가로폭을 동적으로 반환하는 헬퍼 함수
   const getActiveCoveredWidth = (isPanelOpening: boolean): number => {
