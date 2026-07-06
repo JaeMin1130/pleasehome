@@ -238,8 +238,9 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
                 (ann_id, det["section_title"], det["section_content"], det["sort_order"])
             )
             
-        # 7. complexes 및 housing_units 테이블 적재 (단지명 매핑 포함)
+        # 7. complexes 및 housing_units 테이블 적재 (단지명 + 주소 복합 키 매핑 적용)
         complex_name_to_id = {}
+        complex_key_to_id = {}
         for comp in json_data.get("complexes", []):
             cleaned_addr = clean_address(comp["address"])
             cursor.execute(
@@ -249,12 +250,23 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
                 """,
                 (ann_id, comp["name"], cleaned_addr, comp.get("heating_type"), comp.get("has_elevator"), comp.get("parking_info"), comp.get("complex_type"))
             )
-            complex_name_to_id[comp["name"]] = cursor.lastrowid
+            inserted_id = cursor.lastrowid
+            complex_name_to_id[comp["name"]] = inserted_id
+            if comp["name"] and cleaned_addr:
+                complex_key_to_id[(comp["name"], cleaned_addr)] = inserted_id
             
         units_count = 0
         for unit in json_data.get("units", []):
             comp_name = unit.get("complex_name")
-            comp_id = complex_name_to_id.get(comp_name) if comp_name else None
+            comp_addr = clean_address(unit.get("complex_address")) if unit.get("complex_address") else None
+            
+            comp_id = None
+            if comp_name and comp_addr:
+                comp_id = complex_key_to_id.get((comp_name, comp_addr))
+            
+            # 주소 매핑이 없거나 실패한 경우, 단지명 단독으로 Fallback 매핑
+            if not comp_id and comp_name:
+                comp_id = complex_name_to_id.get(comp_name)
             
             # 방어적 캐스팅 및 디폴팅 로직 적용
             def to_int(val, default=0):

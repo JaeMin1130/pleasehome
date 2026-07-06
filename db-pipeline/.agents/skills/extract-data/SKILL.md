@@ -92,6 +92,7 @@ description: 마크다운 공고문 원본(document.md)을 본체 에이전트�
   "units": [
     {
       "complex_name": "연계될 단지명 (string, complexes의 name과 일치)",
+      "complex_address": "연계될 단지의 주소 (string, complexes의 address와 일치, 단지명이 중복될 때 매핑에 활용)",
       "room_number": "호실번호 (string, 특정 호수가 지정된 경우에만 기재, 예: 403호, 없을 시 null)",
       "room_count": "방 개수 (integer)",
       "room_type": "주택형/타입명 (string, 예: 59A, 59C-2)",
