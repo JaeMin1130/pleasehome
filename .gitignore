@@ -6,17 +6,17 @@
 !/README.md
 
 # Allow diving into frontend and db-pipeline directories
-!/frontend/
+!/web/
 !/db-pipeline/
 
 # Ignore all files inside frontend and db-pipeline by default
-/frontend/*
+/web/*
 /db-pipeline/*
 
 # Whitelist src directories and package.json
-!/frontend/src/
+!/web/src/
 !/db-pipeline/src/
-!/frontend/package.json
+!/web/package.json
 !/db-pipeline/package.json
 !/db-pipeline/.agents/
 

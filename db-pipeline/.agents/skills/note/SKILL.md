@@ -36,7 +36,7 @@ description: 대화 과정에서 수립된 에이전트 행동 규칙 중 불필
   - **프로젝트 공통 환경 사양 및 전역 규약:** 프로젝트 개요, 프로젝트 빌드 환경, 가상 환경, 디렉토리 구조, 전역 명령어, 공통 Git 형상 관리 가이드 등 전역 사양에 관한 피드백은 [PROJECT.md](file:///home/iru/app/pleasehome/db-pipeline/PROJECT.md)의 관련 섹션에 규약으로 통합 기재합니다.
   - **트러블슈팅 및 장애 해결 기록:** 백엔드 개발 및 데이터 파이프라인 운영 중 발생한 API 에러, DB 설정, 스크립트 장애 등의 문제 현상과 해결 방안은 백엔드 관할 문서인 [TROUBLESHOOTING.md](file:///home/iru/app/pleasehome/db-pipeline/docs/dev/TROUBLESHOOTING.md) 파일에 누적 기록합니다.
   - **특정 도메인 기술 스킬 가이드:** PDF 변환, 마크다운 데이터 파싱/적재 및 DB 검증 등 특정 스킬 관련 비즈니스 규칙, 가격 상호전환 제한 범위, 외부 정책 사양 등 고수준의 도메인 사양은 해당하는 스킬 문서(예: [extract-data/SKILL.md](file:///home/iru/app/pleasehome/db-pipeline/.agents/skills/extract-data/SKILL.md)) 내에 기재하며, [AGENTS.md](file:///home/iru/app/pleasehome/db-pipeline/AGENTS.md)나 [PROJECT.md](file:///home/iru/app/pleasehome/db-pipeline/PROJECT.md)에는 절대 중복 기재하지 않습니다.
-  - **트러블슈팅 및 문제 해결 기록 (프론트엔드 전용):** 프론트엔드 화면, Next.js 설정, 배포(인프라) 관련 해결 과정만 [TROUBLESHOOTING.md](file:///home/iru/app/pleasehome/frontend/docs/dev/TROUBLESHOOTING.md)에 기록합니다. **(백엔드/DB 적재 관련 이슈는 절대 기록하지 않음).** 기록 시 반드시 아래 템플릿 양식을 엄격히 준수하여 추가합니다.
+  - **트러블슈팅 및 문제 해결 기록 (웹 애플리케이션 전용):** 웹 화면, Next.js 설정, 배포(인프라) 관련 해결 과정만 [TROUBLESHOOTING.md](file:///home/iru/app/pleasehome/web/docs/dev/TROUBLESHOOTING.md)에 기록합니다. **(백엔드/DB 적재 관련 이슈는 절대 기록하지 않음).** 기록 시 반드시 아래 템플릿 양식을 엄격히 준수하여 추가합니다.
     ```markdown
     ### [이슈 날짜: YYYY-MM-DD] 이슈 간략 제목
     * **분류**: 프론트엔드 / 인프라(Next.js 배포) 중 택 1
