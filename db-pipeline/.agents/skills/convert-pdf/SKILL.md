@@ -13,7 +13,7 @@ description: docs/pdf/ 폴더에 위치한 임의의 PDF 공고문을 분석하�
 
 1. **미분류 PDF 감지 및 오케스트레이션:**
    - 파이썬 가상 환경을 활성화하여 통합 스크립트 `.agents/scripts/convert_pdf_to_md.py`를 **인자 없이** 실행합니다.
-   - 스크립트가 실행되면 `/home/iru/app/pleasehome/backend/docs/pdf/` 루트 경로에 있는 미분류 `*.pdf` 파일들을 자동으로 감지하여 처리를 시작합니다.
+   - 스크립트가 실행되면 `/home/iru/app/pleasehome/db-pipeline/docs/pdf/` 루트 경로에 있는 미분류 `*.pdf` 파일들을 자동으로 감지하여 처리를 시작합니다.
    - 메인 에이전트는 변환을 위한 임의의 임시 파이썬 스크립트(예: `slicer.py`, `parser.py` 등)를 추가로 생성하여 분석하지 않으며, 오직 기존에 합의된 통합 가동 스크립트만을 활용합니다. (구 AGENTS.md 누적 규칙 #21 이관)
 
 2. **메타데이터 및 표준 이름 정의:**
@@ -22,14 +22,14 @@ description: docs/pdf/ 폴더에 위치한 임의의 PDF 공고문을 분석하�
 
     > [!IMPORTANT]
     > **청약유형 및 표준 폴더명 결정 가이드**
-    > - 청약유형명을 결정할 때는 자의적으로 명명하지 않고, 반드시 [extract-data/SKILL.md](file:///home/iru/app/pleasehome/backend/.agents/skills/extract-data/SKILL.md)의 **## 2.7. 공공청약 유형 표준 사전**에 기술된 표준 분류명(예: `행복주택`, `장기전세`, `국민임대`, `든든전세` 등) 중 하나로 정확하게 분류 매칭해야 합니다.
+    > - 청약유형명을 결정할 때는 자의적으로 명명하지 않고, 반드시 [extract-data/SKILL.md](file:///home/iru/app/pleasehome/db-pipeline/.agents/skills/extract-data/SKILL.md)의 **## 2.7. 공공청약 유형 표준 사전**에 기술된 표준 분류명(예: `행복주택`, `장기전세`, `국민임대`, `든든전세` 등) 중 하나로 정확하게 분류 매칭해야 합니다.
     > - 폴더명의 물리적 구조는 `{기관명}_{PAN_ID}_{PAN_DT}` 포맷을 철저히 준수해야 합니다.
 
 3. **물리적 폴더 정리 및 파일 이동:**
-    - `/home/iru/app/pleasehome/backend/docs/pdf/{표준_폴더명}/` 디렉토리 아래에 `download_meta.json`과 원본 PDF/엑셀 파일을 함께 보관합니다.
+    - `/home/iru/app/pleasehome/db-pipeline/docs/pdf/{표준_폴더명}/` 디렉토리 아래에 `download_meta.json`과 원본 PDF/엑셀 파일을 함께 보관합니다.
 
 4. **Markdown 변환 및 포스트 프로세싱:**
-    - 최종적으로 해당 원본 PDF를 변환 엔진으로 가동하여 `/home/iru/app/pleasehome/backend/docs/md/{표준_폴더명}/` 하위에 `document.md` 및 `images/` 폴더 구조를 완성합니다.
+    - 최종적으로 해당 원본 PDF를 변환 엔진으로 가동하여 `/home/iru/app/pleasehome/db-pipeline/docs/md/{표준_폴더명}/` 하위에 `document.md` 및 `images/` 폴더 구조를 완성합니다.
     - 마크다운 파일 내의 이미지 참조 경로(상대 경로)를 `images/`로 자동 수정하는 후처리를 수행합니다.
 
 5. **최종 보고:**

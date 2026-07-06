@@ -1,7 +1,7 @@
 import path from 'path';
 import Database from 'better-sqlite3';
 
-const dbPath = path.join(process.cwd(), '..', 'backend', 'public_housing.db');
+const dbPath = path.join(process.cwd(), '..', 'db-pipeline', 'public_housing.db');
 export const db = new Database(dbPath, { verbose: console.log });
 
 db.pragma('journal_mode = DELETE');

@@ -280,8 +280,8 @@ def convert_single_pdf(pdf_path, output_dir, folder_name):
 
 def run_auto_scan():
     import json
-    base_pdf_dir = "/home/iru/app/pleasehome/backend/docs/pdf"
-    base_md_dir = "/home/iru/app/pleasehome/backend/docs/md"
+    base_pdf_dir = "/home/iru/app/pleasehome/db-pipeline/docs/pdf"
+    base_md_dir = "/home/iru/app/pleasehome/db-pipeline/docs/md"
     
     # {기관명}_{PAN_ID}_{PAN_DT} 패턴 하위 폴더 스캔
     import re
@@ -463,8 +463,8 @@ def main():
         sys.exit(0)
         
     # 인자가 주어졌으면 단일 파일 변환 모드로 가동
-    base_pdf_dir = "/home/iru/app/pleasehome/backend/docs/pdf"
-    base_md_dir = "/home/iru/app/pleasehome/backend/docs/md"
+    base_pdf_dir = "/home/iru/app/pleasehome/db-pipeline/docs/pdf"
+    base_md_dir = "/home/iru/app/pleasehome/db-pipeline/docs/md"
     
     target = args.target
     if not os.path.exists(target) and not os.path.isabs(target):

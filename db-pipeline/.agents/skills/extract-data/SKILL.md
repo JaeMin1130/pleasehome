@@ -27,14 +27,27 @@ description: 마크다운 공고문 원본(document.md)을 본체 에이전트�
 * **검증 (시맨틱 감사)**: 에이전트가 직접 document.md 원본 내의 모든 임대 조건 표와 생성된 data.json을 1:1 교차 대조하여 누락 및 수치 불일치 정합성을 정밀 검사합니다.
   - **수치 교차 매칭 검증 (필수)**: 생성된 units 배열의 **첫 번째 유닛과 마지막 유닛**의 임대보증금, 월임대료, 전용면적이 document.md 본문 표의 첫 행 및 마지막 행에 기재된 수치와 100% 일치하는지 실제 파일 내용을 눈으로 비교 대조하십시오. 쉼표(,)나 천 원 단위 표기 변환 오류로 인한 불일치가 없는지 확인해야 합니다.
   - **단지 수/유닛 수 상식 검증**: 공고문에 기재된 총 모집 호수 통계와 생성된 유닛 수의 규모가 합리적으로 일치하는지 최종 확인하십시오.
-* **DB 적재 (SUCCESS)**: 검증을 완료(SUCCESS)하면 [insert_loader.py](file:///home/iru/app/pleasehome/backend/.agents/scripts/insert_loader.py)를 구동하여 SQLite DB에 적재를 완결합니다.
+* **DB 적재 (SUCCESS)**: 검증을 완료(SUCCESS)하면 [insert_loader.py](file:///home/iru/app/pleasehome/db-pipeline/.agents/scripts/insert_loader.py)를 구동하여 SQLite DB에 적재를 완결합니다.
   ```bash
   python3 .agents/scripts/insert_loader.py docs/md/{공고_폴더}/data.json
   ```
 
 * **안전 격리 적재 (FAIL)**: 파싱 실패 또는 3회 이상 검증 실패 시 격리 적재 처리를 수행합니다.
 
+### 3단계: 정정공고 발생 시 핀포인트 부분 업데이트(Partial Update) 프로세스
+* **동작**: 기 적재된 기존 공고에 대한 정정공고(예: `[정정공고]...`)가 접수된 경우, 데이터를 전부 삭제 후 재적재하지 않고 기존 적재 데이터를 보존하면서 변경된 사항만 덮어쓰는 부분 업데이트를 수행합니다.
+* **수행 절차**:
+  - **정정사유 파악**: 정정공고 폴더 내 `download_meta.json`의 `"dsEtcInfo"` 배열 중 `"CRC_RSN"` (정정/취소사유) 필드를 독해하여 구체적인 수정 대상을 식별합니다.
+  - **마크다운 변환**: 정정공고의 PDF가 마크다운으로 변환되지 않았다면, 가상환경 내 파이썬 바이너리를 명시적으로 활용하여 통합 변환 스크립트(`.venv/bin/python3 .agents/scripts/convert_pdf_to_md.py`)를 먼저 구동해 `document.md`를 생성합니다.
+  - **기존 데이터 조회**: 데이터베이스에서 해당 공고의 고유 ID를 쿼리하여 식별합니다.
+  - **핀포인트 데이터 패치**:
+    1. `announcements` 테이블의 `title` 필드를 정정공고 제목(예: `[정정공고]...`)으로 업데이트합니다.
+    2. 정정공고 `document.md`를 분석하여 정정사유에 해당되는 내용(예: 단지 특성 추가, 학교시설 배정 변경 등)의 정확한 텍스트를 발췌합니다.
+    3. 데이터베이스의 `announcement_details` (일반적으로 `sort_order: 6`인 '기관별 특화 및 유의사항' 등) 및 `complexes` 테이블의 유관 컬럼만 정밀 업데이트(SQL `UPDATE`)합니다.
+  - **1회성 패치 스크립트 정리**: 데이터 업데이트에 동적으로 이용한 1회성 패치용 파이썬 스크립트나 SQL 파일은 작업 완료 및 검증 즉시 파일 시스템에서 완전 삭제하여 형상 관리를 오염시키지 않습니다.
+
 ---
+
 
 ## 2. 최종 출력 JSON 포맷 명세 (Output JSON Specification)
 

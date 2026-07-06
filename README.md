@@ -19,7 +19,7 @@
 
 ## 🚀 핵심 기능 (Key Features)
 
-### 1. 데이터 파이프라인 (Backend)
+### 1. 데이터 파이프라인 (db-pipeline)
 * **공공데이터포털(OpenAPI) 연동**: LH 분양임대공고문 API와 실시간 통신하여 최신 입주자 모집 공고 목록과 세부 상세 정보(BBS)를 자동 수집합니다.
 * **자동화된 문서 수집**: 공고문에 첨부된 필수 PDF 원문(모집 안내문 등)을 식별하여 지정된 로컬/클라우드 스토리지로 일괄 다운로드하는 ETL 파이프라인을 갖추고 있습니다.
 
@@ -62,11 +62,11 @@
 
 ## 📐 시스템 아키텍처 (Architecture)
 
-웹 서비스 운영의 효율성과 시스템 자원의 최적화를 위해 **데이터 적재(Backend)**와 **웹 서빙(Frontend)**의 책임을 명확하게 분리합니다.
+웹 서비스 운영의 효율성과 시스템 자원의 최적화를 위해 **데이터 적재(db-pipeline)**와 **웹 서빙(Frontend)**의 책임을 명확하게 분리합니다.
 
 ```mermaid
 graph TD
-    subgraph "Backend (Data Pipeline)"
+    subgraph "db-pipeline (Data Pipeline)"
         LH_API[LH OpenAPI] --> |공고 및 첨부파일 Fetch| Python_ETL[Python 데이터 파이프라인]
         Python_ETL --> |가공 및 병합| SQLite[(SQLite Database)]
         Python_ETL --> |문서 저장| PDF_Storage[PDF Documents]
@@ -95,7 +95,7 @@ pleasehome/
 │   ├── src/components/         # 네이버 지도, 사이드바 등 재사용 UI 컴포넌트
 │   ├── public/                 # 정적 에셋 파일
 │   └── package.json            # Node.js 의존성 관리
-├── backend/                    # 데이터 파이프라인 백엔드 (Python)
+├── db-pipeline/                    # 데이터 파이프라인 백엔드 (Python)
 │   └── src/lh_notice/          # LH API 연동 및 PDF 다운로드 스크립트
 ├── docs/                       # 각종 설계 및 배포 가이드 문서
 ├── .gitignore                  # 통합 형상 관리 예외 규칙
@@ -117,7 +117,7 @@ pleasehome/
 # Frontend (Naver Map API)
 NEXT_PUBLIC_NAVER_CLIENT_ID=your_naver_map_client_id
 
-# Backend (LH OpenAPI - 공공데이터포털)
+# db-pipeline (LH OpenAPI - 공공데이터포털)
 LH_NOTICE_LIST_API_KEY=your_lh_list_decoded_api_key
 LH_NOTICE_DTL_API_KEY=your_lh_detail_decoded_api_key
 ```
@@ -128,7 +128,7 @@ LH_NOTICE_DTL_API_KEY=your_lh_detail_decoded_api_key
 pip install requests python-dotenv
 
 # LH API 통신 및 PDF 다운로드 스크립트 실행
-cd backend/src/lh_notice
+cd db-pipeline/src/lh_notice
 python main.py
 ```
 
@@ -196,7 +196,7 @@ npm run dev
 
 1. Next.js Standalone 배포 시 SQLite DB 경로 매핑 문제
    • 현상: 빌드된 `server.js` 구동 시 `public_housing.db`를 찾지 못함.
-   • 해결: 로컬과 서버의 디렉토리 구조(`frontend`, `backend`)를 완벽히 일치시키고, `db.ts`에서 `process.cwd()` 기준 상대 경로(`../backend/public_housing.db`)로 동적 참조하도록 설계하여 해결.
+   • 해결: 로컬과 서버의 디렉토리 구조(`frontend`, `db-pipeline`)를 완벽히 일치시키고, `db.ts`에서 `process.cwd()` 기준 상대 경로(`../db-pipeline/public_housing.db`)로 동적 참조하도록 설계하여 해결.
 
 2. Standalone 아티팩트 구버전 DB 중복 패키징 현상
    • 현상: Next.js 빌드 시 File Tracing 기능이 기존 DB를 번들에 통째로 포함시켜, 서버에 최신 DB를 업로드해도 프론트엔드가 낡은 과거 사본을 우선적으로 읽어오는 데이터 불일치 발생.
@@ -218,7 +218,7 @@ npm run dev
    • 현상: 메인 지도가 CSR(클라이언트 렌더링) 방식으로 동작하여 검색 로봇(애드센스)이 1,000자 이상의 정보성 텍스트를 읽지 못해 승인이 거절되고, 상세 페이지 뷰포트 내 스크롤이 차단되거나 딥링크 진입 후 URL 모순이 발생함.
    • 해결: `/announcements/details/[id]` 정적 상세 페이지를 개설해 SQLite DB를 서버 사이드에서 실시간 쿼리하여 마크다운 포맷으로 풀 텍스트(MarkdownViewer) 렌더링을 구현하고, `detail-layout.css` 스크롤 래퍼를 씌워 글로벌 `overflow: hidden` 간섭을 우회함. 동시에 메인 지도 탐색 시 선택된 공고 ID를 HTML5 replaceState 기반 Shallow Routing으로 실시간 양방향 URL 동기화하여 해결.
 
-### [백엔드 (Backend)]
+### [백엔드 (db-pipeline)]
 
 1. SQLite 컬럼 Comment 속성 미지원 및 메타데이터 표출 한계
    • 현상: 데이터베이스 스키마 설계 시 시스템 수준의 컬럼 주석(Comment) 파싱을 SQLite 엔진 자체가 지원하지 않아, GUI 조회 툴 등에서 논리적 메타데이터를 확인할 수 없음.

@@ -5,20 +5,20 @@
 !/.gitignore
 !/README.md
 
-# Allow diving into frontend and backend directories
+# Allow diving into frontend and db-pipeline directories
 !/frontend/
-!/backend/
+!/db-pipeline/
 
-# Ignore all files inside frontend and backend by default
+# Ignore all files inside frontend and db-pipeline by default
 /frontend/*
-/backend/*
+/db-pipeline/*
 
 # Whitelist src directories and package.json
 !/frontend/src/
-!/backend/src/
+!/db-pipeline/src/
 !/frontend/package.json
-!/backend/package.json
-!/backend/.agents/
+!/db-pipeline/package.json
+!/db-pipeline/.agents/
 
 # Ignore build artifacts and caches
 **/__pycache__/
@@ -26,5 +26,5 @@
 *.pyo
 
 # Ignore local databases inside .agents
-/backend/.agents/*.db
-/backend/.agents/*.db-*
+/db-pipeline/.agents/*.db
+/db-pipeline/.agents/*.db-*
