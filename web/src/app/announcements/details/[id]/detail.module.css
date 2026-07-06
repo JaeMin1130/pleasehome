@@ -159,3 +159,26 @@
   color: var(--text-secondary);
   margin-bottom: var(--spacing-lg);
 }
+
+.complexLink {
+  color: var(--primary);
+  font-weight: var(--font-weight-bold);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  transition: color var(--transition-fast);
+}
+
+.complexLink:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+.tableRow {
+  transition: background-color var(--transition-fast);
+}
+
+.tableRow:hover {
+  background-color: var(--bg-surface-hover) !important;
+}

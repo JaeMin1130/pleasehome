@@ -39,6 +39,8 @@ export default async function AnnouncementDetailPage({ params }: PageProps) {
   let schedules: any[] = [];
   let details: any[] = [];
   let limits: any[] = [];
+  let complexes: any[] = [];
+  let units: any[] = [];
 
   try {
     ann = db.prepare('SELECT * FROM announcements WHERE id = ?').get(annId);
@@ -48,6 +50,8 @@ export default async function AnnouncementDetailPage({ params }: PageProps) {
     schedules = db.prepare('SELECT * FROM announcement_schedules WHERE announcement_id = ?').all(annId);
     details = db.prepare('SELECT * FROM announcement_details WHERE announcement_id = ? ORDER BY sort_order ASC, id ASC').all(annId);
     limits = db.prepare('SELECT * FROM announcement_limits WHERE announcement_id = ?').all(annId);
+    complexes = db.prepare('SELECT * FROM complexes WHERE announcement_id = ?').all(annId);
+    units = db.prepare('SELECT * FROM housing_units WHERE announcement_id = ?').all(annId);
   } catch (error) {
     console.error('DB fetch error in announcement detail:', error);
     notFound();
@@ -163,7 +167,74 @@ export default async function AnnouncementDetailPage({ params }: PageProps) {
           </section>
         )}
 
-        {/* 3. 상세 세부 공고 정보 */}
+        {/* 3. 소속 주택 단지 목록 요약 */}
+        {complexes.length > 0 && (
+          <section>
+            <h2 className={styles.sectionTitle}>
+              🏢 소속 주택 단지 목록
+            </h2>
+            <div className={styles.tableWrapper}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>주택 단지명</th>
+                    <th>소재지 주소</th>
+                    <th>공급 면적 범위</th>
+                    <th>임대조건 범위</th>
+                    <th>모집 규모</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {complexes.map((complex) => {
+                    const complexUnits = units.filter((u) => u.complex_id === complex.id);
+                    
+                    // 공급/예비 세대수 합산
+                    const totalSupply = complexUnits.reduce((sum, u) => sum + (u.supply_count || 0), 0);
+                    const totalReserve = complexUnits.reduce((sum, u) => sum + (u.reserve_count || 0), 0);
+                    const hasCount = totalSupply > 0 || totalReserve > 0;
+                    
+                    const countText = [
+                      totalSupply > 0 ? `${totalSupply}호` : '',
+                      totalReserve > 0 ? `예비: ${totalReserve}호` : ''
+                    ].filter(Boolean).join(' ');
+
+                    // 면적 최소~최대 범위
+                    const areas = complexUnits.map((u) => u.exclusive_area).filter(Boolean);
+                    const minArea = areas.length > 0 ? Math.min(...areas) : 0;
+                    const maxArea = areas.length > 0 ? Math.max(...areas) : 0;
+                    const areaText = minArea === maxArea 
+                      ? `${minArea} ㎡` 
+                      : `${minArea} ㎡ ~ ${maxArea} ㎡`;
+
+                    // 보증금 최소~최대 범위
+                    const deposits = complexUnits.map((u) => u.deposit).filter(Boolean);
+                    const minDeposit = deposits.length > 0 ? Math.min(...deposits) : 0;
+                    const maxDeposit = deposits.length > 0 ? Math.max(...deposits) : 0;
+                    const depositText = minDeposit === maxDeposit
+                      ? formatMoney(minDeposit)
+                      : `${formatMoney(minDeposit)} ~ ${formatMoney(maxDeposit)}`;
+
+                    return (
+                      <tr key={complex.id} className={styles.tableRow}>
+                        <td>
+                          <Link href={`/complexes/${complex.id}`} className={styles.complexLink}>
+                            {complex.name}
+                          </Link>
+                        </td>
+                        <td>{complex.address ? complex.address.replace(/\([^)]*\)/g, '').replace(/\s+/g, ' ').trim() : '-'}</td>
+                        <td>{areas.length > 0 ? areaText : '-'}</td>
+                        <td>{deposits.length > 0 ? depositText : '-'}</td>
+                        <td>{hasCount ? countText : '-'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        {/* 4. 상세 세부 공고 정보 */}
         {details.length > 0 && (
           <section>
             <h2 className={styles.sectionTitle}>
