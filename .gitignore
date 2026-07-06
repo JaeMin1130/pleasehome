@@ -5,11 +5,11 @@
 !/.gitignore
 !/README.md
 
-# Allow diving into frontend and db-pipeline directories
+# Allow diving into web and db-pipeline directories
 !/web/
 !/db-pipeline/
 
-# Ignore all files inside frontend and db-pipeline by default
+# Ignore all files inside web and db-pipeline by default
 /web/*
 /db-pipeline/*
 
