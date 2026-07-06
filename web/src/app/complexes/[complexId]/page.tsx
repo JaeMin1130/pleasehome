@@ -66,7 +66,7 @@ export default async function ComplexDetailPage({ params }: PageProps) {
     }
 
     // 3. 단지 소속 평형 목록 조회
-    units = db.prepare('SELECT * FROM housing_units WHERE complex_id = ?').all(compId);
+    units = db.prepare('SELECT * FROM housing_units WHERE complex_id = ? ORDER BY exclusive_area ASC').all(compId);
 
     // 4. 동일 단지(이름 또는 주소 일치)의 다른 공고 히스토리 조회
     historyList = db.prepare(`
@@ -83,35 +83,36 @@ export default async function ComplexDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className={styles.container}>
+    <div className={styles.layout}>
+      <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.titleSection}>
           {ann && <span className={styles.badge}>{ann.subscription_type}</span>}
           <h1 className={styles.title}>{complex.name}</h1>
           <p className={styles.address}>📍 {complex.address}</p>
-        </div>
-
-        <div className={styles.actions}>
-          <Link href={`/?complex_id=${complex.id}`} className={styles.btnPrimary}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
-              <line x1="9" y1="3" x2="9" y2="18"></line>
-              <line x1="15" y1="6" x2="15" y2="21"></line>
-            </svg>
-            지도로 위치 확인하기
-          </Link>
-          {ann && (
-            <Link href={`/announcements/details/${ann.id}`} className={styles.btnOutline}>
+          
+          <div className={styles.docBtnContainer}>
+            <Link href={`/?complex_id=${complex.id}`} className={styles.docBtn}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
+                <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+                <line x1="9" y1="3" x2="9" y2="18"></line>
+                <line x1="15" y1="6" x2="15" y2="21"></line>
               </svg>
-              전체 공고문 가이드 보기
+              지도로 돌아가기
             </Link>
-          )}
+            {ann && (
+              <Link href={`/announcements/details/${ann.id}`} className={styles.docBtn}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                공고 상세 열기
+              </Link>
+            )}
+          </div>
         </div>
       </header>
 
@@ -146,7 +147,6 @@ export default async function ComplexDetailPage({ params }: PageProps) {
                       <tr key={unit.id}>
                         <td>
                           <strong>{unit.exclusive_area ? `${unit.exclusive_area} ㎡` : '-'}</strong>
-                          {unit.room_type && <span className={styles.roomType}>({unit.room_type})</span>}
                         </td>
                         <td>{formatTargetGroup(unit.target_group)}</td>
                         <td>{hasCount ? countText : '-'}</td>
@@ -165,8 +165,8 @@ export default async function ComplexDetailPage({ params }: PageProps) {
           )}
         </section>
 
-        {/* 오른쪽: 동일 단지 다른 공고 히스토리 */}
-        <aside className={styles.sidebarSection}>
+        {/* 아래쪽: 동일 단지 다른 공고 히스토리 */}
+        <section className={styles.historySection}>
           <h2 className={styles.sectionTitle}>🕒 동일 단지 청약 히스토리</h2>
           {historyList.length === 0 ? (
             <div className={styles.noHistory}>
@@ -188,8 +188,9 @@ export default async function ComplexDetailPage({ params }: PageProps) {
               ))}
             </div>
           )}
-        </aside>
+        </section>
       </main>
+      </div>
     </div>
   );
 }

@@ -9,11 +9,11 @@ export async function GET(request: Request) {
     
     let units;
     if (complexId) {
-      units = db.prepare('SELECT * FROM housing_units WHERE complex_id = ?').all(complexId);
+      units = db.prepare('SELECT * FROM housing_units WHERE complex_id = ? ORDER BY exclusive_area ASC').all(complexId);
     } else if (announcementId) {
-      units = db.prepare('SELECT * FROM housing_units WHERE announcement_id = ?').all(announcementId);
+      units = db.prepare('SELECT * FROM housing_units WHERE announcement_id = ? ORDER BY exclusive_area ASC').all(announcementId);
     } else {
-      units = db.prepare('SELECT * FROM housing_units').all();
+      units = db.prepare('SELECT * FROM housing_units ORDER BY exclusive_area ASC').all();
     }
     
     return NextResponse.json(units);
