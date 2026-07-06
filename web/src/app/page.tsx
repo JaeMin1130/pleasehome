@@ -197,6 +197,7 @@ function HomeContent() {
 
   const searchParams = useSearchParams();
   const annIdParam = searchParams.get('announcement_id');
+  const compIdParam = searchParams.get('complex_id');
 
   useEffect(() => {
     fetch('/api/announcements').then(res => res.json()).then(data => setAnnouncements(data));
@@ -215,6 +216,22 @@ function HomeContent() {
       }
     }
   }, [annIdParam, announcements]);
+
+  // 쿼리 파라미터로 단지 ID가 들어왔을 때 해당 단지 포커싱 및 정보 활성화
+  useEffect(() => {
+    if (compIdParam && allComplexes.length > 0) {
+      const parsedCompId = parseInt(compIdParam, 10);
+      if (!isNaN(parsedCompId)) {
+        const targetComplex = allComplexes.find(c => c.id === parsedCompId);
+        if (targetComplex) {
+          setActiveAnnId(targetComplex.announcement_id);
+          setSelectedComplex(targetComplex);
+          setActiveComplexId(targetComplex.id);
+          setIsPanelOpen(true);
+        }
+      }
+    }
+  }, [compIdParam, allComplexes]);
 
   useEffect(() => {
     if (activeAnnId === null) { setAnnouncementUnits([]); return; }
@@ -295,6 +312,7 @@ function HomeContent() {
       setSelectedComplex(complex);
       setActiveComplexId(complex.id);
       setIsPanelOpen(true);
+      window.history.replaceState(null, '', `/?complex_id=${complex.id}`);
       return;
     }
 
@@ -302,10 +320,20 @@ function HomeContent() {
       setSelectedComplex(null);
       setActiveComplexId(null);
       setIsPanelOpen(false);
+      
+      // 단지 해제 시: 이전 공고가 활성화되어 있으면 공고 ID 유지, 없으면 /
+      if (activeAnnId !== null) {
+        window.history.replaceState(null, '', `/?announcement_id=${activeAnnId}`);
+      } else {
+        window.history.replaceState(null, '', '/');
+      }
     } else {
       setSelectedComplex(complex);
       setActiveComplexId(complex.id);
       setIsPanelOpen(true);
+      
+      // 단지 선택 시: URL에 complex_id 설정
+      window.history.replaceState(null, '', `/?complex_id=${complex.id}`);
     }
   };
 
@@ -479,6 +507,13 @@ function HomeContent() {
             setActiveComplexId(null); 
             setSelectedComplex(null); // 💡 단일 선택 단지 객체 리셋
             setActiveComparisonFolderId(null); // 패널 닫을 때 스펙비교 모드도 해제
+
+            // 패널 닫을 때 URL 복구
+            if (activeAnnId !== null) {
+              window.history.replaceState(null, '', `/?announcement_id=${activeAnnId}`);
+            } else {
+              window.history.replaceState(null, '', '/');
+            }
           }} 
           style={{ 
             '--sidebar-offset-width': isSidebarCollapsed ? '0px' : `${SIDEBAR_DEFAULT_WIDTH}px`,

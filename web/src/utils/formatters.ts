@@ -2,11 +2,18 @@ export const formatMoney = (amount: number | null | undefined): string => {
   if (amount === null || amount === undefined) return '-';
   if (amount >= 100000000) {
     const eok = Math.floor(amount / 100000000);
-    const man = Math.floor((amount % 100000000) / 10000);
-    return `${eok}억 ${man > 0 ? man.toLocaleString() + '만' : ''}원`;
+    const rest = amount % 100000000;
+    const man = Math.floor(rest / 10000);
+    const won = rest % 10000;
+    
+    const manStr = man > 0 ? `${man.toLocaleString()}만` : '';
+    const wonStr = won > 0 ? ` ${won.toLocaleString()}` : '';
+    return `${eok}억${manStr}${wonStr}원`.replace('  ', ' ');
   }
   if (amount >= 10000) {
-    return `${(amount / 10000).toLocaleString()}만 원`;
+    const man = Math.floor(amount / 10000);
+    const won = amount % 10000;
+    return `${man.toLocaleString()}만${won > 0 ? ' ' + won.toLocaleString() : ''}원`;
   }
   return `${amount.toLocaleString()}원`;
 };

@@ -26,6 +26,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   try {
+    // 1. 공고 상세 경로 추가
     const announcements = db.prepare('SELECT id FROM announcements').all() as { id: number }[];
     
     const announcementRoutes = announcements.map((ann) => ({
@@ -35,9 +36,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     }));
 
-    return [...routes, ...announcementRoutes];
+    // 2. 단지 상세 경로 추가 (SEO 유입 극대화)
+    const complexes = db.prepare('SELECT id FROM complexes').all() as { id: number }[];
+
+    const complexRoutes = complexes.map((comp) => ({
+      url: `${baseUrl}/complexes/${comp.id}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    }));
+
+    return [...routes, ...announcementRoutes, ...complexRoutes];
   } catch (error) {
     console.error('Error generating sitemap:', error);
     return routes;
   }
 }
+

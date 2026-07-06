@@ -74,6 +74,34 @@ export default function Sidebar({
     });
   }, [bookmarkedIds, bookmarkUnits]);
 
+  // 외부에서 공고 ID가 활성화되어 전달될 때, 필터 상태(지역 및 접수 상태)를 해당 공고의 데이터에 동기화
+  useEffect(() => {
+    if (activeAnnId && announcements.length > 0) {
+      const activeAnn = announcements.find(a => a.id === activeAnnId);
+      if (activeAnn) {
+        // 1. 지역 동기화
+        const annRegion = activeAnn.region || '';
+        if (annRegion.startsWith('서울')) {
+          setActiveRegion('서울');
+        } else if (annRegion.startsWith('경기')) {
+          setActiveRegion('경기');
+        } else if (annRegion.startsWith('인천')) {
+          setActiveRegion('인천');
+        } else if (annRegion !== '') {
+          setActiveRegion('기타');
+        } else {
+          setActiveRegion('ALL');
+        }
+
+        // 2. 접수 상태 동기화
+        const status = getAnnouncementStatus(activeAnn);
+        if (status) {
+          setActiveTabStatus(status);
+        }
+      }
+    }
+  }, [activeAnnId, announcements]);
+
   // 선택된 공고가 활성화되었을 때 해당 카드로 부드럽게 스크롤 포커스 이동
   useEffect(() => {
     if (activeAnnId !== null) {
