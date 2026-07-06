@@ -9,15 +9,10 @@ import styles from './detail.module.css';
 export const revalidate = 3600; // 1시간 주기로 점진적 정적 재생성(ISR) 활성화
 
 export async function generateStaticParams() {
-  try {
-    const announcements = db.prepare('SELECT id FROM announcements').all() as { id: number }[];
-    return announcements.map((a) => ({
-      id: String(a.id),
-    }));
-  } catch (error) {
-    console.error('Failed to generate static params for announcements:', error);
-    return [];
-  }
+  const announcements = db.prepare('SELECT id FROM announcements').all() as { id: number }[];
+  return announcements.map((a) => ({
+    id: String(a.id),
+  }));
 }
 
 interface PageProps {

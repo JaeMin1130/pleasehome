@@ -6,7 +6,7 @@ def init_db():
     # src/db/db_init.py 기준 3단계 상위가 프로젝트 루트입니다. (절대 경로 하드코딩 방지 - 누적 규칙 #3)
     base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     
-    # 환경변수 또는 backend 디렉토리를 통해 DB 경로 동적 결정 (누적 규칙 #3)
+    # 환경변수 또는 db-pipeline 디렉토리를 통해 DB 경로 동적 결정 (누적 규칙 #3)
     env_path = os.getenv("PUBLIC_HOUSING_DB_PATH")
     if env_path:
         db_path = os.path.abspath(os.path.expanduser(env_path))

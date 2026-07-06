@@ -38,7 +38,7 @@ def get_meta_from_folder(relative_doc_path, base_dir):
 
 
 def get_db_path(base_dir):
-    # 환경변수 또는 backend 디렉토리를 통해 DB 경로 동적 결정 (누적 규칙 #3)
+    # 환경변수 또는 db-pipeline 디렉토리를 통해 DB 경로 동적 결정 (누적 규칙 #3)
     env_path = os.getenv("PUBLIC_HOUSING_DB_PATH")
     if env_path:
         return os.path.abspath(os.path.expanduser(env_path))

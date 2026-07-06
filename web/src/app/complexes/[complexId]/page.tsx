@@ -8,15 +8,10 @@ import styles from './complex.module.css';
 export const revalidate = 3600; // 1시간 주기로 점진적 정적 재생성(ISR) 활성화
 
 export async function generateStaticParams() {
-  try {
-    const complexes = db.prepare('SELECT id FROM complexes').all() as { id: number }[];
-    return complexes.map((c) => ({
-      complexId: String(c.id),
-    }));
-  } catch (error) {
-    console.error('Failed to generate static params for complexes:', error);
-    return [];
-  }
+  const complexes = db.prepare('SELECT id FROM complexes').all() as { id: number }[];
+  return complexes.map((c) => ({
+    complexId: String(c.id),
+  }));
 }
 
 interface PageProps {
