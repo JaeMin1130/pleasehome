@@ -58,7 +58,8 @@ export default async function AnnouncementDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className={styles.container}>
+    <div className={styles.layout}>
+      <div className={styles.container}>
       <article className={styles.card}>
         <span className={styles.badge}>{ann.subscription_type}</span>
         <h1 className={styles.title}>{ann.title}</h1>
@@ -262,6 +263,7 @@ export default async function AnnouncementDetailPage({ params }: PageProps) {
           </section>
         )}
       </article>
+      </div>
     </div>
   );
 }

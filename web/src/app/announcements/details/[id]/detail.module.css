@@ -1,3 +1,14 @@
+.layout {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: var(--layout-height-full);
+  overflow-y: auto;
+  background-color: var(--bg-body);
+  -webkit-overflow-scrolling: touch;
+}
+
 .container {
   max-width: calc(var(--spacing-xl) * 26.5);
   margin: calc(var(--spacing-xl) * 1.25) auto;
@@ -74,7 +85,7 @@
   overflow-x: auto;
   margin-bottom: var(--spacing-lg);
   border-radius: var(--radius-md);
-  border: var(--spacing-3xs) solid var(--border-light);
+  /* border: var(--spacing-3xs) solid var(--border-light); */
 }
 
 
