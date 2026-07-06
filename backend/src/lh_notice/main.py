@@ -131,10 +131,36 @@ def main():
         print("공고 목록을 찾을 수 없거나 해당 기간에 데이터가 없습니다.")
         return
 
+    # 반복문 시작 전 announcement_map.json 로드 및 기존 공고 ID 추출
+    map_path = os.path.join(PDF_SAVE_DIR, "announcement_map.json")
+    map_data = {"LH": {}, "SH": {}, "GH": {}, "민간": {}, "기타": {}}
+    existing_pan_ids = set()
+
+    if os.path.exists(map_path):
+        try:
+            with open(map_path, "r", encoding="utf-8") as f:
+                loaded_data = json.load(f)
+                for k, v in map_data.items():
+                    map_data[k] = loaded_data.get(k, {})
+                    if isinstance(map_data[k], dict):
+                        existing_pan_ids.update(map_data[k].keys())
+        except Exception as re:
+            print(f"[경고] announcement_map.json 읽기 실패: {re}")
+
     print(f"\n총 {len(notices_list)}건의 고유 분양임대공고를 수집했습니다. 상세 조회를 시작합니다.")
     
+    # 매핑 데이터 변경 여부 추적 변수
+    is_map_updated = False
+
     for notice in notices_list:
+        pan_id = notice.get("PAN_ID")
         title = notice.get("PAN_NM", "")
+        
+        # 이미 수집된 공고 ID인 경우 상세 조회 및 파일 다운로드 전체 패스
+        if pan_id in existing_pan_ids:
+            print(f"\n[{title}] 이미 수집된 공고입니다. 건너뜁니다.")
+            continue
+            
         cnp_nm = notice.get("CNP_CD_NM", "")
         
         # 지역코드 변환을 거치지 못한 텍스트 매칭용 2차 검증 필터 (전체 조회 [None] 시에만 작동)
@@ -142,7 +168,6 @@ def main():
             if not any(region in title or region in cnp_nm for region in args.regions):
                 continue
                 
-        pan_id = notice.get("PAN_ID")
         pan_dt = notice.get("PAN_DT", "")
         spl_inf_tp_cd = notice.get("SPL_INF_TP_CD")
         sys_ds_cd = notice.get("CCR_CNNT_SYS_DS_CD")
@@ -221,20 +246,7 @@ def main():
             except Exception as me:
                 print(f"[경고] download_meta.json 작성 실패: {me}")
             
-            # docs/pdf/announcement_map.json 공고 매핑 기록 갱신
-            map_path = os.path.join(PDF_SAVE_DIR, "announcement_map.json")
-            map_data = {"LH": {}, "SH": {}, "GH": {}, "민간": {}, "기타": {}}
-            if os.path.exists(map_path):
-                try:
-                    with open(map_path, "r", encoding="utf-8") as f:
-                        loaded_data = json.load(f)
-                        # 로드된 데이터 복사 및 누락된 키 보강
-                        for k, v in map_data.items():
-                            map_data[k] = loaded_data.get(k, {})
-                except Exception as re:
-                    print(f"[경고] announcement_map.json 읽기 실패: {re}")
-            
-            # 기관 분류 매핑
+            # 루프 내부에서는 메모리 내 map_data 구조체만 갱신
             inst_key = merged_meta.get("_institution", "기타").upper()
             if inst_key not in ["LH", "SH", "GH", "민간"]:
                 if "민간" in inst_key:
@@ -243,16 +255,22 @@ def main():
                     inst_key = "기타"
             
             map_data[inst_key][pan_id] = title
-            
-            try:
-                with open(map_path, "w", encoding="utf-8") as f:
-                    json.dump(map_data, f, ensure_ascii=False, indent=2)
-                print(f" -> announcement_map.json 매핑 기록 완료 (기관: {inst_key})")
-            except Exception as we:
-                print(f"[경고] announcement_map.json 쓰기 실패: {we}")
+            is_map_updated = True
+            print(f" -> announcement_map.json 메모리 매핑 기록 완료 (기관: {inst_key})")
                     
         except Exception as e:
             print(f"상세 조회/다운로드 실패: {e}")
+
+    # 반복문 종료 후 변경 사항이 있을 때만 파일 쓰기 1회 수행
+    if is_map_updated:
+        try:
+            with open(map_path, "w", encoding="utf-8") as f:
+                json.dump(map_data, f, ensure_ascii=False, indent=2)
+            print(f"\n[완료] announcement_map.json 최종 갱신 완료 완료")
+        except Exception as we:
+            print(f"[경고] announcement_map.json 최종 쓰기 실패: {we}")
+    else:
+        print("\n새로 추가된 공고가 없어 announcement_map.json을 갱신하지 않습니다.")
 
 if __name__ == "__main__":
     main()
