@@ -735,7 +735,9 @@ export default function Sidebar({
                           onClick={() => {
                             if (confirm(`'${folder.name}' 폴더를 삭제하시겠습니까? 안의 저장 단지들도 함께 해제됩니다.`)) {
                               onRemoveFolder(folder.id);
-                              if (isExpanded) setActiveFolderId(null);
+                              if (isExpanded) {
+                                setActiveFolderIds(activeFolderIds.filter(id => id !== folder.id));
+                              }
                             }
                           }}
                           title="폴더 삭제"
