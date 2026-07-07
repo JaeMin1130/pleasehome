@@ -129,11 +129,11 @@ export default function AnnouncementCard({
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       
       let currentStatus: 'CLOSED' | 'UPCOMING' | 'ONGOING' = 'CLOSED';
-      if (minStart && maxEnd) {
+      if (minStart) {
         const startDate = new Date(minStart.getFullYear(), minStart.getMonth(), minStart.getDate());
         if (today < startDate) {
           currentStatus = 'UPCOMING';
-        } else if (now <= maxEnd) {
+        } else if (!maxEnd || now <= maxEnd) {
           currentStatus = 'ONGOING';
         } else {
           currentStatus = 'CLOSED';
@@ -147,7 +147,11 @@ export default function AnnouncementCard({
           const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
           return `접수 D-${diffDays}`;
         }
-      } else if (currentStatus === 'ONGOING' && maxEnd) {
+      } else if (currentStatus === 'ONGOING') {
+        if (!maxEnd) {
+          return '상시모집';
+        }
+
         const diffTime = maxEnd.getTime() - now.getTime();
 
         if (diffTime > 0) {
@@ -226,13 +230,13 @@ export default function AnnouncementCard({
   };
 
   const getAnnouncementStatus = () => {
-    if (!minStart || !maxEnd) return 'CLOSED';
+    if (!minStart) return 'CLOSED';
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const startDate = new Date(minStart.getFullYear(), minStart.getMonth(), minStart.getDate());
     
     if (today < startDate) return 'UPCOMING';
-    else if (now <= maxEnd) return 'ONGOING';
+    else if (!maxEnd || now <= maxEnd) return 'ONGOING';
     else return 'CLOSED';
   };
 
