@@ -492,6 +492,13 @@ function HomeContent() {
               return next;
             });
           }}
+          onMoveBookmarkItem={(complexId, targetFolderId) => {
+            setBookmarkItems(prev => {
+              const next = prev.map(item => item.complexId === complexId ? { ...item, folderId: targetFolderId } : item);
+              localStorage.setItem('bookmarkItems', JSON.stringify(next));
+              return next;
+            });
+          }}
           activeComparisonFolderId={activeComparisonFolderId}
           onToggleComparison={(folderId) => {
             if (activeComparisonFolderId === folderId) {

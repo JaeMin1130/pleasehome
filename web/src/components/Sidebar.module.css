@@ -765,6 +765,17 @@
   box-shadow: var(--shadow-md);
 }
 
+.accordion-item.drag-over {
+  border-style: dashed !important;
+  background-color: var(--bg-surface-hover) !important;
+  box-shadow: var(--shadow-md);
+}
+
+.bookmark-card-wrapper.dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+
 .accordion-item:hover {
   border-color: var(--border-strong);
 }

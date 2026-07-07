@@ -33,6 +33,7 @@ interface SidebarProps {
   onAddFolder: (name: string, color?: string) => string;
   onRemoveFolder: (folderId: string) => void;
   onUpdateFolder?: (folderId: string, name: string, color?: string) => void;
+  onMoveBookmarkItem?: (complexId: number, targetFolderId: string) => void;
   activeComparisonFolderId: string | null;
   onToggleComparison: (folderId: string) => void;
   onHoverComplex?: (id: number | null) => void;
@@ -45,7 +46,7 @@ export default function Sidebar({
   activeTab, allComplexes, style,
   bookmarkedIds, onToggleBookmark,
   bookmarkFolders, bookmarkItems, activeFolderId, setActiveFolderId,
-  onAddFolder, onRemoveFolder, onUpdateFolder,
+  onAddFolder, onRemoveFolder, onUpdateFolder, onMoveBookmarkItem,
   activeComparisonFolderId, onToggleComparison,
   onHoverComplex
 }: SidebarProps) {
@@ -68,6 +69,10 @@ export default function Sidebar({
     }
     setEditingFolderId(null);
   };
+
+  // 🔀 드래그 앤 드롭 상태 관리
+  const [draggingComplexId, setDraggingComplexId] = useState<number | null>(null);
+  const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null);
 
   // 숨긴 공고 목록 관리 상태 (최근 숨긴 순서 정렬을 위한 타임스탬프 기록 구조)
   const [disabledAnns, setDisabledAnns] = useState<{ id: number; disabledAt: string }[]>([]);
@@ -623,8 +628,36 @@ export default function Sidebar({
                 <div 
                   key={folder.id} 
                   id={`folder-card-${folder.id}`}
-                  className={`${styles['accordion-item']} ${isExpanded ? styles.active : ''}`}
-                  style={isExpanded ? { borderColor: folder.color } : undefined}
+                  className={`${styles['accordion-item']} ${isExpanded ? styles.active : ''} ${dragOverFolderId === folder.id ? styles['drag-over'] : ''}`}
+                  style={{
+                    ...(isExpanded ? { borderColor: folder.color } : {}),
+                    ...(dragOverFolderId === folder.id ? { borderColor: folder.color } : {})
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    if (draggingComplexId) {
+                      const item = bookmarkItems.find(i => i.complexId === draggingComplexId);
+                      if (item && item.folderId === folder.id) {
+                        return;
+                      }
+                    }
+                    if (dragOverFolderId !== folder.id) {
+                      setDragOverFolderId(folder.id);
+                    }
+                  }}
+                  onDragLeave={() => {
+                    setDragOverFolderId(null);
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragOverFolderId(null);
+                    setDraggingComplexId(null); // 👈 부모 폴더 재마운트 시 onDragEnd 유실에 따른 드래그 상태 강제 해제
+                    const complexIdStr = e.dataTransfer.getData("text/plain");
+                    const complexId = parseInt(complexIdStr, 10);
+                    if (!isNaN(complexId) && onMoveBookmarkItem) {
+                      onMoveBookmarkItem(complexId, folder.id);
+                    }
+                  }}
                 >
                   {/* 💡 아코디언 헤더: 폴더 행 */}
                   <div 
@@ -741,7 +774,18 @@ export default function Sidebar({
                                 const item = bookmarkItems.find(i => i.complexId === complex.id);
                                 const ann = announcements.find(a => a.id === complex.announcement_id);
                                 return (
-                                  <div key={complex.id} className={styles['bookmark-card-wrapper']}>
+                                  <div 
+                                    key={complex.id} 
+                                    className={`${styles['bookmark-card-wrapper']} ${draggingComplexId === complex.id ? styles.dragging : ''}`}
+                                    draggable={true}
+                                    onDragStart={(e) => {
+                                      e.dataTransfer.setData("text/plain", complex.id.toString());
+                                      setDraggingComplexId(complex.id);
+                                    }}
+                                    onDragEnd={() => {
+                                      setDraggingComplexId(null);
+                                    }}
+                                  >
                                     <ComplexCard
                                       complex={complex}
                                       isActive={activeComplexId === complex.id}
