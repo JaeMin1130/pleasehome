@@ -362,61 +362,48 @@ export default function AnnouncementCard({
         if (steps.length === 0) return null;
 
         const now = new Date();
+        const totalSegments = steps.length - 1;
 
-        // 💡 단계 기반 정적 계산 및 날짜 보간의 조합 (+ "별도 안내" 및 상수 보정값 반영)
-        let activeWidth = 0;
-        if (isMounted && steps.length > 1) {
-          const totalSegments = steps.length - 1;
-          const activeIdx = steps.findIndex(s => s.status === 'active');
-          const lastCompletedIdx = steps.map(s => s.status).lastIndexOf('completed');
+        // 💡 2번 예외 처리 동기화: 진행 단계는 없고 대기 단계의 날짜가 유효하지 않으면 강제로 active 노드로 설정
+        const activeIdx = steps.findIndex(s => s.status === 'active');
+        const lastCompletedIdx = steps.map(s => s.status).lastIndexOf('completed');
+        if (isMounted && activeIdx === -1 && lastCompletedIdx !== -1) {
+          const nextIdx = lastCompletedIdx + 1;
+          if (nextIdx < steps.length) {
+            const nextStepData = sortedScheds[nextIdx];
+            const start = nextStepData.start_date ? new Date(nextStepData.start_date) : null;
+            const end = nextStepData.end_date ? new Date(nextStepData.end_date) : null;
+            const hasValidDate = (start && !isNaN(start.getTime())) || (end && !isNaN(end.getTime()));
 
-          if (activeIdx !== -1) {
-            // 1. 진행 중인 단계가 있다면, 날짜 보간 없이 해당 단계 노드 위치(액티브 위치)까지 꽉 채움
-            activeWidth = (activeIdx / totalSegments) * 100;
-          } else if (lastCompletedIdx !== -1) {
-            // 2. 진행 중인 단계는 없고 완료된 단계만 있는 경우 (공백기)
-            const nextIdx = lastCompletedIdx + 1;
-
-            if (nextIdx < steps.length) {
-              const nextStepData = sortedScheds[nextIdx];
-              // 다음 대기 단계의 날짜가 유효한지 검증
-              const start = nextStepData.start_date ? new Date(nextStepData.start_date) : null;
-              const end = nextStepData.end_date ? new Date(nextStepData.end_date) : null;
-              const hasValidDate = (start && !isNaN(start.getTime())) || (end && !isNaN(end.getTime()));
-
-              if (!hasValidDate) {
-                // 💡 [2번 예외 처리] 다음 대기 단계의 날짜가 없으면 (예: "별도 안내" 등) 해당 노드 위치까지 다 채워버림
-                activeWidth = (nextIdx / totalSegments) * 100;
-                // 💡 [노드 상태 동기화] 게이지가 도달한 노드 자체의 상태도 강제로 'active'로 변경하여 노드닷과 라벨을 활성화함
-                steps[nextIdx].status = 'active';
-              } else {
-                // 💡 다음 단계 날짜가 있으면 최근 완료 노드 위치 + 0.3 구간(상수 보정값)으로 채움
-                activeWidth = ((lastCompletedIdx + 0.3) / totalSegments) * 100;
-              }
-            } else {
-              // 모든 단계 완료
-              activeWidth = 100;
+            if (!hasValidDate) {
+              steps[nextIdx].status = 'active';
             }
-          } else {
-            // 모두 대기 상태
-            activeWidth = 0;
           }
-          activeWidth = Math.max(0, Math.min(100, activeWidth));
         }
+
+        // 💡 개별 연결선(Connector Line)의 진행도(%) 계산 함수
+        const getConnectorWidth = (idx: number) => {
+          const currentActiveIdx = steps.findIndex(s => s.status === 'active');
+          const currentLastCompletedIdx = steps.map(s => s.status).lastIndexOf('completed');
+
+          if (currentActiveIdx !== -1) {
+            // 💡 진행 중인 단계가 있다면, 해당 단계 노드(currentActiveIdx)까지 오는 모든 선은 100% 가득 채움
+            if (idx < currentActiveIdx) return 100;
+            return 0;
+          } else if (currentLastCompletedIdx !== -1) {
+            if (idx < currentLastCompletedIdx) return 100;
+            if (idx === currentLastCompletedIdx) {
+              // 💡 다음 대기 노드 날짜가 있으면 완료 위치에서 30%만큼만 선을 채워 연출
+              return 30;
+            }
+            return 0;
+          }
+          return 0;
+        };
 
         return (
           <div className={styles['timeline-bar-wrapper']} onClick={(e) => e.stopPropagation()}>
-            {/* 진행 상태 백그라운드 선 */}
-            <div className={styles['timeline-line']}>
-              {/* 활성화된 진행선 (부모 백그라운드선 내부에 귀속) */}
-              <div 
-                className={styles['timeline-line-active']} 
-                style={{ width: `${activeWidth}%` }} 
-              />
-            </div>
-            
-            {/* 각 마일스톤 노드 */}
-            <div className={styles['timeline-nodes']}>
+            <ol className={styles['timeline-flex-container']}>
               {steps.map((step, idx) => {
                 const isFirst = idx === 0;
                 const isLast = idx === steps.length - 1;
@@ -428,28 +415,46 @@ export default function AnnouncementCard({
                 `.trim().replace(/\s+/g, ' ');
 
                 return (
-                  <div key={step.id} className={nodeClass}>
-                    {/* 💡 닷 자체 클래스를 바깥으로 승격시켜 Mantine 덮어쓰기 무력화 */}
-                    <div className={styles['node-dot']}>
-                      <Tooltip 
-                        label={step.dateDetail} 
-                        position="top" 
-                        withArrow 
-                        color="dark"
-                        offset={6}
-                        transitionProps={{ transition: 'fade', duration: 150 }}
-                        className={styles['stepper-tooltip']}
-                      >
-                        <div className={styles['node-dot-trigger']}>
-                          {step.status === 'completed' ? '✓' : ''}
-                        </div>
-                      </Tooltip>
-                    </div>
-                    <span className={styles['node-label']}>{step.label}</span>
-                  </div>
+                  <React.Fragment key={step.id}>
+                    {/* 의미론적 노드 표시 (W3C 표준 준수) */}
+                    <li className={nodeClass} aria-current={step.status === 'active' ? 'step' : undefined}>
+                      <div className={styles['node-dot']}>
+                        <Tooltip 
+                          label={step.dateDetail} 
+                          position="top" 
+                          withArrow 
+                          color="dark"
+                          offset={6}
+                          transitionProps={{ transition: 'fade', duration: 150 }}
+                          className={styles['stepper-tooltip']}
+                        >
+                          <div className={styles['node-dot-trigger']}>
+                            {step.status === 'completed' ? '✓' : ''}
+                          </div>
+                        </Tooltip>
+                      </div>
+                      <span className={styles['node-label']}>
+                        {step.label}
+                        {step.status === 'completed' && <span className={styles['sr-only']}> (완료됨)</span>}
+                      </span>
+                    </li>
+
+                    {/* 노드 사이의 가변 연결선 (W3C 표준 <li> 및 flex-grow 렌더링) */}
+                    {!isLast && (() => {
+                      const fillWidth = getConnectorWidth(idx);
+                      return (
+                        <li className={styles['connector-line']} aria-hidden="true">
+                          <div 
+                            className={styles['connector-line-active']} 
+                            style={{ width: `${fillWidth}%` }} 
+                          />
+                        </li>
+                      );
+                    })()}
+                  </React.Fragment>
                 );
               })}
-            </div>
+            </ol>
           </div>
         );
       })()}

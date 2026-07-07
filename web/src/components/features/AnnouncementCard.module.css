@@ -307,55 +307,73 @@
     position: relative;
     width: 100%;
     margin-top: var(--spacing-sm);
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
     padding-top: var(--spacing-md); /* 💡 툴팁이 위쪽으로 부드럽게 뜰 수 있는 공간 확보 */
     --dot-size: var(--spacing-md);
 }
 
-/* 💡 진행 백그라운드 선의 Y축을 닷의 수직 정중앙에 고정 정렬 */
-.timeline-line {
-    position: absolute;
-    top: calc(var(--spacing-md) + (var(--dot-size) / 2) - (var(--spacing-3xs) / 2));
-    left: calc(var(--spacing-md) * 1.25);
-    right: calc(var(--spacing-md) * 1.25);
-    height: var(--spacing-3xs);
-    background-color: var(--border-light);
-    border-radius: var(--radius-full);
-    z-index: 1;
-}
-
-/* 💡 활성 진행 게이지선: 부모(회색선) 내부에 귀속되므로 top, left, height가 부모 기준으로 상속됨 */
-.timeline-line-active {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    background-color: var(--primary);
-    border-radius: var(--radius-full);
-    z-index: 2;
-    transition: width var(--transition-normal) ease-in-out;
-}
-
-.timeline-nodes {
+.timeline-flex-container {
     display: flex;
-    justify-content: space-between;
+    align-items: flex-start; /* 💡 상단 정렬로 닷 센터 라인을 완벽히 일치시킴 */
     width: 100%;
     position: relative;
-    z-index: 3;
+    padding: 0;
+    margin: 0;
+    list-style: none; /* 리스트 기본 스타일 해제 */
 }
 
 .timeline-node {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--spacing-xs);
     position: relative;
+    flex-shrink: 0; /* 💡 글자 길이에 맞춰 크기 고정, 찌그러지지 않음 */
+    z-index: 3;
+}
+
+/* 💡 [핵심] 노드 박스 가로 전체를 관통하는 배경 가상 선 추가 */
+.timeline-node::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(var(--dot-size) / 2 - var(--spacing-2xs) / 2);
+    height: var(--spacing-2xs);
+    z-index: 1;
+}
+
+/* 노드 상태별 내부 배경 선 색상 정의 (그라데이션 연출) */
+.timeline-node.upcoming::before {
+    background-color: var(--border-light);
+}
+
+.timeline-node.completed::before {
+    background-color: var(--primary);
+}
+
+.timeline-node.active::before {
+    background: linear-gradient(to right, var(--primary) var(--position-center), var(--border-light) var(--position-center));
+}
+
+/* 💡 첫 노드와 끝 노드의 선 시작/종료점 제한 */
+.timeline-node.first-node::before {
+    left: var(--position-center);
+}
+.timeline-node.first-node.active::before {
+    background: var(--border-light);
+}
+
+.timeline-node.last-node::before {
+    right: var(--position-center);
+}
+.timeline-node.last-node.active::before {
+    background: var(--primary);
 }
 
 .node-dot {
     width: var(--dot-size);
     height: var(--dot-size);
-    border-radius: 50%;
+    border-radius: var(--radius-full); /* 💡 50% 하드코딩 제거 및 전역 디자인 토큰 치환 */
     flex-shrink: 0;
     background-color: var(--bg-surface);
     border: var(--spacing-3xs) solid var(--border-strong);
@@ -377,6 +395,7 @@
     text-align: center;
     white-space: nowrap;
     text-decoration: none; /* 밑줄 상속 무력화 */
+    margin-top: var(--spacing-xs);
 }
 
 /* 활성 상태 (Active Step) */
@@ -412,19 +431,37 @@
     color: var(--text-muted);
 }
 
-/* 💬 Mantine Tooltip 오버라이딩 스타일 */
-.stepper-tooltip {
-    font-size: var(--font-size-xs);
-    padding: var(--spacing-2xs) var(--spacing-xs);
-    border-radius: var(--radius-sm);
+/* 💡 가변 거리 연결선 (Connector Line) 스타일 */
+.connector-line {
+    flex-grow: 1; /* 💡 텍스트 길이에 따라 남는 가로폭 공간을 자동으로 가득 채움 */
+    height: var(--spacing-2xs);
+    background-color: var(--border-light);
+    margin: 0; /* 💡 노드 내부 가상선과 접합하므로 음수 마진 제거 */
+    position: relative;
+    top: calc(var(--dot-size) / 2 - var(--spacing-2xs) / 2); /* 💡 Y축을 닷의 정중앙 높이로 배치 */
+    z-index: 1;
+    list-style: none;
 }
 
-/* 💡 닷 내부의 툴팁 트리거를 꽉 채우고 flex 중앙 정렬 */
-.node-dot-trigger {
-    width: 100%;
+.connector-line-active {
+    position: absolute;
+    top: 0;
+    left: 0;
     height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
+    background-color: var(--primary);
+    transition: width var(--transition-normal) ease-in-out;
+    z-index: 2;
+}
+
+/* 웹 접근성 스크린 리더용 숨김 텍스트 */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
