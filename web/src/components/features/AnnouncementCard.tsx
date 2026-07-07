@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Announcement } from '@/types';
 import Link from 'next/link';
 import { Stepper, Tooltip } from '@mantine/core';
@@ -98,74 +98,94 @@ export default function AnnouncementCard({
           ? 'gh'
           : 'private';
 
-  const getDDayBadgeText = () => {
+  const [dDayText, setDDayText] = useState<string | null>(null);
+
+  const { minStart, maxEnd } = useMemo(() => {
     const applySchedules = ann.schedules.filter(s => s.schedule_type.includes('신청접수'));
-    if (applySchedules.length === 0) return null;
-    
-    let minStart: Date | null = null;
-    let maxEnd: Date | null = null;
+    let min: Date | null = null;
+    let max: Date | null = null;
     for (const s of applySchedules) {
       if (s.start_date) {
         const start = new Date(s.start_date);
         if (!isNaN(start.getTime())) {
-          if (!minStart || start < minStart) minStart = start;
+          if (!min || start < min) min = start;
         }
       }
       if (s.end_date) {
         const end = new Date(s.end_date);
         if (!isNaN(end.getTime())) {
-          if (!maxEnd || end > maxEnd) maxEnd = end;
+          if (!max || end > max) max = end;
         }
       }
     }
+    return { minStart: min, maxEnd: max };
+  }, [ann.schedules]);
 
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const status = getAnnouncementStatus();
+  useEffect(() => {
+    if (!isMounted) return;
 
-    if (status === 'UPCOMING' && minStart) {
-      const startDate = new Date(minStart.getFullYear(), minStart.getMonth(), minStart.getDate());
-      const diffTime = startDate.getTime() - today.getTime();
-      if (diffTime > 0) {
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return `D-${diffDays}`;
+    const calculateDDay = () => {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      let currentStatus: 'CLOSED' | 'UPCOMING' | 'ONGOING' = 'CLOSED';
+      if (minStart && maxEnd) {
+        const startDate = new Date(minStart.getFullYear(), minStart.getMonth(), minStart.getDate());
+        if (today < startDate) {
+          currentStatus = 'UPCOMING';
+        } else if (now <= maxEnd) {
+          currentStatus = 'ONGOING';
+        } else {
+          currentStatus = 'CLOSED';
+        }
       }
-    } else if (status === 'ONGOING' && maxEnd) {
-      const endDate = new Date(maxEnd.getFullYear(), maxEnd.getMonth(), maxEnd.getDate());
-      const diffTime = endDate.getTime() - today.getTime();
-      if (diffTime === 0) {
-        return '오늘 마감';
-      } else if (diffTime > 0) {
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return `마감 D-${diffDays}`;
-      }
-    }
-    return null;
-  };
 
-  const getAnnouncementStatus = () => {
-    const applySchedules = ann.schedules.filter(s => s.schedule_type.includes('신청접수'));
-    if (applySchedules.length === 0) return 'CLOSED';
-    let minStart: Date | null = null, maxEnd: Date | null = null;
-    for (const s of applySchedules) {
-      if (s.start_date) {
-        const start = new Date(s.start_date);
-        if (!isNaN(start.getTime())) { if (!minStart || start < minStart) minStart = start; }
+      if (currentStatus === 'UPCOMING' && minStart) {
+        const startDate = new Date(minStart.getFullYear(), minStart.getMonth(), minStart.getDate());
+        const diffTime = startDate.getTime() - today.getTime();
+        if (diffTime > 0) {
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          return `접수 D-${diffDays}`;
+        }
+      } else if (currentStatus === 'ONGOING' && maxEnd) {
+        const diffTime = maxEnd.getTime() - now.getTime();
+
+        if (diffTime > 0) {
+          const hoursLeft = diffTime / (1000 * 60 * 60);
+          if (hoursLeft < 24) {
+            const hours = Math.floor(diffTime / (1000 * 60 * 60));
+            const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diffTime % (1000 * 60)) / 1000);
+            
+            const hStr = String(hours).padStart(2, '0');
+            const mStr = String(minutes).padStart(2, '0');
+            const sStr = String(seconds).padStart(2, '0');
+            
+            return `마감 ${hStr}:${mStr}:${sStr}`;
+          } else {
+            const endDate = new Date(maxEnd.getFullYear(), maxEnd.getMonth(), maxEnd.getDate());
+            const diffDaysTime = endDate.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffDaysTime / (1000 * 60 * 60 * 24));
+            return `마감 D-${diffDays}`;
+          }
+        } else if (diffTime <= 0) {
+          const endDate = new Date(maxEnd.getFullYear(), maxEnd.getMonth(), maxEnd.getDate());
+          if (today.getTime() === endDate.getTime()) {
+            return '오늘 마감';
+          }
+        }
       }
-      if (s.end_date) {
-        const end = new Date(s.end_date);
-        if (!isNaN(end.getTime())) { if (!maxEnd || end > maxEnd) maxEnd = end; }
-      }
-    }
-    if (!minStart || !maxEnd) return 'CLOSED';
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const startDate = new Date(minStart.getFullYear(), minStart.getMonth(), minStart.getDate());
-    
-    if (today < startDate) return 'UPCOMING';
-    else if (now <= maxEnd) return 'ONGOING';
-    else return 'CLOSED';
-  };
+      return null;
+    };
+
+    setDDayText(calculateDDay());
+
+    const intervalId = setInterval(() => {
+      setDDayText(calculateDDay());
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [isMounted, minStart, maxEnd]);
 
   const getApplyPeriodText = () => {
     const applySchedules = ann.schedules.filter(s => s.schedule_type.includes('신청접수'));
@@ -205,8 +225,18 @@ export default function AnnouncementCard({
     return null;
   };
 
+  const getAnnouncementStatus = () => {
+    if (!minStart || !maxEnd) return 'CLOSED';
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startDate = new Date(minStart.getFullYear(), minStart.getMonth(), minStart.getDate());
+    
+    if (today < startDate) return 'UPCOMING';
+    else if (now <= maxEnd) return 'ONGOING';
+    else return 'CLOSED';
+  };
+
   const getTimelineSteps = () => {
-    // 💡 1. 일정의 시작일(또는 종료일) 기준으로 정밀 시간 정렬
     const sortedScheds = [...ann.schedules].sort((a, b) => {
       const dateA = a.start_date ? new Date(a.start_date) : (a.end_date ? new Date(a.end_date) : null);
       const dateB = b.start_date ? new Date(b.start_date) : (b.end_date ? new Date(b.end_date) : null);
@@ -250,7 +280,6 @@ export default function AnnouncementCard({
     const steps = sortedScheds.map((s) => {
       const { status, statusText } = getStepStatus(s);
 
-      // 💡 4. 말풍선(툴팁)에 출력할 포맷화된 날짜 상세 구문
       let dateDetail = '';
       if (s.start_date || s.end_date) {
         dateDetail = `${formatDateWithTime(s.start_date)} ~ ${formatDateWithTime(s.end_date)}`;
@@ -258,7 +287,6 @@ export default function AnnouncementCard({
         dateDetail = s.raw_text || '공고 본문 참고';
       }
 
-      // 화면 표시용 축약 노드 레이블 획득
       let label = s.schedule_type;
       if (label.length > 10) {
         label = label.substring(0, 10) + '...';
@@ -278,8 +306,6 @@ export default function AnnouncementCard({
     return { steps, sortedScheds };
   };
 
-  const dDayText = getDDayBadgeText();
-  const status = getAnnouncementStatus();
   const periodText = getApplyPeriodText();
 
   return (
@@ -295,7 +321,22 @@ export default function AnnouncementCard({
         </div>
         <div className={styles['header-right-actions']}>
           {dDayText && (
-            <span className={styles['d-day-badge']}>{dDayText}</span>
+            periodText ? (
+              <Tooltip 
+                label={`접수 기간: ${periodText}`} 
+                position="top" 
+                withArrow 
+                color="grey"
+                offset={2}
+                transitionProps={{ transition: 'fade', duration: 150 }}
+              >
+                <span className={styles['d-day-badge']}>
+                  {dDayText}
+                </span>
+              </Tooltip>
+            ) : (
+              <span className={styles['d-day-badge']}>{dDayText}</span>
+            )
           )}
           {onDisableToggle && (
             <button
@@ -356,15 +397,17 @@ export default function AnnouncementCard({
         </div>
       )}
 
-      {/* 모든 공고 상태에 대해 진행 단계 바 렌더링 */}
+      {/* 접수 마감(CLOSED) 상태의 공고에 대해서만 진행 단계 바 렌더링 */}
       {(() => {
+        const currentStatus = getAnnouncementStatus();
+        if (currentStatus !== 'CLOSED') return null;
+
         const { steps, sortedScheds } = getTimelineSteps();
         if (steps.length === 0) return null;
 
         const now = new Date();
         const totalSegments = steps.length - 1;
 
-        // 💡 2번 예외 처리 동기화: 진행 단계는 없고 대기 단계의 날짜가 유효하지 않으면 강제로 active 노드로 설정
         const activeIdx = steps.findIndex(s => s.status === 'active');
         const lastCompletedIdx = steps.map(s => s.status).lastIndexOf('completed');
         if (isMounted && activeIdx === -1 && lastCompletedIdx !== -1) {
@@ -381,19 +424,16 @@ export default function AnnouncementCard({
           }
         }
 
-        // 💡 개별 연결선(Connector Line)의 진행도(%) 계산 함수
         const getConnectorWidth = (idx: number) => {
           const currentActiveIdx = steps.findIndex(s => s.status === 'active');
           const currentLastCompletedIdx = steps.map(s => s.status).lastIndexOf('completed');
 
           if (currentActiveIdx !== -1) {
-            // 💡 진행 중인 단계가 있다면, 해당 단계 노드(currentActiveIdx)까지 오는 모든 선은 100% 가득 채움
             if (idx < currentActiveIdx) return 100;
             return 0;
           } else if (currentLastCompletedIdx !== -1) {
             if (idx < currentLastCompletedIdx) return 100;
             if (idx === currentLastCompletedIdx) {
-              // 💡 다음 대기 노드 날짜가 있으면 완료 위치에서 30%만큼만 선을 채워 연출
               return 30;
             }
             return 0;
@@ -416,7 +456,6 @@ export default function AnnouncementCard({
 
                 return (
                   <React.Fragment key={step.id}>
-                    {/* 의미론적 노드 표시 (W3C 표준 준수) */}
                     <li className={nodeClass} aria-current={step.status === 'active' ? 'step' : undefined}>
                       <Tooltip 
                         label={step.dateDetail} 
@@ -436,7 +475,6 @@ export default function AnnouncementCard({
                       </span>
                     </li>
 
-                    {/* 노드 사이의 가변 연결선 (W3C 표준 <li> 및 flex-grow 렌더링) */}
                     {!isLast && (() => {
                       const fillWidth = getConnectorWidth(idx);
                       return (
@@ -455,7 +493,6 @@ export default function AnnouncementCard({
           </div>
         );
       })()}
-      
       {isActive && (() => {
         let currentNum = 1;
         return (
