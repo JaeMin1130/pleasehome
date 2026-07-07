@@ -82,6 +82,12 @@ export default function AnnouncementCard({
   isDisabled,
   onDisableToggle
 }: AnnouncementCardProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const instClass = ann.institution.includes('SH') 
     ? 'sh' 
     : ann.institution.includes('LH') 
@@ -92,10 +98,12 @@ export default function AnnouncementCard({
           ? 'gh'
           : 'private';
 
-  const getDDayText = () => {
+  const getDDayBadgeText = () => {
     const applySchedules = ann.schedules.filter(s => s.schedule_type.includes('신청접수'));
     if (applySchedules.length === 0) return null;
+    
     let minStart: Date | null = null;
+    let maxEnd: Date | null = null;
     for (const s of applySchedules) {
       if (s.start_date) {
         const start = new Date(s.start_date);
@@ -103,18 +111,36 @@ export default function AnnouncementCard({
           if (!minStart || start < minStart) minStart = start;
         }
       }
+      if (s.end_date) {
+        const end = new Date(s.end_date);
+        if (!isNaN(end.getTime())) {
+          if (!maxEnd || end > maxEnd) maxEnd = end;
+        }
+      }
     }
-    if (!minStart) return null;
-    
+
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const startDate = new Date(minStart.getFullYear(), minStart.getMonth(), minStart.getDate());
-    
-    const diffTime = startDate.getTime() - today.getTime();
-    if (diffTime <= 0) return null; 
-    
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return `D-${diffDays}`;
+    const status = getAnnouncementStatus();
+
+    if (status === 'UPCOMING' && minStart) {
+      const startDate = new Date(minStart.getFullYear(), minStart.getMonth(), minStart.getDate());
+      const diffTime = startDate.getTime() - today.getTime();
+      if (diffTime > 0) {
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return `D-${diffDays}`;
+      }
+    } else if (status === 'ONGOING' && maxEnd) {
+      const endDate = new Date(maxEnd.getFullYear(), maxEnd.getMonth(), maxEnd.getDate());
+      const diffTime = endDate.getTime() - today.getTime();
+      if (diffTime === 0) {
+        return '오늘 마감';
+      } else if (diffTime > 0) {
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return `마감 D-${diffDays}`;
+      }
+    }
+    return null;
   };
 
   const getAnnouncementStatus = () => {
@@ -191,42 +217,38 @@ export default function AnnouncementCard({
     });
 
     const now = new Date();
-    let currentStepIdx = -1;
 
-    // 💡 2. 오늘 시점 기준으로 아직 종료되지 않은 가장 빠른 단계를 진행중(active) 상태로 특정
-    for (let i = 0; i < sortedScheds.length; i++) {
-      const s = sortedScheds[i];
-      if (s.end_date) {
-        const end = new Date(s.end_date);
-        if (!isNaN(end.getTime()) && now <= end) {
-          currentStepIdx = i;
-          break;
-        }
-      } else if (s.start_date) {
-        const start = new Date(s.start_date);
-        if (!isNaN(start.getTime()) && now <= start) {
-          currentStepIdx = i;
-          break;
-        }
+    const getStepStatus = (s: any) => {
+      const start = s.start_date ? new Date(s.start_date) : null;
+      const end = s.end_date ? new Date(s.end_date) : null;
+
+      const hasStart = start && !isNaN(start.getTime());
+      const hasEnd = end && !isNaN(end.getTime());
+
+      if (hasStart && hasEnd) {
+        if (now > end) return { status: 'completed', statusText: '완료' };
+        if (now >= start && now <= end) return { status: 'active', statusText: '진행중' };
+        return { status: 'upcoming', statusText: '대기' };
+      } else if (hasStart) {
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+        
+        if (today > startDay) return { status: 'completed', statusText: '완료' };
+        if (today.getTime() === startDay.getTime()) return { status: 'active', statusText: '진행중' };
+        return { status: 'upcoming', statusText: '대기' };
+      } else if (hasEnd) {
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+        
+        if (today > endDay) return { status: 'completed', statusText: '완료' };
+        if (today.getTime() === endDay.getTime()) return { status: 'active', statusText: '진행중' };
+        return { status: 'upcoming', statusText: '대기' };
       }
-    }
+      return { status: 'upcoming', statusText: '대기' };
+    };
 
-    // 💡 3. 모든 일정이 이미 완료된 마감 공고의 경우 전체 완료 처리
-    if (currentStepIdx === -1 && sortedScheds.length > 0) {
-      currentStepIdx = sortedScheds.length;
-    }
-
-    const steps = sortedScheds.map((s, idx) => {
-      let status = 'upcoming'; // completed | active | upcoming
-      let statusText = '대기';
-
-      if (idx < currentStepIdx) {
-        status = 'completed';
-        statusText = '완료';
-      } else if (idx === currentStepIdx) {
-        status = 'active';
-        statusText = '진행중';
-      }
+    const steps = sortedScheds.map((s) => {
+      const { status, statusText } = getStepStatus(s);
 
       // 💡 4. 말풍선(툴팁)에 출력할 포맷화된 날짜 상세 구문
       let dateDetail = '';
@@ -253,13 +275,12 @@ export default function AnnouncementCard({
       };
     });
 
-    return { steps, currentStepIdx };
+    return { steps, sortedScheds };
   };
 
-  const dDayText = getDDayText();
+  const dDayText = getDDayBadgeText();
   const status = getAnnouncementStatus();
   const periodText = getApplyPeriodText();
-  const showPeriodText = status === 'ONGOING';
 
   return (
     <div 
@@ -334,27 +355,53 @@ export default function AnnouncementCard({
           )}
         </div>
       )}
-      
-      {/* 접수 예정 및 진행 중일 때: 기존 접수기간 텍스트 노출 */}
-      {status !== 'CLOSED' && showPeriodText && periodText && (
-        <div className={styles['card-period-row']}>
-          <span className={styles['period-text']}>접수기간: {periodText}</span>
-        </div>
-      )}
 
-      {/* 오직 접수 마감(CLOSED) 공고에만 진행 단계 바 렌더링 */}
-      {status === 'CLOSED' && (() => {
-        const { steps, currentStepIdx } = getTimelineSteps();
+      {/* 모든 공고 상태에 대해 진행 단계 바 렌더링 */}
+      {(() => {
+        const { steps, sortedScheds } = getTimelineSteps();
         if (steps.length === 0) return null;
 
-        // 동적 노드 수에 따른 게이지 바 너비 계산
+        const now = new Date();
+
+        // 💡 단계 기반 정적 계산 및 날짜 보간의 조합 (+ "별도 안내" 및 상수 보정값 반영)
         let activeWidth = 0;
-        if (steps.length > 1) {
-          if (currentStepIdx >= steps.length) {
-            activeWidth = 100;
-          } else if (currentStepIdx > 0) {
-            activeWidth = (currentStepIdx / (steps.length - 1)) * 100;
+        if (isMounted && steps.length > 1) {
+          const totalSegments = steps.length - 1;
+          const activeIdx = steps.findIndex(s => s.status === 'active');
+          const lastCompletedIdx = steps.map(s => s.status).lastIndexOf('completed');
+
+          if (activeIdx !== -1) {
+            // 1. 진행 중인 단계가 있다면, 날짜 보간 없이 해당 단계 노드 위치(액티브 위치)까지 꽉 채움
+            activeWidth = (activeIdx / totalSegments) * 100;
+          } else if (lastCompletedIdx !== -1) {
+            // 2. 진행 중인 단계는 없고 완료된 단계만 있는 경우 (공백기)
+            const nextIdx = lastCompletedIdx + 1;
+
+            if (nextIdx < steps.length) {
+              const nextStepData = sortedScheds[nextIdx];
+              // 다음 대기 단계의 날짜가 유효한지 검증
+              const start = nextStepData.start_date ? new Date(nextStepData.start_date) : null;
+              const end = nextStepData.end_date ? new Date(nextStepData.end_date) : null;
+              const hasValidDate = (start && !isNaN(start.getTime())) || (end && !isNaN(end.getTime()));
+
+              if (!hasValidDate) {
+                // 💡 [2번 예외 처리] 다음 대기 단계의 날짜가 없으면 (예: "별도 안내" 등) 해당 노드 위치까지 다 채워버림
+                activeWidth = (nextIdx / totalSegments) * 100;
+                // 💡 [노드 상태 동기화] 게이지가 도달한 노드 자체의 상태도 강제로 'active'로 변경하여 노드닷과 라벨을 활성화함
+                steps[nextIdx].status = 'active';
+              } else {
+                // 💡 다음 단계 날짜가 있으면 최근 완료 노드 위치 + 0.3 구간(상수 보정값)으로 채움
+                activeWidth = ((lastCompletedIdx + 0.3) / totalSegments) * 100;
+              }
+            } else {
+              // 모든 단계 완료
+              activeWidth = 100;
+            }
+          } else {
+            // 모두 대기 상태
+            activeWidth = 0;
           }
+          activeWidth = Math.max(0, Math.min(100, activeWidth));
         }
 
         return (
