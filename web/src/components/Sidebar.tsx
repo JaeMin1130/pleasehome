@@ -692,6 +692,7 @@ export default function Sidebar({
                                       announcementTitle={ann?.title}
                                       announcementStatus={ann ? getAnnouncementStatus(ann) : undefined}
                                       announcementInstitution={ann?.institution}
+                                      announcement={ann}
                                       onMouseEnter={() => onHoverComplex?.(complex.id)}
                                       onMouseLeave={() => onHoverComplex?.(null)}
                                     />
