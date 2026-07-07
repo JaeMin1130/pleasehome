@@ -143,6 +143,32 @@
     justify-content: center;
 }
 
+.header-right-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.disable-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: var(--spacing-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.disable-btn:hover {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+    transform: scale(1.1);
+}
+
+
 .card-title {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);

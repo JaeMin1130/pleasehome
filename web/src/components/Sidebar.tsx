@@ -50,12 +50,45 @@ export default function Sidebar({
 }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [complexSearchTerm, setComplexSearchTerm] = useState('');
-  const [activeTabStatus, setActiveTabStatus] = useState<ApplicationStatus>('ONGOING');
+  const [activeTabStatus, setActiveTabStatus] = useState<ApplicationStatus | 'HIDDEN'>('ONGOING');
   const [activeRegion, setActiveRegion] = useState<string>('ALL');
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
   const listRef = useRef<HTMLDivElement>(null);
   const bookmarkListRef = useRef<HTMLDivElement>(null);
   const [bookmarkUnits, setBookmarkUnits] = useState<Record<number, HousingUnit[]>>({});
+
+  // 숨긴 공고 ID 목록 관리 상태
+  const [disabledAnnIds, setDisabledAnnIds] = useState<number[]>([]);
+
+  // 마운트 시 localStorage에서 숨긴 공고 목록 로드
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('disabledAnnouncementIds');
+        if (stored) {
+          setDisabledAnnIds(JSON.parse(stored));
+        }
+      } catch (e) {
+        console.error('Failed to load disabled announcement IDs', e);
+      }
+    }
+  }, []);
+
+  const handleToggleDisableAnn = (id: number) => {
+    const exists = disabledAnnIds.includes(id);
+    let next: number[];
+    if (exists) {
+      next = disabledAnnIds.filter((x) => x !== id);
+    } else {
+      next = [...disabledAnnIds, id];
+      // 💡 만약 현재 보던 공고가 숨겨진다면 공고 선택 상태를 해제하여 우측 패널 닫기 연동
+      if (activeAnnId === id) {
+        onSelectAnnouncement(null);
+      }
+    }
+    setDisabledAnnIds(next);
+    localStorage.setItem('disabledAnnouncementIds', JSON.stringify(next));
+  };
 
   // 사이드바 폴더 폼 상태
   const [newFolderName, setNewFolderName] = useState('');
@@ -245,13 +278,18 @@ export default function Sidebar({
       const matchesSearch = ann.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                             ann.institution.toLowerCase().includes(searchTerm.toLowerCase());
       
-      // ② 접수 상태 필터
-      const matchesStatus = getAnnouncementStatus(ann) === activeTabStatus;
-
-      // ③ 지역 구분 필터 (정밀 매퍼 연동)
+      // ② 지역 구분 필터 (정밀 매퍼 연동)
       const matchesRegion = matchesActiveRegion(ann.region, activeRegion);
 
-      return matchesSearch && matchesStatus && matchesRegion;
+      // ③ 접수 상태 및 숨김 필터 분기
+      if (activeTabStatus === 'HIDDEN') {
+        const isHidden = disabledAnnIds.includes(ann.id);
+        return matchesSearch && matchesRegion && isHidden;
+      } else {
+        const matchesStatus = getAnnouncementStatus(ann) === activeTabStatus;
+        const isNotHidden = !disabledAnnIds.includes(ann.id);
+        return matchesSearch && matchesRegion && matchesStatus && isNotHidden;
+      }
     });
 
     if (activeTabStatus === 'UPCOMING') {
@@ -287,15 +325,29 @@ export default function Sidebar({
       });
     }
 
+    if (activeTabStatus === 'HIDDEN') {
+      return [...filtered].sort((a, b) => b.id - a.id); // 최근 등록된 순
+    }
+
     return filtered;
   };
 
-  // 💡 지역 구분을 연계하여 접수 상태별 개수를 동적으로 집계하는 함수
+  // 💡 지역 구분을 연계하여 접수 상태별 개수를 동적으로 집계하는 함수 (숨긴 공고 제외)
   const getStatusCount = (status: string) => {
     return announcements.filter(ann => {
       const matchesStatus = getAnnouncementStatus(ann) === status;
       const matchesRegion = matchesActiveRegion(ann.region, activeRegion);
-      return matchesStatus && matchesRegion;
+      const isNotHidden = !disabledAnnIds.includes(ann.id);
+      return matchesStatus && matchesRegion && isNotHidden;
+    }).length;
+  };
+
+  // 💡 지역 구분을 연계하여 숨긴 공고 개수를 동적으로 집계하는 함수
+  const getHiddenStatusCount = () => {
+    return announcements.filter(ann => {
+      const matchesRegion = matchesActiveRegion(ann.region, activeRegion);
+      const isHidden = disabledAnnIds.includes(ann.id);
+      return matchesRegion && isHidden;
     }).length;
   };
 
@@ -408,6 +460,9 @@ export default function Sidebar({
               <span className={`${styles['filter-tag']} ${activeTabStatus === 'CLOSED' ? styles.active : ''}`} onClick={() => setActiveTabStatus('CLOSED')}>
                 접수 마감 ({getStatusCount('CLOSED')})
               </span>
+              <span className={`${styles['filter-tag']} ${activeTabStatus === 'HIDDEN' ? styles.active : ''}`} onClick={() => setActiveTabStatus('HIDDEN')}>
+                숨긴 공고 ({getHiddenStatusCount()})
+              </span>
             </div>
           </div>
           <div ref={listRef} className={styles['sidebar-list']}>
@@ -426,6 +481,8 @@ export default function Sidebar({
                     onToggleSection={(key) => toggleSection(key)}
                     isComplexListOpen={isComplexListOpen}
                     onToggleComplexList={() => setIsComplexListOpen(!isComplexListOpen)}
+                    isDisabled={disabledAnnIds.includes(ann.id)}
+                    onDisableToggle={() => handleToggleDisableAnn(ann.id)}
                   >
                     {isCurrentActive && (
                       <div className={styles['complex-search-container']}>

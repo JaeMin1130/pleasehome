@@ -64,8 +64,8 @@
 
 .filter-tags {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3개 접수 상태 꽉 채우기 */
-  gap: var(--spacing-xs);
+  grid-template-columns: repeat(4, 1fr); /* 4개 접수 상태 꽉 채우기 */
+  gap: var(--spacing-2xs);
   width: 100%;
 }
 
@@ -76,9 +76,9 @@
 .filter-tag {
   background-color: var(--bg-surface);
   color: var(--text-secondary);
-  padding: var(--spacing-6px) var(--spacing-12px);
+  padding: var(--spacing-6px) var(--spacing-xs);
   border-radius: var(--radius-sm);
-  font-size: var(--font-size-sm);
+  font-size: calc(var(--font-size-sm) * 0.9);
   cursor: pointer;
   border: var(--spacing-3xs) solid var(--border-light);
   transition: all var(--transition-fast);
