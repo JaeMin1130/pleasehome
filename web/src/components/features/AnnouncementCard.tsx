@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Announcement } from '@/types';
 import Link from 'next/link';
+import { Stepper, Tooltip } from '@mantine/core';
 import Badge from '@/components/ui/Badge';
 import MarkdownViewer from '@/components/ui/MarkdownViewer';
 import { formatMoney, formatDate, formatInterestRate, formatDateWithTime, superClean } from '@/utils/formatters';
@@ -178,6 +179,83 @@ export default function AnnouncementCard({
     return null;
   };
 
+  const getTimelineSteps = () => {
+    // 💡 1. 일정의 시작일(또는 종료일) 기준으로 정밀 시간 정렬
+    const sortedScheds = [...ann.schedules].sort((a, b) => {
+      const dateA = a.start_date ? new Date(a.start_date) : (a.end_date ? new Date(a.end_date) : null);
+      const dateB = b.start_date ? new Date(b.start_date) : (b.end_date ? new Date(b.end_date) : null);
+      if (!dateA && !dateB) return 0;
+      if (!dateA) return 1;
+      if (!dateB) return -1;
+      return dateA.getTime() - dateB.getTime();
+    });
+
+    const now = new Date();
+    let currentStepIdx = -1;
+
+    // 💡 2. 오늘 시점 기준으로 아직 종료되지 않은 가장 빠른 단계를 진행중(active) 상태로 특정
+    for (let i = 0; i < sortedScheds.length; i++) {
+      const s = sortedScheds[i];
+      if (s.end_date) {
+        const end = new Date(s.end_date);
+        if (!isNaN(end.getTime()) && now <= end) {
+          currentStepIdx = i;
+          break;
+        }
+      } else if (s.start_date) {
+        const start = new Date(s.start_date);
+        if (!isNaN(start.getTime()) && now <= start) {
+          currentStepIdx = i;
+          break;
+        }
+      }
+    }
+
+    // 💡 3. 모든 일정이 이미 완료된 마감 공고의 경우 전체 완료 처리
+    if (currentStepIdx === -1 && sortedScheds.length > 0) {
+      currentStepIdx = sortedScheds.length;
+    }
+
+    const steps = sortedScheds.map((s, idx) => {
+      let status = 'upcoming'; // completed | active | upcoming
+      let statusText = '대기';
+
+      if (idx < currentStepIdx) {
+        status = 'completed';
+        statusText = '완료';
+      } else if (idx === currentStepIdx) {
+        status = 'active';
+        statusText = '진행중';
+      }
+
+      // 💡 4. 말풍선(툴팁)에 출력할 포맷화된 날짜 상세 구문
+      let dateDetail = '';
+      if (s.start_date || s.end_date) {
+        dateDetail = `${formatDateWithTime(s.start_date)} ~ ${formatDateWithTime(s.end_date)}`;
+      } else {
+        dateDetail = s.raw_text || '공고 본문 참고';
+      }
+
+      // 화면 표시용 축약 노드 레이블 획득
+      let label = s.schedule_type;
+      if (label.length > 10) {
+        label = label.substring(0, 10) + '...';
+      }
+
+      return {
+        id: s.id,
+        label,
+        fullLabel: s.schedule_type,
+        status,
+        statusText,
+        dateDetail,
+        notes: s.notes
+      };
+    });
+
+    return { steps, currentStepIdx };
+  };
+
   const dDayText = getDDayText();
   const status = getAnnouncementStatus();
   const periodText = getApplyPeriodText();
@@ -257,11 +335,76 @@ export default function AnnouncementCard({
         </div>
       )}
       
-      {showPeriodText && periodText && (
+      {/* 접수 예정 및 진행 중일 때: 기존 접수기간 텍스트 노출 */}
+      {status !== 'CLOSED' && showPeriodText && periodText && (
         <div className={styles['card-period-row']}>
           <span className={styles['period-text']}>접수기간: {periodText}</span>
         </div>
       )}
+
+      {/* 오직 접수 마감(CLOSED) 공고에만 진행 단계 바 렌더링 */}
+      {status === 'CLOSED' && (() => {
+        const { steps, currentStepIdx } = getTimelineSteps();
+        if (steps.length === 0) return null;
+
+        // 동적 노드 수에 따른 게이지 바 너비 계산
+        let activeWidth = 0;
+        if (steps.length > 1) {
+          if (currentStepIdx >= steps.length) {
+            activeWidth = 100;
+          } else if (currentStepIdx > 0) {
+            activeWidth = (currentStepIdx / (steps.length - 1)) * 100;
+          }
+        }
+
+        return (
+          <div className={styles['timeline-bar-wrapper']} onClick={(e) => e.stopPropagation()}>
+            {/* 진행 상태 백그라운드 선 */}
+            <div className={styles['timeline-line']} />
+            {/* 활성화된 진행선 */}
+            <div 
+              className={styles['timeline-line-active']} 
+              style={{ width: `${activeWidth}%` }} 
+            />
+            
+            {/* 각 마일스톤 노드 */}
+            <div className={styles['timeline-nodes']}>
+              {steps.map((step, idx) => {
+                const isFirst = idx === 0;
+                const isLast = idx === steps.length - 1;
+                const nodeClass = `
+                  ${styles['timeline-node']} 
+                  ${styles[step.status]} 
+                  ${isFirst ? styles['first-node'] : ''} 
+                  ${isLast ? styles['last-node'] : ''}
+                `.trim().replace(/\s+/g, ' ');
+
+                return (
+                  <div key={step.id} className={nodeClass}>
+                    {/* 💡 닷 자체 클래스를 바깥으로 승격시켜 Mantine 덮어쓰기 무력화 */}
+                    <div className={styles['node-dot']}>
+                      <Tooltip 
+                        label={step.dateDetail} 
+                        position="top" 
+                        withArrow 
+                        color="dark"
+                        offset={6}
+                        transitionProps={{ transition: 'fade', duration: 150 }}
+                        className={styles['stepper-tooltip']}
+                      >
+                        <div className={styles['node-dot-trigger']}>
+                          {step.status === 'completed' ? '✓' : ''}
+                        </div>
+                      </Tooltip>
+                    </div>
+                    <span className={styles['node-label']}>{step.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
       
       {isActive && (() => {
         let currentNum = 1;

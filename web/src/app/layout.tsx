@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import '@mantine/core/styles.css';
 import "./globals.css";
+import { MantineProvider } from '@mantine/core';
 
 export const metadata: Metadata = {
   title: "공공청약 지도",
@@ -39,7 +41,9 @@ export default function RootLayout({
         <link rel="canonical" href="https://pleasehome.com/" />
       </head>
       <body suppressHydrationWarning={true}>
-        {children}
+        <MantineProvider>
+          {children}
+        </MantineProvider>
       </body>
     </html>
   );

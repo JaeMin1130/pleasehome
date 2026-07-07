@@ -10,6 +10,8 @@
     "build:pack": "rm -rf deploy .next && node migrate_coords.js && next build && mkdir -p deploy && cp -r .next/standalone/. deploy/ && cp -r public deploy/ && cp -r .next/static deploy/.next/ && rm -f deploy/public_housing.db && cd deploy && tar -czf ../announce_deploy.tar.gz . && cd .. && rm -rf deploy"
   },
   "dependencies": {
+    "@mantine/core": "^9.4.1",
+    "@mantine/hooks": "^9.4.1",
     "better-sqlite3": "^12.10.1",
     "next": "16.2.9",
     "react": "19.2.4",
@@ -23,6 +25,8 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "postcss-preset-mantine": "^1.18.0",
+    "postcss-simple-vars": "^7.0.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
