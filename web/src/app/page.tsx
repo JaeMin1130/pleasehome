@@ -38,6 +38,9 @@ function HomeContent() {
   const [selectedComplex, setSelectedComplex] = useState<Complex | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
+  
+  // 마우스 호버 중인 단지 ID 상태
+  const [hoveredComplexId, setHoveredComplexId] = useState<number | null>(null);
 
   // 북마크 폴더 및 아이템 관리 상태
   const [bookmarkFolders, setBookmarkFolders] = useState<BookmarkFolder[]>([]);
@@ -462,6 +465,7 @@ function HomeContent() {
           activeFolderId={activeFolderId}
           setActiveFolderId={setActiveFolderId}
           onAddFolder={handleAddFolder}
+          onHoverComplex={setHoveredComplexId}
           onRemoveFolder={(folderId) => {
             setBookmarkFolders(prev => {
               const next = prev.filter(f => f.id !== folderId);
@@ -540,6 +544,7 @@ function HomeContent() {
           <Map 
             complexes={mapComplexes} 
             activeComplexId={activeComplexId} 
+            hoveredComplexId={hoveredComplexId}
             onSelectComplex={handleSelectComplex} 
             isSidebarCollapsed={isSidebarCollapsed} 
             bookmarkedIds={bookmarkedIds} 

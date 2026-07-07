@@ -34,6 +34,7 @@ interface SidebarProps {
   onRemoveFolder: (folderId: string) => void;
   activeComparisonFolderId: string | null;
   onToggleComparison: (folderId: string) => void;
+  onHoverComplex?: (id: number | null) => void;
 }
 
 export default function Sidebar({ 
@@ -44,7 +45,8 @@ export default function Sidebar({
   bookmarkedIds, onToggleBookmark,
   bookmarkFolders, bookmarkItems, activeFolderId, setActiveFolderId,
   onAddFolder, onRemoveFolder,
-  activeComparisonFolderId, onToggleComparison
+  activeComparisonFolderId, onToggleComparison,
+  onHoverComplex
 }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [complexSearchTerm, setComplexSearchTerm] = useState('');
@@ -458,6 +460,8 @@ export default function Sidebar({
                                 onClick={() => onSelectComplex(complex)}
                                 isBookmarked={bookmarkedIds.includes(complex.id)}
                                 onBookmarkToggle={() => onToggleBookmark(complex.id)}
+                                onMouseEnter={() => onHoverComplex?.(complex.id)}
+                                onMouseLeave={() => onHoverComplex?.(null)}
                               />
                             ))
                           )}
@@ -614,6 +618,8 @@ export default function Sidebar({
                                       announcementTitle={ann?.title}
                                       announcementStatus={ann ? getAnnouncementStatus(ann) : undefined}
                                       announcementInstitution={ann?.institution}
+                                      onMouseEnter={() => onHoverComplex?.(complex.id)}
+                                      onMouseLeave={() => onHoverComplex?.(null)}
                                     />
                                     {item?.memo && (
                                       <div className={styles['bookmark-card-memo']}>

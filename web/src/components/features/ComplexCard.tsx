@@ -11,6 +11,8 @@ interface ComplexCardProps {
   announcementTitle?: string;
   announcementStatus?: string;
   announcementInstitution?: string;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }
 
 export default function ComplexCard({ 
@@ -21,12 +23,16 @@ export default function ComplexCard({
   onBookmarkToggle,
   announcementTitle,
   announcementStatus,
-  announcementInstitution
+  announcementInstitution,
+  onMouseEnter,
+  onMouseLeave
 }: ComplexCardProps) {
   return (
     <div 
       className={`${styles['complex-card']} ${isActive ? styles.active : ''}`}
       onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       <div className={styles['card-top-row']}>
         <span className={styles['complex-name']}>{complex.name}</span>

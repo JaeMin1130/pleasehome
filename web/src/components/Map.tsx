@@ -28,6 +28,7 @@ import { BookmarkFolder, BookmarkItem } from '@/types';
 interface MapProps {
   complexes: Complex[];
   activeComplexId: number | null;
+  hoveredComplexId: number | null;
   onSelectComplex: (complex: Complex) => void;
   isSidebarCollapsed: boolean;
   bookmarkedIds: number[];
@@ -35,7 +36,7 @@ interface MapProps {
   bookmarkFolders: BookmarkFolder[];
 }
 
-export default function Map({ complexes, activeComplexId, onSelectComplex, isSidebarCollapsed, bookmarkedIds, bookmarkItems, bookmarkFolders }: MapProps) {
+export default function Map({ complexes, activeComplexId, hoveredComplexId, onSelectComplex, isSidebarCollapsed, bookmarkedIds, bookmarkItems, bookmarkFolders }: MapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [naverMap, setNaverMap] = useState<any>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -284,6 +285,25 @@ export default function Map({ complexes, activeComplexId, onSelectComplex, isSid
       }
     };
   }, [activeComplexId, markers, naverMap, isSidebarCollapsed]);
+
+  // 5. 호버 중인 단지 마커 상태 동기화 및 최상위 레이어 노출 (Z-Index 제어)
+  useEffect(() => {
+    if (!naverMap || markers.length === 0) return;
+
+    markers.forEach(m => {
+      const el = m.marker.getElement();
+      if (el) {
+        const innerMarker = el.querySelector('.custom-marker');
+        if (m.id === hoveredComplexId) {
+          innerMarker?.classList.add('hover');
+          m.marker.setZIndex(1000); // 호버 중인 마커를 가장 최상위 레이어로
+        } else {
+          innerMarker?.classList.remove('hover');
+          m.marker.setZIndex(m.id === activeComplexId ? 100 : 10); // 원래 상태로 원복
+        }
+      }
+    });
+  }, [hoveredComplexId, markers, naverMap, activeComplexId]);
 
   const naverClientId = process.env.NEXT_PUBLIC_NAVER_CLIENT_ID;
 

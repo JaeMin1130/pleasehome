@@ -277,7 +277,9 @@ body {
    transition: transform var(--transition-fast), background-color var(--transition-fast);
 }
 
-.custom-marker:hover .marker-pin {
+.custom-marker:hover .marker-pin,
+.custom-marker.hover .marker-pin {
+   background: var(--color-marker-active);
    transform: scale(1.15);
    z-index: var(--z-index-base);
 }
@@ -292,7 +294,9 @@ body {
    background: var(--color-warning-text);
 }
 
-.custom-marker.bookmarked:hover .marker-pin {
+.custom-marker.bookmarked:hover .marker-pin,
+.custom-marker.bookmarked.hover .marker-pin {
+   background: var(--color-warning-dark);
    transform: scale(1.15);
 }
 
@@ -311,7 +315,9 @@ body {
    transition: fill var(--transition-fast);
 }
 
-.custom-marker.active .window-hole {
+.custom-marker.active .window-hole,
+.custom-marker:hover .window-hole,
+.custom-marker.hover .window-hole {
    fill: var(--color-marker-active);
 }
 
