@@ -349,6 +349,35 @@ export default function DetailPanel({
               <span className={styles['info-val']}>
                 {complex.address}
               </span>
+              {complex.latitude && complex.longitude && (
+                <div className={styles['directions-container']}>
+                  <a
+                    href={`https://map.naver.com/index.nhn?slng=${complex.longitude}&slat=${complex.latitude}&stext=${encodeURIComponent(complex.name)}&menu=route`}
+                    target="naver_map_directions"
+                    className={styles['direction-btn-naver']}
+                    title="네이버 지도 앱/웹으로 길찾기"
+                  >
+                    <svg className={styles['map-icon']} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+                      <line x1="9" y1="3" x2="9" y2="18"></line>
+                      <line x1="15" y1="6" x2="15" y2="21"></line>
+                    </svg>
+                    네이버 길찾기
+                  </a>
+                  <a
+                    href={`https://map.kakao.com/link/from/${encodeURIComponent(complex.name)},${complex.latitude},${complex.longitude}`}
+                    target="kakao_map_directions"
+                    className={styles['direction-btn-kakao']}
+                    title="카카오맵 앱/웹으로 길찾기"
+                  >
+                    <svg className={styles['map-icon']} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                      <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    카카오 길찾기
+                  </a>
+                </div>
+              )}
             </div>
             <div className={styles['info-card']}>
               <span className={styles['info-label']}>단지 유형</span>

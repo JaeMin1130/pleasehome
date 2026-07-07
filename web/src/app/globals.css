@@ -163,6 +163,13 @@
    --color-warning-dark: #b45309;
    /* 어두운 오렌지/골드 액티브 토큰 */
 
+    /* 브랜드 길찾기용 전역 디자인 토큰 */
+    --color-brand-naver: #03c75a;
+    --color-brand-naver-hover: #02b34f;
+    --color-brand-kakao: #fee500;
+    --color-brand-kakao-hover: #fada0a;
+    --color-brand-kakao-text: #191919;
+
 }
 
 * {
