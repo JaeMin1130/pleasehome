@@ -32,6 +32,7 @@ interface SidebarProps {
   setActiveFolderId: (folderId: string | null) => void;
   onAddFolder: (name: string, color?: string) => string;
   onRemoveFolder: (folderId: string) => void;
+  onUpdateFolder?: (folderId: string, name: string, color?: string) => void;
   activeComparisonFolderId: string | null;
   onToggleComparison: (folderId: string) => void;
   onHoverComplex?: (id: number | null) => void;
@@ -44,7 +45,7 @@ export default function Sidebar({
   activeTab, allComplexes, style,
   bookmarkedIds, onToggleBookmark,
   bookmarkFolders, bookmarkItems, activeFolderId, setActiveFolderId,
-  onAddFolder, onRemoveFolder,
+  onAddFolder, onRemoveFolder, onUpdateFolder,
   activeComparisonFolderId, onToggleComparison,
   onHoverComplex
 }: SidebarProps) {
@@ -56,6 +57,17 @@ export default function Sidebar({
   const listRef = useRef<HTMLDivElement>(null);
   const bookmarkListRef = useRef<HTMLDivElement>(null);
   const [bookmarkUnits, setBookmarkUnits] = useState<Record<number, HousingUnit[]>>({});
+
+  // 📂 북마크 폴더명 수정 상태
+  const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
+  const [editingFolderName, setEditingFolderName] = useState<string>('');
+
+  const handleSaveRename = (folderId: string) => {
+    if (editingFolderName.trim() && onUpdateFolder) {
+      onUpdateFolder(folderId, editingFolderName.trim());
+    }
+    setEditingFolderId(null);
+  };
 
   // 숨긴 공고 목록 관리 상태 (최근 숨긴 순서 정렬을 위한 타임스탬프 기록 구조)
   const [disabledAnns, setDisabledAnns] = useState<{ id: number; disabledAt: string }[]>([]);
@@ -611,7 +623,7 @@ export default function Sidebar({
                 <div 
                   key={folder.id} 
                   id={`folder-card-${folder.id}`}
-                  className={styles['accordion-item']}
+                  className={`${styles['accordion-item']} ${isExpanded ? styles.active : ''}`}
                   style={isExpanded ? { borderColor: folder.color } : undefined}
                 >
                   {/* 💡 아코디언 헤더: 폴더 행 */}
@@ -628,7 +640,59 @@ export default function Sidebar({
                           <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                         </svg>
                       </span>
-                      <span className={styles['folder-card-name']}>{folder.name}</span>
+                      {editingFolderId === folder.id ? (
+                        <div className={styles['folder-rename-form']} onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="text"
+                            value={editingFolderName}
+                            onChange={(e) => setEditingFolderName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                handleSaveRename(folder.id);
+                              } else if (e.key === 'Escape') {
+                                setEditingFolderId(null);
+                              }
+                            }}
+                            className={styles['folder-rename-input']}
+                            autoFocus
+                            maxLength={15}
+                          />
+                          <button 
+                            className={styles['folder-rename-save']}
+                            onClick={() => handleSaveRename(folder.id)}
+                            title="저장"
+                          >
+                            ✓
+                          </button>
+                          <button 
+                            className={styles['folder-rename-cancel']}
+                            onClick={() => setEditingFolderId(null)}
+                            title="취소"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ) : (
+                        <div className={styles['folder-name-container']}>
+                          <span className={styles['folder-card-name']}>{folder.name}</span>
+                          {folder.id !== 'default' && (
+                            <button
+                              className={styles['folder-edit-btn']}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingFolderId(folder.id);
+                                setEditingFolderName(folder.name);
+                              }}
+                              title="폴더 이름 수정"
+                            >
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                      )}
                       <span className={styles['folder-count-badge']}>{folderCount}</span>
                     </div>
                     <div className={styles['folder-info-right']} onClick={(e) => e.stopPropagation()}>

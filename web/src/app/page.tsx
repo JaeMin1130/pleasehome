@@ -485,6 +485,13 @@ function HomeContent() {
               setIsPanelOpen(false);
             }
           }}
+          onUpdateFolder={(folderId, name, color) => {
+            setBookmarkFolders(prev => {
+              const next = prev.map(f => f.id === folderId ? { ...f, name, color: color || f.color } : f);
+              localStorage.setItem('bookmarkFolders', JSON.stringify(next));
+              return next;
+            });
+          }}
           activeComparisonFolderId={activeComparisonFolderId}
           onToggleComparison={(folderId) => {
             if (activeComparisonFolderId === folderId) {

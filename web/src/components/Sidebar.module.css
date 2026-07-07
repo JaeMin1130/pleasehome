@@ -144,7 +144,7 @@
   position: relative;
   flex: var(--layout-flex-1);
   overflow-y: auto;
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
@@ -626,6 +626,84 @@
   margin-bottom: 0 !important;
 } */
 
+.folder-name-container {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.folder-edit-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: var(--spacing-2xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.folder-edit-btn:hover {
+  background-color: var(--border-light);
+  color: var(--text-primary);
+}
+
+.folder-rename-form {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.folder-rename-input {
+  border: var(--spacing-3xs) solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-2xs) var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  background-color: var(--bg-surface);
+  width: calc(var(--spacing-xl) * 3);
+  outline: none;
+}
+
+.folder-rename-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 var(--spacing-3xs) var(--primary-bg);
+}
+
+.folder-rename-save,
+.folder-rename-cancel {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-2xs) var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  transition: all var(--transition-fast);
+}
+
+.folder-rename-save {
+  color: var(--primary);
+}
+
+.folder-rename-save:hover {
+  background-color: var(--primary-bg);
+}
+
+.folder-rename-cancel {
+  color: var(--text-muted);
+}
+
+.folder-rename-cancel:hover {
+  background-color: var(--border-light);
+  color: var(--text-primary);
+}
+
 .bookmark-card-memo {
   display: flex;
   align-items: flex-start;
@@ -677,9 +755,14 @@
   border: var(--spacing-3xs) solid var(--border-light);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition: all var(--transition-fast);
   overflow: hidden;
   flex-shrink: 0;
+}
+
+.accordion-item.active {
+  border-width: var(--spacing-2xs);
+  box-shadow: var(--shadow-md);
 }
 
 .accordion-item:hover {
