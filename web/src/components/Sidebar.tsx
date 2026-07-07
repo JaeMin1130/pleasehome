@@ -57,16 +57,28 @@ export default function Sidebar({
   const bookmarkListRef = useRef<HTMLDivElement>(null);
   const [bookmarkUnits, setBookmarkUnits] = useState<Record<number, HousingUnit[]>>({});
 
-  // 숨긴 공고 ID 목록 관리 상태
-  const [disabledAnnIds, setDisabledAnnIds] = useState<number[]>([]);
+  // 숨긴 공고 목록 관리 상태 (최근 숨긴 순서 정렬을 위한 타임스탬프 기록 구조)
+  const [disabledAnns, setDisabledAnns] = useState<{ id: number; disabledAt: string }[]>([]);
 
-  // 마운트 시 localStorage에서 숨긴 공고 목록 로드
+  // 파생 상태: 기존 단수 ID 배열 참조 로직과의 호환용
+  const disabledAnnIds = disabledAnns.map((x) => x.id);
+
+  // 마운트 시 localStorage에서 숨긴 공고 목록 로드 및 하위 호환성 복구
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
         const stored = localStorage.getItem('disabledAnnouncementIds');
         if (stored) {
-          setDisabledAnnIds(JSON.parse(stored));
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            const formatted = parsed.map((item) => {
+              if (typeof item === 'number') {
+                return { id: item, disabledAt: new Date().toISOString() };
+              }
+              return item;
+            });
+            setDisabledAnns(formatted);
+          }
         }
       } catch (e) {
         console.error('Failed to load disabled announcement IDs', e);
@@ -75,18 +87,18 @@ export default function Sidebar({
   }, []);
 
   const handleToggleDisableAnn = (id: number) => {
-    const exists = disabledAnnIds.includes(id);
-    let next: number[];
+    const exists = disabledAnns.some((x) => x.id === id);
+    let next: { id: number; disabledAt: string }[];
     if (exists) {
-      next = disabledAnnIds.filter((x) => x !== id);
+      next = disabledAnns.filter((x) => x.id !== id);
     } else {
-      next = [...disabledAnnIds, id];
+      next = [...disabledAnns, { id, disabledAt: new Date().toISOString() }];
       // 💡 만약 현재 보던 공고가 숨겨진다면 공고 선택 상태를 해제하여 우측 패널 닫기 연동
       if (activeAnnId === id) {
         onSelectAnnouncement(null);
       }
     }
-    setDisabledAnnIds(next);
+    setDisabledAnns(next);
     localStorage.setItem('disabledAnnouncementIds', JSON.stringify(next));
   };
 
@@ -326,7 +338,12 @@ export default function Sidebar({
     }
 
     if (activeTabStatus === 'HIDDEN') {
-      return [...filtered].sort((a, b) => b.id - a.id); // 최근 등록된 순
+      return [...filtered].sort((a, b) => {
+        const itemA = disabledAnns.find((x) => x.id === a.id);
+        const itemB = disabledAnns.find((x) => x.id === b.id);
+        if (!itemA || !itemB) return 0;
+        return new Date(itemB.disabledAt).getTime() - new Date(itemA.disabledAt).getTime();
+      });
     }
 
     return filtered;
