@@ -360,12 +360,13 @@ export default function AnnouncementCard({
         return (
           <div className={styles['timeline-bar-wrapper']} onClick={(e) => e.stopPropagation()}>
             {/* 진행 상태 백그라운드 선 */}
-            <div className={styles['timeline-line']} />
-            {/* 활성화된 진행선 */}
-            <div 
-              className={styles['timeline-line-active']} 
-              style={{ width: `${activeWidth}%` }} 
-            />
+            <div className={styles['timeline-line']}>
+              {/* 활성화된 진행선 (부모 백그라운드선 내부에 귀속) */}
+              <div 
+                className={styles['timeline-line-active']} 
+                style={{ width: `${activeWidth}%` }} 
+              />
+            </div>
             
             {/* 각 마일스톤 노드 */}
             <div className={styles['timeline-nodes']}>

@@ -324,12 +324,12 @@
     z-index: 1;
 }
 
-/* 💡 활성 진행 게이지선 Y축을 백그라운드 선과 동일 정밀 위치에 동기화 */
+/* 💡 활성 진행 게이지선: 부모(회색선) 내부에 귀속되므로 top, left, height가 부모 기준으로 상속됨 */
 .timeline-line-active {
     position: absolute;
-    top: calc(var(--spacing-md) + (var(--dot-size) / 2) - (var(--spacing-3xs) / 2));
-    left: calc(var(--spacing-md) * 1.25);
-    height: var(--spacing-3xs);
+    top: 0;
+    left: 0;
+    height: 100%;
     background-color: var(--primary);
     border-radius: var(--radius-full);
     z-index: 2;
