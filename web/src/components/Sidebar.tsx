@@ -28,8 +28,8 @@ interface SidebarProps {
   onToggleBookmark: (complexId: number) => void;
   bookmarkFolders: BookmarkFolder[];
   bookmarkItems: BookmarkItem[];
-  activeFolderId: string | null;
-  setActiveFolderId: (folderId: string | null) => void;
+  activeFolderIds: string[];
+  setActiveFolderIds: (folderIds: string[]) => void;
   onAddFolder: (name: string, color?: string) => string;
   onRemoveFolder: (folderId: string) => void;
   onUpdateFolder?: (folderId: string, name: string, color?: string) => void;
@@ -45,7 +45,7 @@ export default function Sidebar({
   displayComplexes, activeComplexId, onSelectComplex,
   activeTab, allComplexes, style,
   bookmarkedIds, onToggleBookmark,
-  bookmarkFolders, bookmarkItems, activeFolderId, setActiveFolderId,
+  bookmarkFolders, bookmarkItems, activeFolderIds, setActiveFolderIds,
   onAddFolder, onRemoveFolder, onUpdateFolder, onMoveBookmarkItem,
   activeComparisonFolderId, onToggleComparison,
   onHoverComplex
@@ -173,24 +173,7 @@ export default function Sidebar({
     }
   }, [activeAnnId]);
 
-  // 선택된 폴더가 활성화되었을 때 해당 폴더로 부드럽게 스크롤 포커스 이동
-  useEffect(() => {
-    if (activeFolderId !== null) {
-      const timer = setTimeout(() => {
-        const folderElement = document.getElementById(`folder-card-${activeFolderId}`);
-        if (folderElement && bookmarkListRef.current) {
-          const containerRect = bookmarkListRef.current.getBoundingClientRect();
-          const elementRect = folderElement.getBoundingClientRect();
-          const targetScrollTop = bookmarkListRef.current.scrollTop + (elementRect.top - containerRect.top) - 16;
-          bookmarkListRef.current.scrollTo({
-            top: targetScrollTop >= 0 ? targetScrollTop : 0,
-            behavior: 'smooth'
-          });
-        }
-      }, 150); // 아코디언 애니메이션 딜레이 감안
-      return () => clearTimeout(timer);
-    }
-  }, [activeFolderId]);
+
 
   // 공급 주택 목록 개폐 상태 추가
   const [isComplexListOpen, setIsComplexListOpen] = useState(false);
@@ -619,7 +602,7 @@ export default function Sidebar({
 
           <div ref={bookmarkListRef} className={styles['folders-list-container']}>
             {bookmarkFolders.map((folder) => {
-              const isExpanded = activeFolderId === folder.id;
+              const isExpanded = activeFolderIds.includes(folder.id);
               const folderItems = bookmarkItems.filter(item => item.folderId === folder.id);
               const folderCount = folderItems.length;
               const folderComplexes = allComplexes.filter(c => folderItems.map(i => i.complexId).includes(c.id));
@@ -662,7 +645,13 @@ export default function Sidebar({
                   {/* 💡 아코디언 헤더: 폴더 행 */}
                   <div 
                     className={`${styles['folder-card']} ${isExpanded ? styles.expanded : ''}`}
-                    onClick={() => setActiveFolderId(isExpanded ? null : folder.id)}
+                    onClick={() => {
+                      if (isExpanded) {
+                        setActiveFolderIds(activeFolderIds.filter(id => id !== folder.id));
+                      } else {
+                        setActiveFolderIds([...activeFolderIds, folder.id]);
+                      }
+                    }}
                   >
                     <div className={styles['folder-info-left']}>
                       <span 

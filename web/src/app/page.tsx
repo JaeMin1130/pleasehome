@@ -45,7 +45,7 @@ function HomeContent() {
   // 북마크 폴더 및 아이템 관리 상태
   const [bookmarkFolders, setBookmarkFolders] = useState<BookmarkFolder[]>([]);
   const [bookmarkItems, setBookmarkItems] = useState<BookmarkItem[]>([]);
-  const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
+  const [activeFolderIds, setActiveFolderIds] = useState<string[]>([]);
 
   // 북마크 모달 설정 상태
   const [bookmarkModalState, setBookmarkModalState] = useState<{
@@ -279,14 +279,14 @@ function HomeContent() {
   // 저장 탭(BOOKMARK) 필터 조건 분기: 상세 필터와 무관하게 저장된 단지만 매핑
   let mapComplexes = filteredComplexes;
   if (activeTab === 'BOOKMARK') {
-    if (activeFolderId === null) {
+    if (activeFolderIds.length === 0) {
       // 1단계: 전체 저장 단지
       const allBookmarkedIds = bookmarkItems.map(item => item.complexId);
       mapComplexes = allComplexes.filter(c => allBookmarkedIds.includes(c.id));
     } else {
-      // 2단계: 특정 폴더 내 저장 단지
+      // 2단계: 열려 있는 폴더 내 저장 단지들
       const folderBookmarkedIds = bookmarkItems
-        .filter(item => item.folderId === activeFolderId)
+        .filter(item => activeFolderIds.includes(item.folderId))
         .map(item => item.complexId);
       mapComplexes = allComplexes.filter(c => folderBookmarkedIds.includes(c.id));
     }
@@ -347,7 +347,7 @@ function HomeContent() {
       setActiveTab(tab);
       setIsSidebarCollapsed(false);
       if (tab === 'BOOKMARK') {
-        setActiveFolderId(null);
+        setActiveFolderIds([]);
       }
     }
   };
@@ -462,8 +462,8 @@ function HomeContent() {
           bookmarkedIds={bookmarkedIds} onToggleBookmark={toggleBookmark}
           bookmarkFolders={bookmarkFolders}
           bookmarkItems={bookmarkItems}
-          activeFolderId={activeFolderId}
-          setActiveFolderId={setActiveFolderId}
+          activeFolderIds={activeFolderIds}
+          setActiveFolderIds={setActiveFolderIds}
           onAddFolder={handleAddFolder}
           onHoverComplex={setHoveredComplexId}
           onRemoveFolder={(folderId) => {
@@ -477,8 +477,8 @@ function HomeContent() {
               localStorage.setItem('bookmarkItems', JSON.stringify(next));
               return next;
             });
-            if (activeFolderId === folderId) {
-              setActiveFolderId(null);
+            if (activeFolderIds.includes(folderId)) {
+              setActiveFolderIds(prev => prev.filter(id => id !== folderId));
             }
             if (activeComparisonFolderId === folderId) {
               setActiveComparisonFolderId(null);
