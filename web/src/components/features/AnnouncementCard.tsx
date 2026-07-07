@@ -418,21 +418,18 @@ export default function AnnouncementCard({
                   <React.Fragment key={step.id}>
                     {/* 의미론적 노드 표시 (W3C 표준 준수) */}
                     <li className={nodeClass} aria-current={step.status === 'active' ? 'step' : undefined}>
-                      <div className={styles['node-dot']}>
-                        <Tooltip 
-                          label={step.dateDetail} 
-                          position="top" 
-                          withArrow 
-                          color="dark"
-                          offset={6}
-                          transitionProps={{ transition: 'fade', duration: 150 }}
-                          className={styles['stepper-tooltip']}
-                        >
-                          <div className={styles['node-dot-trigger']}>
-                            {step.status === 'completed' ? '✓' : ''}
-                          </div>
-                        </Tooltip>
-                      </div>
+                      <Tooltip 
+                        label={step.dateDetail} 
+                        position="top" 
+                        withArrow 
+                        color="grey"
+                        offset={2}
+                        transitionProps={{ transition: 'fade', duration: 150 }}
+                      >
+                        <div className={styles['node-dot']}>
+                          {step.status === 'completed' ? '✓' : ''}
+                        </div>
+                      </Tooltip>
                       <span className={styles['node-label']}>
                         {step.label}
                         {step.status === 'completed' && <span className={styles['sr-only']}> (완료됨)</span>}

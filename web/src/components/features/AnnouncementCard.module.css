@@ -306,9 +306,8 @@
 .timeline-bar-wrapper {
     position: relative;
     width: 100%;
-    margin-top: var(--spacing-sm);
-    margin-bottom: var(--spacing-md);
-    padding-top: var(--spacing-md); /* 💡 툴팁이 위쪽으로 부드럽게 뜰 수 있는 공간 확보 */
+    margin-bottom: var(--spacing-sm);
+    padding-top: var(--spacing-md);
     --dot-size: var(--spacing-md);
 }
 
