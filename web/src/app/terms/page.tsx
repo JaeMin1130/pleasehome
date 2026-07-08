@@ -1,11 +1,18 @@
 "use client";
 
 import Link from 'next/link';
+import Script from 'next/script';
 import styles from '../policy.module.css';
 
 export default function TermsOfService() {
   return (
     <div className={styles['policy-container']}>
+      <Script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7402127086926987"
+        crossOrigin="anonymous"
+        strategy="afterInteractive"
+      />
       <Link href="/" className={styles['back-link']}>
         ← 메인 지도로 돌아가기
       </Link>

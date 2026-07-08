@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import Script from 'next/script';
 import { db } from '@/lib/db';
 import { formatMoney, formatTargetGroup, formatDateWithTime, superClean } from '@/utils/formatters';
 import MarkdownViewer from '@/components/ui/MarkdownViewer';
@@ -68,6 +69,12 @@ export default async function AnnouncementDetailPage({ params }: PageProps) {
 
   return (
     <div className={styles.layout}>
+      <Script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7402127086926987"
+        crossOrigin="anonymous"
+        strategy="afterInteractive"
+      />
       <div className={styles.container}>
         <header className={styles.header}>
           <div className={styles.titleSection}>

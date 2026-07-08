@@ -32,11 +32,6 @@ export default function RootLayout({
     <html lang="ko" suppressHydrationWarning>
       <head>
         {/* Google Fonts Link */}
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7402127086926987"
-          crossOrigin="anonymous"
-        />
         <link rel="stylesheet" as="style" crossOrigin="anonymous" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
         <link rel="canonical" href="https://pleasehome.com/" />
       </head>
