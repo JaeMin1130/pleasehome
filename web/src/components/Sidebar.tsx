@@ -599,7 +599,10 @@ export default function Sidebar({
           <div 
             ref={listRef} 
             className={styles['sidebar-list']}
-            style={{ height: sheetHeight ? `${sheetHeight}px` : undefined }}
+            style={{ 
+              height: sheetHeight ? `${sheetHeight}px` : undefined,
+              overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
+            }}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -733,7 +736,10 @@ export default function Sidebar({
       {activeTab === 'BOOKMARK' && (
         <div 
           className={styles['bookmark-panel-container']}
-          style={{ height: sheetHeight ? `${sheetHeight}px` : undefined }}
+          style={{ 
+            height: sheetHeight ? `${sheetHeight}px` : undefined,
+            overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
+          }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -788,7 +794,13 @@ export default function Sidebar({
             </div>
           )}
 
-          <div ref={bookmarkListRef} className={styles['folders-list-container']}>
+          <div 
+            ref={bookmarkListRef} 
+            className={styles['folders-list-container']}
+            style={{
+              overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
+            }}
+          >
             {bookmarkFolders.map((folder) => {
               const isExpanded = activeFolderIds.includes(folder.id);
               const folderItems = bookmarkItems.filter(item => item.folderId === folder.id);
@@ -1012,7 +1024,10 @@ export default function Sidebar({
         <>
           <div 
             className={styles['more-list-container']}
-            style={{ height: sheetHeight ? `${sheetHeight}px` : undefined }}
+            style={{ 
+              height: sheetHeight ? `${sheetHeight}px` : undefined,
+              overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
+            }}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}

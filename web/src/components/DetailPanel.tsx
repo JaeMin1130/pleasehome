@@ -226,7 +226,12 @@ export default function DetailPanel({
       >
         {/* 모바일 화면 전용 상단 드래그 핸들바 */}
         <div className={styles['drag-handle-bar']} />
-        <div className={styles['panel-body']}>
+        <div 
+          className={styles['panel-body']}
+          style={{
+            overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
+          }}
+        >
           <div>
             <div className={styles['basic-info-header']}>
               <div className={styles['panel-title-wrapper']}>
@@ -242,7 +247,12 @@ export default function DetailPanel({
               비교할 단지가 없습니다.<br />폴더에 찜한 단지를 추가해 보세요.
             </div>
           ) : (
-            <div className={styles['comparison-table-wrapper']}>
+            <div 
+              className={styles['comparison-table-wrapper']}
+              style={{
+                overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
+              }}
+            >
               <table className={styles['comparison-table']}>
                 <thead>
                   <tr>
@@ -429,7 +439,12 @@ export default function DetailPanel({
     >
       {/* 모바일 화면 전용 상단 드래그 핸들바 */}
       <div className={styles['drag-handle-bar']} />
-      <div className={styles['panel-body']}>
+      <div 
+        className={styles['panel-body']}
+        style={{
+          overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
+        }}
+      >
         <div>
           <div className={styles['basic-info-header']}>
             <h4 className={styles['panel-section-title']}>단지 기본 정보</h4>
