@@ -28,19 +28,14 @@ export default function DetailPanel({
 }: DetailPanelProps) {
   const [units, setUnits] = useState<HousingUnit[]>([]);
 
-  const getDvhInPixels = (percent: number) => {
-    if (typeof window === 'undefined') return 0;
-    return (window.innerHeight * percent) / 100;
-  };
-
-  const minHeight = 60;
-  const midHeight = getDvhInPixels(45);
-  const maxHeight = getDvhInPixels(80);
-
-  const { sheetHeight, setSheetHeight, touchHandlers } = useBottomSheetGesture({
-    minHeight,
-    midHeight,
-    maxHeight,
+  const { 
+    sheetHeight, 
+    setSheetHeight, 
+    touchHandlers, 
+    minHeight, 
+    midHeight, 
+    maxHeight 
+  } = useBottomSheetGesture({
     scrollSelector: '[class*="panel-body"], [class*="comparison-table-wrapper"]',
     onMinHeightReached: () => {
       onClose();

@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react';
 
 interface UseBottomSheetGestureProps {
-  minHeight: number;
-  midHeight: number;
-  maxHeight: number;
+  minHeight?: number;
+  midHeight?: number;
+  maxHeight?: number;
   scrollSelector: string;
   onMinHeightReached?: () => void;
   onMidHeightReached?: () => void;
@@ -19,6 +19,15 @@ export function useBottomSheetGesture({
   onMidHeightReached,
   onMaxHeightReached
 }: UseBottomSheetGestureProps) {
+  const getDvhInPixels = (percent: number) => {
+    if (typeof window === 'undefined') return 0;
+    return (window.innerHeight * percent) / 100;
+  };
+
+  const finalMinHeight = minHeight ?? 60;
+  const finalMidHeight = midHeight ?? getDvhInPixels(45);
+  const finalMaxHeight = maxHeight ?? getDvhInPixels(85);
+
   const [sheetHeight, setSheetHeight] = useState<number | null>(null);
   const isDraggingRef = useRef(false);
   const startYRef = useRef(0);
@@ -33,7 +42,7 @@ export function useBottomSheetGesture({
       startHeightRef.current = asideEl.getBoundingClientRect().height;
       asideEl.style.transition = 'none';
     } else {
-      startHeightRef.current = midHeight;
+      startHeightRef.current = finalMidHeight;
     }
 
     startYRef.current = e.touches[0].clientY;
@@ -49,7 +58,7 @@ export function useBottomSheetGesture({
 
     // 1. [예외] 이미 최대 높이 상태에서 위로 쓸어올릴 때(deltaY < 0)는 
     // 시트를 더 키울 수 없으므로, 기본 스크롤바(아래로 내림)가 작동하도록 즉시 리턴합니다.
-    if (currentHeight === maxHeight && deltaY < 0) {
+    if (currentHeight === finalMaxHeight && deltaY < 0) {
       return;
     }
 
@@ -69,7 +78,7 @@ export function useBottomSheetGesture({
     // 3. 그 외 모든 상황(시트 높이가 중간/최소이거나, 최대 높이이면서 스크롤이 최상단일 때 내릴 때 등)
     // 브라우저 기본 스크롤을 차단하고 시트 크기만 제어합니다.
     if (e.cancelable) e.preventDefault();
-    const nextHeight = Math.min(maxHeight, Math.max(minHeight, currentHeight - deltaY));
+    const nextHeight = Math.min(finalMaxHeight, Math.max(finalMinHeight, currentHeight - deltaY));
     setSheetHeight(nextHeight);
   };
 
@@ -84,18 +93,18 @@ export function useBottomSheetGesture({
 
     if (sheetHeight === null) return;
 
-    let targetHeight = midHeight;
-    const minThreshold = minHeight + (midHeight - minHeight) * 0.4;
-    const maxThreshold = midHeight + (maxHeight - midHeight) * 0.4;
+    let targetHeight = finalMidHeight;
+    const minThreshold = finalMinHeight + (finalMidHeight - finalMinHeight) * 0.4;
+    const maxThreshold = finalMidHeight + (finalMaxHeight - finalMidHeight) * 0.4;
 
     if (sheetHeight <= minThreshold) {
-      targetHeight = minHeight;
+      targetHeight = finalMinHeight;
       onMinHeightReached?.();
     } else if (sheetHeight > minThreshold && sheetHeight < maxThreshold) {
-      targetHeight = midHeight;
+      targetHeight = finalMidHeight;
       onMidHeightReached?.();
     } else {
-      targetHeight = maxHeight;
+      targetHeight = finalMaxHeight;
       onMaxHeightReached?.();
     }
 
@@ -109,6 +118,9 @@ export function useBottomSheetGesture({
       onTouchStart: handleTouchStart,
       onTouchMove: handleTouchMove,
       onTouchEnd: handleTouchEnd
-    }
+    },
+    minHeight: finalMinHeight,
+    midHeight: finalMidHeight,
+    maxHeight: finalMaxHeight
   };
 }

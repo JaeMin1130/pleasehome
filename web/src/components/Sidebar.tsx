@@ -54,19 +54,14 @@ export default function Sidebar({
 }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const getDvhInPixels = (percent: number) => {
-    if (typeof window === 'undefined') return 0;
-    return (window.innerHeight * percent) / 100;
-  };
-
-  const minHeight = 60;
-  const midHeight = getDvhInPixels(45);
-  const maxHeight = getDvhInPixels(80);
-
-  const { sheetHeight, setSheetHeight, touchHandlers } = useBottomSheetGesture({
-    minHeight,
-    midHeight,
-    maxHeight,
+  const { 
+    sheetHeight, 
+    setSheetHeight, 
+    touchHandlers, 
+    minHeight, 
+    midHeight, 
+    maxHeight 
+  } = useBottomSheetGesture({
     scrollSelector: '[class*="sidebar-list"], [class*="folders-list-container"], [class*="more-list-container"]',
     onMinHeightReached: () => {
       onSelectAnnouncement(null);

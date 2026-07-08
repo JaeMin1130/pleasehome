@@ -879,14 +879,14 @@
 
   .mobile-only-filters .region-tags {
     display: grid;
-    grid-template-columns: repeat(5, var(--layout-flex-1));
+    grid-template-columns: repeat(5, 1fr);
     gap: var(--spacing-2xs);
     width: 100%;
   }
 
   .mobile-only-filters .filter-tags {
     display: grid;
-    grid-template-columns: repeat(4, var(--layout-flex-1));
+    grid-template-columns: repeat(4, 1fr);
     gap: var(--spacing-3xs);
     width: 100%;
   }

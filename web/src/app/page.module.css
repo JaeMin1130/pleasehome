@@ -96,8 +96,8 @@
     background: var(--bg-surface);
     border: var(--spacing-3xs) solid var(--border-strong);
     border-radius: var(--radius-md);
-    padding: var(--spacing-10px) calc(var(--spacing-md) * 1.125);
-    font-size: var(--font-size-md);
+    padding: calc(var(--spacing-md) * 0.5) calc(var(--spacing-md) * 0.75); /* 기존 10px 18px에서 8px 12px 수준으로 축소 */
+    font-size: var(--font-size-sm); /* 기존 md에서 sm으로 변경 */
     font-weight: var(--font-weight-bold);
     color: var(--text-primary);
     cursor: pointer;
@@ -318,8 +318,8 @@
 
   /* 상세 필터 버튼 - 아이콘화 축소 */
   .floating-filter-btn {
-    width: calc(var(--spacing-md) * 5); /* 약 40px */
-    height: calc(var(--spacing-md) * 5); /* 약 40px */
+    width: calc(var(--spacing-md) * 4); /* 기존 40px에서 32px로 축소 (16 * 4) */
+    height: calc(var(--spacing-md) * 4); /* 기존 40px에서 32px로 축소 (16 * 4) */
     padding: 0;
     border-radius: 50%; /* 원형 아이콘 */
     justify-content: center;

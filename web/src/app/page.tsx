@@ -379,8 +379,7 @@ function HomeContent() {
           >
             <button className={styles['floating-filter-btn']} onClick={() => setIsFilterExpanded(!isFilterExpanded)}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['btn-icon-left']}>
-                <line x1="4" y1="21" x2="4" y2="14"></line>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
               </svg>
               <span className={styles['btn-text']}>맞춤 상세 필터</span>
               <span className={styles['btn-arrow-wrapper']}>
