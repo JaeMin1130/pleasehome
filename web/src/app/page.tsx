@@ -185,6 +185,13 @@ function HomeContent() {
   };
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      setIsSidebarCollapsed(true);
+    }
+  }, []);
+
   const [activeComparisonFolderId, setActiveComparisonFolderId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<NavigationTabType>('SEARCH');
 
@@ -375,16 +382,18 @@ function HomeContent() {
                 <line x1="4" y1="21" x2="4" y2="14"></line>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
-              맞춤 상세 필터
-              {isFilterExpanded ? (
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['btn-icon-right']}>
-                  <polyline points="18 15 12 9 6 15"></polyline>
-                </svg>
-              ) : (
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['btn-icon-right']}>
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              )}
+              <span className={styles['btn-text']}>맞춤 상세 필터</span>
+              <span className={styles['btn-arrow-wrapper']}>
+                {isFilterExpanded ? (
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['btn-icon-right']}>
+                    <polyline points="18 15 12 9 6 15"></polyline>
+                  </svg>
+                ) : (
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['btn-icon-right']}>
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                )}
+              </span>
             </button>
             
             {isFilterExpanded && (
@@ -456,7 +465,7 @@ function HomeContent() {
 
         <Sidebar 
           announcements={announcements} activeAnnId={activeAnnId} onSelectAnnouncement={handleSelectAnnouncement} 
-          width={SIDEBAR_DEFAULT_WIDTH} isCollapsed={isSidebarCollapsed}
+          width={SIDEBAR_DEFAULT_WIDTH} isCollapsed={isSidebarCollapsed} onCollapseChange={setIsSidebarCollapsed}
           displayComplexes={activeTab === 'BOOKMARK' ? mapComplexes : filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex}
           activeTab={activeTab} allComplexes={allComplexes}
           bookmarkedIds={bookmarkedIds} onToggleBookmark={toggleBookmark}

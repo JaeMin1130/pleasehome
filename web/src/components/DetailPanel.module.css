@@ -1,8 +1,4 @@
 .app-detail-panel {
-  position: absolute;
-  top: var(--spacing-md);
-  height: calc(100% - var(--spacing-xl));
-  width: var(--layout-panel-width);
   background-color: var(--bg-surface);
   box-shadow: var(--shadow-lg);
   z-index: var(--z-index-panel);
@@ -11,13 +7,22 @@
   flex-shrink: 0;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  left: calc(var(--layout-nav-width) + var(--sidebar-offset-width, 0px) + var(--spacing-md));
-  transform: translateX(-100%);
-  transition: var(--transition-panel);
 }
 
-.app-detail-panel.open {
-  transform: translateX(0);
+@media (min-width: 769px) {
+  .app-detail-panel {
+    position: absolute;
+    top: var(--spacing-md);
+    height: calc(100% - var(--spacing-xl));
+    width: var(--layout-panel-width);
+    left: calc(var(--layout-nav-width) + var(--sidebar-offset-width, 0px) + var(--spacing-md));
+    transform: translateX(-100%);
+    transition: var(--transition-panel);
+  }
+
+  .app-detail-panel.open {
+    transform: translateX(0);
+  }
 }
 
 
@@ -386,4 +391,45 @@
   width: var(--spacing-md);
   height: var(--spacing-md);
   flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .app-detail-panel {
+    position: fixed;
+    top: auto;
+    bottom: calc(var(--spacing-md) * 3.75); /* 하단 네비게이션바 바로 위 고정 */
+    left: 0;
+    right: 0;
+    width: 100vw;
+    height: 45dvh; /* 기본 초기높이 */
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    transform: translateY(100%); /* 기본 닫힘 상태 */
+    transition: transform var(--transition-panel), height var(--transition-panel);
+    z-index: var(--z-index-panel);
+  }
+
+  .app-detail-panel.open {
+    transform: translateY(0); /* 열렸을 때 솟아오름 */
+  }
+
+  .drag-handle-bar {
+    width: calc(var(--spacing-xl) * 1.25); /* 40px */
+    height: var(--spacing-xs); /* 4px */
+    background-color: var(--border-strong);
+    border-radius: var(--radius-pill);
+    margin: var(--spacing-sm) auto var(--spacing-xs) auto;
+    flex-shrink: 0;
+    cursor: grab;
+  }
+
+  .panel-body {
+    height: 100%;
+    padding: var(--spacing-md);
+    overflow-y: auto;
+  }
+
+  .comparison-table-wrapper {
+    height: 100%;
+    overflow-y: auto;
+  }
 }

@@ -7,14 +7,19 @@
   height: 100%;
   z-index: var(--z-index-dropdown);
   flex-shrink: 0;
-  position: absolute;
-  top: 0;
-  left: var(--layout-nav-width);
   transition: var(--transition-panel);
 }
 
-.app-sidebar.collapsed {
-  transform: translateX(-100%);
+@media (min-width: 769px) {
+  .app-sidebar {
+    position: absolute;
+    top: 0;
+    left: var(--layout-nav-width);
+  }
+
+  .app-sidebar.collapsed {
+    transform: translateX(-100%);
+  }
 }
 
 
@@ -850,4 +855,114 @@
   justify-content: flex-end;
   padding: 0 var(--spacing-md) var(--spacing-sm) var(--spacing-md);
   border-bottom: var(--spacing-3xs) solid var(--border-light);
+}
+
+.desktop-only {
+  display: grid;
+}
+
+.mobile-only-filters {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+
+  .mobile-only-filters {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .mobile-only-filters .region-tags {
+    display: grid;
+    grid-template-columns: repeat(5, var(--layout-flex-1));
+    gap: var(--spacing-2xs);
+    width: 100%;
+  }
+
+  .mobile-only-filters .filter-tags {
+    display: grid;
+    grid-template-columns: repeat(4, var(--layout-flex-1));
+    gap: var(--spacing-3xs);
+    width: 100%;
+  }
+
+  /* 부모 사이드바 래퍼는 모바일에서도 화면 전체 투명 래퍼 역할을 유지 (지도 터치 통과) */
+  .app-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: calc(var(--spacing-md) * 3.75); /* 하단 탭바 바로 위까지 */
+    width: 100vw;
+    height: auto;
+    background-color: transparent;
+    border-right: none;
+    pointer-events: none;
+    z-index: var(--z-index-dropdown);
+    overflow: visible;
+    display: block;
+    transition: none;
+  }
+
+  .drag-handle-bar {
+    width: calc(var(--spacing-xl) * 1.25); /* 40px */
+    height: var(--spacing-xs); /* 4px */
+    background-color: var(--border-strong);
+    border-radius: var(--radius-pill);
+    margin: var(--spacing-sm) auto var(--spacing-xs) auto;
+    flex-shrink: 0;
+    cursor: grab;
+  }
+
+  /* 검색창 영역 - 모바일에서는 상단에 띄우지 않고 탭 시트 내부로 완전 이식 */
+  .sidebar-search {
+    display: none !important;
+  }
+
+  .mobile-only-filters .search-wrapper {
+    position: relative;
+    width: 100%;
+    margin-bottom: var(--spacing-sm);
+  }
+
+  /* 개별 바텀시트 컨테이너들이 아래에서 위로 독립적으로 솟아오르는 구조 */
+  .sidebar-list,
+  .bookmark-panel-container,
+  .more-list-container {
+    position: fixed;
+    bottom: calc(var(--spacing-md) * 3.75); /* 하단 탭바 바로 위 */
+    left: 0;
+    right: 0;
+    height: 45dvh; /* 기본 높이 (드래그 시 인라인 style로 덮어씌워짐) */
+    background-color: var(--bg-surface);
+    border-top: var(--spacing-3xs) solid var(--border-light);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow: var(--shadow-lg);
+    pointer-events: auto; /* 터치 활성화 */
+    z-index: var(--z-index-base);
+    padding: var(--spacing-md);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(0);
+    transition: transform var(--transition-panel), height var(--transition-panel);
+  }
+
+  /* 닫힘(Collapsed) 상태에서의 바텀 시트 동작 - 아래로 슬라이딩 */
+  .app-sidebar.collapsed .sidebar-list,
+  .app-sidebar.collapsed .bookmark-panel-container,
+  .app-sidebar.collapsed .more-list-container {
+    transform: translateY(100%);
+  }
+
+  .folders-list-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-sm);
+  }
 }

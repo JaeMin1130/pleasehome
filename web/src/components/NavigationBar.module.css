@@ -91,4 +91,39 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
+@media (max-width: 768px) {
+  .nav-bar {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100vw;
+    height: calc(var(--spacing-md) * 3.75); /* 약 60px */
+    border-right: none;
+    border-top: var(--spacing-3xs) solid var(--border-light);
+    flex-direction: row;
+    padding-bottom: 0;
+    z-index: 1000;
+  }
+
+  .nav-group {
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  .nav-brand-wrapper {
+    display: none; /* 모바일에서 통합 로고는 숨겨 공간 확보 */
+  }
+
+  .nav-item {
+    flex: var(--layout-flex-1);
+    height: 100%;
+    padding: var(--spacing-xs) 0;
+  }
+}
+
 

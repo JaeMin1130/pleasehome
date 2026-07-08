@@ -546,3 +546,12 @@ table:not([class*="comparison-table"]):not([class*="unit-table"]) tr:last-child 
   background-color: var(--primary);
   color: var(--color-white);
 }
+
+@media (max-width: 768px) {
+  :root {
+    --layout-height-full: 100dvh;
+  }
+  body, .app-container {
+    height: 100dvh !important;
+  }
+}

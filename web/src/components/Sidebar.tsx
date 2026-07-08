@@ -18,6 +18,7 @@ interface SidebarProps {
   onSelectAnnouncement: (id: number | null) => void;
   width?: number;
   isCollapsed?: boolean;
+  onCollapseChange?: (isCollapsed: boolean) => void;
   displayComplexes: Complex[];
   activeComplexId: number | null;
   onSelectComplex: (complex: Complex) => void;
@@ -41,7 +42,7 @@ interface SidebarProps {
 
 export default function Sidebar({ 
   announcements, activeAnnId, onSelectAnnouncement, 
-  width, isCollapsed,
+  width, isCollapsed, onCollapseChange,
   displayComplexes, activeComplexId, onSelectComplex,
   activeTab, allComplexes, style,
   bookmarkedIds, onToggleBookmark,
@@ -51,6 +52,33 @@ export default function Sidebar({
   onHoverComplex
 }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [sheetHeight, setSheetHeight] = useState<number | null>(null);
+  const startYRef = useRef<number>(0);
+  const startHeightRef = useRef<number>(0);
+  const isDraggingRef = useRef<boolean>(false);
+
+  const getDvhInPixels = (percent: number) => {
+    if (typeof window === 'undefined') return 0;
+    return (window.innerHeight * percent) / 100;
+  };
+
+  const minHeight = 60;
+  const midHeight = getDvhInPixels(45);
+  const maxHeight = getDvhInPixels(80);
+
+  // isCollapsed 변화에 따른 상태 싱크
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      if (isCollapsed) {
+        setSheetHeight(minHeight);
+      } else {
+        setSheetHeight(midHeight);
+      }
+    } else {
+      setSheetHeight(null);
+    }
+  }, [isCollapsed]);
+
   const [complexSearchTerm, setComplexSearchTerm] = useState('');
   const [activeTabStatus, setActiveTabStatus] = useState<ApplicationStatus | 'HIDDEN'>('ONGOING');
   const [activeRegion, setActiveRegion] = useState<string>('ALL');
@@ -102,6 +130,86 @@ export default function Sidebar({
       }
     }
   }, []);
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (typeof window !== 'undefined' && window.innerWidth > 768) return;
+
+    const asideEl = e.currentTarget;
+    if (asideEl) {
+      startHeightRef.current = asideEl.getBoundingClientRect().height;
+    } else {
+      startHeightRef.current = isCollapsed ? minHeight : midHeight;
+    }
+
+    startYRef.current = e.touches[0].clientY;
+    isDraggingRef.current = true;
+
+    if (asideEl) {
+      asideEl.style.transition = 'none';
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
+    if (typeof window !== 'undefined' && window.innerWidth > 768) return;
+
+    const deltaY = e.touches[0].clientY - startYRef.current;
+    
+    const scrollContainer = e.currentTarget.querySelector(
+      '[class*="sidebar-list"], [class*="folders-list-container"], [class*="more-list-container"]'
+    ) as HTMLElement;
+
+    const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
+    const isScrollTopZero = scrollTop <= 0;
+    const currentHeight = startHeightRef.current;
+
+    // 끌어올리기 (deltaY < 0)
+    if (deltaY < 0) {
+      if (currentHeight < maxHeight) {
+        if (e.cancelable) e.preventDefault();
+        const nextHeight = Math.min(maxHeight, currentHeight - deltaY);
+        setSheetHeight(nextHeight);
+      }
+    }
+    // 끌어내리기 (deltaY > 0)
+    else if (deltaY > 0) {
+      if (currentHeight < maxHeight || isScrollTopZero) {
+        if (e.cancelable) e.preventDefault();
+        const nextHeight = Math.max(minHeight, currentHeight - deltaY);
+        setSheetHeight(nextHeight);
+      }
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+
+    const asideEl = e.currentTarget;
+    if (asideEl) {
+      asideEl.style.transition = '';
+    }
+
+    if (sheetHeight === null) return;
+
+    let targetHeight = midHeight;
+    const minThreshold = minHeight + (midHeight - minHeight) * 0.4;
+    const maxThreshold = midHeight + (maxHeight - midHeight) * 0.4;
+
+    if (sheetHeight <= minThreshold) {
+      targetHeight = minHeight;
+      onSelectAnnouncement(null);
+      onCollapseChange?.(true);
+    } else if (sheetHeight > minThreshold && sheetHeight < maxThreshold) {
+      targetHeight = midHeight;
+      onCollapseChange?.(false);
+    } else {
+      targetHeight = maxHeight;
+      onCollapseChange?.(false);
+    }
+
+    setSheetHeight(targetHeight);
+  };
 
   const handleToggleDisableAnn = (id: number) => {
     const exists = disabledAnns.some((x) => x.id === id);
@@ -414,9 +522,15 @@ export default function Sidebar({
       className={`${styles['app-sidebar']} ${isCollapsed ? styles.collapsed : ''}`} 
       style={{ 
         width: width ? `${width}px` : undefined,
+        height: sheetHeight ? `${sheetHeight}px` : undefined,
         ...style
       }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
+      {/* 모바일 화면 전용 상단 드래그 핸들바 */}
+      <div className={styles['drag-handle-bar']} />
 
 
       {/* 탭 분기 렌더링 */}
@@ -451,7 +565,7 @@ export default function Sidebar({
             </div>
             
             {/* ① 지역 구분 필터 태그 */}
-            <div className={styles['region-tags']}>
+            <div className={`${styles['region-tags']} ${styles['desktop-only']}`}>
               {['ALL', '서울', '인천', '경기', '기타'].map((r) => {
                 const label = r === 'ALL' ? '전체 지역' : r;
                 return (
@@ -467,7 +581,7 @@ export default function Sidebar({
             </div>
 
             {/* ② 접수 구분 필터 태그 */}
-            <div className={styles['filter-tags']}>
+            <div className={`${styles['filter-tags']} ${styles['desktop-only']}`}>
               <span className={`${styles['filter-tag']} ${activeTabStatus === 'UPCOMING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('UPCOMING')}>
                 접수 예정 ({getStatusCount('UPCOMING')})
               </span>
@@ -482,7 +596,73 @@ export default function Sidebar({
               </span>
             </div>
           </div>
-          <div ref={listRef} className={styles['sidebar-list']}>
+          <div 
+            ref={listRef} 
+            className={styles['sidebar-list']}
+            style={{ height: sheetHeight ? `${sheetHeight}px` : undefined }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            {/* 모바일 화면 전용 상단 드래그 핸들바 */}
+            <div className={styles['drag-handle-bar']} />
+            {/* 모바일 화면 전용 필터 영역 (바텀 시트 내부에 위치) */}
+            <div className={styles['mobile-only-filters']}>
+              <div className={styles['search-wrapper']}>
+                <svg
+                  className={styles['search-icon']}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input 
+                  type="text" placeholder="공고명 또는 공급기관 검색..." 
+                  className={styles['search-input']} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                {searchTerm && (
+                  <button 
+                    onClick={() => setSearchTerm('')}
+                    className={styles['clear-btn']}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              <div className={styles['region-tags']}>
+                {['ALL', '서울', '인천', '경기', '기타'].map((r) => {
+                  const label = r === 'ALL' ? '전체 지역' : r;
+                  return (
+                    <span 
+                      key={r}
+                      className={`${styles['region-tag']} ${activeRegion === r ? styles.active : ''}`}
+                      onClick={() => setActiveRegion(r)}
+                    >
+                      {label}
+                    </span>
+                  );
+                })}
+              </div>
+              <div className={styles['filter-tags']}>
+                <span className={`${styles['filter-tag']} ${activeTabStatus === 'UPCOMING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('UPCOMING')}>
+                  예정 ({getStatusCount('UPCOMING')})
+                </span>
+                <span className={`${styles['filter-tag']} ${activeTabStatus === 'ONGOING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('ONGOING')}>
+                  접수중 ({getStatusCount('ONGOING')})
+                </span>
+                <span className={`${styles['filter-tag']} ${activeTabStatus === 'CLOSED' ? styles.active : ''}`} onClick={() => setActiveTabStatus('CLOSED')}>
+                  마감 ({getStatusCount('CLOSED')})
+                </span>
+                <span className={`${styles['filter-tag']} ${activeTabStatus === 'HIDDEN' ? styles.active : ''}`} onClick={() => setActiveTabStatus('HIDDEN')}>
+                  숨김 ({getHiddenStatusCount()})
+                </span>
+              </div>
+            </div>
             {getSortedAnnouncements().length === 0 ? (
               <div className={styles['empty-msg']}>결과가 없습니다.</div>
             ) : (
@@ -551,7 +731,15 @@ export default function Sidebar({
       )}
 
       {activeTab === 'BOOKMARK' && (
-        <div className={styles['bookmark-panel-container']}>
+        <div 
+          className={styles['bookmark-panel-container']}
+          style={{ height: sheetHeight ? `${sheetHeight}px` : undefined }}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* 모바일 화면 전용 상단 드래그 핸들바 */}
+          <div className={styles['drag-handle-bar']} />
           <div className={styles['bookmark-header']}>
             <h3 className={styles['bookmark-title']}>저장 목록</h3>
             <button 
@@ -822,7 +1010,15 @@ export default function Sidebar({
 
       {activeTab === 'MORE' && (
         <>
-          <div className={styles['more-list-container']}>
+          <div 
+            className={styles['more-list-container']}
+            style={{ height: sheetHeight ? `${sheetHeight}px` : undefined }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            {/* 모바일 화면 전용 상단 드래그 핸들바 */}
+            <div className={styles['drag-handle-bar']} />
             <div className={styles['more-menu-group']}>
               <div className={styles['more-menu-item']} onClick={toggleTheme}>
                 <span className={styles['more-menu-label']}>지도 모드</span>

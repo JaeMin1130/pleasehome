@@ -307,3 +307,44 @@
 .thumb--right {
     z-index: calc(var(--z-index-base) - 6);
 }
+
+@media (max-width: 768px) {
+  /* 상세 필터 컨테이너 - 우측 상단 단독 고정 */
+  .floating-filter-container {
+    top: var(--spacing-md);
+    right: var(--spacing-md);
+    z-index: 1100;
+  }
+
+  /* 상세 필터 버튼 - 아이콘화 축소 */
+  .floating-filter-btn {
+    width: calc(var(--spacing-md) * 5); /* 약 40px */
+    height: calc(var(--spacing-md) * 5); /* 약 40px */
+    padding: 0;
+    border-radius: 50%; /* 원형 아이콘 */
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* 아이콘 내부 마진 제거 */
+  .floating-filter-btn :global(.btn-icon-left) {
+    margin-right: 0 !important;
+  }
+
+  /* 텍스트 및 불필요한 화살표 숨김 */
+  .btn-text {
+    display: none !important;
+  }
+
+  .btn-arrow-wrapper {
+    display: none !important;
+  }
+
+  /* 상세 필터 드롭다운 - 모바일 화면폭 밖으로 삐져나가지 않도록 너비 및 배치 조정 */
+  .floating-filter-dropdown {
+    width: calc(100vw - calc(var(--spacing-md) * 4));
+    max-height: 50dvh;
+    top: calc(100% + var(--spacing-sm));
+    right: 0;
+  }
+}
