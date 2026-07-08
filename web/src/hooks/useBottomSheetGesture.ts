@@ -27,7 +27,8 @@ export function useBottomSheetGesture({
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     if (typeof window !== 'undefined' && window.innerWidth > 768) return;
 
-    const asideEl = e.currentTarget;
+    // 터치가 발생한 구체적인 자식 요소에 구애받지 않고, 항상 최상위 시트 컨테이너(aside 또는 패널)의 높이를 구합니다.
+    const asideEl = e.currentTarget.closest('aside, [class*="app-detail-panel"]') as HTMLElement || e.currentTarget;
     if (asideEl) {
       startHeightRef.current = asideEl.getBoundingClientRect().height;
       asideEl.style.transition = 'none';
@@ -46,32 +47,30 @@ export function useBottomSheetGesture({
     const deltaY = e.touches[0].clientY - startYRef.current;
     const currentHeight = startHeightRef.current;
 
-    // 1. 최대 높이가 아닐 때는 리스트 스크롤이 불가능하므로, 무조건 시트 크기만 제어합니다.
-    if (currentHeight < maxHeight) {
-      if (e.cancelable) e.preventDefault();
-      const nextHeight = Math.min(maxHeight, Math.max(minHeight, currentHeight - deltaY));
-      setSheetHeight(nextHeight);
+    // 1. [예외] 이미 최대 높이 상태에서 위로 쓸어올릴 때(deltaY < 0)는 
+    // 시트를 더 키울 수 없으므로, 기본 스크롤바(아래로 내림)가 작동하도록 즉시 리턴합니다.
+    if (currentHeight === maxHeight && deltaY < 0) {
       return;
     }
 
-    // 2. 최대 높이(maxHeight)일 때의 제스처 처리
-    if (currentHeight === maxHeight) {
-      // 끌어내릴 때(deltaY > 0) + 스크롤 위치가 최상단(scrollTop <= 0)인 경우에만 시트 높이를 줄입니다.
-      if (deltaY > 0) {
-        const scrollContainer = e.currentTarget.matches(scrollSelector)
-          ? e.currentTarget
-          : e.currentTarget.querySelector(scrollSelector) as HTMLElement;
+    // 스크롤 컨테이너 탐색
+    const scrollContainer = e.currentTarget.className.includes('sidebar-list') 
+      ? e.currentTarget 
+      : e.currentTarget.querySelector(scrollSelector) as HTMLElement;
 
-        const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
+    const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
 
-        if (scrollTop <= 0) {
-          if (e.cancelable) e.preventDefault();
-          const nextHeight = Math.max(minHeight, currentHeight - deltaY);
-          setSheetHeight(nextHeight);
-        }
-      }
-      // 끌어올릴 때(deltaY < 0)는 이미 최대 높이이므로 아무것도 하지 않고 스크롤이 작동하도록 둡니다.
+    // 2. [예외] 스크롤바가 내려가 있는 상태(scrollTop > 0)라면
+    // 스크롤바가 위로 올라가야 하므로, 즉시 리턴하여 기본 스크롤에 양보합니다.
+    if (scrollTop > 0) {
+      return;
     }
+
+    // 3. 그 외 모든 상황(시트 높이가 중간/최소이거나, 최대 높이이면서 스크롤이 최상단일 때 내릴 때 등)
+    // 브라우저 기본 스크롤을 차단하고 시트 크기만 제어합니다.
+    if (e.cancelable) e.preventDefault();
+    const nextHeight = Math.min(maxHeight, Math.max(minHeight, currentHeight - deltaY));
+    setSheetHeight(nextHeight);
   };
 
   const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {

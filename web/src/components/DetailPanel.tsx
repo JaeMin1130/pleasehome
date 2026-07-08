@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useBottomSheetGesture } from '@/hooks/useBottomSheetGesture';
 import { Complex, HousingUnit, Announcement, FilterState, BookmarkFolder } from '@/types';
 import UnitTable from '@/components/features/UnitTable';
