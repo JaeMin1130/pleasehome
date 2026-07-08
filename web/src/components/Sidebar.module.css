@@ -957,11 +957,11 @@
     transition: transform var(--transition-panel), height var(--transition-panel);
   }
 
-  /* 닫힘(Collapsed) 상태에서의 바텀 시트 동작 - 최소 높이(60px)만 남기고 하단으로 슬라이딩 */
+  /* 닫힘(Collapsed) 상태에서의 바텀 시트 동작 - 최소 높이만 남기고 하단으로 슬라이딩 */
   .app-sidebar.collapsed .sidebar-list,
   .app-sidebar.collapsed .bookmark-panel-container,
   .app-sidebar.collapsed .more-list-container {
-    transform: translateY(calc(100% - calc(var(--spacing-xs) * 15)));
+    transform: translateY(calc(100% - var(--sheet-min-height, calc(var(--spacing-xs) * 15))));
   }
 
   /* 완전히 닫힌 상태 (초기 화면 및 탭 해제 상태) */
@@ -975,5 +975,21 @@
     flex: 1;
     overflow-y: auto;
     padding: var(--spacing-sm);
+  }
+
+  .sidebar-folder-add-container {
+    padding: var(--spacing-xs) var(--spacing-sm) !important;
+    gap: var(--spacing-2xs) !important;
+  }
+  .sidebar-folder-input {
+    padding: var(--spacing-2xs) var(--spacing-xs) !important;
+    font-size: var(--font-size-xs) !important;
+  }
+  .sidebar-folder-submit {
+    padding: var(--spacing-2xs) var(--spacing-sm) !important;
+    font-size: var(--font-size-xs) !important;
+  }
+  .sidebar-color-picker {
+    margin-top: 0 !important;
   }
 }

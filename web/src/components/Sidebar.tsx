@@ -63,13 +63,13 @@ export default function Sidebar({
     midHeight, 
     maxHeight 
   } = useBottomSheetGesture({
+    minHeight: 185, // 필터 버튼들이 보이면서 아래 공고 카드는 삐져나오지 않도록 185px로 정밀 조정
     scrollSelector: '[class*="sidebar-list"], [class*="folders-list-container"], [class*="more-list-container"]',
     onMinHeightReached: () => {
       if (isCollapsed) {
         onSelectAnnouncement(null);
         onTabSelect?.(null);
       } else {
-        onSelectAnnouncement(null);
         onCollapseChange?.(true);
       }
     },
@@ -101,6 +101,18 @@ export default function Sidebar({
   const listRef = useRef<HTMLDivElement>(null);
   const bookmarkListRef = useRef<HTMLDivElement>(null);
   const [bookmarkUnits, setBookmarkUnits] = useState<Record<number, HousingUnit[]>>({});
+
+  // 💡 최소 높이 상태에서 검색어나 필터 조건 변경 시 자동으로 중간 높이로 확장
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      if (
+        isCollapsed && 
+        (searchTerm !== '' || activeRegion !== 'ALL' || activeTabStatus !== 'ONGOING')
+      ) {
+        onCollapseChange?.(false);
+      }
+    }
+  }, [searchTerm, activeRegion, activeTabStatus, isCollapsed, onCollapseChange]);
 
   // 📂 북마크 폴더명 수정 상태
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
@@ -536,8 +548,9 @@ export default function Sidebar({
             className={styles['sidebar-list']}
             style={{ 
               height: sheetHeight ? `${sheetHeight}px` : undefined,
-              overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
-            }}
+              overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto',
+              '--sheet-min-height': `${minHeight}px`
+            } as React.CSSProperties}
             {...touchHandlers}
           >
             {/* 모바일 화면 전용 상단 드래그 핸들바 */}
@@ -671,8 +684,9 @@ export default function Sidebar({
           className={styles['bookmark-panel-container']}
           style={{ 
             height: sheetHeight ? `${sheetHeight}px` : undefined,
-            overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
-          }}
+            overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto',
+            '--sheet-min-height': `${minHeight}px`
+          } as React.CSSProperties}
           {...touchHandlers}
         >
           {/* 모바일 화면 전용 상단 드래그 핸들바 */}
@@ -957,8 +971,9 @@ export default function Sidebar({
             className={styles['more-list-container']}
             style={{ 
               height: sheetHeight ? `${sheetHeight}px` : undefined,
-              overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
-            }}
+              overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto',
+              '--sheet-min-height': `${minHeight}px`
+            } as React.CSSProperties}
             {...touchHandlers}
           >
             {/* 모바일 화면 전용 상단 드래그 핸들바 */}

@@ -317,9 +317,14 @@
   }
 
   .floating-filter-dropdown {
-    width: calc(100vw - calc(var(--spacing-md) * 4));
-    max-height: 50dvh;
+    width: calc(var(--spacing-lg) * 11); /* 264px (디자인 토큰화) */
+    max-height: 55dvh;
     top: calc(100% + var(--spacing-sm));
     right: 0;
+  }
+
+  .floating-filter-dropdown .overlay-body {
+    padding: var(--spacing-md);
+    gap: var(--spacing-md);
   }
 }

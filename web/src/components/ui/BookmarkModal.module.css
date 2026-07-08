@@ -294,3 +294,33 @@
   margin-bottom: var(--spacing-xs);
 }
 
+@media (max-width: 768px) {
+  .modal-header {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+  .modal-body {
+    padding: var(--spacing-sm) var(--spacing-md);
+    gap: var(--spacing-sm);
+    max-height: calc(var(--layout-height-full) * 0.55);
+  }
+  .complex-info {
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+  .folder-item {
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+  .folders-list {
+    max-height: calc(var(--spacing-xl) * 4);
+  }
+  .add-folder-form-container {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    margin-bottom: var(--spacing-2xs);
+  }
+  .memo-textarea {
+    height: calc(var(--spacing-xl) * 2.2);
+  }
+  .modal-footer {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+}
+

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
 interface UseBottomSheetGestureProps {
   minHeight?: number;
@@ -29,9 +29,25 @@ export function useBottomSheetGesture({
   const finalMaxHeight = maxHeight ?? getDvhInPixels(85);
 
   const [sheetHeight, setSheetHeight] = useState<number | null>(null);
+  const [sheetState, setSheetState] = useState<0 | 1 | 2>(1); // 0: MIN, 1: MID, 2: MAX (기본값 MID)
   const isDraggingRef = useRef(false);
   const startYRef = useRef(0);
   const startHeightRef = useRef(0);
+  const startStateRef = useRef<0 | 1 | 2>(1);
+
+  // 외부 싱크 연동 (드래그 중이 아닐 때 sheetHeight 변화를 sheetState에 동기화)
+  useEffect(() => {
+    if (isDraggingRef.current) return;
+    if (sheetHeight === null) return;
+
+    if (Math.abs(sheetHeight - finalMinHeight) < 5) {
+      setSheetState(0);
+    } else if (Math.abs(sheetHeight - finalMidHeight) < 5) {
+      setSheetState(1);
+    } else if (Math.abs(sheetHeight - finalMaxHeight) < 5) {
+      setSheetState(2);
+    }
+  }, [sheetHeight, finalMinHeight, finalMidHeight, finalMaxHeight]);
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     if (typeof window !== 'undefined' && window.innerWidth > 768) return;
@@ -42,10 +58,11 @@ export function useBottomSheetGesture({
       startHeightRef.current = asideEl.getBoundingClientRect().height;
       asideEl.style.transition = 'none';
     } else {
-      startHeightRef.current = finalMidHeight;
+      startHeightRef.current = sheetHeight ?? finalMidHeight;
     }
 
     startYRef.current = e.touches[0].clientY;
+    startStateRef.current = sheetState; // 드래그 시작 시점의 플래그 기록
     isDraggingRef.current = true;
   };
 
@@ -56,9 +73,11 @@ export function useBottomSheetGesture({
     const deltaY = e.touches[0].clientY - startYRef.current;
     const currentHeight = startHeightRef.current;
 
-    // 1. [예외] 이미 최대 높이 상태에서 위로 쓸어올릴 때(deltaY < 0)는 
+    const isAtMax = sheetState === 2;
+
+    // 1. [예외] 이미 최대 높이 상태(MAX)에서 위로 쓸어올릴 때(deltaY < 0)는 
     // 시트를 더 키울 수 없으므로, 기본 스크롤바(아래로 내림)가 작동하도록 즉시 리턴합니다.
-    if (currentHeight === finalMaxHeight && deltaY < 0) {
+    if (isAtMax && deltaY < 0) {
       return;
     }
 
@@ -69,9 +88,9 @@ export function useBottomSheetGesture({
 
     const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
 
-    // 2. [예외] 스크롤바가 내려가 있는 상태(scrollTop > 0)라면
+    // 2. [예외] 시트가 최대 높이 상태(MAX)이고 스크롤바가 내려가 있는 상태(scrollTop > 0)라면
     // 스크롤바가 위로 올라가야 하므로, 즉시 리턴하여 기본 스크롤에 양보합니다.
-    if (scrollTop > 0) {
+    if (isAtMax && scrollTop > 0) {
       return;
     }
 
@@ -93,21 +112,48 @@ export function useBottomSheetGesture({
 
     if (sheetHeight === null) return;
 
-    let targetHeight = finalMidHeight;
-    const minThreshold = finalMinHeight + (finalMidHeight - finalMinHeight) * 0.4;
-    const maxThreshold = finalMidHeight + (finalMaxHeight - finalMidHeight) * 0.4;
+    // 터치 종료 시점의 deltaY 계산
+    const endY = e.changedTouches?.[0]?.clientY ?? startYRef.current;
+    const deltaY = endY - startYRef.current;
 
-    if (sheetHeight <= minThreshold) {
-      targetHeight = finalMinHeight;
-      onMinHeightReached?.();
-    } else if (sheetHeight > minThreshold && sheetHeight < maxThreshold) {
-      targetHeight = finalMidHeight;
-      onMidHeightReached?.();
-    } else {
-      targetHeight = finalMaxHeight;
-      onMaxHeightReached?.();
+    // 스크롤 컨테이너 및 위치 탐색
+    const scrollContainer = e.currentTarget.className.includes('sidebar-list') 
+      ? e.currentTarget 
+      : e.currentTarget.querySelector(scrollSelector) as HTMLElement;
+
+    const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
+
+    let targetState = startStateRef.current;
+    const swipeThreshold = 40; // 쫀쫀한 동작을 위해 임계값 40px로 복구
+
+    if (deltaY < -swipeThreshold) {
+      // 위로 스와이프 (+1 단계)
+      targetState = Math.min(2, startStateRef.current + 1) as 0 | 1 | 2;
+    } else if (deltaY > swipeThreshold) {
+      // 아래로 스와이프 (-1 단계)
+      // 최대 높이(2) 상태이고 스크롤이 내려가 있는 상태(scrollTop > 0)라면 높이를 줄이지 않고 최대 높이 유지
+      if (startStateRef.current === 2 && scrollTop > 0) {
+        targetState = 2;
+      } else {
+        targetState = Math.max(0, startStateRef.current - 1) as 0 | 1 | 2;
+      }
     }
 
+    const hasStateChanged = targetState !== startStateRef.current;
+
+    let targetHeight = finalMidHeight;
+    if (targetState === 0) {
+      targetHeight = finalMinHeight;
+      if (hasStateChanged) onMinHeightReached?.();
+    } else if (targetState === 1) {
+      targetHeight = finalMidHeight;
+      if (hasStateChanged) onMidHeightReached?.();
+    } else {
+      targetHeight = finalMaxHeight;
+      if (hasStateChanged) onMaxHeightReached?.();
+    }
+
+    setSheetState(targetState);
     setSheetHeight(targetHeight);
   };
 
