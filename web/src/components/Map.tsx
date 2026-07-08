@@ -236,35 +236,61 @@ export default function Map({ complexes, activeComplexId, hoveredComplexId, onSe
           const mapHeight = mapSize.height;
           const margin = 40; // 패널 및 지도 경계면의 최소 여유 픽셀
 
+          // 모바일 환경 판별
+          const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+
           // 3. 상세 패널이 새로 열리는 시점인지 동적으로 판별
           const detailPanel = document.querySelector('[class*="app-detail-panel"]') as HTMLElement;
           const isPanelOpening = !detailPanel || detailPanel.offsetWidth === 0;
 
-          // 4. 클릭 시점 기준의 동적 가림 폭 획득
-          const checkWidth = getActiveCoveredWidth(isPanelOpening);
+          let isAlreadyVisible = false;
 
-          // 5. 브라우저 창 뷰포트 내 실제 가용 영역에 마커가 노출되어 있는지 100% 물리 팩트 검증
-          const isAlreadyVisible = 
-            markerX > (checkWidth + margin) &&
-            markerX < (mapWidth - margin) &&
-            markerY > margin &&
-            markerY < (mapHeight - margin);
+          if (isMobile) {
+            // 모바일 뷰: 가로축 화면 내부 존재 여부 + 하단 바텀시트 가용 세로 범위 검증
+            const bottomSheetMidHeight = window.innerHeight * 0.45;
+            isAlreadyVisible = 
+              markerX > margin &&
+              markerX < (mapWidth - margin) &&
+              markerY > margin &&
+              markerY < (mapHeight - bottomSheetMidHeight - margin);
+          } else {
+            // PC 뷰: 화면 좌측의 가려진 패널 영역 오른쪽의 가용 가로 범위 검증
+            const checkWidth = getActiveCoveredWidth(isPanelOpening);
+            isAlreadyVisible = 
+              markerX > (checkWidth + margin) &&
+              markerX < (mapWidth - margin) &&
+              markerY > margin &&
+              markerY < (mapHeight - margin);
+          }
 
-          // [경우 A-1-①, A-2-①, D-1] 이미 화면 우측 가용 영역에 노출되어 있다면 지도를 전혀 스크롤하지 않고 조기 리턴
+          // 이미 적절한 가용 영역 내에 노출되어 있다면 지도를 스크롤하지 않고 조기 리턴
           if (isAlreadyVisible) {
             return;
           }
         }
 
-        // [경우 A-1-②, A-2-②, D-2] 화면 밖에 있거나 패널 밑에 숨어있을 때만 오프셋 계산 후 부드러운 스크롤 실행
+        // 화면 밖에 있거나 패널 밑에 숨어있을 때만 오프셋 계산 후 부드러운 스크롤 실행
         const projection = naverMap.getProjection();
         if (projection) {
-          const targetCoveredWidth = getActiveCoveredWidth(false); // 패널 최종 렌더링 상태 기준의 coveredWidth
+          const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
           const containerPoint = projection.fromCoordToOffset(markerPosition);
-          const offsetPoint = new window.naver.maps.Point(
-            containerPoint.x - (targetCoveredWidth / 2),
-            containerPoint.y
-          );
+          
+          let offsetPoint;
+          if (isMobile) {
+            // 모바일 뷰: 마커가 바텀시트 윗쪽의 가용 영역 정중앙에 위치하도록 Y좌표 보정 (카메라를 위로 올려 마커를 상대적으로 아래에 위치시킴)
+            const bottomSheetMidHeight = window.innerHeight * 0.45;
+            offsetPoint = new window.naver.maps.Point(
+              containerPoint.x,
+              containerPoint.y + (bottomSheetMidHeight / 2)
+            );
+          } else {
+            // PC 뷰: 마커가 상세 패널 오른쪽 가용 영역 정중앙에 위치하도록 X좌표 왼쪽 보정
+            const targetCoveredWidth = getActiveCoveredWidth(false);
+            offsetPoint = new window.naver.maps.Point(
+              containerPoint.x - (targetCoveredWidth / 2),
+              containerPoint.y
+            );
+          }
 
           // 오프셋이 가미된 픽셀 위치를 다시 지도 위경도 좌표로 복원
           const offsetLatLng = projection.fromOffsetToCoord(offsetPoint);
