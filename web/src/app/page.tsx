@@ -15,7 +15,6 @@ import {
   FILTER_SLIDER_STEPS,
   NAVIGATION_BAR_WIDTH,
   SIDEBAR_DEFAULT_WIDTH,
-  PANEL_DEFAULT_WIDTH,
   LAYOUT_GAP,
 } from '@/constants';
 
@@ -377,22 +376,14 @@ function HomeContent() {
           <div 
             className={styles['floating-filter-container']}
           >
-            <button className={styles['floating-filter-btn']} onClick={() => setIsFilterExpanded(!isFilterExpanded)}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['btn-icon-left']}>
+            <button 
+              className={styles['floating-filter-btn']} 
+              onClick={() => setIsFilterExpanded(!isFilterExpanded)}
+              title={isFilterExpanded ? "상세 필터 닫기" : "상세 필터 열기"}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['btn-icon']}>
                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
               </svg>
-              <span className={styles['btn-text']}>맞춤 상세 필터</span>
-              <span className={styles['btn-arrow-wrapper']}>
-                {isFilterExpanded ? (
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['btn-icon-right']}>
-                    <polyline points="18 15 12 9 6 15"></polyline>
-                  </svg>
-                ) : (
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['btn-icon-right']}>
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                  </svg>
-                )}
-              </span>
             </button>
             
             {isFilterExpanded && (
@@ -542,8 +533,7 @@ function HomeContent() {
             }
           }} 
           style={{ 
-            '--sidebar-offset-width': isSidebarCollapsed ? '0px' : `${SIDEBAR_DEFAULT_WIDTH}px`,
-            width: `${PANEL_DEFAULT_WIDTH}px`
+            '--sidebar-offset-width': isSidebarCollapsed ? '0px' : `${SIDEBAR_DEFAULT_WIDTH}px`
           } as React.CSSProperties}
           comparisonFolder={
             activeComparisonFolderId === 'default'
