@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from 'react';
+import { useBottomSheetGesture } from '@/hooks/useBottomSheetGesture';
 import { Complex, HousingUnit, Announcement, FilterState, BookmarkFolder } from '@/types';
 import UnitTable from '@/components/features/UnitTable';
 import { formatTargetGroup, formatMoney, formatRent } from '@/utils/formatters';
@@ -26,10 +27,6 @@ export default function DetailPanel({
   comparisonComplexes = []
 }: DetailPanelProps) {
   const [units, setUnits] = useState<HousingUnit[]>([]);
-  const [sheetHeight, setSheetHeight] = useState<number | null>(null);
-  const startYRef = useRef<number>(0);
-  const startHeightRef = useRef<number>(0);
-  const isDraggingRef = useRef<boolean>(false);
 
   const getDvhInPixels = (percent: number) => {
     if (typeof window === 'undefined') return 0;
@@ -39,6 +36,16 @@ export default function DetailPanel({
   const minHeight = 60;
   const midHeight = getDvhInPixels(45);
   const maxHeight = getDvhInPixels(80);
+
+  const { sheetHeight, setSheetHeight, touchHandlers } = useBottomSheetGesture({
+    minHeight,
+    midHeight,
+    maxHeight,
+    scrollSelector: '[class*="panel-body"], [class*="comparison-table-wrapper"]',
+    onMinHeightReached: () => {
+      onClose();
+    }
+  });
 
   // isOpen 변화에 따른 상태 싱크
   useEffect(() => {
@@ -51,7 +58,7 @@ export default function DetailPanel({
     } else {
       setSheetHeight(null);
     }
-  }, [isOpen]);
+  }, [isOpen, minHeight, midHeight, setSheetHeight]);
 
   const [loading, setLoading] = useState(false);
   const [sliderValues, setSliderValues] = useState<Record<number, number>>({});
@@ -128,83 +135,6 @@ export default function DetailPanel({
     return true;
   });
 
-  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (typeof window !== 'undefined' && window.innerWidth > 768) return;
-
-    const asideEl = e.currentTarget;
-    if (asideEl) {
-      startHeightRef.current = asideEl.getBoundingClientRect().height;
-    } else {
-      startHeightRef.current = isOpen ? midHeight : minHeight;
-    }
-
-    startYRef.current = e.touches[0].clientY;
-    isDraggingRef.current = true;
-
-    if (asideEl) {
-      asideEl.style.transition = 'none';
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isDraggingRef.current) return;
-    if (typeof window !== 'undefined' && window.innerWidth > 768) return;
-
-    const deltaY = e.touches[0].clientY - startYRef.current;
-    
-    const scrollContainer = e.currentTarget.querySelector(
-      '[class*="panel-body"], [class*="comparison-table-wrapper"]'
-    ) as HTMLElement;
-
-    const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
-    const isScrollTopZero = scrollTop <= 0;
-    const currentHeight = startHeightRef.current;
-
-    // 끌어올리기 (deltaY < 0)
-    if (deltaY < 0) {
-      if (currentHeight < maxHeight) {
-        if (e.cancelable) e.preventDefault();
-        const nextHeight = Math.min(maxHeight, currentHeight - deltaY);
-        setSheetHeight(nextHeight);
-      }
-    }
-    // 끌어내리기 (deltaY > 0)
-    else if (deltaY > 0) {
-      if (currentHeight < maxHeight || isScrollTopZero) {
-        if (e.cancelable) e.preventDefault();
-        const nextHeight = Math.max(minHeight, currentHeight - deltaY);
-        setSheetHeight(nextHeight);
-      }
-    }
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isDraggingRef.current) return;
-    isDraggingRef.current = false;
-
-    const asideEl = e.currentTarget;
-    if (asideEl) {
-      asideEl.style.transition = '';
-    }
-
-    if (sheetHeight === null) return;
-
-    let targetHeight = midHeight;
-    const minThreshold = minHeight + (midHeight - minHeight) * 0.4;
-    const maxThreshold = midHeight + (maxHeight - midHeight) * 0.4;
-
-    if (sheetHeight <= minThreshold) {
-      targetHeight = minHeight;
-      onClose();
-    } else if (sheetHeight > minThreshold && sheetHeight < maxThreshold) {
-      targetHeight = midHeight;
-    } else {
-      targetHeight = maxHeight;
-    }
-
-    setSheetHeight(targetHeight);
-  };
-
   const handleSliderChange = (unitId: number, value: number) => {
     setSliderValues((prev) => ({ ...prev, [unitId]: value }));
   };
@@ -220,9 +150,7 @@ export default function DetailPanel({
           ...style,
           height: sheetHeight ? `${sheetHeight}px` : undefined
         }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        {...touchHandlers}
       >
         {/* 모바일 화면 전용 상단 드래그 핸들바 */}
         <div className={styles['drag-handle-bar']} />
@@ -433,9 +361,7 @@ export default function DetailPanel({
         ...style,
         height: sheetHeight ? `${sheetHeight}px` : undefined
       }}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
+      {...touchHandlers}
     >
       {/* 모바일 화면 전용 상단 드래그 핸들바 */}
       <div className={styles['drag-handle-bar']} />
