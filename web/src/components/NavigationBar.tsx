@@ -4,13 +4,13 @@ import styles from './NavigationBar.module.css';
 import { UI_SIZES, UI_STROKE_WIDTHS } from '@/constants';
 
 export type NavigationTabType = 'SEARCH' | 'BOOKMARK' | 'MORE';
-
+ 
 interface NavigationBarProps {
-  activeTab: NavigationTabType;
+  activeTab: NavigationTabType | null;
   isSidebarCollapsed: boolean;
-  onTabSelect: (tab: NavigationTabType) => void;
+  onTabSelect: (tab: NavigationTabType | null) => void;
 }
-
+ 
 export default function NavigationBar({
   activeTab,
   isSidebarCollapsed,
@@ -28,10 +28,10 @@ export default function NavigationBar({
             <line x1="15" y1="6" x2="15" y2="21"></line>
           </svg>
         </div>
-
+ 
         <button
-          className={`${styles['nav-item']} ${!isSidebarCollapsed && activeTab === 'SEARCH' ? styles.active : ''}`}
-          onClick={() => onTabSelect('SEARCH')}
+          className={`${styles['nav-item']} ${activeTab === 'SEARCH' ? styles.active : ''}`}
+          onClick={() => onTabSelect(activeTab === 'SEARCH' ? null : 'SEARCH')}
           title="공고 검색"
         >
           <svg className={styles['nav-icon']} width={UI_SIZES.ICON_XL} height={UI_SIZES.ICON_XL} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.THICK} strokeLinecap="round" strokeLinejoin="round">
@@ -43,21 +43,21 @@ export default function NavigationBar({
           </svg>
           <span className={styles['nav-label']}>공고</span>
         </button>
-
+ 
         <button
-          className={`${styles['nav-item']} ${!isSidebarCollapsed && activeTab === 'BOOKMARK' ? styles.active : ''}`}
-          onClick={() => onTabSelect('BOOKMARK')}
+          className={`${styles['nav-item']} ${activeTab === 'BOOKMARK' ? styles.active : ''}`}
+          onClick={() => onTabSelect(activeTab === 'BOOKMARK' ? null : 'BOOKMARK')}
           title="저장한 단지"
         >
-          <svg className={styles['nav-icon']} width={UI_SIZES.ICON_XL} height={UI_SIZES.ICON_XL} viewBox="0 0 24 24" fill={!isSidebarCollapsed && activeTab === 'BOOKMARK' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.BOLD} strokeLinecap="round" strokeLinejoin="round">
+          <svg className={styles['nav-icon']} width={UI_SIZES.ICON_XL} height={UI_SIZES.ICON_XL} viewBox="0 0 24 24" fill={activeTab === 'BOOKMARK' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.BOLD} strokeLinecap="round" strokeLinejoin="round">
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
           </svg>
           <span className={styles['nav-label']}>저장</span>
         </button>
-
+ 
         <button
-          className={`${styles['nav-item']} ${!isSidebarCollapsed && activeTab === 'MORE' ? styles.active : ''}`}
-          onClick={() => onTabSelect('MORE')}
+          className={`${styles['nav-item']} ${activeTab === 'MORE' ? styles.active : ''}`}
+          onClick={() => onTabSelect(activeTab === 'MORE' ? null : 'MORE')}
           title="더보기"
         >
           <svg className={styles['nav-icon']} width={UI_SIZES.ICON_XL} height={UI_SIZES.ICON_XL} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.BOLD} strokeLinecap="round">

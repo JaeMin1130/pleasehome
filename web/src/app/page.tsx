@@ -192,7 +192,7 @@ function HomeContent() {
   }, []);
 
   const [activeComparisonFolderId, setActiveComparisonFolderId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<NavigationTabType>('SEARCH');
+  const [activeTab, setActiveTab] = useState<NavigationTabType | null>(null);
 
   const [filterState, setFilterState] = useState<FilterState>({
     targetGroup: 'ALL',
@@ -346,11 +346,11 @@ function HomeContent() {
     }
   };
 
-  const handleTabSelect = (tab: NavigationTabType) => {
-    if (activeTab === tab) {
-      setIsSidebarCollapsed(!isSidebarCollapsed);
+  const handleTabSelect = (tab: NavigationTabType | null) => {
+    setActiveTab(tab);
+    if (tab === null) {
+      setIsSidebarCollapsed(true);
     } else {
-      setActiveTab(tab);
       setIsSidebarCollapsed(false);
       if (tab === 'BOOKMARK') {
         setActiveFolderIds([]);
@@ -457,7 +457,7 @@ function HomeContent() {
           announcements={announcements} activeAnnId={activeAnnId} onSelectAnnouncement={handleSelectAnnouncement} 
           width={SIDEBAR_DEFAULT_WIDTH} isCollapsed={isSidebarCollapsed} onCollapseChange={setIsSidebarCollapsed}
           displayComplexes={activeTab === 'BOOKMARK' ? mapComplexes : filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex}
-          activeTab={activeTab} allComplexes={allComplexes}
+          activeTab={activeTab} onTabSelect={handleTabSelect} allComplexes={allComplexes}
           bookmarkedIds={bookmarkedIds} onToggleBookmark={toggleBookmark}
           bookmarkFolders={bookmarkFolders}
           bookmarkItems={bookmarkItems}

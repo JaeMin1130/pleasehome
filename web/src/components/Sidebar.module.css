@@ -20,6 +20,10 @@
   .app-sidebar.collapsed {
     transform: translateX(-100%);
   }
+
+  .app-sidebar.hidden {
+    transform: translateX(-100%) !important;
+  }
 }
 
 
@@ -953,11 +957,18 @@
     transition: transform var(--transition-panel), height var(--transition-panel);
   }
 
-  /* 닫힘(Collapsed) 상태에서의 바텀 시트 동작 - 아래로 슬라이딩 */
+  /* 닫힘(Collapsed) 상태에서의 바텀 시트 동작 - 최소 높이(60px)만 남기고 하단으로 슬라이딩 */
   .app-sidebar.collapsed .sidebar-list,
   .app-sidebar.collapsed .bookmark-panel-container,
   .app-sidebar.collapsed .more-list-container {
-    transform: translateY(100%);
+    transform: translateY(calc(100% - calc(var(--spacing-xs) * 15)));
+  }
+
+  /* 완전히 닫힌 상태 (초기 화면 및 탭 해제 상태) */
+  .app-sidebar.hidden .sidebar-list,
+  .app-sidebar.hidden .bookmark-panel-container,
+  .app-sidebar.hidden .more-list-container {
+    transform: translateY(100%) !important;
   }
 
   .folders-list-container {

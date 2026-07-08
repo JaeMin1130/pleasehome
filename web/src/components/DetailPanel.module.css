@@ -403,9 +403,12 @@
     width: 100vw;
     height: 45dvh; /* 기본 초기높이 */
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    z-index: calc(var(--z-index-dropdown) + 10);
+    position: fixed;
+    left: 0;
+    right: 0;
     transform: translateY(100%); /* 기본 닫힘 상태 */
     transition: transform var(--transition-panel), height var(--transition-panel);
-    z-index: var(--z-index-panel);
   }
 
   .app-detail-panel.open {

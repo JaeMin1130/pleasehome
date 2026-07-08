@@ -23,7 +23,8 @@ interface SidebarProps {
   displayComplexes: Complex[];
   activeComplexId: number | null;
   onSelectComplex: (complex: Complex) => void;
-  activeTab: 'SEARCH' | 'BOOKMARK' | 'MORE';
+  activeTab: 'SEARCH' | 'BOOKMARK' | 'MORE' | null;
+  onTabSelect?: (tab: 'SEARCH' | 'BOOKMARK' | 'MORE' | null) => void;
   allComplexes: Complex[];
   style?: React.CSSProperties;
   bookmarkedIds: number[];
@@ -45,7 +46,7 @@ export default function Sidebar({
   announcements, activeAnnId, onSelectAnnouncement, 
   width, isCollapsed, onCollapseChange,
   displayComplexes, activeComplexId, onSelectComplex,
-  activeTab, allComplexes, style,
+  activeTab, onTabSelect, allComplexes, style,
   bookmarkedIds, onToggleBookmark,
   bookmarkFolders, bookmarkItems, activeFolderIds, setActiveFolderIds,
   onAddFolder, onRemoveFolder, onUpdateFolder, onMoveBookmarkItem,
@@ -64,8 +65,13 @@ export default function Sidebar({
   } = useBottomSheetGesture({
     scrollSelector: '[class*="sidebar-list"], [class*="folders-list-container"], [class*="more-list-container"]',
     onMinHeightReached: () => {
-      onSelectAnnouncement(null);
-      onCollapseChange?.(true);
+      if (isCollapsed) {
+        onSelectAnnouncement(null);
+        onTabSelect?.(null);
+      } else {
+        onSelectAnnouncement(null);
+        onCollapseChange?.(true);
+      }
     },
     onMidHeightReached: () => {
       onCollapseChange?.(false);
@@ -446,9 +452,11 @@ export default function Sidebar({
 1. 서비스는 LH, GH 등 공공기관이 공시한 공고문 데이터를 재구성하여 정보 제공 목적으로 제공합니다.
 2. 실제 청약 접수 및 최종 당첨 여부는 해당 시행기관(LH 청약플러스, GH 청약센터 등)의 공식 사이트에서 직접 확인하셔야 하며, 서비스에서 발생하는 정보의 불일치로 인한 불이익에 대해 본 서비스는 법적 책임을 지지 않습니다.`;
 
+  const isHiddenFully = activeTab === null;
+
   return (
     <aside 
-      className={`${styles['app-sidebar']} ${isCollapsed ? styles.collapsed : ''}`} 
+      className={`${styles['app-sidebar']} ${isCollapsed ? styles.collapsed : ''} ${isHiddenFully ? styles.hidden : ''}`} 
       style={{ 
         width: width ? `${width}px` : undefined,
         height: sheetHeight ? `${sheetHeight}px` : undefined,
