@@ -351,7 +351,7 @@ function HomeContent() {
     if (tab === null) {
       setIsSidebarCollapsed(true);
     } else {
-      setIsSidebarCollapsed(false);
+      setIsSidebarCollapsed(true); // 💡 최소 높이로 열리도록 기본 접힘 상태(true) 지정
       if (tab === 'BOOKMARK') {
         setActiveFolderIds([]);
       }
