@@ -180,8 +180,8 @@
 
 .card-accordion {
     margin-top: var(--spacing-md);
-    border-top: var(--spacing-3xs) solid var(--border-light);
-    padding-top: var(--spacing-md);
+    /* border-top: var(--spacing-3xs) solid var(--border-light); */
+    /* padding-top: var(--spacing-md); */
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
