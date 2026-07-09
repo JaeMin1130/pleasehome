@@ -193,6 +193,7 @@ function HomeContent() {
 
   const [activeComparisonFolderId, setActiveComparisonFolderId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<NavigationTabType | null>('SEARCH');
+  const [lastActiveTab, setLastActiveTab] = useState<NavigationTabType | null>(null);
 
   const [filterState, setFilterState] = useState<FilterState>({
     targetGroup: 'ALL',
@@ -322,6 +323,14 @@ function HomeContent() {
       setActiveComplexId(complex.id);
       setIsPanelOpen(true);
       window.history.replaceState(null, '', `/?complex_id=${complex.id}`);
+      
+      // 모바일 뷰인 경우 사이드바 닫기
+      if (activeTab !== null) {
+        setLastActiveTab(activeTab);
+      }
+      if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+        handleTabSelect(null);
+      }
       return;
     }
 
@@ -330,6 +339,12 @@ function HomeContent() {
       setActiveComplexId(null);
       setIsPanelOpen(false);
       
+      // 모바일 뷰에서 단지 해제 시 이전 활성화 탭 복원
+      if (typeof window !== 'undefined' && window.innerWidth <= 768 && lastActiveTab !== null) {
+        handleTabSelect(lastActiveTab);
+        setLastActiveTab(null);
+      }
+
       // 단지 해제 시: 이전 공고가 활성화되어 있으면 공고 ID 유지, 없으면 /
       if (activeAnnId !== null) {
         window.history.replaceState(null, '', `/?announcement_id=${activeAnnId}`);
@@ -337,10 +352,19 @@ function HomeContent() {
         window.history.replaceState(null, '', '/');
       }
     } else {
+      // 모바일 뷰인 경우 사이드바 닫기 전에 현재 탭 기억
+      if (activeTab !== null) {
+        setLastActiveTab(activeTab);
+      }
+
       setSelectedComplex(complex);
       setActiveComplexId(complex.id);
       setIsPanelOpen(true);
       
+      if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+        handleTabSelect(null);
+      }
+
       // 단지 선택 시: URL에 complex_id 설정
       window.history.replaceState(null, '', `/?complex_id=${complex.id}`);
     }
@@ -528,6 +552,13 @@ function HomeContent() {
             setActiveComplexId(null); 
             setSelectedComplex(null); // 💡 단일 선택 단지 객체 리셋
             setActiveComparisonFolderId(null); // 패널 닫을 때 스펙비교 모드도 해제
+
+            // 모바일 뷰에서 닫힐 때 이전 활성화 탭을 '중간 높이' 상태로 복원
+            if (typeof window !== 'undefined' && window.innerWidth <= 768 && lastActiveTab !== null) {
+              handleTabSelect(lastActiveTab);
+              setIsSidebarCollapsed(false); // 💡 최소 높이가 아닌 중간 높이(펼침) 상태로 복원
+              setLastActiveTab(null);
+            }
 
             // 패널 닫을 때 URL 복구
             if (activeAnnId !== null) {
