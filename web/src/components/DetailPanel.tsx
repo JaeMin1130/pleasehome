@@ -153,6 +153,18 @@ export default function DetailPanel({
       >
         {/* 모바일 화면 전용 상단 드래그 핸들바 */}
         <div className={styles['drag-handle-bar']} />
+        {/* 헤더 영역을 스크롤 바깥으로 분리 */}
+        <div className={styles['panel-header-fixed']}>
+          <div className={styles['basic-info-header']}>
+            <div className={styles['panel-title-wrapper']}>
+              <h2 className={styles['panel-section-title']}>
+                {comparisonFolder.name} 단지 비교
+              </h2>
+            </div>
+            <button className={styles['panel-close-btn']} onClick={onClose}>✕</button>
+          </div>
+        </div>
+
         <div 
           className={styles['panel-body']}
           style={{
@@ -160,15 +172,6 @@ export default function DetailPanel({
           }}
         >
           <div>
-            <div className={styles['basic-info-header']}>
-              <div className={styles['panel-title-wrapper']}>
-                <h2 className={styles['panel-section-title']}>
-                  {comparisonFolder.name} 단지 비교
-                </h2>
-              </div>
-              <button className={styles['panel-close-btn']} onClick={onClose}>✕</button>
-            </div>
-
             {comparisonComplexes.length === 0 ? (
             <div className={styles['empty-comparison-msg']}>
               비교할 단지가 없습니다.<br />폴더에 찜한 단지를 추가해 보세요.
@@ -367,6 +370,25 @@ export default function DetailPanel({
     >
       {/* 모바일 화면 전용 상단 드래그 핸들바 */}
       <div className={styles['drag-handle-bar']} />
+      {/* 헤더 영역을 스크롤 바깥으로 분리 */}
+      <div className={styles['panel-header-fixed']}>
+        <div className={styles['basic-info-header']}>
+          <h4 className={styles['panel-section-title']}>단지 상세 정보</h4>
+          <div className={styles['panel-header-actions']}>
+            <button 
+              className={`bookmark-btn ${isBookmarked ? 'bookmarked' : ''}`}
+              onClick={() => onToggleBookmark(complex.id)}
+              title={isBookmarked ? "저장한 단지 해제" : "단지 저장하기"}
+            >
+              <svg className={styles['star-icon']} width="24" height="24" viewBox="0 0 24 24" fill={isBookmarked ? 'var(--color-warning-text)' : 'none'} stroke={isBookmarked ? 'var(--color-warning-text)' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+            </button>
+            <button className={styles['panel-close-btn']} onClick={onClose}>✕</button>
+          </div>
+        </div>
+      </div>
+
       <div 
         className={styles['panel-body']}
         style={{
@@ -374,22 +396,6 @@ export default function DetailPanel({
         }}
       >
         <div>
-          <div className={styles['basic-info-header']}>
-            <h4 className={styles['panel-section-title']}>단지 기본 정보</h4>
-            <div className={styles['panel-header-actions']}>
-              <button 
-                className={`bookmark-btn ${isBookmarked ? 'bookmarked' : ''}`}
-                onClick={() => onToggleBookmark(complex.id)}
-                title={isBookmarked ? "저장한 단지 해제" : "단지 저장하기"}
-              >
-                <svg className={styles['star-icon']} width="24" height="24" viewBox="0 0 24 24" fill={isBookmarked ? 'var(--color-warning-text)' : 'none'} stroke={isBookmarked ? 'var(--color-warning-text)' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                </svg>
-              </button>
-              <button className={styles['panel-close-btn']} onClick={onClose}>✕</button>
-            </div>
-          </div>
-
           <div className={styles['info-grid']}>
             <div className={styles['info-card']}>
               <span className={styles['info-label']}>단지명</span>
