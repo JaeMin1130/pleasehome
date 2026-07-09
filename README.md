@@ -127,7 +127,15 @@ pleasehome/
 * **Database**: SQLite 3.x 이상
 
 ### 2. 환경 변수 설정
+
 최상위 루트(또는 각 폴더 루트)에 `.env.local` 파일을 생성하고 아래의 API Key를 설정합니다.
+
+이 설정을 빠르게 시작하려면 프로젝트 루트에 준비된 `.env.example` 파일을 복사하여 사용할 수 있습니다:
+```bash
+cp .env.example .env.local
+```
+
+복사한 `.env.local` 파일에 아래의 실제 API Key들을 기입합니다:
 ```env
 # web (Naver Map API - Client ID)
 NEXT_PUBLIC_NAVER_CLIENT_ID=your_naver_map_client_id
@@ -136,6 +144,7 @@ NEXT_PUBLIC_NAVER_CLIENT_ID=your_naver_map_client_id
 LH_NOTICE_LIST_API_KEY=your_lh_list_decoded_api_key
 LH_NOTICE_DTL_API_KEY=your_lh_detail_decoded_api_key
 ```
+
 
 ### 3. 백엔드 파이프라인 실행 (데이터 수집)
 ```bash
@@ -213,55 +222,11 @@ npm run dev
 
 ## 🚨 트러블슈팅 (Troubleshooting)
 
-프로젝트 개발 및 운영 과정에서 발생했던 핵심 이슈와 해결(Troubleshooting) 내역입니다.
+본 프로젝트의 개발 및 배포 과정에서 마주한 다양한 기술적 이슈와 해결 방안은 아래의 플랫폼별 상세 로그 문서에서 통합 관리되고 있습니다. (단일 진실 공급원 - SSOT 유지)
 
-### [프론트엔드 (web)]
-
-1. Next.js Standalone 배포 시 SQLite DB 경로 매핑 문제
-   • 현상: 빌드된 `server.js` 구동 시 `public_housing.db`를 찾지 못함.
-   • 해결: 로컬과 서버의 디렉토리 구조(`web`, `db-pipeline`)를 완벽히 일치시키고, `db.ts`에서 `process.cwd()` 기준 상대 경로(`../db-pipeline/public_housing.db`)로 동적 참조하도록 설계하여 해결.
-
-2. Standalone 아티팩트 구버전 DB 중복 패키징 현상
-   • 현상: Next.js 빌드 시 File Tracing 기능이 기존 DB를 번들에 통째로 포함시켜, 서버에 최신 DB를 업로드해도 프론트엔드가 낡은 과거 사본을 우선적으로 읽어오는 데이터 불일치 발생.
-   • 해결: 배포 자동화 스크립트(`build:pack`)에 아티팩트 압축 직전 번들링된 DB 사본을 강제 삭제(`rm -f deploy/public_housing.db`)하는 구문을 삽입하여 최신 단일 DB 참조 보장.
-
-3. 하드코딩된 인라인 스타일 파편화 및 반응형 붕괴
-   • 현상: 컴포넌트(TSX) 내부에 `50%`, `100vh` 등의 원시 레이아웃 수치가 악의적인 인라인 스타일(`style={{...}}`)로 하드코딩되어 반응형 뷰가 깨지고 유지보수가 마비됨.
-   • 해결: 전수 조사를 통해 족쇄가 된 인라인 스타일을 어떠한 예외도 없이 걷어내고, 모듈형 CSS(`index.css`) 및 Tailwind 유틸리티 토큰으로 100% 치환하여 렌더링 무결성 확보.
-
-4. 1GB RAM 인프라 OOM(Out of Memory) 셧다운 에러
-   • 현상: 1GB RAM의 제한된 NCP Micro 서버에서 프론트엔드 패키지 설치(`npm install`) 및 네이티브 모듈(`sqlite3`) 컴파일 시도 시, 메모리 임계치 초과로 서버가 뻗어버림.
-   • 해결: 서버 내 빌드 과정을 전면 폐기하고, 로컬에서 사전 컴파일된 `standalone` 아티팩트(`.tar.gz`)만 업로드하여 `pm2 start server.js`로 구동하는 무중단 초경량 아키텍처로 개편.
-
-5. Nginx 프록시 구성 시 정적 자원(Static) 누락 및 심볼릭 링크 오류
-   • 현상: 서버 배포 후 접속 시 CSS/JS 등 `.next/static` 에셋이 404 Not Found 에러를 반환하거나, `sites-enabled`의 심볼릭 링크가 깨져 Nginx 테스트(`-t`)가 실패하는 현상.
-   • 해결: Nginx 설정 내 `location /_next/static/` 블록에 `alias /home/iru/app/pleasehome/web/.next/static/;` 절대 경로를 명확히 매핑하고, `sites-available` 원본 파일을 에디터로 확실히 저장한 뒤 링크를 생성하도록 배포 절차를 교정.
-
-6. 애드센스 심사용 정적 상세 라우팅 및 지도의 실시간 쿼리 상태 동기화
-   • 현상: 메인 지도가 CSR(클라이언트 렌더링) 방식으로 동작하여 검색 로봇(애드센스)이 1,000자 이상의 정보성 텍스트를 읽지 못해 승인이 거절되고, 상세 페이지 뷰포트 내 스크롤이 차단되거나 딥링크 진입 후 URL 모순이 발생함.
-   • 해결: `/announcements/details/[id]` 정적 상세 페이지를 개설해 SQLite DB를 서버 사이드에서 실시간 쿼리하여 마크다운 포맷으로 풀 텍스트(MarkdownViewer) 렌더링을 구현하고, `detail-layout.css` 스크롤 래퍼를 씌워 글로벌 `overflow: hidden` 간섭을 우회함. 동시에 메인 지도 탐색 시 선택된 공고 ID를 HTML5 replaceState 기반 Shallow Routing으로 실시간 양방향 URL 동기화하여 해결.
-
-7. 다중 폴더 상태 마이그레이션 시 세터 참조 에러 (ReferenceError)
-   • 현상: 다중 폴더 개편 후 탭 전환 시 `setActiveFolderId is not defined` 에러 발생함.
-   • 해결: 단일 활성 폴더 상태를 배열 상태(`activeFolderIds`)로 마이그레이션하면서 `handleTabSelect` 내 미수정 참조가 남아있던 문제를 `setActiveFolderIds([])` 로 정정함.
-
-8. 드래그 앤 드롭 이동 후 단지 카드 흐림(투명도) 잔상 현상
-   • 현상: 단지 카드를 다른 폴더로 드롭한 뒤 해당 폴더를 열면 카드가 계속 흐릿하게 투명도가 먹혀 보이는 현상.
-   • 해결: 드롭 시 DOM 재배치로 원본 엘리먼트가 소실되어 `onDragEnd` 브라우저 이벤트가 누락되는 명세상 제약을 수용하여, `onDrop` 핸들러 내부에서 명시적으로 `setDraggingComplexId(null)`를 강제 호출해 해결함.
-
-### [백엔드 (db-pipeline)]
-
-1. SQLite 컬럼 Comment 속성 미지원 및 메타데이터 표출 한계
-   • 현상: 데이터베이스 스키마 설계 시 시스템 수준의 컬럼 주석(Comment) 파싱을 SQLite 엔진 자체가 지원하지 않아, GUI 조회 툴 등에서 논리적 메타데이터를 확인할 수 없음.
-   • 해결: 무리한 DB 구조 변형을 배제하고 엔진 제약 사항을 수용하는 대신, 개발 규약 문서(`PROJECT.md`) 내에 테이블/컬럼 단위 메타데이터 명세서를 구축해 단일 진실 공급원(SSOT) 마련.
-
-2. Geocoding API 좌표 변환 시 인증 거부 (210/401 에러)
-   • 현상: 데이터 파이프라인에서 텍스트 주소를 위경도로 변환하기 위해 네이버 지도 API 호출 시 지속적인 인증 거부 에러 반환.
-   • 해결: 백엔드의 Geocoding 서버 간 통신 특성을 파악하여, 프론트엔드 클라이언트와 달리 런타임 호환용 전용 도메인(`maps.apigw.ntruss.com`)을 엔드포인트로 명확히 분리하여 호출하도록 통신 규격 수정.
-
-3. Geocoding API 주소 파싱 실패 및 정밀도 하락 (마커 누락)
-   • 현상: 일부 신도시 주소나 비표준 도로명, 괄호가 포함된 주소를 통째로 넘길 경우 네이버 Geocoding API가 좌표 변환에 실패하여 지도상에 단지 마커가 아예 누락됨.
-   • 해결: 1차 변환 실패 시 주소의 뒷단어를 읍/면/동 단위 마지노선까지 하나씩 잘라내며 재시도하는 폴백(Fallback) 검색 알고리즘을 도입. 동시에 불완전 매핑 여부를 구분하기 위해 DB에 `is_imprecise` 플래그를 추가하여 무결성 통제.
+* 🖥️ **[프론트엔드 및 인프라 상세 로그](web/docs/dev/TROUBLESHOOTING.md)**: Next.js Standalone 배포 경로 매핑, 1GB RAM OOM 대응, HTML5 슬라이더 위치 정밀 보정, 바텀시트 터치 제스처 랙 및 모바일 뷰포트(`dvh`) 대응 이슈 등 수록.
+* ⚙️ **[데이터 파이프라인 및 백엔드 상세 로그](db-pipeline/docs/dev/TROUBLESHOOTING.md)**: SQLite 컬럼 코멘트 미지원 제약 극복 방안, Geocoding API 좌표 변환(210/401 에러) 및 주소 파싱 실패에 따른 폴백 알고리즘(is_imprecise) 도입 이슈 등 수록.
 
 ---
+
 

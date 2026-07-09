@@ -4,6 +4,7 @@
 # Whitelist allowed directories & files (추적을 허용할 핵심 자산 화이트리스트)
 !/.gitignore
 !/README.md
+!/.env.example
 
 # Allow diving into web and db-pipeline directories
 !/web/
@@ -19,6 +20,20 @@
 !/web/package.json
 !/db-pipeline/package.json
 !/db-pipeline/.agents/
+
+# web/docs 디렉토리 진입은 허용하되, 내부 파일은 기본 차단하고 TROUBLESHOOTING.md만 허용
+!/web/docs/
+/web/docs/*
+!/web/docs/dev/
+/web/docs/dev/*
+!/web/docs/dev/TROUBLESHOOTING.md
+
+# db-pipeline/docs 디렉토리 진입은 허용하되, 내부 파일은 기본 차단하고 TROUBLESHOOTING.md만 허용
+!/db-pipeline/docs/
+/db-pipeline/docs/*
+!/db-pipeline/docs/dev/
+/db-pipeline/docs/dev/*
+!/db-pipeline/docs/dev/TROUBLESHOOTING.md
 
 # Ignore build artifacts and caches
 **/__pycache__/
