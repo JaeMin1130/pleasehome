@@ -983,18 +983,24 @@ export default function Sidebar({
       )}
 
       {activeTab === 'MORE' && (
-        <>
+        <div 
+          className={styles['more-panel-container']}
+          style={{ 
+            height: sheetHeight ? `${sheetHeight}px` : undefined,
+            '--sheet-min-height': `${minHeight}px`,
+            ...style
+          } as React.CSSProperties}
+          {...touchHandlers}
+        >
+          {/* 모바일 화면 전용 상단 드래그 핸들바 */}
+          <div className={styles['drag-handle-bar']} />
+
           <div 
             className={styles['more-list-container']}
             style={{ 
-              height: sheetHeight ? `${sheetHeight}px` : undefined,
-              overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto',
-              '--sheet-min-height': `${minHeight}px`
+              overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
             } as React.CSSProperties}
-            {...touchHandlers}
           >
-            {/* 모바일 화면 전용 상단 드래그 핸들바 */}
-            <div className={styles['drag-handle-bar']} />
             <div className={styles['more-menu-group']}>
               <div className={styles['more-menu-item']} onClick={toggleTheme}>
                 <span className={styles['more-menu-label']}>지도 모드</span>
@@ -1049,7 +1055,7 @@ export default function Sidebar({
               <p>&copy; 2026 공공맵 All rights reserved.</p>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {activeModal && (

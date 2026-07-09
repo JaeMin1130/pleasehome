@@ -465,6 +465,17 @@
   background-color: var(--bg-surface);
 }
 
+/* 더보기 패널 전용 스타일 */
+.more-panel-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background-color: var(--bg-surface);
+}
+
 .bookmark-header {
   padding: var(--spacing-md);
   /* border-bottom: var(--spacing-3xs) solid var(--border-light); */
@@ -948,7 +959,7 @@
   /* 개별 바텀시트 컨테이너들이 아래에서 위로 독립적으로 솟아오르는 구조 */
   .search-panel-container,
   .bookmark-panel-container,
-  .more-list-container {
+  .more-panel-container {
     position: fixed;
     bottom: calc(var(--spacing-md) * 3.75); /* 하단 탭바 바로 위 */
     left: 0;
@@ -971,14 +982,14 @@
   /* 닫힘(Collapsed) 상태에서의 바텀 시트 동작 - 최소 높이만 남기고 하단으로 슬라이딩 */
   .app-sidebar.collapsed .search-panel-container,
   .app-sidebar.collapsed .bookmark-panel-container,
-  .app-sidebar.collapsed .more-list-container {
+  .app-sidebar.collapsed .more-panel-container {
     transform: translateY(calc(100% - var(--sheet-min-height, calc(var(--spacing-xs) * 15))));
   }
 
   /* 완전히 닫힌 상태 (초기 화면 및 탭 해제 상태) */
   .app-sidebar.hidden .search-panel-container,
   .app-sidebar.hidden .bookmark-panel-container,
-  .app-sidebar.hidden .more-list-container {
+  .app-sidebar.hidden .more-panel-container {
     transform: translateY(100%) !important;
   }
 
@@ -990,6 +1001,14 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
+  }
+
+  .more-list-container {
+    flex: 1;
+    overflow-y: auto;
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
   }
 
   .folders-list-container {

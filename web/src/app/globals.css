@@ -447,6 +447,7 @@ body {
   justify-content: center;
   z-index: var(--z-index-tooltip);
   animation: modal-fadeIn-anim 0.2s ease-out;
+  pointer-events: auto; /* 💡 부모 sidebar의 pointer-events: none 방지 */
 }
 
 .modal-content {
@@ -555,9 +556,9 @@ table:not([class*="comparison-table"]):not([class*="unit-table"]) tr:last-child 
     height: 100dvh !important;
   }
   .modal-content {
-    width: calc(100vw - calc(var(--spacing-md) * 2)) !important;
-    max-width: 100% !important;
-    max-height: 80dvh !important;
-    margin: var(--spacing-md) !important;
+    width: 88% !important;
+    max-width: 420px !important;
+    max-height: 65dvh !important;
+    margin: auto !important;
   }
 }
