@@ -495,7 +495,18 @@ export default function Sidebar({
 
       {/* 탭 분기 렌더링 */}
       {activeTab === 'SEARCH' && (
-        <>
+        <div 
+          className={styles['search-panel-container']}
+          style={{ 
+            height: sheetHeight ? `${sheetHeight}px` : undefined,
+            '--sheet-min-height': `${minHeight}px`,
+            ...style
+          } as React.CSSProperties}
+          {...touchHandlers}
+        >
+          {/* 모바일 화면 전용 상단 드래그 핸들바 */}
+          <div className={styles['drag-handle-bar']} />
+
           <div className={styles['sidebar-search']}>
             <div className={styles['search-wrapper']}>
               <svg
@@ -556,75 +567,72 @@ export default function Sidebar({
               </span>
             </div>
           </div>
+
+          {/* 모바일 화면 전용 필터 영역 (바텀 시트 내부에 위치) */}
+          <div className={styles['mobile-only-filters']}>
+            <div className={styles['search-wrapper']}>
+              <svg
+                className={styles['search-icon']}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input 
+                type="text" placeholder="공고명 또는 공급기관 검색..." 
+                className={styles['search-input']} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              {searchTerm && (
+                <button 
+                  onClick={() => setSearchTerm('')}
+                  className={styles['clear-btn']}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+            <div className={styles['region-tags']}>
+              {['ALL', '서울', '인천', '경기', '기타'].map((r) => {
+                const label = r === 'ALL' ? '전체 지역' : r;
+                return (
+                  <span 
+                    key={r}
+                    className={`${styles['region-tag']} ${activeRegion === r ? styles.active : ''}`}
+                    onClick={() => setActiveRegion(r)}
+                  >
+                    {label}
+                  </span>
+                );
+              })}
+            </div>
+            <div className={styles['filter-tags']}>
+              <span className={`${styles['filter-tag']} ${activeTabStatus === 'UPCOMING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('UPCOMING')}>
+                예정 ({getStatusCount('UPCOMING')})
+              </span>
+              <span className={`${styles['filter-tag']} ${activeTabStatus === 'ONGOING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('ONGOING')}>
+                접수중 ({getStatusCount('ONGOING')})
+              </span>
+              <span className={`${styles['filter-tag']} ${activeTabStatus === 'CLOSED' ? styles.active : ''}`} onClick={() => setActiveTabStatus('CLOSED')}>
+                마감 ({getStatusCount('CLOSED')})
+              </span>
+              <span className={`${styles['filter-tag']} ${activeTabStatus === 'HIDDEN' ? styles.active : ''}`} onClick={() => setActiveTabStatus('HIDDEN')}>
+                숨김 ({getHiddenStatusCount()})
+              </span>
+            </div>
+          </div>
+
           <div 
             ref={listRef} 
             className={styles['sidebar-list']}
             style={{ 
-              height: sheetHeight ? `${sheetHeight}px` : undefined,
-              overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto',
-              '--sheet-min-height': `${minHeight}px`
+              overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
             } as React.CSSProperties}
-            {...touchHandlers}
           >
-            {/* 모바일 화면 전용 상단 드래그 핸들바 */}
-            <div className={styles['drag-handle-bar']} />
-            {/* 모바일 화면 전용 필터 영역 (바텀 시트 내부에 위치) */}
-            <div className={styles['mobile-only-filters']}>
-              <div className={styles['search-wrapper']}>
-                <svg
-                  className={styles['search-icon']}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-                <input 
-                  type="text" placeholder="공고명 또는 공급기관 검색..." 
-                  className={styles['search-input']} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                {searchTerm && (
-                  <button 
-                    onClick={() => setSearchTerm('')}
-                    className={styles['clear-btn']}
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-              <div className={styles['region-tags']}>
-                {['ALL', '서울', '인천', '경기', '기타'].map((r) => {
-                  const label = r === 'ALL' ? '전체 지역' : r;
-                  return (
-                    <span 
-                      key={r}
-                      className={`${styles['region-tag']} ${activeRegion === r ? styles.active : ''}`}
-                      onClick={() => setActiveRegion(r)}
-                    >
-                      {label}
-                    </span>
-                  );
-                })}
-              </div>
-              <div className={styles['filter-tags']}>
-                <span className={`${styles['filter-tag']} ${activeTabStatus === 'UPCOMING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('UPCOMING')}>
-                  예정 ({getStatusCount('UPCOMING')})
-                </span>
-                <span className={`${styles['filter-tag']} ${activeTabStatus === 'ONGOING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('ONGOING')}>
-                  접수중 ({getStatusCount('ONGOING')})
-                </span>
-                <span className={`${styles['filter-tag']} ${activeTabStatus === 'CLOSED' ? styles.active : ''}`} onClick={() => setActiveTabStatus('CLOSED')}>
-                  마감 ({getStatusCount('CLOSED')})
-                </span>
-                <span className={`${styles['filter-tag']} ${activeTabStatus === 'HIDDEN' ? styles.active : ''}`} onClick={() => setActiveTabStatus('HIDDEN')}>
-                  숨김 ({getHiddenStatusCount()})
-                </span>
-              </div>
-            </div>
             {getSortedAnnouncements().length === 0 ? (
               <div className={styles['empty-msg']}>결과가 없습니다.</div>
             ) : (
@@ -689,7 +697,7 @@ export default function Sidebar({
               })
             )}
           </div>
-        </>
+        </div>
       )}
 
       {activeTab === 'BOOKMARK' && (

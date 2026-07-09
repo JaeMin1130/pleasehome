@@ -97,7 +97,8 @@ export function useBottomSheetGesture({
     // 3. 그 외 모든 상황(시트 높이가 중간/최소이거나, 최대 높이이면서 스크롤이 최상단일 때 내릴 때 등)
     // 브라우저 기본 스크롤을 차단하고 시트 크기만 제어합니다.
     if (e.cancelable) e.preventDefault();
-    const nextHeight = Math.min(finalMaxHeight, Math.max(finalMinHeight, currentHeight - deltaY));
+    // 💡 완전히 닫기 제스처의 시각적 피드백을 위해 최소 높이 아래로도 50px 정도까지는 유연하게 내려가도록 허용
+    const nextHeight = Math.min(finalMaxHeight, Math.max(finalMinHeight - 50, currentHeight - deltaY));
     setSheetHeight(nextHeight);
   };
 
@@ -131,11 +132,16 @@ export function useBottomSheetGesture({
       targetState = Math.min(2, startStateRef.current + 1) as 0 | 1 | 2;
     } else if (deltaY > swipeThreshold) {
       // 아래로 스와이프 (-1 단계)
-      // 최대 높이(2) 상태이고 스크롤이 내려가 있는 상태(scrollTop > 0)라면 높이를 줄이지 않고 최대 높이 유지
       if (startStateRef.current === 2 && scrollTop > 0) {
         targetState = 2;
       } else {
         targetState = Math.max(0, startStateRef.current - 1) as 0 | 1 | 2;
+
+        // 💡 이미 최소 높이(0) 상태에서 아래로 더 쓸어내린 경우 닫기 콜백을 직접 실행하고 종료
+        if (startStateRef.current === 0) {
+          onMinHeightReached?.();
+          return;
+        }
       }
     }
 

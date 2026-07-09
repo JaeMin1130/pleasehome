@@ -443,6 +443,17 @@
   color: var(--text-secondary);
 }
 
+/* 공고 검색 패널 전용 스타일 */
+.search-panel-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background-color: var(--bg-surface);
+}
+
 /* 찜 비교 패널 전용 스타일 */
 .bookmark-panel-container {
   display: flex;
@@ -935,7 +946,7 @@
   }
 
   /* 개별 바텀시트 컨테이너들이 아래에서 위로 독립적으로 솟아오르는 구조 */
-  .sidebar-list,
+  .search-panel-container,
   .bookmark-panel-container,
   .more-list-container {
     position: fixed;
@@ -950,7 +961,7 @@
     pointer-events: auto; /* 터치 활성화 */
     z-index: var(--z-index-base);
     padding: var(--spacing-md);
-    overflow-y: auto;
+    overflow-y: hidden; /* 헤더 영역은 스크롤되지 않도록 hidden */
     display: flex;
     flex-direction: column;
     transform: translateY(0);
@@ -958,17 +969,27 @@
   }
 
   /* 닫힘(Collapsed) 상태에서의 바텀 시트 동작 - 최소 높이만 남기고 하단으로 슬라이딩 */
-  .app-sidebar.collapsed .sidebar-list,
+  .app-sidebar.collapsed .search-panel-container,
   .app-sidebar.collapsed .bookmark-panel-container,
   .app-sidebar.collapsed .more-list-container {
     transform: translateY(calc(100% - var(--sheet-min-height, calc(var(--spacing-xs) * 15))));
   }
 
   /* 완전히 닫힌 상태 (초기 화면 및 탭 해제 상태) */
-  .app-sidebar.hidden .sidebar-list,
+  .app-sidebar.hidden .search-panel-container,
   .app-sidebar.hidden .bookmark-panel-container,
   .app-sidebar.hidden .more-list-container {
     transform: translateY(100%) !important;
+  }
+
+  .sidebar-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
   }
 
   .folders-list-container {
