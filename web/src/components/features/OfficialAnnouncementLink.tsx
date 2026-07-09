@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 interface OfficialAnnouncementLinkProps {
+  institution: string;
   dtlUrl?: string | null;
   dtlUrlMob?: string | null;
   className?: string;
@@ -11,6 +12,7 @@ interface OfficialAnnouncementLinkProps {
 }
 
 export default function OfficialAnnouncementLink({
+  institution,
   dtlUrl,
   dtlUrlMob,
   className,
@@ -27,9 +29,17 @@ export default function OfficialAnnouncementLink({
     return () => media.removeEventListener('change', listener);
   }, []);
 
-  const targetUrl = isMobile 
-    ? (dtlUrlMob || dtlUrl) 
-    : (dtlUrl || dtlUrlMob);
+  const isLH = institution.includes('LH');
+  const isSH = institution.includes('SH');
+
+  let targetUrl = '';
+  if (isLH) {
+    targetUrl = isMobile 
+      ? (dtlUrlMob || dtlUrl || '') 
+      : (dtlUrl || dtlUrlMob || '');
+  } else if (isSH) {
+    targetUrl = 'https://www.i-sh.co.kr/app/lay2/program/S48T1588C614/m_27/appNoti/appUser_list.do?splyTy=02';
+  }
 
   if (!targetUrl) return null;
 

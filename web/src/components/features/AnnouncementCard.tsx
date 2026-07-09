@@ -385,6 +385,7 @@ export default function AnnouncementCard({
             공고 상세 열기
           </Link>
           <OfficialAnnouncementLink
+            institution={ann.institution}
             dtlUrl={ann.dtl_url}
             dtlUrlMob={ann.dtl_url_mob}
             className={styles['detail-link-btn']}
@@ -394,7 +395,7 @@ export default function AnnouncementCard({
               <polyline points="15 3 21 3 21 9"></polyline>
               <line x1="10" y1="14" x2="21" y2="3"></line>
             </svg>
-            모집 공고 열기
+            신청 페이지 열기
           </OfficialAnnouncementLink>
         </div>
       )}
