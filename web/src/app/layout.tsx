@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import '@mantine/core/styles.css';
 import "./globals.css";
 import { MantineProvider } from '@mantine/core';
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: "공공청약 지도",
@@ -36,6 +37,19 @@ export default function RootLayout({
         <link rel="canonical" href="https://pleasehome.com/" />
       </head>
       <body suppressHydrationWarning={true}>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-08HBBMLTLQ"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-08HBBMLTLQ');
+          `}
+        </Script>
         <MantineProvider>
           {children}
         </MantineProvider>
