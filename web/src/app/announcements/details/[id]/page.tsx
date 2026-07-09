@@ -6,6 +6,7 @@ import { db } from '@/lib/db';
 import { formatMoney, formatTargetGroup, formatDateWithTime, superClean } from '@/utils/formatters';
 import MarkdownViewer from '@/components/ui/MarkdownViewer';
 import styles from './detail.module.css';
+import OfficialAnnouncementLink from '@/components/features/OfficialAnnouncementLink';
 
 export const revalidate = 3600; // 1시간 주기로 점진적 정적 재생성(ISR) 활성화
 
@@ -101,16 +102,14 @@ export default async function AnnouncementDetailPage({ params }: PageProps) {
                 </svg>
                 지도로 돌아가기
               </Link>
-              {ann.dtl_url && (
-                <Link href={ann.dtl_url} target="_blank" rel="noopener noreferrer" className={styles.docBtn}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                    <polyline points="15 3 21 3 21 9"></polyline>
-                    <line x1="10" y1="14" x2="21" y2="3"></line>
-                  </svg>
-                  모집 공고 열기
-                </Link>
-              )}
+              <OfficialAnnouncementLink dtlUrl={ann.dtl_url} dtlUrlMob={ann.dtl_url_mob} className={styles.docBtn}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+                모집 공고 열기
+              </OfficialAnnouncementLink>
             </div>
           </div>
         </header>
