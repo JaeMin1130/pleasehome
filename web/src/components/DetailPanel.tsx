@@ -32,6 +32,7 @@ export default function DetailPanel({
     sheetHeight, 
     setSheetHeight, 
     touchHandlers, 
+    translateY,
     minHeight, 
     midHeight, 
     maxHeight 
@@ -143,7 +144,10 @@ export default function DetailPanel({
         className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''}`}
         style={{
           ...style,
-          height: sheetHeight ? `${sheetHeight}px` : undefined
+          height: sheetHeight ? `${sheetHeight}px` : undefined,
+          transform: (typeof window !== 'undefined' && window.innerWidth <= 768 && translateY > 0) 
+            ? `translateY(${translateY}px)` 
+            : undefined
         }}
         {...touchHandlers}
       >
@@ -354,7 +358,10 @@ export default function DetailPanel({
       className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''}`} 
       style={{
         ...style,
-        height: sheetHeight ? `${sheetHeight}px` : undefined
+        height: sheetHeight ? `${sheetHeight}px` : undefined,
+        transform: (typeof window !== 'undefined' && window.innerWidth <= 768 && translateY > 0) 
+          ? `translateY(${translateY}px)` 
+          : undefined
       }}
       {...touchHandlers}
     >

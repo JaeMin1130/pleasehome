@@ -58,6 +58,7 @@ export default function Sidebar({
   const { 
     sheetHeight, 
     setSheetHeight, 
+    translateY,
     touchHandlers, 
     minHeight, 
     midHeight, 
@@ -500,6 +501,9 @@ export default function Sidebar({
           style={{ 
             height: sheetHeight ? `${sheetHeight}px` : undefined,
             '--sheet-min-height': `${minHeight}px`,
+            transform: (typeof window !== 'undefined' && window.innerWidth <= 768 && translateY > 0) 
+              ? `translateY(${translateY}px)` 
+              : undefined,
             ...style
           } as React.CSSProperties}
           {...touchHandlers}
@@ -706,7 +710,10 @@ export default function Sidebar({
           style={{ 
             height: sheetHeight ? `${sheetHeight}px` : undefined,
             overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto',
-            '--sheet-min-height': `${minHeight}px`
+            '--sheet-min-height': `${minHeight}px`,
+            transform: (typeof window !== 'undefined' && window.innerWidth <= 768 && translateY > 0) 
+              ? `translateY(${translateY}px)` 
+              : undefined
           } as React.CSSProperties}
           {...touchHandlers}
         >
@@ -988,6 +995,9 @@ export default function Sidebar({
           style={{ 
             height: sheetHeight ? `${sheetHeight}px` : undefined,
             '--sheet-min-height': `${minHeight}px`,
+            transform: (typeof window !== 'undefined' && window.innerWidth <= 768 && translateY > 0) 
+              ? `translateY(${translateY}px)` 
+              : undefined,
             ...style
           } as React.CSSProperties}
           {...touchHandlers}

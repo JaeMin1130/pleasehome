@@ -25,11 +25,12 @@ export function useBottomSheetGesture({
   };
 
   const finalMinHeight = minHeight ?? 60;
-  const finalMidHeight = midHeight ?? getDvhInPixels(45);
+  const finalMidHeight = midHeight ?? getDvhInPixels(50);
   const finalMaxHeight = maxHeight ?? getDvhInPixels(85);
 
   const [sheetHeight, setSheetHeight] = useState<number | null>(null);
   const [sheetState, setSheetState] = useState<0 | 1 | 2>(1); // 0: MIN, 1: MID, 2: MAX (기본값 MID)
+  const [translateY, setTranslateY] = useState<number>(0);
   const isDraggingRef = useRef(false);
   const startYRef = useRef(0);
   const startHeightRef = useRef(0);
@@ -64,6 +65,7 @@ export function useBottomSheetGesture({
     startYRef.current = e.touches[0].clientY;
     startStateRef.current = sheetState; // 드래그 시작 시점의 플래그 기록
     isDraggingRef.current = true;
+    setTranslateY(0);
   };
 
   const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
@@ -97,9 +99,20 @@ export function useBottomSheetGesture({
     // 3. 그 외 모든 상황(시트 높이가 중간/최소이거나, 최대 높이이면서 스크롤이 최상단일 때 내릴 때 등)
     // 브라우저 기본 스크롤을 차단하고 시트 크기만 제어합니다.
     if (e.cancelable) e.preventDefault();
-    // 💡 완전히 닫기 제스처의 시각적 피드백을 위해 최소 높이 아래로도 50px 정도까지는 유연하게 내려가도록 허용
-    const nextHeight = Math.min(finalMaxHeight, Math.max(finalMinHeight - 50, currentHeight - deltaY));
-    setSheetHeight(nextHeight);
+    
+    // 계산된 대상 높이
+    const targetHeight = currentHeight - deltaY;
+
+    if (targetHeight < finalMinHeight) {
+      // 💡 최소 높이 이하로 내려갈 때는 높이를 최소 높이로 고정하고, 아래로 밀린 변위만큼 translateY를 적용
+      setSheetHeight(finalMinHeight);
+      setTranslateY(finalMinHeight - targetHeight);
+    } else {
+      // 💡 최소 높이보다 클 때는 translateY를 0으로 하고 높이만 조절
+      const nextHeight = Math.min(finalMaxHeight, targetHeight);
+      setSheetHeight(nextHeight);
+      setTranslateY(0);
+    }
   };
 
   const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
@@ -140,6 +153,7 @@ export function useBottomSheetGesture({
         // 💡 이미 최소 높이(0) 상태에서 아래로 더 쓸어내린 경우 닫기 콜백을 직접 실행하고 종료
         if (startStateRef.current === 0) {
           onMinHeightReached?.();
+          setTranslateY(0);
           return;
         }
       }
@@ -161,11 +175,13 @@ export function useBottomSheetGesture({
 
     setSheetState(targetState);
     setSheetHeight(targetHeight);
+    setTranslateY(0); // 스냅 완료 시 평행이동 초기화
   };
 
   return {
     sheetHeight,
     setSheetHeight,
+    translateY,
     touchHandlers: {
       onTouchStart: handleTouchStart,
       onTouchMove: handleTouchMove,
