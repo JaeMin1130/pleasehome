@@ -464,3 +464,10 @@
     white-space: nowrap;
     border: 0;
 }
+
+@media (max-width: 768px) {
+  .timeline-bar-wrapper {
+    padding-top: 0;
+    margin-bottom: var(--spacing-xs);
+  }
+}
