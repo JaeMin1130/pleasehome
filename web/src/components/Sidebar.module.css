@@ -971,7 +971,7 @@
     box-shadow: var(--shadow-lg);
     pointer-events: auto; /* 터치 활성화 */
     z-index: var(--z-index-base);
-    padding: var(--spacing-md);
+    padding: 0 var(--spacing-md) var(--spacing-md) var(--spacing-md);
     overflow-y: hidden; /* 헤더 영역은 스크롤되지 않도록 hidden */
     display: flex;
     flex-direction: column;
