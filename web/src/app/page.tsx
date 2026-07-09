@@ -192,7 +192,7 @@ function HomeContent() {
   }, []);
 
   const [activeComparisonFolderId, setActiveComparisonFolderId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<NavigationTabType | null>(null);
+  const [activeTab, setActiveTab] = useState<NavigationTabType | null>('SEARCH');
 
   const [filterState, setFilterState] = useState<FilterState>({
     targetGroup: 'ALL',

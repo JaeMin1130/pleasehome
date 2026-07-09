@@ -102,16 +102,29 @@ export default function Sidebar({
   const bookmarkListRef = useRef<HTMLDivElement>(null);
   const [bookmarkUnits, setBookmarkUnits] = useState<Record<number, HousingUnit[]>>({});
 
+  // 필터 상태 변경 추적용 Ref
+  const prevSearchTermRef = useRef(searchTerm);
+  const prevActiveRegionRef = useRef(activeRegion);
+  const prevActiveTabStatusRef = useRef(activeTabStatus);
+
   // 💡 최소 높이 상태에서 검색어나 필터 조건 변경 시 자동으로 중간 높이로 확장
   useEffect(() => {
     if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      const isSearchTermChanged = prevSearchTermRef.current !== searchTerm;
+      const isActiveRegionChanged = prevActiveRegionRef.current !== activeRegion;
+      const isActiveTabStatusChanged = prevActiveTabStatusRef.current !== activeTabStatus;
+
       if (
         isCollapsed && 
-        (searchTerm !== '' || activeRegion !== 'ALL' || activeTabStatus !== 'ONGOING')
+        (isSearchTermChanged || isActiveRegionChanged || isActiveTabStatusChanged)
       ) {
         onCollapseChange?.(false);
       }
     }
+    // 직전 상태 업데이트
+    prevSearchTermRef.current = searchTerm;
+    prevActiveRegionRef.current = activeRegion;
+    prevActiveTabStatusRef.current = activeTabStatus;
   }, [searchTerm, activeRegion, activeTabStatus, isCollapsed, onCollapseChange]);
 
   // 📂 북마크 폴더명 수정 상태
@@ -902,57 +915,53 @@ export default function Sidebar({
                         </div>
                       ) : (
                         <>
-
-
-                          <div className={styles['sidebar-list']}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
-                              {folderComplexes.map((complex) => {
-                                const item = bookmarkItems.find(i => i.complexId === complex.id);
-                                const ann = announcements.find(a => a.id === complex.announcement_id);
-                                return (
-                                  <div 
-                                    key={complex.id} 
-                                    className={`${styles['bookmark-card-wrapper']} ${draggingComplexId === complex.id ? styles.dragging : ''}`}
-                                    draggable={true}
-                                    onDragStart={(e) => {
-                                      e.dataTransfer.setData("text/plain", complex.id.toString());
-                                      setDraggingComplexId(complex.id);
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+                            {folderComplexes.map((complex) => {
+                              const item = bookmarkItems.find(i => i.complexId === complex.id);
+                              const ann = announcements.find(a => a.id === complex.announcement_id);
+                              return (
+                                <div 
+                                  key={complex.id} 
+                                  className={`${styles['bookmark-card-wrapper']} ${draggingComplexId === complex.id ? styles.dragging : ''}`}
+                                  draggable={true}
+                                  onDragStart={(e) => {
+                                    e.dataTransfer.setData("text/plain", complex.id.toString());
+                                    setDraggingComplexId(complex.id);
+                                  }}
+                                  onDragEnd={() => {
+                                    setDraggingComplexId(null);
+                                  }}
+                                >
+                                  <ComplexCard
+                                    complex={complex}
+                                    isActive={activeComplexId === complex.id}
+                                    onClick={() => {
+                                      onSelectAnnouncement(complex.announcement_id);
+                                      setTimeout(() => {
+                                        onSelectComplex(complex);
+                                      }, 100);
                                     }}
-                                    onDragEnd={() => {
-                                      setDraggingComplexId(null);
-                                    }}
-                                  >
-                                    <ComplexCard
-                                      complex={complex}
-                                      isActive={activeComplexId === complex.id}
-                                      onClick={() => {
-                                        onSelectAnnouncement(complex.announcement_id);
-                                        setTimeout(() => {
-                                          onSelectComplex(complex);
-                                        }, 100);
-                                      }}
-                                      isBookmarked={true}
-                                      onBookmarkToggle={() => onToggleBookmark(complex.id)}
-                                      announcementTitle={ann?.title}
-                                      announcementStatus={ann ? getAnnouncementStatus(ann) : undefined}
-                                      announcementInstitution={ann?.institution}
-                                      announcement={ann}
-                                      onMouseEnter={() => onHoverComplex?.(complex.id)}
-                                      onMouseLeave={() => onHoverComplex?.(null)}
-                                    />
-                                    {item?.memo && (
-                                      <div className={styles['bookmark-card-memo']}>
-                                        <svg className={styles['memo-icon']} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                          <path d="M12 20h9"></path>
-                                          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                                        </svg>
-                                        <span className={styles['memo-text']}>{item.memo}</span>
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
+                                    isBookmarked={true}
+                                    onBookmarkToggle={() => onToggleBookmark(complex.id)}
+                                    announcementTitle={ann?.title}
+                                    announcementStatus={ann ? getAnnouncementStatus(ann) : undefined}
+                                    announcementInstitution={ann?.institution}
+                                    announcement={ann}
+                                    onMouseEnter={() => onHoverComplex?.(complex.id)}
+                                    onMouseLeave={() => onHoverComplex?.(null)}
+                                  />
+                                  {item?.memo && (
+                                    <div className={styles['bookmark-card-memo']}>
+                                      <svg className={styles['memo-icon']} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M12 20h9"></path>
+                                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                      </svg>
+                                      <span className={styles['memo-text']}>{item.memo}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         </>
                       )}
