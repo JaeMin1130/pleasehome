@@ -940,7 +940,7 @@
     height: var(--spacing-xs); /* 4px */
     background-color: var(--border-strong);
     border-radius: var(--radius-pill);
-    margin: var(--spacing-sm) auto var(--spacing-xs) auto;
+    margin: var(--spacing-sm) auto var(--spacing-sm) auto;
     flex-shrink: 0;
     cursor: grab;
   }
@@ -953,7 +953,7 @@
   .mobile-only-filters .search-wrapper {
     position: relative;
     width: 100%;
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-xs);
   }
 
   /* 개별 바텀시트 컨테이너들이 아래에서 위로 독립적으로 솟아오르는 구조 */

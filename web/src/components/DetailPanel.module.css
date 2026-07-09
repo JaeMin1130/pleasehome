@@ -420,7 +420,7 @@
     height: var(--spacing-xs); /* 4px */
     background-color: var(--border-strong);
     border-radius: var(--radius-pill);
-    margin: var(--spacing-sm) auto var(--spacing-xs) auto;
+    margin: var(--spacing-sm) auto var(--spacing-sm) auto;
     flex-shrink: 0;
     cursor: grab;
   }
