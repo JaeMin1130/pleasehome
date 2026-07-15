@@ -192,42 +192,16 @@ export default function AnnouncementCard({
     return () => clearInterval(intervalId);
   }, [isMounted, minStart, maxEnd]);
 
-  const getApplyPeriodText = () => {
+  const getApplySchedules = () => {
     const applySchedules = ann.schedules.filter(s => s.schedule_type.includes('신청접수'));
-    if (applySchedules.length === 0) return null;
-    let minStart: Date | null = null, maxEnd: Date | null = null;
-    let minStartStr: string | null = null, maxEndStr: string | null = null;
-    for (const s of applySchedules) {
-      if (s.start_date) {
-        const start = new Date(s.start_date);
-        if (!isNaN(start.getTime())) {
-          if (!minStart || start < minStart) {
-            minStart = start;
-            minStartStr = s.start_date;
-          }
-        }
-      }
-      if (s.end_date) {
-        const end = new Date(s.end_date);
-        if (!isNaN(end.getTime())) {
-          if (!maxEnd || end > maxEnd) {
-            maxEnd = end;
-            maxEndStr = s.end_date;
-          }
-        }
-      }
-    }
-    if (minStartStr && maxEndStr) {
-      return `${formatDateWithTime(minStartStr)} ~ ${formatDateWithTime(maxEndStr)}`;
-    }
-    const firstSchedule = applySchedules[0];
-    if (firstSchedule) {
-      if (firstSchedule.start_date || firstSchedule.end_date) {
-        return `${formatDateWithTime(firstSchedule.start_date)} ~ ${formatDateWithTime(firstSchedule.end_date)}`;
-      }
-      return firstSchedule.raw_text || null;
-    }
-    return null;
+    if (applySchedules.length === 0) return [];
+    
+    // Sort schedules chronologically by start_date
+    return [...applySchedules].sort((a, b) => {
+      const dateA = a.start_date ? new Date(a.start_date).getTime() : 0;
+      const dateB = b.start_date ? new Date(b.start_date).getTime() : 0;
+      return dateA - dateB;
+    });
   };
 
   const getAnnouncementStatus = () => {
@@ -311,7 +285,7 @@ export default function AnnouncementCard({
     return { steps, sortedScheds };
   };
 
-  const periodText = getApplyPeriodText();
+  const applySchedules = getApplySchedules();
 
   return (
     <div 
@@ -326,9 +300,25 @@ export default function AnnouncementCard({
         </div>
         <div className={styles['header-right-actions']}>
           {dDayText && (
-            periodText ? (
+            applySchedules.length > 0 ? (
               <Tooltip 
-                label={`접수 기간: ${periodText}`} 
+                label={
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '2px 0' }}>
+                    <div style={{ fontWeight: 'bold', borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '4px', marginBottom: '4px' }}>
+                      접수 기간 안내
+                    </div>
+                    {applySchedules.map((s, idx) => {
+                      const dateRange = s.start_date || s.end_date
+                        ? `${formatDateWithTime(s.start_date)} ~ ${formatDateWithTime(s.end_date)}`
+                        : s.raw_text || '-';
+                      return (
+                        <div key={s.id || idx} style={{ fontSize: '11px', whiteSpace: 'nowrap' }}>
+                          • {dateRange} {s.notes ? `(${s.notes})` : ''}
+                        </div>
+                      );
+                    })}
+                  </div>
+                } 
                 position="top" 
                 withArrow 
                 color="grey"
