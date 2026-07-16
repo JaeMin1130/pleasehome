@@ -171,7 +171,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             <form className={styles.form} onSubmit={handleRegister}>
               <label className={styles.label}>아이디 <span className={styles.hint}>(4~20자)</span></label>
               <input id="reg-id" className={styles.input} type="text" value={regId}
-                onChange={e => setRegId(e.target.value)} placeholder="사용할 아이디" required autoFocus minLength={4} maxLength={20} />
+                onChange={e => setRegId(e.target.value)} placeholder="사용할 아이디" required autoFocus minLength={3} maxLength={20} />
               <label className={styles.label}>비밀번호 <span className={styles.hint}>(6자 이상)</span></label>
               <input id="reg-pwd" className={styles.input} type="password" value={regPwd}
                 onChange={e => setRegPwd(e.target.value)} placeholder="비밀번호" required minLength={6} />
