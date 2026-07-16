@@ -169,12 +169,12 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           {/* ── 회원가입 폼 ── */}
           {view === 'register' && (
             <form className={styles.form} onSubmit={handleRegister}>
-              <label className={styles.label}>아이디 <span className={styles.hint}>(4~20자)</span></label>
+              <label className={styles.label}>아이디 <span className={styles.hint}>(3~20자)</span></label>
               <input id="reg-id" className={styles.input} type="text" value={regId}
                 onChange={e => setRegId(e.target.value)} placeholder="사용할 아이디" required autoFocus minLength={3} maxLength={20} />
-              <label className={styles.label}>비밀번호 <span className={styles.hint}>(6자 이상)</span></label>
+              <label className={styles.label}>비밀번호 <span className={styles.hint}>(3자 이상)</span></label>
               <input id="reg-pwd" className={styles.input} type="password" value={regPwd}
-                onChange={e => setRegPwd(e.target.value)} placeholder="비밀번호" required minLength={6} />
+                onChange={e => setRegPwd(e.target.value)} placeholder="비밀번호" required minLength={3} />
               <label className={styles.label}>비밀번호 확인</label>
               <input id="reg-pwd-confirm" className={styles.input} type="password" value={regPwdConfirm}
                 onChange={e => setRegPwdConfirm(e.target.value)} placeholder="비밀번호 재입력" required />

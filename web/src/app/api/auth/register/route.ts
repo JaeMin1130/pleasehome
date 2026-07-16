@@ -10,12 +10,12 @@ export async function POST(req: NextRequest) {
     if (!id || !password || !security_q || !security_a) {
       return NextResponse.json({ error: '모든 항목을 입력해주세요.' }, { status: 400 });
     }
-    if (id.length < 4 || id.length > 20) {
-      return NextResponse.json({ error: '아이디는 4~20자로 입력해주세요.' }, { status: 400 });
-    }
-    if (password.length < 6) {
-      return NextResponse.json({ error: '비밀번호는 6자 이상이어야 합니다.' }, { status: 400 });
-    }
+    // if (id.length < 3 || id.length > 20 || password.length < 3) {
+    //   return NextResponse.json({ error: '아이디는 4~20자로 입력해주세요.' }, { status: 400 });
+    // }
+    // if (password.length < 6) {
+    //   return NextResponse.json({ error: '비밀번호는 6자 이상이어야 합니다.' }, { status: 400 });
+    // }
 
     // 중복 아이디 확인
     const existing = db.prepare('SELECT id FROM members WHERE id = ?').get(id);
