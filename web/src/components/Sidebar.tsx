@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useBottomSheetGesture } from '@/hooks/useBottomSheetGesture';
 import { Announcement, ApplicationStatus, Complex, BookmarkFolder, BookmarkItem, HousingUnit } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 import AnnouncementCard from '@/components/features/AnnouncementCard';
 import ComplexCard from '@/components/features/ComplexCard';
 import styles from './Sidebar.module.css';
@@ -53,6 +54,7 @@ export default function Sidebar({
   activeComparisonFolderId, onToggleComparison,
   onHoverComplex
 }: SidebarProps) {
+  const { member } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
 
   const { 
@@ -149,43 +151,68 @@ export default function Sidebar({
   // 파생 상태: 기존 단수 ID 배열 참조 로직과의 호환용
   const disabledAnnIds = disabledAnns.map((x) => x.id);
 
-  // 마운트 시 localStorage에서 숨긴 공고 목록 로드 및 하위 호환성 복구
+  // 마운트 및 로그인 상태 변경 시 숨긴 공고 목록 로드 (API 또는 localStorage)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem('disabledAnnouncementIds');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed)) {
-            const formatted = parsed.map((item) => {
-              if (typeof item === 'number') {
-                return { id: item, disabledAt: new Date().toISOString() };
-              }
-              return item;
-            });
-            setDisabledAnns(formatted);
+    const loadHiddenAnns = async () => {
+      if (member) {
+        try {
+          const res = await fetch('/api/member/hidden-anns');
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setDisabledAnns(data.map((item: any) => ({ id: item.announcement_id, disabledAt: item.hidden_at })));
           }
+        } catch (e) {
+          console.error('Failed to load hidden announcements', e);
         }
-      } catch (e) {
-        console.error('Failed to load disabled announcement IDs', e);
+      } else if (typeof window !== 'undefined') {
+        try {
+          const stored = localStorage.getItem('disabledAnnouncementIds');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed)) {
+              const formatted = parsed.map((item) =>
+                typeof item === 'number' ? { id: item, disabledAt: new Date().toISOString() } : item
+              );
+              setDisabledAnns(formatted);
+            }
+          }
+        } catch (e) {
+          console.error('Failed to load disabled announcement IDs', e);
+        }
       }
-    }
-  }, []);
+    };
+    loadHiddenAnns();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [member]);
 
   const handleToggleDisableAnn = (id: number) => {
     const exists = disabledAnns.some((x) => x.id === id);
     let next: { id: number; disabledAt: string }[];
     if (exists) {
       next = disabledAnns.filter((x) => x.id !== id);
+      if (member) {
+        fetch('/api/member/hidden-anns', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ announcement_id: id }),
+        });
+      }
     } else {
       next = [...disabledAnns, { id, disabledAt: new Date().toISOString() }];
-      // 💡 만약 현재 보던 공고가 숨겨진다면 공고 선택 상태를 해제하여 우측 패널 닫기 연동
+      if (member) {
+        fetch('/api/member/hidden-anns', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ announcement_id: id }),
+        });
+      }
+      // 현재 보던 공고가 숨겨진다면 공고 선택 상태 해제
       if (activeAnnId === id) {
         onSelectAnnouncement(null);
       }
     }
     setDisabledAnns(next);
-    localStorage.setItem('disabledAnnouncementIds', JSON.stringify(next));
+    if (!member) localStorage.setItem('disabledAnnouncementIds', JSON.stringify(next));
   };
 
   // 사이드바 폴더 폼 상태

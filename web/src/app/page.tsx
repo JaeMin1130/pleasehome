@@ -10,6 +10,7 @@ import BookmarkModal from '@/components/ui/BookmarkModal';
 import { formatMoney, formatRent, formatTargetGroup } from '@/utils/formatters';
 import { Announcement, Complex, FilterState, BookmarkFolder, BookmarkItem } from '@/types';
 import styles from './page.module.css';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   FILTER_DEFAULT_LIMITS,
   FILTER_SLIDER_STEPS,
@@ -57,69 +58,83 @@ function HomeContent() {
     complexName: ''
   });
 
-  const bookmarkedIds = bookmarkItems.map(item => item.complexId);
+  const { member } = useAuth();
 
   const DEFAULT_FOLDERS: BookmarkFolder[] = [
     { id: 'default', name: '내 저장 목록', color: '#3B82F6', createdAt: new Date().toISOString() }
   ];
 
-  // 마운트 시 localStorage에서 폴더 및 북마크 로드 및 마이그레이션
+  // 회원 로그인 상태 변경 시 서버 데이터 동기화 (로그인 → API, 비로그인 → localStorage)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const storedFolders = localStorage.getItem('bookmarkFolders');
-        let currentFolders: BookmarkFolder[] = [];
-        if (storedFolders) {
-          currentFolders = JSON.parse(storedFolders);
-        } else {
-          currentFolders = DEFAULT_FOLDERS;
-          localStorage.setItem('bookmarkFolders', JSON.stringify(currentFolders));
-        }
-        setBookmarkFolders(currentFolders);
+    const loadMemberData = async () => {
+      if (member) {
+        try {
+          const [foldersRes, itemsRes] = await Promise.all([
+            fetch('/api/member/bookmark-folders'),
+            fetch('/api/member/bookmark-items'),
+          ]);
+          const foldersData = await foldersRes.json();
+          const itemsData = await itemsRes.json();
 
-        const storedItems = localStorage.getItem('bookmarkItems');
-        let currentItems: BookmarkItem[] = [];
-        if (storedItems) {
-          currentItems = JSON.parse(storedItems);
-        } else {
-          const storedOld = localStorage.getItem('bookmarkedComplexIds');
-          if (storedOld) {
-            const oldIds: number[] = JSON.parse(storedOld);
-            currentItems = oldIds.map(id => ({
-              complexId: id,
-              folderId: 'default',
-              createdAt: new Date().toISOString()
-            }));
-            localStorage.setItem('bookmarkItems', JSON.stringify(currentItems));
+          if (Array.isArray(foldersData)) {
+            setBookmarkFolders(
+              foldersData.map((f: any) => ({
+                id: f.id, name: f.name, color: f.color, createdAt: f.created_at,
+              }))
+            );
           }
+          if (Array.isArray(itemsData)) {
+            setBookmarkItems(
+              itemsData.map((i: any) => ({
+                complexId: i.complex_id, folderId: i.folder_id,
+                memo: i.memo ?? undefined, createdAt: i.created_at,
+              }))
+            );
+          }
+        } catch (e) {
+          console.error('Failed to load member bookmark data', e);
         }
-        setBookmarkItems(currentItems);
-      } catch (e) {
-        console.error('Failed to load bookmarks or folders', e);
+      } else {
+        // 비로그인: localStorage 폴백
+        try {
+          const storedFolders = localStorage.getItem('bookmarkFolders');
+          const storedItems = localStorage.getItem('bookmarkItems');
+          setBookmarkFolders(storedFolders ? JSON.parse(storedFolders) : DEFAULT_FOLDERS);
+          setBookmarkItems(storedItems ? JSON.parse(storedItems) : []);
+        } catch (e) {
+          setBookmarkFolders(DEFAULT_FOLDERS);
+          setBookmarkItems([]);
+        }
       }
-    }
-  }, []);
+    };
+    loadMemberData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [member]);
+
+  const bookmarkedIds = bookmarkItems.map(item => item.complexId);
 
   // 북마크 클릭 시 설정 팝업 호출 (이름 유지)
   const toggleBookmark = (complexId: number) => {
-    // 💡 이미 저장되어 있는 단지라면 팝업 없이 즉시 목록에서 제외
+    // 이미 저장되어 있는 단지라면 팝업 없이 즉시 목록에서 제외
     const isBookmarked = bookmarkItems.some(item => item.complexId === complexId);
     if (isBookmarked) {
-      setBookmarkItems((prev) => {
-        const next = prev.filter(item => item.complexId !== complexId);
+      const next = bookmarkItems.filter(item => item.complexId !== complexId);
+      setBookmarkItems(next);
+      if (member) {
+        fetch('/api/member/bookmark-items', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ complex_id: complexId }),
+        });
+      } else {
         localStorage.setItem('bookmarkItems', JSON.stringify(next));
-        return next;
-      });
+      }
       return;
     }
 
-    // 💡 저장되지 않은 단지라면 설정 폴더/메모 선택 팝업 오픈
+    // 저장되지 않은 단지라면 설정 폴더/메모 선택 팝업 오픈
     const compName = allComplexes.find(c => c.id === complexId)?.name || '알 수 없는 단지';
-    setBookmarkModalState({
-      isOpen: true,
-      complexId,
-      complexName: compName
-    });
+    setBookmarkModalState({ isOpen: true, complexId, complexName: compName });
   };
 
   const handleSaveBookmark = (folderId: string, memo: string) => {
@@ -128,37 +143,36 @@ function HomeContent() {
 
     setBookmarkItems((prev) => {
       const exists = prev.some(item => item.complexId === targetId);
-      let next: BookmarkItem[] = [];
-      if (exists) {
-        next = prev.map(item =>
-          item.complexId === targetId ? { ...item, folderId, memo } : item
-        );
-      } else {
-        next = [
-          ...prev,
-          {
-            complexId: targetId,
-            folderId,
-            memo,
-            createdAt: new Date().toISOString()
-          }
-        ];
-      }
-      localStorage.setItem('bookmarkItems', JSON.stringify(next));
+      const next: BookmarkItem[] = exists
+        ? prev.map(item => item.complexId === targetId ? { ...item, folderId, memo } : item)
+        : [...prev, { complexId: targetId, folderId, memo, createdAt: new Date().toISOString() }];
+      if (!member) localStorage.setItem('bookmarkItems', JSON.stringify(next));
       return next;
     });
+    if (member) {
+      fetch('/api/member/bookmark-items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ complex_id: targetId, folder_id: folderId, memo }),
+      });
+    }
     setBookmarkModalState(prev => ({ ...prev, isOpen: false }));
   };
 
   const handleRemoveBookmark = () => {
     if (bookmarkModalState.complexId === null) return;
     const targetId = bookmarkModalState.complexId;
-
-    setBookmarkItems((prev) => {
-      const next = prev.filter(item => item.complexId !== targetId);
+    const next = bookmarkItems.filter(item => item.complexId !== targetId);
+    setBookmarkItems(next);
+    if (member) {
+      fetch('/api/member/bookmark-items', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ complex_id: targetId }),
+      });
+    } else {
       localStorage.setItem('bookmarkItems', JSON.stringify(next));
-      return next;
-    });
+    }
     setBookmarkModalState(prev => ({ ...prev, isOpen: false }));
   };
 
@@ -166,20 +180,20 @@ function HomeContent() {
     const newId = `folder_${Date.now()}`;
     const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
     const color = customColor || colors[bookmarkFolders.length % colors.length];
+    const newFolder: BookmarkFolder = { id: newId, name, color, createdAt: new Date().toISOString() };
 
-    const newFolder: BookmarkFolder = {
-      id: newId,
-      name,
-      color,
-      createdAt: new Date().toISOString()
-    };
-
-    setBookmarkFolders((prev) => {
+    setBookmarkFolders(prev => {
       const next = [...prev, newFolder];
-      localStorage.setItem('bookmarkFolders', JSON.stringify(next));
+      if (!member) localStorage.setItem('bookmarkFolders', JSON.stringify(next));
       return next;
     });
-
+    if (member) {
+      fetch('/api/member/bookmark-folders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: newId, name, color }),
+      });
+    }
     return newId;
   };
 
@@ -494,16 +508,20 @@ function HomeContent() {
           onAddFolder={handleAddFolder}
           onHoverComplex={setHoveredComplexId}
           onRemoveFolder={(folderId) => {
-            setBookmarkFolders(prev => {
-              const next = prev.filter(f => f.id !== folderId);
-              localStorage.setItem('bookmarkFolders', JSON.stringify(next));
-              return next;
-            });
-            setBookmarkItems(prev => {
-              const next = prev.filter(item => item.folderId !== folderId); // default 이전 대신 영구 동반 해제
-              localStorage.setItem('bookmarkItems', JSON.stringify(next));
-              return next;
-            });
+            const nextFolders = bookmarkFolders.filter(f => f.id !== folderId);
+            const nextItems = bookmarkItems.filter(item => item.folderId !== folderId);
+            setBookmarkFolders(nextFolders);
+            setBookmarkItems(nextItems);
+            if (member) {
+              fetch('/api/member/bookmark-folders', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: folderId }),
+              });
+            } else {
+              localStorage.setItem('bookmarkFolders', JSON.stringify(nextFolders));
+              localStorage.setItem('bookmarkItems', JSON.stringify(nextItems));
+            }
             if (activeFolderIds.includes(folderId)) {
               setActiveFolderIds(prev => prev.filter(id => id !== folderId));
             }
@@ -513,18 +531,35 @@ function HomeContent() {
             }
           }}
           onUpdateFolder={(folderId, name, color) => {
-            setBookmarkFolders(prev => {
-              const next = prev.map(f => f.id === folderId ? { ...f, name, color: color || f.color } : f);
-              localStorage.setItem('bookmarkFolders', JSON.stringify(next));
-              return next;
-            });
+            const updated = bookmarkFolders.map(f =>
+              f.id === folderId ? { ...f, name, color: color || f.color } : f
+            );
+            setBookmarkFolders(updated);
+            if (member) {
+              const folder = bookmarkFolders.find(f => f.id === folderId);
+              fetch('/api/member/bookmark-folders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: folderId, name, color: color || folder?.color }),
+              });
+            } else {
+              localStorage.setItem('bookmarkFolders', JSON.stringify(updated));
+            }
           }}
           onMoveBookmarkItem={(complexId, targetFolderId) => {
-            setBookmarkItems(prev => {
-              const next = prev.map(item => item.complexId === complexId ? { ...item, folderId: targetFolderId } : item);
-              localStorage.setItem('bookmarkItems', JSON.stringify(next));
-              return next;
-            });
+            const moved = bookmarkItems.map(item =>
+              item.complexId === complexId ? { ...item, folderId: targetFolderId } : item
+            );
+            setBookmarkItems(moved);
+            if (member) {
+              fetch('/api/member/bookmark-items', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ complex_id: complexId, folder_id: targetFolderId }),
+              });
+            } else {
+              localStorage.setItem('bookmarkItems', JSON.stringify(moved));
+            }
           }}
           activeComparisonFolderId={activeComparisonFolderId}
           onToggleComparison={(folderId) => {

@@ -78,3 +78,13 @@ export const UI_SPACING = {
 
 // [7] 즐겨찾기 폴더 프리셋 컬러 배열
 export const BOOKMARK_PRESET_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
+
+// [8] 비밀번호 찾기 보안 질문 목록 (프론트 상수, DB 미저장)
+export const SECURITY_QUESTIONS = [
+  '어릴 때 키우던 반려동물의 이름은?',
+  '다닌 초등학교 이름은?',
+  '부모님이 처음 만난 도시는?',
+  '가장 좋아하는 음식은?',
+  '나의 첫 번째 차 종류는?',
+  '태어난 병원 이름은?',
+];

@@ -8,7 +8,7 @@
   border-right: var(--spacing-3xs) solid var(--border-light);
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
   padding-top: 0;
   padding-bottom: var(--spacing-md);
@@ -23,8 +23,6 @@
   align-items: center;
   width: 100%;
 }
-
-
 
 .nav-brand-wrapper {
   width: 100%;
@@ -77,8 +75,6 @@
   box-shadow: none;
 }
 
-
-
 .nav-icon {
   display: flex;
   align-items: center;
@@ -91,6 +87,70 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
+/* ── 프로필 아바타 & 드롭다운 ────────────────── */
+.profile-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--primary, #4f8cff);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-menu {
+  position: absolute;
+  bottom: 4px;
+  left: calc(100% + 8px);
+  background: var(--bg-surface, #1e1e2e);
+  border: 1px solid var(--border-light, rgba(255,255,255,0.1));
+  border-radius: 12px;
+  min-width: 140px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  overflow: hidden;
+  z-index: 1000;
+  animation: popIn 0.15s ease;
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.92) translateX(-4px); }
+  to   { opacity: 1; transform: scale(1) translateX(0); }
+}
+
+.profile-menu-id {
+  padding: 10px 14px 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary, #fff);
+  border-bottom: 1px solid var(--border-light, rgba(255,255,255,0.08));
+  word-break: break-all;
+}
+
+.profile-menu-item {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  color: #fc8181;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.profile-menu-item:hover { background: rgba(239,68,68,0.1); }
+
 @media (max-width: 768px) {
   .nav-bar {
     position: fixed;
@@ -99,12 +159,13 @@
     left: 0;
     right: 0;
     width: 100vw;
-    height: calc(var(--spacing-md) * 3.75); /* 약 60px */
+    height: calc(var(--spacing-md) * 3.75);
     border-right: none;
     border-top: var(--spacing-3xs) solid var(--border-light);
     flex-direction: row;
     padding-bottom: 0;
     z-index: 1000;
+    justify-content: flex-start;
   }
 
   .nav-group {
@@ -116,7 +177,7 @@
   }
 
   .nav-brand-wrapper {
-    display: none; /* 모바일에서 통합 로고는 숨겨 공간 확보 */
+    display: none;
   }
 
   .nav-item {
@@ -124,6 +185,10 @@
     height: 100%;
     padding: var(--spacing-xs) 0;
   }
+
+  .profile-menu {
+    left: auto;
+    right: 4px;
+    bottom: calc(100% + 8px);
+  }
 }
-
-

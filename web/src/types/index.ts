@@ -102,3 +102,8 @@ export interface BookmarkItem {
   createdAt: string;
 }
 
+export interface Member {
+  id: string;
+  security_q: string;
+  created_at: string;
+}

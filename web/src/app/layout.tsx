@@ -3,6 +3,7 @@ import '@mantine/core/styles.css';
 import "./globals.css";
 import { MantineProvider } from '@mantine/core';
 import Script from 'next/script';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 export const metadata: Metadata = {
   title: "공공청약 지도",
@@ -51,7 +52,9 @@ export default function RootLayout({
           `}
         </Script>
         <MantineProvider>
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
         </MantineProvider>
       </body>
     </html>
