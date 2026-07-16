@@ -797,13 +797,31 @@ export default function Sidebar({
           <div className={styles['drag-handle-bar']} />
           <div className={styles['bookmark-header']}>
             <h3 className={styles['bookmark-title']}>저장 목록</h3>
-            <button 
-              className="btn-outline-primary-mini"
-              onClick={() => setShowNewFolderInput(!showNewFolderInput)}
-            >
-              {showNewFolderInput ? '취소' : '+ 폴더 추가'}
-            </button>
+            {member && (
+              <button 
+                className="btn-outline-primary-mini"
+                onClick={() => setShowNewFolderInput(!showNewFolderInput)}
+              >
+                {showNewFolderInput ? '취소' : '+ 폴더 추가'}
+              </button>
+            )}
           </div>
+
+          {/* 게스트: 로그인 유도 뷰 */}
+          {!member && (
+            <div className={styles['guest-login-prompt']}>
+              <svg width={40} height={40} viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+              <p className={styles['guest-login-text']}>저장 기능은 로그인 후<br />이용하실 수 있습니다.</p>
+              <button
+                className={styles['guest-login-btn']}
+                onClick={() => setAuthModalOpen(true)}
+              >
+                로그인하기
+              </button>
+            </div>
+          )}
 
           {showNewFolderInput && (
             <div className={styles['sidebar-folder-add-container']}>
