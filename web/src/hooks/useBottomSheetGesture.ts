@@ -24,7 +24,7 @@ export function useBottomSheetGesture({
     return (window.innerHeight * percent) / 100;
   };
 
-  const finalMinHeight = minHeight ?? 60;
+  const finalMinHeight = minHeight ?? getDvhInPixels(25);
   const finalMidHeight = midHeight ?? getDvhInPixels(50);
   const finalMaxHeight = maxHeight ?? getDvhInPixels(85);
 

@@ -389,11 +389,7 @@ function HomeContent() {
     if (tab === null) {
       setIsSidebarCollapsed(true);
     } else {
-      if (typeof window !== 'undefined' && window.innerWidth <= 768) {
-        setIsSidebarCollapsed(true); // 💡 모바일 뷰는 최소 높이로 열리도록 기본 접힘 상태(true) 지정
-      } else {
-        setIsSidebarCollapsed(false); // 💡 PC(데스크톱) 뷰는 활성화 시 사이드바가 펼쳐진 채(false)로 유지
-      }
+      setIsSidebarCollapsed(false); // 💡 탭 활성화 시 기본 펼침(중간 높이) 상태로 시작하도록 지정
       if (tab === 'BOOKMARK') {
         setActiveFolderIds([]);
       }

@@ -58,6 +58,11 @@ export default function Sidebar({
 }: SidebarProps) {
   const { member } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const { 
     sheetHeight, 
@@ -68,7 +73,6 @@ export default function Sidebar({
     midHeight, 
     maxHeight 
   } = useBottomSheetGesture({
-    minHeight: 185, // 필터 버튼들이 보이면서 아래 공고 카드는 삐져나오지 않도록 185px로 정밀 조정
     scrollSelector: '[class*="sidebar-list"], [class*="folders-list-container"], [class*="more-list-container"]',
     onMinHeightReached: () => {
       if (isCollapsed) {
@@ -706,7 +710,7 @@ export default function Sidebar({
           className={styles['search-panel-container']}
           style={{ 
             height: sheetHeight ? `${sheetHeight}px` : undefined,
-            '--sheet-min-height': `${minHeight}px`,
+            '--sheet-min-height': isMounted ? `${minHeight}px` : '0px',
             transform: (typeof window !== 'undefined' && window.innerWidth <= 768 && translateY > 0) 
               ? `translateY(${translateY}px)` 
               : undefined,
@@ -924,7 +928,7 @@ export default function Sidebar({
           style={{ 
             height: sheetHeight ? `${sheetHeight}px` : undefined,
             overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto',
-            '--sheet-min-height': `${minHeight}px`,
+            '--sheet-min-height': isMounted ? `${minHeight}px` : '0px',
             transform: (typeof window !== 'undefined' && window.innerWidth <= 768 && translateY > 0) 
               ? `translateY(${translateY}px)` 
               : undefined
@@ -1228,7 +1232,7 @@ export default function Sidebar({
           className={styles['more-panel-container']}
           style={{ 
             height: sheetHeight ? `${sheetHeight}px` : undefined,
-            '--sheet-min-height': `${minHeight}px`,
+            '--sheet-min-height': isMounted ? `${minHeight}px` : '0px',
             transform: (typeof window !== 'undefined' && window.innerWidth <= 768 && translateY > 0) 
               ? `translateY(${translateY}px)` 
               : undefined,
