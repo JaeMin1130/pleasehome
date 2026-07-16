@@ -13,7 +13,9 @@
 !/db-pipeline/
 
 # Blacklist
-/docs/pdf/
+/docs/pdf/LH_*
+/docs/pdf/SH_*
+/docs/pdf/GH_*
 /docs/md/
 /web/.next/
 /web/node_modules/
