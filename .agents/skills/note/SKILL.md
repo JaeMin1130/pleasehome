@@ -1,6 +1,6 @@
 ---
 name: note
-description: 대화 과정에서 수립된 에이전트 행동 규칙을 AGENTS.md에서 갱신합니다. 프로젝트 환경 변화를 llms.txt, 서비스 아키텍처를 ARCHITECTURES.md, 개발 과정에서의 중요 설계 의사결정 및 트레이드오프를 DECISIONS.md, 해결된 문제 내역을 TROUBLESHOOTING.md에 기록하고, 위 네 문서(llms.txt, ARCHITECTURES.md, DECISIONS.md, TROUBLESHOOTING.md)의 주요 내용을 README.md에 기록합니다.
+description: 대화 과정에서 수립된 에이전트 행동 규칙을 AGENTS.md에서 갱신합니다. 프로젝트 환경 변화를 llms.txt, 서비스 아키텍처를 ARCHITECTURE.md, 개발 과정에서의 중요 설계 의사결정 및 트레이드오프를 DECISION.md, 해결된 문제 내역을 TROUBLESHOOTING.md에 기록하고, 위 네 문서(llms.txt, ARCHITECTURE.md, DECISION.md, TROUBLESHOOTING.md)의 주요 내용을 README.md에 기록합니다.
 ---
 
 # Skill: note
@@ -26,8 +26,8 @@ description: 대화 과정에서 수립된 에이전트 행동 규칙을 AGENTS.
 * **README.md**: `/home/iru/app/pleasehome/README.md`
 * **llms.txt**: `/home/iru/app/pleasehome/llms.txt`
 * **AGENTS.md**: `/home/iru/app/pleasehome/AGENTS.md`
-* **ARCHITECTURES.md**: `/home/iru/app/pleasehome/docs/dev/ARCHITECTURES.md`
-* **DECISIONS.md**: `/home/iru/app/pleasehome/docs/dev/DECISIONS.md`
+* **ARCHITECTURE.md**: `/home/iru/app/pleasehome/docs/dev/ARCHITECTURE.md`
+* **DECISION.md**: `/home/iru/app/pleasehome/docs/dev/DECISION.md`
 * **TROUBLESHOOTING.md**: `/home/iru/app/pleasehome/docs/dev/TROUBLESHOOTING.md`
 
 ### 4. 규칙 충돌 해결 메커니즘 (Conflict Resolution)
@@ -43,9 +43,9 @@ description: 대화 과정에서 수립된 에이전트 행동 규칙을 AGENTS.
   * **작성 규칙**: `## 2. 피드백 및 누적 규칙` 섹션에 `[누적 규칙 #N]` 포맷으로 반영하며, 검증 완료 시 `## 1. 기본 행동 및 소통 규약` 섹션으로 이동함.
 * **프로젝트 공통 환경 사양 및 전역 규약 (llms.txt):** * **목적**: 프로젝트 개요, 데이터 소스, 디렉토리 구조, 현재 개발 단계 등 전역 사양 및 환경 변화에 관한 피드백을 기록함.
   * **작성 규칙**: 파일 내 관련 섹션에 수시 반영하여 최신화함.
-* **서비스 아키텍처 기록 (ARCHITECTURES.md):** * **목적**: 시스템 구성, 컴포넌트 간 상호작용 및 서비스 아키텍처 설계 정보를 기록함.
+* **서비스 아키텍처 기록 (ARCHITECTURE.md):** * **목적**: 시스템 구성, 컴포넌트 간 상호작용 및 서비스 아키텍처 설계 정보를 기록함.
   * **작성 규칙**: 아키텍처 변경 사항 발생 시 실시간으로 기록하고 업데이트함.
-* **개발 과정에서의 중요 설계 의사결정 및 트레이드오프 (DECISIONS.md):** * **목적**: 개발 과정에서 발생한 핵심 의사결정 내역 및 기술적 제약 사항을 기록함.
+* **개발 과정에서의 중요 설계 의사결정 및 트레이드오프 (DECISION.md):** * **목적**: 개발 과정에서 발생한 핵심 의사결정 내역 및 기술적 제약 사항을 기록함.
   * **작성 규칙**: 아래의 전용 템플릿 양식을 엄격히 준수하여 기록함.
     ```markdown
     ### [YYYY-MM-DD] #N. 결정된 핵심 한 줄 요약 제목
@@ -64,7 +64,7 @@ description: 대화 과정에서 수립된 에이전트 행동 규칙을 AGENTS.
     ```
     ※ 각 항목(현상/원인/해결)은 무조건 1줄 이내의 간결한 음슴체(~함, ~음, ~임)로만 압축하여 작성함.
 * **사용자 대상 문서화 및 주요 내용 통합 (README.md):** * **목적**: 설치 방법, 사용 가이드 등 사용자 대상 기본 문서화를 수행함.
-  * **작성 규칙**: 위 네 문서(llms.txt, ARCHITECTURES.md, DECISIONS.md, TROUBLESHOOTING.md)의 핵심 요약 및 주요 내용들을 통합하여 일괄 기록함.
+  * **작성 규칙**: 위 네 문서(llms.txt, ARCHITECTURE.md, DECISION.md, TROUBLESHOOTING.md)의 핵심 요약 및 주요 내용들을 통합하여 일괄 기록함.
 * **물리적 코드 로직 및 사소한 구현 상세 기록 금지 (공통 제한 사항):** * **목적**: 불필요한 문서 비대화 방지 및 단일 진실 공급원(SSOT) 유지.
   * **작성 규칙**: 소스 코드에 구현된 물리적 제어 논리(예: if문 감지 알고리즘, 정규식 조건, 파싱 함수 흐름 등)나 일회성 기능 개발 및 사소한 디자인 수치는 가이드 문서에 절대 기록하지 않고 배제함.
 
