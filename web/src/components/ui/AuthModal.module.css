@@ -1,7 +1,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--bg-overlay);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -16,13 +16,13 @@
 }
 
 .modal {
-  background: var(--surface, #1e1e2e);
-  border: 1px solid var(--border, rgba(255,255,255,0.08));
-  border-radius: 18px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
   width: 100%;
   max-width: 400px;
   margin: 16px;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+  box-shadow: var(--shadow-lg);
   animation: slideUp 0.2s ease;
   overflow: hidden;
 }
@@ -38,52 +38,55 @@
   align-items: center;
   justify-content: space-between;
   padding: 20px 20px 0;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 16px;
 }
 
 .tabs {
   display: flex;
   gap: 4px;
-  background: var(--surface-alt, rgba(255,255,255,0.05));
-  border-radius: 10px;
+  background: var(--bg-body);
+  border-radius: var(--radius-md);
   padding: 4px;
 }
 
 .tab {
   padding: 7px 18px;
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   border: none;
   background: transparent;
-  color: var(--text-secondary, rgba(255,255,255,0.45));
-  font-size: 14px;
-  font-weight: 500;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all 0.18s ease;
   font-family: inherit;
 }
 
 .tab:hover {
-  color: var(--text-primary, #fff);
+  color: var(--text-primary);
+  background: var(--bg-surface);
 }
 
 .tabActive {
-  background: var(--primary, #4f8cff);
-  color: #fff !important;
-  box-shadow: 0 2px 8px rgba(79,140,255,0.35);
+  background: var(--primary);
+  color: var(--color-white) !important;
+  box-shadow: 0 2px 8px rgba(26, 86, 219, 0.25);
 }
 
 .closeBtn {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-secondary, rgba(255,255,255,0.45));
+  color: var(--text-muted);
   padding: 6px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   display: flex;
-  transition: color 0.15s, background 0.15s;
+  transition: color var(--transition-fast), background var(--transition-fast);
 }
 .closeBtn:hover {
-  color: var(--text-primary, #fff);
-  background: rgba(255,255,255,0.07);
+  color: var(--text-primary);
+  background: var(--bg-body);
 }
 
 /* ─── 바디 ─────────────────────────────── */
@@ -98,26 +101,26 @@
 }
 
 .label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-secondary, rgba(255,255,255,0.55));
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
   margin-top: 8px;
   letter-spacing: 0.02em;
 }
 
 .hint {
-  font-weight: 400;
+  font-weight: var(--font-weight-regular);
   opacity: 0.7;
 }
 
 .input, .select {
   width: 100%;
   padding: 10px 14px;
-  background: var(--surface-alt, rgba(255,255,255,0.05));
-  border: 1px solid var(--border, rgba(255,255,255,0.1));
-  border-radius: 10px;
-  color: var(--text-primary, #fff);
-  font-size: 14px;
+  background: var(--bg-body);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
   font-family: inherit;
   outline: none;
   transition: border-color 0.18s, box-shadow 0.18s;
@@ -125,32 +128,34 @@
 }
 
 .input:focus, .select:focus {
-  border-color: var(--primary, #4f8cff);
-  box-shadow: 0 0 0 3px rgba(79,140,255,0.18);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-bg);
+  background: var(--bg-surface);
 }
 
 .select option {
-  background: #1e1e2e;
+  background: var(--bg-surface);
+  color: var(--text-primary);
 }
 
 .submitBtn {
   margin-top: 16px;
   width: 100%;
   padding: 12px;
-  background: var(--primary, #4f8cff);
-  color: #fff;
+  background: var(--primary);
+  color: var(--color-white);
   border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 600;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   font-family: inherit;
   transition: background 0.18s, transform 0.1s, box-shadow 0.18s;
-  box-shadow: 0 4px 16px rgba(79,140,255,0.3);
+  box-shadow: 0 4px 16px rgba(26, 86, 219, 0.2);
 }
 .submitBtn:hover:not(:disabled) {
-  background: #3a7aef;
-  box-shadow: 0 6px 20px rgba(79,140,255,0.4);
+  background: var(--primary-hover);
+  box-shadow: 0 6px 20px rgba(26, 86, 219, 0.3);
 }
 .submitBtn:active:not(:disabled) { transform: scale(0.98); }
 .submitBtn:disabled {
@@ -161,8 +166,8 @@
 .linkBtn {
   background: none;
   border: none;
-  color: var(--primary, #4f8cff);
-  font-size: 13px;
+  color: var(--primary);
+  font-size: var(--font-size-xs);
   cursor: pointer;
   text-align: center;
   padding: 4px;
@@ -173,48 +178,48 @@
 .linkBtn:hover { opacity: 0.75; }
 
 .errorBanner {
-  background: rgba(239,68,68,0.12);
-  border: 1px solid rgba(239,68,68,0.3);
-  border-radius: 10px;
-  color: #fc8181;
-  font-size: 13px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: var(--radius-md);
+  color: #dc2626;
+  font-size: var(--font-size-xs);
   padding: 10px 14px;
   margin-bottom: 8px;
-  line-height: 1.5;
+  line-height: var(--line-height-base);
 }
 
 /* ─── 비밀번호 찾기 ─────────────────────── */
 .findContainer { display: flex; flex-direction: column; gap: 4px; }
 
 .findTitle {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-primary, #fff);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
   margin: 4px 0 8px;
 }
 
 .backBtn {
   background: none;
   border: none;
-  color: var(--text-secondary, rgba(255,255,255,0.5));
-  font-size: 13px;
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
   cursor: pointer;
   text-align: left;
   padding: 0;
   font-family: inherit;
   transition: color 0.15s;
 }
-.backBtn:hover { color: var(--text-primary, #fff); }
+.backBtn:hover { color: var(--text-primary); }
 
 .questionBox {
-  background: var(--surface-alt, rgba(255,255,255,0.05));
-  border: 1px solid var(--border, rgba(255,255,255,0.1));
-  border-radius: 10px;
+  background: var(--bg-body);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
   padding: 12px 14px;
-  font-size: 14px;
-  color: var(--text-primary, #fff);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
   margin: 8px 0 4px;
-  line-height: 1.5;
+  line-height: var(--line-height-base);
 }
 
 .doneBox {
@@ -223,19 +228,33 @@
   align-items: center;
   gap: 12px;
   padding: 20px 0;
-  color: var(--text-primary, #fff);
-  font-size: 15px;
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
 }
 
 .doneIcon {
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: rgba(16,185,129,0.15);
+  background: rgba(16, 185, 129, 0.1);
   border: 2px solid #10B981;
   color: #10B981;
   font-size: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* ─── 모바일 대응 ───────────────────────── */
+@media (max-width: 768px) {
+  .modal {
+    margin: 12px;
+    max-width: 100%;
+  }
+  .body {
+    padding: 16px;
+  }
+  .header {
+    padding: 16px 16px 12px;
+  }
 }
