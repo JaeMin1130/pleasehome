@@ -8,6 +8,7 @@
   justify-content: center;
   z-index: 9999;
   animation: fadeIn 0.15s ease;
+  pointer-events: auto; /* 모바일 뷰 부모(aside)의 pointer-events: none 상속 우회 */
 }
 
 @keyframes fadeIn {
@@ -69,9 +70,13 @@
 }
 
 .tabActive {
-  background: var(--primary);
+  background: var(--primary) !important;
   color: var(--color-white) !important;
   box-shadow: 0 2px 8px rgba(26, 86, 219, 0.25);
+}
+
+.tabActive:hover {
+  background: var(--primary-hover) !important;
 }
 
 .closeBtn {
