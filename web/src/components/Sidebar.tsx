@@ -100,7 +100,7 @@ export default function Sidebar({
   }, [isCollapsed, minHeight, midHeight, setSheetHeight]);
 
   const [complexSearchTerm, setComplexSearchTerm] = useState('');
-  const [activeTabStatus, setActiveTabStatus] = useState<ApplicationStatus | 'HIDDEN'>('ONGOING');
+  const [activeTabStatus, setActiveTabStatus] = useState<ApplicationStatus | 'HIDDEN' | 'FAVORITE'>('ONGOING');
   const [activeRegion, setActiveRegion] = useState<string>('ALL');
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
   const listRef = useRef<HTMLDivElement>(null);
@@ -152,6 +152,10 @@ export default function Sidebar({
 
   // 파생 상태: 기존 단수 ID 배열 참조 로직과의 호환용
   const disabledAnnIds = disabledAnns.map((x) => x.id);
+
+  // 찜한 공고 목록 관리 상태
+  const [favoriteAnns, setFavoriteAnns] = useState<{ id: number; favoritedAt: string }[]>([]);
+  const favoriteAnnIds = favoriteAnns.map((x) => x.id);
 
   // 마운트 및 로그인 상태 변경 시 숨긴 공고 목록 로드 (API 또는 localStorage)
   useEffect(() => {
@@ -208,6 +212,23 @@ export default function Sidebar({
           body: JSON.stringify({ announcement_id: id }),
         });
       }
+
+      // [방안 A] 숨길 때 기존 찜 목록에 있다면 찜 해제 처리
+      const isFav = favoriteAnns.some((x) => x.id === id);
+      if (isFav) {
+        const nextFav = favoriteAnns.filter((x) => x.id !== id);
+        setFavoriteAnns(nextFav);
+        if (member) {
+          fetch('/api/member/favorites', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ announcement_id: id }),
+          });
+        } else {
+          localStorage.setItem('favoriteAnnouncementIds', JSON.stringify(nextFav));
+        }
+      }
+
       // 현재 보던 공고가 숨겨진다면 공고 선택 상태 해제
       if (activeAnnId === id) {
         onSelectAnnouncement(null);
@@ -215,6 +236,82 @@ export default function Sidebar({
     }
     setDisabledAnns(next);
     if (!member) localStorage.setItem('disabledAnnouncementIds', JSON.stringify(next));
+  };
+
+  // 마운트 및 로그인 상태 변경 시 찜한 공고 목록 로드 (API 또는 localStorage)
+  useEffect(() => {
+    const loadFavoriteAnns = async () => {
+      if (member) {
+        try {
+          const res = await fetch('/api/member/favorites');
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setFavoriteAnns(data.map((item: any) => ({ id: item.announcement_id, favoritedAt: item.favorited_at })));
+          }
+        } catch (e) {
+          console.error('Failed to load favorite announcements', e);
+        }
+      } else if (typeof window !== 'undefined') {
+        try {
+          const stored = localStorage.getItem('favoriteAnnouncementIds');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed)) {
+              const formatted = parsed.map((item) =>
+                typeof item === 'number' ? { id: item, favoritedAt: new Date().toISOString() } : item
+              );
+              setFavoriteAnns(formatted);
+            }
+          }
+        } catch (e) {
+          console.error('Failed to load favorite announcement IDs', e);
+        }
+      }
+    };
+    loadFavoriteAnns();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [member]);
+
+  const handleToggleFavoriteAnn = (id: number) => {
+    const exists = favoriteAnns.some((x) => x.id === id);
+    let next: { id: number; favoritedAt: string }[];
+    if (exists) {
+      next = favoriteAnns.filter((x) => x.id !== id);
+      if (member) {
+        fetch('/api/member/favorites', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ announcement_id: id }),
+        });
+      }
+    } else {
+      next = [...favoriteAnns, { id, favoritedAt: new Date().toISOString() }];
+      if (member) {
+        fetch('/api/member/favorites', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ announcement_id: id }),
+        });
+      }
+
+      // [방안 A] 찜할 때 기존 숨김 목록에 있다면 숨김 해제 처리
+      const isHidden = disabledAnns.some((x) => x.id === id);
+      if (isHidden) {
+        const nextDisabled = disabledAnns.filter((x) => x.id !== id);
+        setDisabledAnns(nextDisabled);
+        if (member) {
+          fetch('/api/member/hidden-anns', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ announcement_id: id }),
+          });
+        } else {
+          localStorage.setItem('disabledAnnouncementIds', JSON.stringify(nextDisabled));
+        }
+      }
+    }
+    setFavoriteAnns(next);
+    if (!member) localStorage.setItem('favoriteAnnouncementIds', JSON.stringify(next));
   };
 
   // 사이드바 폴더 폼 상태
@@ -438,10 +535,14 @@ export default function Sidebar({
       // ② 지역 구분 필터 (정밀 매퍼 연동)
       const matchesRegion = matchesActiveRegion(ann.region, activeRegion);
 
-      // ③ 접수 상태 및 숨김 필터 분기
+      // ③ 접수 상태 및 숨김/찜 필터 분기
       if (activeTabStatus === 'HIDDEN') {
         const isHidden = disabledAnnIds.includes(ann.id);
         return matchesSearch && matchesRegion && isHidden;
+      } else if (activeTabStatus === 'FAVORITE') {
+        const isFavorite = favoriteAnnIds.includes(ann.id);
+        const isNotHidden = !disabledAnnIds.includes(ann.id);
+        return matchesSearch && matchesRegion && isFavorite && isNotHidden;
       } else {
         const matchesStatus = getAnnouncementStatus(ann) === activeTabStatus;
         const isNotHidden = !disabledAnnIds.includes(ann.id);
@@ -491,6 +592,15 @@ export default function Sidebar({
       });
     }
 
+    if (activeTabStatus === 'FAVORITE') {
+      return [...filtered].sort((a, b) => {
+        const itemA = favoriteAnns.find((x) => x.id === a.id);
+        const itemB = favoriteAnns.find((x) => x.id === b.id);
+        if (!itemA || !itemB) return 0;
+        return new Date(itemB.favoritedAt).getTime() - new Date(itemA.favoritedAt).getTime();
+      });
+    }
+
     return filtered;
   };
 
@@ -510,6 +620,16 @@ export default function Sidebar({
       const matchesRegion = matchesActiveRegion(ann.region, activeRegion);
       const isHidden = disabledAnnIds.includes(ann.id);
       return matchesRegion && isHidden;
+    }).length;
+  };
+
+  // 💡 지역 구분을 연계하여 찜한 공고 개수를 동적으로 집계하는 함수
+  const getFavoriteStatusCount = () => {
+    return announcements.filter(ann => {
+      const matchesRegion = matchesActiveRegion(ann.region, activeRegion);
+      const isFavorite = favoriteAnnIds.includes(ann.id);
+      const isNotHidden = !disabledAnnIds.includes(ann.id);
+      return matchesRegion && isFavorite && isNotHidden;
     }).length;
   };
 
@@ -634,16 +754,19 @@ export default function Sidebar({
             {/* ② 접수 구분 필터 태그 */}
             <div className={`${styles['filter-tags']} ${styles['desktop-only']}`}>
               <span className={`${styles['filter-tag']} ${activeTabStatus === 'UPCOMING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('UPCOMING')}>
-                접수 예정 ({getStatusCount('UPCOMING')})
+                예정 ({getStatusCount('UPCOMING')})
               </span>
               <span className={`${styles['filter-tag']} ${activeTabStatus === 'ONGOING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('ONGOING')}>
-                접수 중 ({getStatusCount('ONGOING')})
+                접수중 ({getStatusCount('ONGOING')})
               </span>
               <span className={`${styles['filter-tag']} ${activeTabStatus === 'CLOSED' ? styles.active : ''}`} onClick={() => setActiveTabStatus('CLOSED')}>
-                접수 마감 ({getStatusCount('CLOSED')})
+                마감 ({getStatusCount('CLOSED')})
               </span>
               <span className={`${styles['filter-tag']} ${activeTabStatus === 'HIDDEN' ? styles.active : ''}`} onClick={() => setActiveTabStatus('HIDDEN')}>
-                숨긴 공고 ({getHiddenStatusCount()})
+                숨김 ({getHiddenStatusCount()})
+              </span>
+              <span className={`${styles['filter-tag']} ${activeTabStatus === 'FAVORITE' ? styles.active : ''}`} onClick={() => setActiveTabStatus('FAVORITE')}>
+                찜 ({getFavoriteStatusCount()})
               </span>
             </div>
           </div>
@@ -703,6 +826,9 @@ export default function Sidebar({
               <span className={`${styles['filter-tag']} ${activeTabStatus === 'HIDDEN' ? styles.active : ''}`} onClick={() => setActiveTabStatus('HIDDEN')}>
                 숨김 ({getHiddenStatusCount()})
               </span>
+              <span className={`${styles['filter-tag']} ${activeTabStatus === 'FAVORITE' ? styles.active : ''}`} onClick={() => setActiveTabStatus('FAVORITE')}>
+                찜 ({getFavoriteStatusCount()})
+              </span>
             </div>
           </div>
 
@@ -730,6 +856,8 @@ export default function Sidebar({
                     onToggleComplexList={() => setIsComplexListOpen(!isComplexListOpen)}
                     isDisabled={disabledAnnIds.includes(ann.id)}
                     onDisableToggle={() => handleToggleDisableAnn(ann.id)}
+                    isFavorite={favoriteAnnIds.includes(ann.id)}
+                    onFavoriteToggle={() => handleToggleFavoriteAnn(ann.id)}
                   >
                     {isCurrentActive && (
                       <div className={styles['complex-search-container']}>

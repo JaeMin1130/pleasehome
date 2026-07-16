@@ -168,6 +168,29 @@
     transform: scale(1.1);
 }
 
+.favorite-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: var(--spacing-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.favorite-btn:hover {
+    background-color: var(--bg-surface-hover);
+    color: #ff4d4f;
+    transform: scale(1.1);
+}
+
+.favorite-btn.favorited {
+    color: #ff4d4f;
+}
+
 
 .card-title {
     font-size: var(--font-size-lg);
