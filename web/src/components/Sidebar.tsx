@@ -12,7 +12,9 @@ import {
   UI_SIZES,
   UI_STROKE_WIDTHS,
   BOOKMARK_PRESET_COLORS,
+  SECURITY_QUESTIONS,
 } from '@/constants';
+import AuthModal from '@/components/ui/AuthModal';
 
 interface SidebarProps {
   announcements: Announcement[];
@@ -315,6 +317,53 @@ export default function Sidebar({
 
   // 모달 약관 노출 상태
   const [activeModal, setActiveModal] = useState<'privacy' | 'terms' | null>(null);
+
+  // 로그인 모달 (게스트용 유도)
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+
+  // 회원정보 수정 아코디언 상태
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [profileError, setProfileError] = useState('');
+  const [profileSuccess, setProfileSuccess] = useState('');
+  const [isProfileSubmitting, setIsProfileSubmitting] = useState(false);
+  // 비밀번호 변경 폼
+  const [profileCurPwd, setProfileCurPwd] = useState('');
+  const [profileNewPwd, setProfileNewPwd] = useState('');
+  const [profileNewPwdConfirm, setProfileNewPwdConfirm] = useState('');
+  // 보안 질문/답변 수정 폼
+  const [profileSecQ, setProfileSecQ] = useState(member?.security_q ?? SECURITY_QUESTIONS[0]);
+  const [profileSecA, setProfileSecA] = useState('');
+
+  // 회원정보 수정 폼 서븋미트 핸들러
+  const handleProfileUpdate = async (type: 'password' | 'security') => {
+    setProfileError('');
+    setProfileSuccess('');
+    if (type === 'password') {
+      if (!profileCurPwd) { setProfileError('현재 비밀번호를 입력해주세요.'); return; }
+      if (profileNewPwd.length < 6) { setProfileError('새 비밀번호는 6자 이상이어야 합니다.'); return; }
+      if (profileNewPwd !== profileNewPwdConfirm) { setProfileError('비밀번호가 일치하지 않습니다.'); return; }
+    } else {
+      if (!profileSecA.trim()) { setProfileError('답변을 입력해주세요.'); return; }
+    }
+    setIsProfileSubmitting(true);
+    const body = type === 'password'
+      ? { current_password: profileCurPwd, new_password: profileNewPwd }
+      : { security_q: profileSecQ, security_a: profileSecA };
+    const res = await fetch('/api/auth/update', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    setIsProfileSubmitting(false);
+    if (!res.ok) { setProfileError(data.error); return; }
+    setProfileSuccess('성공적으로 변경되었습니다.');
+    if (type === 'password') {
+      setProfileCurPwd(''); setProfileNewPwd(''); setProfileNewPwdConfirm('');
+    } else {
+      setProfileSecA('');
+    }
+  };
 
   const getAnnouncementStatus = (ann: Announcement): 'UPCOMING' | 'ONGOING' | 'CLOSED' => {
     const minStart = getAnnouncementMinStart(ann);
@@ -1038,6 +1087,116 @@ export default function Sidebar({
               overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
             } as React.CSSProperties}
           >
+            {/* 회원정보 영역 */}
+            {member ? (
+              <div className={styles['more-profile-section']}>
+                {/* 프로필 헤더 영역 - 클릭 시 아코디언 토글 */}
+                <div
+                  className={`${styles['more-profile-header']} ${isProfileOpen ? styles['more-profile-header-open'] : ''}`}
+                  onClick={() => { setIsProfileOpen(v => !v); setProfileError(''); setProfileSuccess(''); }}
+                >
+                  <div className={styles['more-profile-avatar']}>{member.id.charAt(0).toUpperCase()}</div>
+                  <div className={styles['more-profile-info']}>
+                    <span className={styles['more-profile-id']}>{member.id}</span>
+                    <span className={styles['more-profile-sub']}>회원정보 수정</span>
+                  </div>
+                  <svg
+                    className={`${styles['more-profile-chevron']} ${isProfileOpen ? styles['more-profile-chevron-open'] : ''}`}
+                    width={16} height={16} viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </div>
+
+                {/* 아코디언 펼쳓 영역: 회원정보 수정 폼 */}
+                {isProfileOpen && (
+                  <div className={styles['more-profile-body']}>
+                    {profileError && <div className={styles['profile-error-banner']}>{profileError}</div>}
+                    {profileSuccess && <div className={styles['profile-success-banner']}>{profileSuccess}</div>}
+
+                    {/* 비밀번호 변경 */}
+                    <div className={styles['profile-form-group']}>
+                      <p className={styles['profile-form-title']}>비밀번호 변경</p>
+                      <label className={styles['profile-label']}>현재 비밀번호</label>
+                      <input
+                        type="password"
+                        className={styles['profile-input']}
+                        placeholder="현재 비밀번호"
+                        value={profileCurPwd}
+                        onChange={e => setProfileCurPwd(e.target.value)}
+                      />
+                      <label className={styles['profile-label']}>새 비밀번호 <span className={styles['profile-hint']}>(6자 이상)</span></label>
+                      <input
+                        type="password"
+                        className={styles['profile-input']}
+                        placeholder="새 비밀번호"
+                        value={profileNewPwd}
+                        onChange={e => setProfileNewPwd(e.target.value)}
+                      />
+                      <label className={styles['profile-label']}>새 비밀번호 확인</label>
+                      <input
+                        type="password"
+                        className={styles['profile-input']}
+                        placeholder="새 비밀번호 재입력"
+                        value={profileNewPwdConfirm}
+                        onChange={e => setProfileNewPwdConfirm(e.target.value)}
+                      />
+                      <button
+                        className={styles['profile-submit-btn']}
+                        disabled={isProfileSubmitting}
+                        onClick={() => handleProfileUpdate('password')}
+                      >
+                        {isProfileSubmitting ? '변경 중...' : '비밀번호 변경'}
+                      </button>
+                    </div>
+
+                    {/* 보안 질문/답변 수정 */}
+                    <div className={styles['profile-form-group']}>
+                      <p className={styles['profile-form-title']}>보안 질문/답변 수정</p>
+                      <label className={styles['profile-label']}>질문 선택</label>
+                      <select
+                        className={styles['profile-input']}
+                        value={profileSecQ}
+                        onChange={e => setProfileSecQ(e.target.value)}
+                      >
+                        {SECURITY_QUESTIONS.map(q => <option key={q} value={q}>{q}</option>)}
+                      </select>
+                      <label className={styles['profile-label']}>답변</label>
+                      <input
+                        type="text"
+                        className={styles['profile-input']}
+                        placeholder="보안 질문 답변"
+                        value={profileSecA}
+                        onChange={e => setProfileSecA(e.target.value)}
+                      />
+                      <button
+                        className={styles['profile-submit-btn']}
+                        disabled={isProfileSubmitting}
+                        onClick={() => handleProfileUpdate('security')}
+                      >
+                        {isProfileSubmitting ? '변경 중...' : '질문/답변 변경'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className={styles['guest-login-prompt']}>
+                <svg width={36} height={36} viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                </svg>
+                <p className={styles['guest-login-text']}>로그인 후 다양한<br />맞춤 서비스를 이용해보세요.</p>
+                <button
+                  className={styles['guest-login-btn']}
+                  onClick={() => setAuthModalOpen(true)}
+                >
+                  로그인하기
+                </button>
+              </div>
+            )}
+
             <div className={styles['more-menu-group']}>
               <div className={styles['more-menu-item']} onClick={toggleTheme}>
                 <span className={styles['more-menu-label']}>지도 모드</span>
@@ -1115,6 +1274,8 @@ export default function Sidebar({
           </div>
         </div>
       )}
+
+      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </aside>
   );
 }

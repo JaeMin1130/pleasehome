@@ -1033,3 +1033,174 @@
     margin-top: 0 !important;
   }
 }
+
+/* 회원정보 영역 */
+.more-profile-section {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-surface);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
+  overflow: hidden;
+}
+
+.more-profile-header {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-20px);
+  cursor: pointer;
+  background-color: var(--bg-surface);
+  transition: background-color var(--transition-fast);
+  user-select: none;
+}
+
+.more-profile-header:hover {
+  background-color: var(--bg-surface-hover);
+}
+
+.more-profile-header-open {
+  background-color: var(--bg-surface-hover);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
+}
+
+.more-profile-avatar {
+  width: var(--spacing-xl);
+  height: var(--spacing-xl);
+  border-radius: var(--radius-full);
+  background-color: var(--primary-bg);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-md);
+  margin-right: var(--spacing-12px);
+  flex-shrink: 0;
+}
+
+.more-profile-info {
+  display: flex;
+  flex-direction: column;
+  flex: var(--layout-flex-1);
+}
+
+.more-profile-id {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  line-height: var(--line-height-tight);
+}
+
+.more-profile-sub {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin-top: var(--spacing-2xs);
+}
+
+.more-profile-chevron {
+  color: var(--text-muted);
+  transition: transform var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.more-profile-chevron-open {
+  transform: rotate(180deg);
+}
+
+.more-profile-body {
+  padding: var(--spacing-20px);
+  background-color: var(--bg-body);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  border-bottom: var(--spacing-3xs) solid var(--border-light);
+}
+
+.profile-error-banner {
+  background-color: var(--color-dday-bg);
+  color: var(--color-dday);
+  border: var(--spacing-3xs) solid var(--color-dday-border);
+  padding: var(--spacing-10px) var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+  word-break: keep-all;
+}
+
+.profile-success-banner {
+  background-color: var(--color-sh-bg);
+  color: var(--color-sh);
+  border: var(--spacing-3xs) solid var(--border-light);
+  padding: var(--spacing-10px) var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+  word-break: keep-all;
+}
+
+.profile-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  background-color: var(--bg-surface);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: var(--spacing-3xs) solid var(--border-light);
+}
+
+.profile-form-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-2xs);
+}
+
+.profile-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  margin-bottom: calc(var(--spacing-2xs) * -0.5);
+}
+
+.profile-hint {
+  font-weight: var(--font-weight-regular);
+  color: var(--text-muted);
+}
+
+.profile-input {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-10px);
+  border-radius: var(--radius-sm);
+  border: var(--spacing-3xs) solid var(--border-strong);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.profile-input:focus {
+  border-color: var(--primary);
+}
+
+.profile-submit-btn {
+  background-color: var(--primary);
+  color: var(--color-white);
+  border: none;
+  padding: var(--spacing-10px);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  margin-top: var(--spacing-xs);
+}
+
+.profile-submit-btn:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+}
+
+.profile-submit-btn:disabled {
+  background-color: var(--border-strong);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
