@@ -225,7 +225,7 @@ npm run dev
 
 본 프로젝트의 개발 및 배포 과정에서 마주한 다양한 기술적 이슈와 해결 방안은 아래의 플랫폼별 상세 로그 문서에서 통합 관리되고 있습니다. (단일 진실 공급원 - SSOT 유지)
 
-* 🖥️ **[프론트엔드 및 인프라 상세 로그](web/docs/dev/TROUBLESHOOTING.md)**: Next.js Standalone 배포 경로 매핑, 1GB RAM OOM 대응, HTML5 슬라이더 위치 정밀 보정, 바텀시트 터치 제스처 랙 및 모바일 뷰포트(`dvh`) 대응 이슈 등 수록.
+* 🖥️ **[프론트엔드 및 인프라 상세 로그](docs/dev/TROUBLESHOOTING.md)**: Next.js Standalone 배포 경로 매핑, 1GB RAM OOM 대응, HTML5 슬라이더 위치 정밀 보정, 바텀시트 터치 제스처 랙 및 모바일 뷰포트(`dvh`) 대응, Next.js SSR Hydration Mismatch 해결, 모바일 로그인 모달 터치/호버 버그 패치, Git 커밋 컨벤션 복구 이슈 등 수록.
 * ⚙️ **[데이터 파이프라인 및 백엔드 상세 로그](db-pipeline/docs/dev/TROUBLESHOOTING.md)**: SQLite 컬럼 코멘트 미지원 제약 극복 방안, Geocoding API 좌표 변환(210/401 에러) 및 주소 파싱 실패에 따른 폴백 알고리즘(is_imprecise) 도입 이슈 등 수록.
 
 ---
