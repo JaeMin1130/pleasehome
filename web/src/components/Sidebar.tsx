@@ -192,6 +192,11 @@ export default function Sidebar({
   }, [member]);
 
   const handleToggleDisableAnn = (id: number) => {
+    if (!member) {
+      setAuthModalOpen(true);
+      return;
+    }
+
     const exists = disabledAnns.some((x) => x.id === id);
     let next: { id: number; disabledAt: string }[];
     if (exists) {
@@ -273,6 +278,11 @@ export default function Sidebar({
   }, [member]);
 
   const handleToggleFavoriteAnn = (id: number) => {
+    if (!member) {
+      setAuthModalOpen(true);
+      return;
+    }
+
     const exists = favoriteAnns.some((x) => x.id === id);
     let next: { id: number; favoritedAt: string }[];
     if (exists) {
