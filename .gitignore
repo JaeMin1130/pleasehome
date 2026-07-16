@@ -8,8 +8,17 @@
 !/.env.example
 !/.agents/
 !/docs/
+!/web/
+!/db-pipeline/
 
 # Blacklist
 /docs/pdf/
 /docs/md/
+/web/.next/
+/web/node_modules/
+!/db-pipeline/.venv/
 *.db
+*.env.local
+*.pem
+*.gz
+*.pyc
