@@ -5,41 +5,10 @@
 !/.gitignore
 !/README.md
 !/.env.example
+!/.agents/
+!/docs/
 
-# Allow diving into web and db-pipeline directories
-!/web/
-!/db-pipeline/
-
-# Ignore all files inside web and db-pipeline by default
-/web/*
-/db-pipeline/*
-
-# Whitelist src directories and package.json
-!/web/src/
-!/db-pipeline/src/
-!/web/package.json
-!/db-pipeline/package.json
-!/db-pipeline/.agents/
-
-# web/docs 디렉토리 진입은 허용하되, 내부 파일은 기본 차단하고 TROUBLESHOOTING.md만 허용
-!/web/docs/
-/web/docs/*
-!/web/docs/dev/
-/web/docs/dev/*
-!/web/docs/dev/TROUBLESHOOTING.md
-
-# db-pipeline/docs 디렉토리 진입은 허용하되, 내부 파일은 기본 차단하고 TROUBLESHOOTING.md만 허용
-!/db-pipeline/docs/
-/db-pipeline/docs/*
-!/db-pipeline/docs/dev/
-/db-pipeline/docs/dev/*
-!/db-pipeline/docs/dev/TROUBLESHOOTING.md
-
-# Ignore build artifacts and caches
-**/__pycache__/
-*.pyc
-*.pyo
-
-# Ignore local databases inside .agents
-/db-pipeline/.agents/*.db
-/db-pipeline/.agents/*.db-*
+# Blacklist
+/docs/pdf/
+/docs/md/
+*.db

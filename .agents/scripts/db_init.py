@@ -145,7 +145,65 @@ def init_db():
         "CREATE INDEX IF NOT EXISTS idx_details_announcement ON announcement_details (announcement_id);",
         "CREATE INDEX IF NOT EXISTS idx_limits_announcement ON announcement_limits (announcement_id);",
         "CREATE INDEX IF NOT EXISTS idx_complexes_announcement ON complexes (announcement_id);",
-        "CREATE INDEX IF NOT EXISTS idx_units_lookup ON housing_units (complex_id, announcement_id);"
+        "CREATE INDEX IF NOT EXISTS idx_units_lookup ON housing_units (complex_id, announcement_id);",
+        """
+        -- [8] members: 회원 마스터 테이블
+        CREATE TABLE IF NOT EXISTS members (
+            id          TEXT PRIMARY KEY,                              -- 로그인 아이디 (사용자 지정)
+            pwd_hash    TEXT NOT NULL,                                 -- bcrypt 해시 비밀번호
+            security_q  TEXT NOT NULL,                                 -- 비밀번호 찾기 질문 텍스트
+            security_a  TEXT NOT NULL,                                 -- 비밀번호 찾기 답변 (plain text)
+            created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP            -- 가입 일시
+        );
+        """,
+        """
+        -- [9] member_hidden_anns: 회원별 숨긴 공고 목록 테이블
+        CREATE TABLE IF NOT EXISTS member_hidden_anns (
+            member_id       TEXT NOT NULL,                             -- 회원 아이디 (members.id)
+            announcement_id INTEGER NOT NULL,                          -- 숨긴 공고 ID
+            hidden_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,       -- 숨긴 일시
+            PRIMARY KEY (member_id, announcement_id),
+            FOREIGN KEY (member_id) REFERENCES members (id) ON DELETE CASCADE
+        );
+        """,
+        """
+        -- [10] member_bookmark_folders: 회원별 북마크 폴더 테이블
+        CREATE TABLE IF NOT EXISTS member_bookmark_folders (
+            id          TEXT NOT NULL,                                 -- 폴더 ID (예: 'default', 'folder_xxx')
+            member_id   TEXT NOT NULL,                                 -- 회원 아이디 (members.id)
+            name        TEXT NOT NULL,                                 -- 폴더명
+            color       TEXT NOT NULL,                                 -- 폴더 색상 (hex 코드)
+            created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,           -- 생성 일시
+            PRIMARY KEY (id, member_id),
+            FOREIGN KEY (member_id) REFERENCES members (id) ON DELETE CASCADE
+        );
+        """,
+        """
+        -- [11] member_bookmark_items: 회원별 북마크 아이템 테이블
+        CREATE TABLE IF NOT EXISTS member_bookmark_items (
+            member_id   TEXT NOT NULL,                                 -- 회원 아이디 (members.id)
+            complex_id  INTEGER NOT NULL,                              -- 북마크한 단지 ID
+            folder_id   TEXT NOT NULL,                                 -- 소속 폴더 ID
+            memo        TEXT,                                          -- 메모 (선택)
+            created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,           -- 북마크 일시
+            PRIMARY KEY (member_id, complex_id),
+            FOREIGN KEY (member_id) REFERENCES members (id) ON DELETE CASCADE
+        );
+        """,
+        """
+        -- [12] member_favorites: 찜한 공고 테이블 (스키마 예약, 기능 미개발)
+        CREATE TABLE IF NOT EXISTS member_favorites (
+            member_id       TEXT NOT NULL,                             -- 회원 아이디 (members.id)
+            announcement_id INTEGER NOT NULL,                          -- 찜한 공고 ID
+            favorited_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,       -- 찜한 일시
+            PRIMARY KEY (member_id, announcement_id),
+            FOREIGN KEY (member_id) REFERENCES members (id) ON DELETE CASCADE
+        );
+        """,
+        "CREATE INDEX IF NOT EXISTS idx_hidden_anns_member ON member_hidden_anns (member_id);",
+        "CREATE INDEX IF NOT EXISTS idx_bookmark_folders_member ON member_bookmark_folders (member_id);",
+        "CREATE INDEX IF NOT EXISTS idx_bookmark_items_member ON member_bookmark_items (member_id);",
+        "CREATE INDEX IF NOT EXISTS idx_favorites_member ON member_favorites (member_id);"
     ]
     
     print("테이블 및 인덱스 생성을 시작합니다...")
