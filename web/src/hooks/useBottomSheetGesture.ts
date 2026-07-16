@@ -53,6 +53,19 @@ export function useBottomSheetGesture({
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     if (typeof window !== 'undefined' && window.innerWidth > 768) return;
 
+    // 💡 입력 필드, 셀렉트 박스, 버튼, 혹은 프로필 수정 아코디언 내부 등 폼 인터랙션 요소에서 터치가 시작된 경우 바텀시트 제스처를 무시합니다.
+    const target = e.target as HTMLElement;
+    if (
+      target.tagName === 'INPUT' ||
+      target.tagName === 'SELECT' ||
+      target.tagName === 'TEXTAREA' ||
+      target.tagName === 'BUTTON' ||
+      target.closest('[class*="more-profile-body"]')
+    ) {
+      isDraggingRef.current = false;
+      return;
+    }
+
     // 터치가 발생한 구체적인 자식 요소에 구애받지 않고, 항상 최상위 시트 컨테이너(aside 또는 패널)의 높이를 구합니다.
     const asideEl = e.currentTarget.closest('aside, [class*="app-detail-panel"]') as HTMLElement || e.currentTarget;
     if (asideEl) {

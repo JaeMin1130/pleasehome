@@ -861,13 +861,14 @@ export default function Sidebar({
             </div>
           )}
 
-          <div 
-            ref={bookmarkListRef} 
-            className={styles['folders-list-container']}
-            style={{
-              overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
-            }}
-          >
+          {member && (
+            <div 
+              ref={bookmarkListRef} 
+              className={styles['folders-list-container']}
+              style={{
+                overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
+              }}
+            >
             {bookmarkFolders.map((folder) => {
               const isExpanded = activeFolderIds.includes(folder.id);
               const folderItems = bookmarkItems.filter(item => item.folderId === folder.id);
@@ -1079,7 +1080,8 @@ export default function Sidebar({
                 </div>
               );
             })}
-          </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -1102,7 +1104,7 @@ export default function Sidebar({
           <div 
             className={styles['more-list-container']}
             style={{ 
-              overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
+              overflowY: 'auto'
             } as React.CSSProperties}
           >
             {/* 회원정보 영역 */}
