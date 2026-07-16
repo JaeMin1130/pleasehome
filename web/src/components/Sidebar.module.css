@@ -207,6 +207,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
+  flex-shrink: 0;
 }
 
 
@@ -271,6 +272,7 @@
 
 .more-list-container {
   flex: var(--layout-flex-1);
+  min-height: 0;
   overflow-y: auto;
   background-color: var(--bg-body);
   display: flex;
@@ -283,6 +285,7 @@
   display: flex;
   flex-direction: column;
   padding: var(--spacing-xs) 0;
+  flex-shrink: 0;
 }
 
 .more-menu-item {
@@ -323,6 +326,7 @@
 
 .more-info-box-wrapper {
   padding: var(--spacing-20px);
+  flex-shrink: 0;
 }
 
 /* 추가된 클래스들 */
@@ -1005,6 +1009,7 @@
 
   .more-list-container {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
     background-color: transparent;
     display: flex;
@@ -1041,6 +1046,7 @@
   background-color: var(--bg-surface);
   border-bottom: var(--spacing-3xs) solid var(--border-light);
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .more-profile-header {
