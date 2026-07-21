@@ -111,7 +111,8 @@ pleasehome/
 │   ├── src/lh_notice/          # LH API 연동 및 데이터 수집 스크립트 (api.py, main.py)
 │   ├── docs/pdf/               # OpenAPI 수집을 통해 저장된 원본 PDF 임대 공고문 보존소
 │   ├── docs/md/                # PDF에서 마크다운 형태로 파싱 변환된 document.md 및 data.json 보존소
-│   ├── public_housing.db       # 최종 가공 적재된 SQLite3 관계형 데이터베이스
+│   ├── public_housing.db       # 최종 가공 적재된 SQLite3 공고 데이터베이스
+│   ├── user_data.db            # 실서버 회원/찜/숨김/북마크 독립 SQLite3 데이터베이스 (배포 덮어쓰기 대상 제외)
 │   └── PROJECT.md              # 파이프라인 전역 개발 환경 및 스키마 물리 명세서 (SSOT)
 ├── docs/                       # 각종 통합 설계 및 서버 배포 가이드 문서
 ├── .gitignore                  # 통합 형상 관리 예외 규칙
