@@ -76,15 +76,21 @@ export default function Map({ complexes, activeComplexId, hoveredComplexId, onSe
     }
   }, []);
 
-  // 2. 주택 단지 마커 생성
+  // 2. 주택 단지 마커 생성 및 갱신 (마커 재사용 최적화)
   useEffect(() => {
-    // 네이버 지도 핵심 클래스(Marker)가 확실히 로드 완료되었는지 체크
     if (!mapLoaded || !naverMap || !window.naver || !window.naver.maps || !window.naver.maps.Marker) return;
 
-    // 기존 마커 전체 삭제 및 맵 연결 해제
-    markers.forEach(m => m.marker.setMap(null));
+    const currentMap = new Map<number, any>(markers.map(m => [m.id, m.marker]));
+    const nextComplexIds = new Set(complexes.map(c => c.id));
+    const newMarkersList: any[] = [];
 
-    const newMarkers: any[] = [];
+    // 더 이상 화면 목록에 존재하지 않는 마커만 지움
+    markers.forEach(m => {
+      if (!nextComplexIds.has(m.id)) {
+        m.marker.setMap(null);
+      }
+    });
+
     complexes.forEach((mapped) => {
       if (
         mapped.latitude === null ||
@@ -92,57 +98,69 @@ export default function Map({ complexes, activeComplexId, hoveredComplexId, onSe
         isNaN(mapped.latitude) ||
         isNaN(mapped.longitude)
       ) {
-        return; // 지오코딩 좌표가 없거나 올바르지 않은 단지는 마커를 렌더링하지 않음
+        return;
       }
 
       const isBookmarked = bookmarkedIds.includes(mapped.id);
       const isActive = mapped.id === activeComplexId;
-
-      // 💡 저장 폴더의 테마 컬러를 핀 마커 배경색으로 동적 일치시킴
       const bookmarkItem = bookmarkItems.find(item => item.complexId === mapped.id);
       const folderColor = bookmarkItem
         ? (bookmarkFolders.find(f => f.id === bookmarkItem.folderId)?.color || 'var(--primary, #3B82F6)')
         : 'var(--primary, #3B82F6)';
 
-      const marker = new window.naver.maps.Marker({
-        position: new window.naver.maps.LatLng(mapped.latitude, mapped.longitude),
-        map: naverMap,
-        title: mapped.name,
-        icon: {
-          content: `
-            <div class="custom-marker ${isActive ? 'active' : ''} ${isBookmarked ? 'bookmarked' : ''}" style="cursor: pointer;">
-              <div class="marker-pin" style="${isBookmarked ? `background-color: ${folderColor};` : ''}">
-                ${isBookmarked ? `
-                  <svg viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="white" />
-                  </svg>
-                ` : `
-                  <svg viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 3L3 10.5h2v10h14v-10h2L12 3z" fill="white" />
-                    <rect x="9" y="11" width="2.5" height="2.5" class="window-hole" />
-                    <rect x="12.5" y="11" width="2.5" height="2.5" class="window-hole" />
-                    <rect x="9" y="14.5" width="2.5" height="2.5" class="window-hole" />
-                    <rect x="12.5" y="14.5" width="2.5" height="2.5" class="window-hole" />
-                  </svg>
-                `}
-              </div>
-            </div>
-          `,
+      const iconContent = `
+        <div class="custom-marker ${isActive ? 'active' : ''} ${isBookmarked ? 'bookmarked' : ''}" style="cursor: pointer;">
+          <div class="marker-pin" style="${isBookmarked ? `background-color: ${folderColor};` : ''}">
+            ${isBookmarked ? `
+              <svg viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="white" />
+              </svg>
+            ` : `
+              <svg viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 3L3 10.5h2v10h14v-10h2L12 3z" fill="white" />
+                <rect x="9" y="11" width="2.5" height="2.5" class="window-hole" />
+                <rect x="12.5" y="11" width="2.5" height="2.5" class="window-hole" />
+                <rect x="9" y="14.5" width="2.5" height="2.5" class="window-hole" />
+                <rect x="12.5" y="14.5" width="2.5" height="2.5" class="window-hole" />
+              </svg>
+            `}
+          </div>
+        </div>
+      `;
+
+      let marker = currentMap.get(mapped.id);
+      if (marker) {
+        marker.setIcon({
+          content: iconContent,
           size: new window.naver.maps.Size(MAP_MARKER_SIZE.width, MAP_MARKER_SIZE.height),
           anchor: new window.naver.maps.Point(MAP_MARKER_ANCHOR.x, MAP_MARKER_ANCHOR.y)
+        });
+        if (marker.getMap() !== naverMap) {
+          marker.setMap(naverMap);
         }
-      });
+      } else {
+        marker = new window.naver.maps.Marker({
+          position: new window.naver.maps.LatLng(mapped.latitude, mapped.longitude),
+          map: naverMap,
+          title: mapped.name,
+          icon: {
+            content: iconContent,
+            size: new window.naver.maps.Size(MAP_MARKER_SIZE.width, MAP_MARKER_SIZE.height),
+            anchor: new window.naver.maps.Point(MAP_MARKER_ANCHOR.x, MAP_MARKER_ANCHOR.y)
+          }
+        });
 
-      // 마커 클릭 시 즉시 우측 상세 정보 패널 활성화
-      window.naver.maps.Event.addListener(marker, 'click', () => {
-        isMarkerClickedRef.current = true; // 지도 위의 마커 직접 클릭 플래그 수립
-        onSelectComplex(mapped);
-      });
+        window.naver.maps.Event.addListener(marker, 'click', () => {
+          isMarkerClickedRef.current = true;
+          onSelectComplex(mapped);
+        });
+      }
 
-      newMarkers.push({ id: mapped.id, marker });
+      newMarkersList.push({ id: mapped.id, marker });
     });
 
-    setMarkers(newMarkers);
+    setMarkers(newMarkersList);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [complexes, mapLoaded, naverMap, bookmarkedIds, bookmarkItems, bookmarkFolders, activeComplexId]);
 
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
@@ -284,25 +284,47 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
       });
   }, [activeAnnId]);
 
-  const dynamicMinArea = announcementUnits.length > 0 ? Math.floor(Math.min(...announcementUnits.map(u => u.exclusive_area || 0))) : 10;
-  const dynamicMaxArea = announcementUnits.length > 0 ? Math.ceil(Math.max(...announcementUnits.map(u => u.exclusive_area || 0))) : 100;
-  const dynamicMinDeposit = announcementUnits.length > 0 ? Math.min(...announcementUnits.map(u => u.deposit || 0)) : 0;
-  const dynamicMaxDeposit = announcementUnits.length > 0 ? Math.max(...announcementUnits.map(u => u.deposit || 0)) : 200000000;
-  const dynamicMinRent = announcementUnits.length > 0 ? Math.min(...announcementUnits.map(u => u.monthly_rent || 0)) : 0;
-  const dynamicMaxRent = announcementUnits.length > 0 ? Math.max(...announcementUnits.map(u => u.monthly_rent || 0)) : 1500000;
+  const { dynamicMinArea, dynamicMaxArea, dynamicMinDeposit, dynamicMaxDeposit, dynamicMinRent, dynamicMaxRent } = useMemo(() => {
+    if (announcementUnits.length === 0) {
+      return {
+        dynamicMinArea: 10,
+        dynamicMaxArea: 100,
+        dynamicMinDeposit: 0,
+        dynamicMaxDeposit: 200000000,
+        dynamicMinRent: 0,
+        dynamicMaxRent: 1500000,
+      };
+    }
+    const areas = announcementUnits.map(u => u.exclusive_area || 0);
+    const deposits = announcementUnits.map(u => u.deposit || 0);
+    const rents = announcementUnits.map(u => u.monthly_rent || 0);
+    return {
+      dynamicMinArea: Math.floor(Math.min(...areas)),
+      dynamicMaxArea: Math.ceil(Math.max(...areas)),
+      dynamicMinDeposit: Math.min(...deposits),
+      dynamicMaxDeposit: Math.max(...deposits),
+      dynamicMinRent: Math.min(...rents),
+      dynamicMaxRent: Math.max(...rents),
+    };
+  }, [announcementUnits]);
 
-  const displayComplexes = activeAnnId ? allComplexes.filter(c => c.announcement_id === activeAnnId) : [];
-  const filteredComplexes = displayComplexes.filter(complex => {
-    const complexUnits = announcementUnits.filter(u => u.complex_id === complex.id);
-    if (announcementUnits.length === 0) return true;
-    return complexUnits.some(unit => {
-      if (filterState.targetGroup !== 'ALL' && unit.target_group !== filterState.targetGroup) return false;
-      if (unit.exclusive_area < filterState.minArea || unit.exclusive_area > filterState.maxArea) return false;
-      if (unit.deposit < filterState.minDeposit || unit.deposit > filterState.maxDeposit) return false;
-      if (unit.monthly_rent < filterState.minMonthlyRent || unit.monthly_rent > filterState.maxMonthlyRent) return false;
-      return true;
+  const displayComplexes = useMemo(() => {
+    return activeAnnId ? allComplexes.filter(c => c.announcement_id === activeAnnId) : [];
+  }, [activeAnnId, allComplexes]);
+
+  const filteredComplexes = useMemo(() => {
+    return displayComplexes.filter(complex => {
+      const complexUnits = announcementUnits.filter(u => u.complex_id === complex.id);
+      if (announcementUnits.length === 0) return true;
+      return complexUnits.some(unit => {
+        if (filterState.targetGroup !== 'ALL' && unit.target_group !== filterState.targetGroup) return false;
+        if (unit.exclusive_area < filterState.minArea || unit.exclusive_area > filterState.maxArea) return false;
+        if (unit.deposit < filterState.minDeposit || unit.deposit > filterState.maxDeposit) return false;
+        if (unit.monthly_rent < filterState.minMonthlyRent || unit.monthly_rent > filterState.maxMonthlyRent) return false;
+        return true;
+      });
     });
-  });
+  }, [displayComplexes, announcementUnits, filterState]);
 
   // 저장 탭(BOOKMARK) 필터 조건 분기: 상세 필터와 무관하게 저장된 단지만 매핑
   let mapComplexes = filteredComplexes;

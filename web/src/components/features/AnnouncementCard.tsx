@@ -73,62 +73,18 @@ interface AnnouncementCardProps {
   onFavoriteToggle?: (e: React.MouseEvent) => void;
 }
 
-export default function AnnouncementCard({ 
-  ann, 
-  isActive, 
-  onClick, 
-  expandedSections, 
-  onToggleSection,
-  children,
-  isComplexListOpen,
-  onToggleComplexList,
-  isDisabled,
-  onDisableToggle,
-  isFavorite,
-  onFavoriteToggle
-}: AnnouncementCardProps) {
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const instClass = ann.institution.includes('SH') 
-    ? 'sh' 
-    : ann.institution.includes('LH') 
-      ? 'lh' 
-      : ann.institution.includes('HUG')
-        ? 'hug'
-        : ann.institution.includes('경기') || ann.institution.includes('GH')
-          ? 'gh'
-          : 'private';
-
+const CountdownTimer = React.memo(function CountdownTimer({
+  minStart,
+  maxEnd,
+  applySchedules,
+}: {
+  minStart: Date | null;
+  maxEnd: Date | null;
+  applySchedules: any[];
+}) {
   const [dDayText, setDDayText] = useState<string | null>(null);
 
-  const { minStart, maxEnd } = useMemo(() => {
-    const applySchedules = ann.schedules.filter(s => s.schedule_type.includes('신청접수'));
-    let min: Date | null = null;
-    let max: Date | null = null;
-    for (const s of applySchedules) {
-      if (s.start_date) {
-        const start = new Date(s.start_date);
-        if (!isNaN(start.getTime())) {
-          if (!min || start < min) min = start;
-        }
-      }
-      if (s.end_date) {
-        const end = new Date(s.end_date);
-        if (!isNaN(end.getTime())) {
-          if (!max || end > max) max = end;
-        }
-      }
-    }
-    return { minStart: min, maxEnd: max };
-  }, [ann.schedules]);
-
   useEffect(() => {
-    if (!isMounted) return;
-
     const calculateDDay = () => {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -194,7 +150,91 @@ export default function AnnouncementCard({
     }, 1000);
 
     return () => clearInterval(intervalId);
-  }, [isMounted, minStart, maxEnd]);
+  }, [minStart, maxEnd]);
+
+  if (!dDayText) return null;
+
+  if (applySchedules.length > 0) {
+    return (
+      <Tooltip 
+        label={
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '2px 0' }}>
+            <div style={{ fontWeight: 'bold', borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '4px', marginBottom: '4px' }}>
+              접수 기간 안내
+            </div>
+            {applySchedules.map((s, idx) => {
+              const dateRange = s.start_date || s.end_date
+                ? `${formatDateWithTime(s.start_date)} ~ ${formatDateWithTime(s.end_date)}`
+                : s.raw_text || '-';
+              return (
+                <div key={s.id || idx} style={{ fontSize: '11px', whiteSpace: 'nowrap' }}>
+                  • {dateRange} {s.notes ? `(${s.notes})` : ''}
+                </div>
+              );
+            })}
+          </div>
+        } 
+        position="top" 
+        withArrow 
+        color="grey"
+        offset={2}
+        transitionProps={{ transition: 'fade', duration: 150 }}
+      >
+        <span className={styles['d-day-badge']}>
+          {dDayText}
+        </span>
+      </Tooltip>
+    );
+  }
+
+  return <span className={styles['d-day-badge']}>{dDayText}</span>;
+});
+
+export default function AnnouncementCard({ 
+  ann, 
+  isActive, 
+  onClick, 
+  expandedSections, 
+  onToggleSection,
+  children,
+  isComplexListOpen,
+  onToggleComplexList,
+  isDisabled,
+  onDisableToggle,
+  isFavorite,
+  onFavoriteToggle
+}: AnnouncementCardProps) {
+
+  const instClass = ann.institution.includes('SH') 
+    ? 'sh' 
+    : ann.institution.includes('LH') 
+      ? 'lh' 
+      : ann.institution.includes('HUG')
+        ? 'hug'
+        : ann.institution.includes('경기') || ann.institution.includes('GH')
+          ? 'gh'
+          : 'private';
+
+  const { minStart, maxEnd } = useMemo(() => {
+    const applySchedules = ann.schedules.filter(s => s.schedule_type.includes('신청접수'));
+    let min: Date | null = null;
+    let max: Date | null = null;
+    for (const s of applySchedules) {
+      if (s.start_date) {
+        const start = new Date(s.start_date);
+        if (!isNaN(start.getTime())) {
+          if (!min || start < min) min = start;
+        }
+      }
+      if (s.end_date) {
+        const end = new Date(s.end_date);
+        if (!isNaN(end.getTime())) {
+          if (!max || end > max) max = end;
+        }
+      }
+    }
+    return { minStart: min, maxEnd: max };
+  }, [ann.schedules]);
 
   const getApplySchedules = () => {
     const applySchedules = ann.schedules.filter(s => s.schedule_type.includes('신청접수'));
@@ -303,40 +343,7 @@ export default function AnnouncementCard({
           <span className={styles['card-type']}>{ann.subscription_type}</span>
         </div>
         <div className={styles['header-right-actions']}>
-          {dDayText && (
-            applySchedules.length > 0 ? (
-              <Tooltip 
-                label={
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '2px 0' }}>
-                    <div style={{ fontWeight: 'bold', borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '4px', marginBottom: '4px' }}>
-                      접수 기간 안내
-                    </div>
-                    {applySchedules.map((s, idx) => {
-                      const dateRange = s.start_date || s.end_date
-                        ? `${formatDateWithTime(s.start_date)} ~ ${formatDateWithTime(s.end_date)}`
-                        : s.raw_text || '-';
-                      return (
-                        <div key={s.id || idx} style={{ fontSize: '11px', whiteSpace: 'nowrap' }}>
-                          • {dateRange} {s.notes ? `(${s.notes})` : ''}
-                        </div>
-                      );
-                    })}
-                  </div>
-                } 
-                position="top" 
-                withArrow 
-                color="grey"
-                offset={2}
-                transitionProps={{ transition: 'fade', duration: 150 }}
-              >
-                <span className={styles['d-day-badge']}>
-                  {dDayText}
-                </span>
-              </Tooltip>
-            ) : (
-              <span className={styles['d-day-badge']}>{dDayText}</span>
-            )
-          )}
+          <CountdownTimer minStart={minStart} maxEnd={maxEnd} applySchedules={applySchedules} />
           {onFavoriteToggle && (
             <button
               className={`${styles['favorite-btn']} ${isFavorite ? styles.favorited : ''}`}
