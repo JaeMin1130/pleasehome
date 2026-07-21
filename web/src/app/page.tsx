@@ -64,7 +64,7 @@ function HomeContent() {
     { id: 'default', name: '내 저장 목록', color: '#3B82F6', createdAt: new Date().toISOString() }
   ];
 
-  // 회원 로그인 상태 변경 시 서버 데이터 동기화 (로그인 → API, 비로그인 → localStorage)
+  // 회원 로그인 상태 변경 시 서버 데이터 동기화
   useEffect(() => {
     const loadMemberData = async () => {
       if (member) {
@@ -95,16 +95,8 @@ function HomeContent() {
           console.error('Failed to load member bookmark data', e);
         }
       } else {
-        // 비로그인: localStorage 폴백
-        try {
-          const storedFolders = localStorage.getItem('bookmarkFolders');
-          const storedItems = localStorage.getItem('bookmarkItems');
-          setBookmarkFolders(storedFolders ? JSON.parse(storedFolders) : DEFAULT_FOLDERS);
-          setBookmarkItems(storedItems ? JSON.parse(storedItems) : []);
-        } catch (e) {
-          setBookmarkFolders(DEFAULT_FOLDERS);
-          setBookmarkItems([]);
-        }
+        setBookmarkFolders(DEFAULT_FOLDERS);
+        setBookmarkItems([]);
       }
     };
     loadMemberData();
@@ -126,8 +118,6 @@ function HomeContent() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ complex_id: complexId }),
         });
-      } else {
-        localStorage.setItem('bookmarkItems', JSON.stringify(next));
       }
       return;
     }
@@ -146,7 +136,6 @@ function HomeContent() {
       const next: BookmarkItem[] = exists
         ? prev.map(item => item.complexId === targetId ? { ...item, folderId, memo } : item)
         : [...prev, { complexId: targetId, folderId, memo, createdAt: new Date().toISOString() }];
-      if (!member) localStorage.setItem('bookmarkItems', JSON.stringify(next));
       return next;
     });
     if (member) {
@@ -170,8 +159,6 @@ function HomeContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ complex_id: targetId }),
       });
-    } else {
-      localStorage.setItem('bookmarkItems', JSON.stringify(next));
     }
     setBookmarkModalState(prev => ({ ...prev, isOpen: false }));
   };
@@ -184,7 +171,6 @@ function HomeContent() {
 
     setBookmarkFolders(prev => {
       const next = [...prev, newFolder];
-      if (!member) localStorage.setItem('bookmarkFolders', JSON.stringify(next));
       return next;
     });
     if (member) {
@@ -514,9 +500,6 @@ function HomeContent() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: folderId }),
               });
-            } else {
-              localStorage.setItem('bookmarkFolders', JSON.stringify(nextFolders));
-              localStorage.setItem('bookmarkItems', JSON.stringify(nextItems));
             }
             if (activeFolderIds.includes(folderId)) {
               setActiveFolderIds(prev => prev.filter(id => id !== folderId));
@@ -538,8 +521,6 @@ function HomeContent() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: folderId, name, color: color || folder?.color }),
               });
-            } else {
-              localStorage.setItem('bookmarkFolders', JSON.stringify(updated));
             }
           }}
           onMoveBookmarkItem={(complexId, targetFolderId) => {
@@ -553,8 +534,6 @@ function HomeContent() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ complex_id: complexId, folder_id: targetFolderId }),
               });
-            } else {
-              localStorage.setItem('bookmarkItems', JSON.stringify(moved));
             }
           }}
           activeComparisonFolderId={activeComparisonFolderId}

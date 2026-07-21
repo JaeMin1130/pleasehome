@@ -161,7 +161,7 @@ export default function Sidebar({
   const [favoriteAnns, setFavoriteAnns] = useState<{ id: number; favoritedAt: string }[]>([]);
   const favoriteAnnIds = favoriteAnns.map((x) => x.id);
 
-  // 마운트 및 로그인 상태 변경 시 숨긴 공고 목록 로드 (API 또는 localStorage)
+  // 마운트 및 로그인 상태 변경 시 숨긴 공고 목록 로드 (API)
   useEffect(() => {
     const loadHiddenAnns = async () => {
       if (member) {
@@ -174,21 +174,8 @@ export default function Sidebar({
         } catch (e) {
           console.error('Failed to load hidden announcements', e);
         }
-      } else if (typeof window !== 'undefined') {
-        try {
-          const stored = localStorage.getItem('disabledAnnouncementIds');
-          if (stored) {
-            const parsed = JSON.parse(stored);
-            if (Array.isArray(parsed)) {
-              const formatted = parsed.map((item) =>
-                typeof item === 'number' ? { id: item, disabledAt: new Date().toISOString() } : item
-              );
-              setDisabledAnns(formatted);
-            }
-          }
-        } catch (e) {
-          console.error('Failed to load disabled announcement IDs', e);
-        }
+      } else {
+        setDisabledAnns([]);
       }
     };
     loadHiddenAnns();
@@ -233,8 +220,6 @@ export default function Sidebar({
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ announcement_id: id }),
           });
-        } else {
-          localStorage.setItem('favoriteAnnouncementIds', JSON.stringify(nextFav));
         }
       }
 
@@ -244,10 +229,9 @@ export default function Sidebar({
       }
     }
     setDisabledAnns(next);
-    if (!member) localStorage.setItem('disabledAnnouncementIds', JSON.stringify(next));
   };
 
-  // 마운트 및 로그인 상태 변경 시 찜한 공고 목록 로드 (API 또는 localStorage)
+  // 마운트 및 로그인 상태 변경 시 찜한 공고 목록 로드 (API)
   useEffect(() => {
     const loadFavoriteAnns = async () => {
       if (member) {
@@ -260,21 +244,8 @@ export default function Sidebar({
         } catch (e) {
           console.error('Failed to load favorite announcements', e);
         }
-      } else if (typeof window !== 'undefined') {
-        try {
-          const stored = localStorage.getItem('favoriteAnnouncementIds');
-          if (stored) {
-            const parsed = JSON.parse(stored);
-            if (Array.isArray(parsed)) {
-              const formatted = parsed.map((item) =>
-                typeof item === 'number' ? { id: item, favoritedAt: new Date().toISOString() } : item
-              );
-              setFavoriteAnns(formatted);
-            }
-          }
-        } catch (e) {
-          console.error('Failed to load favorite announcement IDs', e);
-        }
+      } else {
+        setFavoriteAnns([]);
       }
     };
     loadFavoriteAnns();
@@ -319,13 +290,10 @@ export default function Sidebar({
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ announcement_id: id }),
           });
-        } else {
-          localStorage.setItem('disabledAnnouncementIds', JSON.stringify(nextDisabled));
         }
       }
     }
     setFavoriteAnns(next);
-    if (!member) localStorage.setItem('favoriteAnnouncementIds', JSON.stringify(next));
   };
 
   // 사이드바 폴더 폼 상태
