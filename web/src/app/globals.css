@@ -636,12 +636,17 @@ body.dark [class*="docBtn"]:hover {
   border-color: #60a5fa;
 }
 
-/* 네이버 지도 타일 다크 필터 반전 */
-body.dark [class*="map-canvas"] {
-  filter: invert(90%) hue-rotate(180%) contrast(90%) brightness(95%);
+/* 네이버 지도 타일 다크 필터 반전 (선명도 및 대비 강화) */
+body.dark [class*="map-container"],
+body.dark [class*="map-canvas"],
+body.dark #map {
+  filter: invert(88%) hue-rotate(180deg) contrast(120%) brightness(102%) saturate(90%);
 }
 
-/* 지도 내 마커 아이콘 색상 보정 (마커 원본 컬러 보존) */
-body.dark [class*="map-canvas"] [class*="custom-marker"] {
-  filter: invert(100%) hue-rotate(180%);
+/* 지도 내 마커 아이콘 및 오버레이 색상 보정 (마커 원본 컬러 보존) */
+body.dark [class*="map-container"] [class*="custom-marker"],
+body.dark [class*="map-canvas"] [class*="custom-marker"],
+body.dark #map [class*="custom-marker"],
+body.dark .custom-marker {
+  filter: invert(100%) hue-rotate(180deg) brightness(110%);
 }
