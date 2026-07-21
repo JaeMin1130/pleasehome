@@ -93,6 +93,15 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
+    font-size: var(--font-size-xs);
+    color: var(--primary);
+    font-weight: var(--font-weight-semibold);
+}
+
+.header-badges .card-type,
+.header-badges :global(.badge) {
+    color: var(--primary) !important;
+    background-color: var(--primary-bg) !important;
 }
 
 .card-type {
@@ -336,12 +345,14 @@
 
 .timeline-flex-container {
     display: flex;
-    align-items: flex-start; /* 💡 상단 정렬로 닷 센터 라인을 완벽히 일치시킴 */
+    align-items: flex-start;
+    /* 💡 상단 정렬로 닷 센터 라인을 완벽히 일치시킴 */
     width: 100%;
     position: relative;
     padding: 0;
     margin: 0;
-    list-style: none; /* 리스트 기본 스타일 해제 */
+    list-style: none;
+    /* 리스트 기본 스타일 해제 */
 }
 
 .timeline-node {
@@ -349,7 +360,8 @@
     flex-direction: column;
     align-items: center;
     position: relative;
-    flex-shrink: 0; /* 💡 글자 길이에 맞춰 크기 고정, 찌그러지지 않음 */
+    flex-shrink: 0;
+    /* 💡 글자 길이에 맞춰 크기 고정, 찌그러지지 않음 */
     z-index: 3;
 }
 
@@ -381,6 +393,7 @@
 .timeline-node.first-node::before {
     left: var(--position-center);
 }
+
 .timeline-node.first-node.active::before {
     background: var(--border-light);
 }
@@ -388,6 +401,7 @@
 .timeline-node.last-node::before {
     right: var(--position-center);
 }
+
 .timeline-node.last-node.active::before {
     background: var(--primary);
 }
@@ -395,7 +409,8 @@
 .node-dot {
     width: var(--dot-size);
     height: var(--dot-size);
-    border-radius: var(--radius-full); /* 💡 50% 하드코딩 제거 및 전역 디자인 토큰 치환 */
+    border-radius: var(--radius-full);
+    /* 💡 50% 하드코딩 제거 및 전역 디자인 토큰 치환 */
     flex-shrink: 0;
     background-color: var(--bg-surface);
     border: var(--spacing-3xs) solid var(--border-strong);
@@ -416,7 +431,8 @@
     transition: all var(--transition-normal);
     text-align: center;
     white-space: nowrap;
-    text-decoration: none; /* 밑줄 상속 무력화 */
+    text-decoration: none;
+    /* 밑줄 상속 무력화 */
     margin-top: var(--spacing-xs);
 }
 
@@ -455,12 +471,15 @@
 
 /* 💡 가변 거리 연결선 (Connector Line) 스타일 */
 .connector-line {
-    flex-grow: 1; /* 💡 텍스트 길이에 따라 남는 가로폭 공간을 자동으로 가득 채움 */
+    flex-grow: 1;
+    /* 💡 텍스트 길이에 따라 남는 가로폭 공간을 자동으로 가득 채움 */
     height: var(--spacing-2xs);
     background-color: var(--border-light);
-    margin: 0; /* 💡 노드 내부 가상선과 접합하므로 음수 마진 제거 */
+    margin: 0;
+    /* 💡 노드 내부 가상선과 접합하므로 음수 마진 제거 */
     position: relative;
-    top: calc(var(--dot-size) / 2 - var(--spacing-2xs) / 2); /* 💡 Y축을 닷의 정중앙 높이로 배치 */
+    top: calc(var(--dot-size) / 2 - var(--spacing-2xs) / 2);
+    /* 💡 Y축을 닷의 정중앙 높이로 배치 */
     z-index: 1;
     list-style: none;
 }
@@ -489,8 +508,8 @@
 }
 
 @media (max-width: 768px) {
-  .timeline-bar-wrapper {
-    padding-top: 0;
-    margin-bottom: var(--spacing-xs);
-  }
+    .timeline-bar-wrapper {
+        padding-top: 0;
+        margin-bottom: var(--spacing-xs);
+    }
 }
