@@ -68,8 +68,33 @@ export default async function AnnouncementDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  // 검색엔진용 JSON-LD (구조화 데이터) 생성
+  const firstSchedule = schedules[0];
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: ann.title,
+    description: `${ann.institution}에서 공급하는 ${ann.subscription_type} 공고입니다.`,
+    startDate: firstSchedule?.start_date || ann.created_at,
+    endDate: firstSchedule?.end_date || undefined,
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OnlineEventAttendanceMode',
+    location: {
+      '@type': 'VirtualLocation',
+      url: `https://pleasehome.com/announcements/details/${ann.id}`,
+    },
+    organizer: {
+      '@type': 'Organization',
+      name: ann.institution,
+    },
+  };
+
   return (
     <div className={styles.layout}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Script
         async
         src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7402127086926987"

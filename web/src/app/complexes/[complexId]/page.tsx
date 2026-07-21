@@ -78,8 +78,30 @@ export default async function ComplexDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  // 검색엔진용 JSON-LD (구조화 데이터) 생성
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'RealEstateListing',
+    name: complex.name,
+    description: `${complex.address}에 위치한 ${complex.name} 단지 상세 정보 및 평형별 임대 조건입니다.`,
+    url: `https://pleasehome.com/complexes/${complex.id}`,
+    location: {
+      '@type': 'Place',
+      name: complex.name,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: complex.address,
+        addressCountry: 'KR',
+      },
+    },
+  };
+
   return (
     <div className={styles.layout}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Script
         async
         src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7402127086926987"

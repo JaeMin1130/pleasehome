@@ -33,12 +33,30 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'PleaseHome (플리즈홈)',
+    alternateName: ['공공청약 지도', '플리즈홈'],
+    url: 'https://pleasehome.com',
+    description: '전국 LH, SH, GH 공공임대주택 청약 정보를 지도에서 한눈에 확인하세요.',
+    publisher: {
+      '@type': 'Organization',
+      name: 'PleaseHome',
+      url: 'https://pleasehome.com',
+    },
+  };
+
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
         {/* Google Fonts Link */}
         <link rel="stylesheet" as="style" crossOrigin="anonymous" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
         <link rel="canonical" href="https://pleasehome.com/" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </head>
       <body suppressHydrationWarning={true}>
         <Script
