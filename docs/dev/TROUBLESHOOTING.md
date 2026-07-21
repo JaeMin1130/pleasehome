@@ -40,6 +40,15 @@
 * **분류**: 웹 프론트엔드
 * **현상 (Problem)**: 메인 페이지 SSR 개편 후 지도 화면이 출력되지 않고 0px로 가려짐
 * **원인 (Cause)**: HomeClientLayout.tsx의 지도 컨테이너 클래스명이 page.module.css의 app-map-container와 불일치함
-* **해결 (Solution)**: 지도를 감싸는 div 클래스명을 app-map-container로 수정하여 화면 전체 레이아웃을 복구함
+### [2026-07-21] Naver Maps API와 자바스크립트 전역 Map 식별자 충돌 해결
+* **분류**: 웹 프론트엔드
+* **현상 (Problem)**: Map.tsx 마커 재사용 최적화 중 new Map() 호출 시 TypeScript 타입 에러(TS7009, TS2558) 발생함
+* **원인 (Cause)**: Naver Maps 네임스페이스 및 파라미터명과 ES6 전역 Map 클래스 식별자가 충돌함
+* **해결 (Solution)**: 전역 내장 객체 명시를 위해 globalThis.Map 및 globalThis.Set으로 선언하여 해결함
 
+### [2026-07-21] AnnouncementCard D-Day 카운트다운 전체 카드 리렌더링 해결
+* **분류**: 웹 프론트엔드
+* **현상 (Problem)**: 1초 타이머 작동 시 AnnouncementCard 전체 컴포넌트가 재렌더링되는 성능 저하 발생함
+* **원인 (Cause)**: 1초 간격의 타이머 state가 메인 카드 컴포넌트에 직접 포함되어 있었음
+* **해결 (Solution)**: 카운트다운 타이머 로직을 memoized 컴포넌트(CountdownTimer)로 격리 분리함
 
