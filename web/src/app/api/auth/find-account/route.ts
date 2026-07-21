@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { userDb } from '@/lib/db';
 import { getMemberById, hashPassword } from '@/lib/auth';
 
 // POST /api/auth/find-account
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     }
 
     const pwd_hash = await hashPassword(new_password);
-    db.prepare('UPDATE members SET pwd_hash = ? WHERE id = ?').run(pwd_hash, id);
+    userDb.prepare('UPDATE members SET pwd_hash = ? WHERE id = ?').run(pwd_hash, id);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

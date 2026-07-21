@@ -17,7 +17,20 @@ function getDatabasePath() {
   return path.join(process.cwd(), '..', 'db-pipeline', 'public_housing.db');
 }
 
+function getUserDatabasePath() {
+  if (process.env.USER_DATABASE_PATH) return process.env.USER_DATABASE_PATH;
+  
+  let candidate = path.join(process.cwd(), '..', 'db-pipeline', 'user_data.db');
+  if (fs.existsSync(candidate)) return candidate;
+
+  candidate = path.join(process.cwd(), '..', '..', 'db-pipeline', 'user_data.db');
+  if (fs.existsSync(candidate)) return candidate;
+
+  return path.join(process.cwd(), '..', 'db-pipeline', 'user_data.db');
+}
+
 const dbPath = getDatabasePath();
+const userDbPath = getUserDatabasePath();
 
 function initializeDatabase() {
   try {
@@ -31,9 +44,63 @@ function initializeDatabase() {
   }
 }
 
-export const db = initializeDatabase();
+function initializeUserDatabase() {
+  try {
+    const instance = new Database(userDbPath, { verbose: console.log });
+    instance.pragma('journal_mode = DELETE');
 
-// 동시 조회를 원활하게 하기 위해 WAL(Write-Ahead Logging) 모드 활성화 및 락 대기시간(5초) 설정
-// db.pragma('journal_mode = WAL');
-// db.pragma('busy_timeout = 5000');
+    // Ensure member schema exists
+    instance.exec(`
+      CREATE TABLE IF NOT EXISTS members (
+        id          TEXT PRIMARY KEY,
+        pwd_hash    TEXT NOT NULL,
+        security_q  TEXT NOT NULL,
+        security_a  TEXT NOT NULL,
+        created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE TABLE IF NOT EXISTS member_hidden_anns (
+        member_id       TEXT NOT NULL,
+        announcement_id INTEGER NOT NULL,
+        hidden_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (member_id, announcement_id)
+      );
+      CREATE TABLE IF NOT EXISTS member_bookmark_folders (
+        id          TEXT NOT NULL,
+        member_id   TEXT NOT NULL,
+        name        TEXT NOT NULL,
+        color       TEXT NOT NULL,
+        created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id, member_id)
+      );
+      CREATE TABLE IF NOT EXISTS member_bookmark_items (
+        member_id   TEXT NOT NULL,
+        complex_id  INTEGER NOT NULL,
+        folder_id   TEXT NOT NULL,
+        memo        TEXT,
+        created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (member_id, complex_id)
+      );
+      CREATE TABLE IF NOT EXISTS member_favorites (
+        member_id       TEXT NOT NULL,
+        announcement_id INTEGER NOT NULL,
+        favorited_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (member_id, announcement_id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_hidden_anns_member ON member_hidden_anns (member_id);
+      CREATE INDEX IF NOT EXISTS idx_bookmark_folders_member ON member_bookmark_folders (member_id);
+      CREATE INDEX IF NOT EXISTS idx_bookmark_items_member ON member_bookmark_items (member_id);
+      CREATE INDEX IF NOT EXISTS idx_favorites_member ON member_favorites (member_id);
+    `);
+
+    return instance;
+  } catch (err) {
+    console.error(`🚨 [USER_DB_OPEN_FATAL] Failed to open User SQLite DB at path: [${userDbPath}]`);
+    console.error(err);
+    throw err;
+  }
+}
+
+export const db = initializeDatabase();
+export const userDb = initializeUserDatabase();
+
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { userDb } from '@/lib/db';
 import { getSessionMemberId, hashPassword, verifyPassword } from '@/lib/auth';
 
 // PATCH /api/auth/update — 회원정보 수정 (비밀번호, 보안 질문/답변)
@@ -14,7 +14,7 @@ export async function PATCH(req: NextRequest) {
     const { current_password, new_password, security_q, security_a } = body;
 
     // DB에서 현재 회원 정보 조회
-    const member = db
+    const member = userDb
       .prepare('SELECT * FROM members WHERE id = ?')
       .get(memberId) as { id: string; pwd_hash: string; security_q: string; security_a: string } | undefined;
 
@@ -35,7 +35,7 @@ export async function PATCH(req: NextRequest) {
         return NextResponse.json({ error: '새 비밀번호는 6자 이상이어야 합니다.' }, { status: 400 });
       }
       const new_hash = await hashPassword(new_password);
-      db.prepare('UPDATE members SET pwd_hash = ? WHERE id = ?').run(new_hash, memberId);
+      userDb.prepare('UPDATE members SET pwd_hash = ? WHERE id = ?').run(new_hash, memberId);
     }
 
     // 보안 질문/답변 수정 요청인 경우
@@ -45,7 +45,7 @@ export async function PATCH(req: NextRequest) {
       if (!newA.trim()) {
         return NextResponse.json({ error: '보안 답변을 입력해주세요.' }, { status: 400 });
       }
-      db.prepare('UPDATE members SET security_q = ?, security_a = ? WHERE id = ?').run(newQ, newA.trim(), memberId);
+      userDb.prepare('UPDATE members SET security_q = ?, security_a = ? WHERE id = ?').run(newQ, newA.trim(), memberId);
     }
 
     return NextResponse.json({ success: true });

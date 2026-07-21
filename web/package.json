@@ -7,7 +7,7 @@
     "build": "node migrate_coords.js && next build",
     "start": "next start",
     "lint": "eslint",
-    "build:pack": "rm -rf deploy .next && node migrate_coords.js && next build && mkdir -p deploy && cp -r .next/standalone/. deploy/ && cp -r public deploy/ && cp -r .next/static deploy/.next/ && rm -f deploy/public_housing.db && cd deploy && tar -czf ../announce_deploy.tar.gz . && cd .. && rm -rf deploy"
+    "build:pack": "rm -rf deploy .next && node migrate_coords.js && next build && mkdir -p deploy && cp -r .next/standalone/. deploy/ && cp -r public deploy/ && cp -r .next/static deploy/.next/ && rm -f deploy/public_housing.db deploy/user_data.db && cd deploy && tar -czf ../announce_deploy.tar.gz . && cd .. && rm -rf deploy"
   },
   "dependencies": {
     "@mantine/core": "^9.4.1",

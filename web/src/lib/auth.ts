@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
-import { db } from '@/lib/db';
+import { userDb } from '@/lib/db';
 
 const SESSION_COOKIE = 'ph_session';
 const HMAC_SECRET = process.env.SESSION_SECRET || 'pleasehome-default-secret-change-in-prod';
@@ -73,7 +73,7 @@ export async function getSessionMemberId(): Promise<string | null> {
 
 // ── DB에서 회원 조회 ───────────────────────────────────────────
 export function getMemberById(id: string) {
-  return db.prepare('SELECT * FROM members WHERE id = ?').get(id) as
+  return userDb.prepare('SELECT * FROM members WHERE id = ?').get(id) as
     | { id: string; pwd_hash: string; security_q: string; security_a: string; created_at: string }
     | undefined;
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { userDb } from '@/lib/db';
 import { hashPassword, setSessionCookie } from '@/lib/auth';
 
 // POST /api/auth/register
@@ -18,19 +18,19 @@ export async function POST(req: NextRequest) {
     // }
 
     // 중복 아이디 확인
-    const existing = db.prepare('SELECT id FROM members WHERE id = ?').get(id);
+    const existing = userDb.prepare('SELECT id FROM members WHERE id = ?').get(id);
     if (existing) {
       return NextResponse.json({ error: '이미 사용 중인 아이디입니다.' }, { status: 409 });
     }
 
     const pwd_hash = await hashPassword(password);
 
-    db.prepare(
+    userDb.prepare(
       'INSERT INTO members (id, pwd_hash, security_q, security_a) VALUES (?, ?, ?, ?)'
     ).run(id, pwd_hash, security_q, security_a);
 
     // 가입 즉시 기본 북마크 폴더 생성
-    db.prepare(
+    userDb.prepare(
       "INSERT INTO member_bookmark_folders (id, member_id, name, color) VALUES ('default', ?, '내 저장 목록', '#3B82F6')"
     ).run(id);
 
