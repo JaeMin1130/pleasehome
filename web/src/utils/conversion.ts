@@ -25,17 +25,18 @@ export function calcConversion(
   if (targetDeposit > baseDeposit && maxDeposit > baseDeposit) {
     const diffDeposit = targetDeposit - baseDeposit;
     const maxDiffDeposit = maxDeposit - baseDeposit;
+    if (maxDiffDeposit <= 0) return { deposit: baseDeposit, rent: baseRent, effectiveRate: null };
+
     const diffRent = baseRent - minMonthlyRent;
-    
     const calculatedRent = baseRent - (diffDeposit * diffRent) / maxDiffDeposit;
     
     // 이율 역산: ((기본월세 - 최소월세) * 12) / (최대보증금 - 기본보증금) * 100
-    const effectiveRate = ((baseRent - minMonthlyRent) * 12) / (maxDeposit - baseDeposit) * 100;
+    const effectiveRate = ((baseRent - minMonthlyRent) * 12) / maxDiffDeposit * 100;
 
     return {
       deposit: targetDeposit,
       rent: Math.max(minMonthlyRent, Math.round(calculatedRent)),
-      effectiveRate,
+      effectiveRate: isNaN(effectiveRate) || !isFinite(effectiveRate) ? null : effectiveRate,
     };
   }
 
@@ -43,17 +44,18 @@ export function calcConversion(
   if (targetDeposit < baseDeposit && baseDeposit > minDeposit) {
     const diffDeposit = baseDeposit - targetDeposit;
     const maxDiffDeposit = baseDeposit - minDeposit;
+    if (maxDiffDeposit <= 0) return { deposit: baseDeposit, rent: baseRent, effectiveRate: null };
+
     const diffRent = maxMonthlyRent - baseRent;
-    
     const calculatedRent = baseRent + (diffDeposit * diffRent) / maxDiffDeposit;
 
     // 이율 역산: ((최대월세 - 기본월세) * 12) / (기본보증금 - 최소보증금) * 100
-    const effectiveRate = ((maxMonthlyRent - baseRent) * 12) / (baseDeposit - minDeposit) * 100;
+    const effectiveRate = ((maxMonthlyRent - baseRent) * 12) / maxDiffDeposit * 100;
 
     return {
       deposit: targetDeposit,
       rent: Math.min(maxMonthlyRent, Math.round(calculatedRent)),
-      effectiveRate,
+      effectiveRate: isNaN(effectiveRate) || !isFinite(effectiveRate) ? null : effectiveRate,
     };
   }
 
