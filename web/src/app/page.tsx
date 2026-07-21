@@ -36,7 +36,17 @@ export default async function HomePage() {
         - 초기 HTML 수신 시 텍스트 및 정적 <a href="..."> 링크를 포함하여 "가치가 별로 없는 콘텐츠" 판정 방지
         ========================================================================
       */}
-      <section style={{ display: 'none' }} aria-hidden="false">
+      <section style={{ 
+        position: 'absolute', 
+        width: '1px', 
+        height: '1px', 
+        padding: 0, 
+        margin: '-1px', 
+        overflow: 'hidden', 
+        clip: 'rect(0, 0, 0, 0)', 
+        whiteSpace: 'nowrap', 
+        border: 0 
+      }}>
         <h1>전국 LH·SH·GH 공공임대주택 청약 지도 대시보드</h1>
         <p>
           플리즈홈(PleaseHome)은 LH 한국토지주택공사, SH 서울주택도시공사, GH 경기주택도시공사 등
