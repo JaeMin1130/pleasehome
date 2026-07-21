@@ -16,6 +16,7 @@
   - [PROJECT.md](web/PROJECT.md): 웹 서비스 설계 사양, UI 컴포넌트 물리 규격 및 배포 가이드 문서.
   - [src/app/api/member/favorites/route.ts](web/src/app/api/member/favorites/route.ts): 찜한 공고 목록 조회·추가·삭제 REST API.
   - [src/app/api/member/hidden-anns/route.ts](web/src/app/api/member/hidden-anns/route.ts): 숨김 공고 목록 조회·추가·삭제 REST API.
+  - [src/components/HomeClientLayout.tsx](web/src/components/HomeClientLayout.tsx): 대화형 지도, 사이드바, 필터 스시바, 북마크 모달을 담당하는 메인 클라이언트 레이아웃 컴포넌트.
   - [src/components/Sidebar.tsx](web/src/components/Sidebar.tsx): 공고 필터(예정/접수중/마감/숨김/찜) 및 찜/숨김 토글 관리를 수행하는 사이드바 컴포넌트.
   - [src/components/features/AnnouncementCard.tsx](web/src/components/features/AnnouncementCard.tsx): 공고 D-Day 타이머 및 찜/숨김 개별 액션 버튼이 포함된 공고 카드 컴포넌트.
 - [command.sh](command.sh): 빌드 및 데이터 마이그레이션 실행 헬퍼 쉘 스크립트.
@@ -39,4 +40,7 @@
 - **3단계 (완료):** Geocoding API 연동을 통한 위경도 좌표 복구 및 SQLite3 데이터 적재 완료.
 - **4단계 (완료):** 지도 기반의 3단 화면 분할 웹 대시보드(Next.js standalone) 구동 완료.
 - **5단계 (완료):** 찜한 공고 필터 태그 추가 및 숨김 처리 간의 상호 베타적(Option A) 동기화 비즈니스 로직 연동, 모바일 뷰 BottomSheet 제스처 규격 최적화(25dvh/50dvh/85dvh) 및 로그인 모달 버그 해결 완료.
-- **6단계 (예정):** 청약 접수 및 당첨 자격 분석 엔진 고도화.
+- **6단계 (완료):** 더보기 메뉴 해(☀️)/달(🌙) 토글 스위치, 네이버 지도 타일 반전 및 전역 다크모드 슬레이트 톤 테마 구축, localStorage theme 한정 정화 완료.
+- **7단계 (완료):** 구글 애드센스 소유권 확인 메타태그 삽입, 메인 페이지 SSR 서버 컴포넌트 변환 및 정적 SEO 텍스트/링크 구조 구축 완료.
+- **8단계 (예정):** 청약 접수 및 당첨 자격 분석 엔진 고도화.
+

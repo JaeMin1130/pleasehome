@@ -14,6 +14,9 @@ export const metadata: Metadata = {
       "naver-site-verification": ["045576967489592d1d44c5b60a8c7bfc9204eafd"],
     },
   },
+  other: {
+    "google-adsense-account": "ca-pub-7402127086926987",
+  },
   
   openGraph: {
     title: "공공청약 지도",
