@@ -562,3 +562,86 @@ table:not([class*="comparison-table"]):not([class*="unit-table"]) tr:last-child 
     margin: auto !important;
   }
 }
+
+/* =========================================
+   [ 전역 다크 모드 (Dark Mode Theme) ]
+   ========================================= */
+body.dark {
+  --bg-body: #0f172a;
+  --bg-surface: #1e293b;
+  --bg-surface-hover: rgba(51, 65, 85, 0.5);
+  --bg-surface-active: rgba(51, 65, 85, 0.8);
+  --bg-light-gray: #334155;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --primary: #3b82f6;
+  --primary-hover: #60a5fa;
+  --primary-bg: rgba(59, 130, 246, 0.2);
+  --border-light: #334155;
+  --border-strong: #475569;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.5);
+
+  /* 1. 기관별 뱃지 반투명 다크모드 배경 */
+  --color-sh-bg: rgba(98, 186, 70, 0.22);
+  --color-lh-bg: rgba(0, 85, 162, 0.28);
+  --color-gh-bg: rgba(0, 155, 223, 0.25);
+  --color-hug-bg: rgba(15, 118, 110, 0.28);
+  --color-private-bg: rgba(217, 119, 6, 0.25);
+
+  /* 2. D-Day 및 경고/임시위치 뱃지 다크모드 변수 */
+  --color-dday-bg: rgba(255, 77, 32, 0.22);
+  --color-dday-border: rgba(255, 77, 32, 0.45);
+  --color-dday: #ff7a5c;
+  --color-warning-bg: rgba(245, 158, 11, 0.22);
+  --color-warning-text: #facc15;
+
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+}
+
+/* 3. 주택형별 공급 및 가격 정보 아래 필터 탭 버튼 다크모드 조화 */
+body.dark [class*="filter-tab-btn"] {
+  background-color: #334155;
+  color: #cbd5e1;
+  border-color: #475569;
+}
+
+body.dark [class*="filter-tab-btn"]:not(:disabled):hover {
+  background-color: rgba(59, 130, 246, 0.25);
+  color: #60a5fa;
+  border-color: #60a5fa;
+}
+
+body.dark [class*="filter-tab-btn"].active {
+  background-color: rgba(59, 130, 246, 0.3);
+  color: #f8fafc;
+  border-color: #60a5fa;
+}
+
+/* 4. 공고 상세 열기, 신청 페이지 열기 버튼 다크모드 조화 */
+body.dark [class*="detail-link-btn"],
+body.dark [class*="docBtn"] {
+  background-color: #334155;
+  color: #cbd5e1;
+  border-color: #475569;
+}
+
+body.dark [class*="detail-link-btn"]:hover,
+body.dark [class*="docBtn"]:hover {
+  background-color: rgba(59, 130, 246, 0.25);
+  color: #60a5fa;
+  border-color: #60a5fa;
+}
+
+/* 네이버 지도 타일 다크 필터 반전 */
+body.dark [class*="map-canvas"] {
+  filter: invert(90%) hue-rotate(180%) contrast(90%) brightness(95%);
+}
+
+/* 지도 내 마커 아이콘 색상 보정 (마커 원본 컬러 보존) */
+body.dark [class*="map-canvas"] [class*="custom-marker"] {
+  filter: invert(100%) hue-rotate(180%);
+}
