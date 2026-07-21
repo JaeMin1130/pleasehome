@@ -12,10 +12,10 @@
 !/db-pipeline/
 
 # Blacklist
-/docs/pdf/LH_*
-/docs/pdf/SH_*
-/docs/pdf/GH_*
-/docs/md/
+/db-pipeline/docs/pdf/LH_*
+/db-pipeline/docs/pdf/SH_*
+/db-pipeline/docs/pdf/GH_*
+/db-pipeline/docs/md/
 /web/.next/
 /web/node_modules/
 !/db-pipeline/.venv/

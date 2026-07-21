@@ -9,7 +9,7 @@ from api import get_lease_notice_list, get_lease_notice_detail
 env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env.local")
 load_dotenv(dotenv_path=env_path)
 
-PDF_SAVE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "docs", "pdf")
+PDF_SAVE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),"docs", "pdf")
 
 def download_file(url, save_path):
     """주어진 URL의 파일을 로컬 경로에 다운로드"""

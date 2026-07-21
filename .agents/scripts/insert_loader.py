@@ -38,12 +38,12 @@ def get_meta_from_folder(relative_doc_path, base_dir):
 
 
 def get_db_path(base_dir):
-    # 환경변수 또는 db-pipeline 디렉토리를 통해 DB 경로 동적 결정 (누적 규칙 #3)
+    # 환경변수 또는 db-pipeline 디렉토리를 통해 DB 경로 동적 결정
     env_path = os.getenv("PUBLIC_HOUSING_DB_PATH")
     if env_path:
         return os.path.abspath(os.path.expanduser(env_path))
     
-    return os.path.join(base_dir, "public_housing.db")
+    return os.path.join(base_dir, "db-pipeline", "public_housing.db")
 
 def force_fail_log(db_path, doc_path, error_message, title=None, institution=None, subscription_type=None, region=None, ann_id=None):
     """
