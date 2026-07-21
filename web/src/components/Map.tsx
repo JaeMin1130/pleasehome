@@ -80,8 +80,8 @@ export default function Map({ complexes, activeComplexId, hoveredComplexId, onSe
   useEffect(() => {
     if (!mapLoaded || !naverMap || !window.naver || !window.naver.maps || !window.naver.maps.Marker) return;
 
-    const currentMap = new Map<number, any>(markers.map(m => [m.id, m.marker]));
-    const nextComplexIds = new Set(complexes.map(c => c.id));
+    const currentMap = new globalThis.Map<number, any>(markers.map(m => [m.id, m.marker]));
+    const nextComplexIds = new globalThis.Set(complexes.map(c => c.id));
     const newMarkersList: any[] = [];
 
     // 더 이상 화면 목록에 존재하지 않는 마커만 지움

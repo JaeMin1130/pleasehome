@@ -434,7 +434,7 @@ export default function AnnouncementCard({
 
         const activeIdx = steps.findIndex(s => s.status === 'active');
         const lastCompletedIdx = steps.map(s => s.status).lastIndexOf('completed');
-        if (isMounted && activeIdx === -1 && lastCompletedIdx !== -1) {
+        if (activeIdx === -1 && lastCompletedIdx !== -1) {
           const nextIdx = lastCompletedIdx + 1;
           if (nextIdx < steps.length) {
             const nextStepData = sortedScheds[nextIdx];

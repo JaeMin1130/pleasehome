@@ -15,6 +15,9 @@ import {
   SECURITY_QUESTIONS,
 } from '@/constants';
 import AuthModal from '@/components/ui/AuthModal';
+import SearchTab from '@/components/sidebar/SearchTab';
+import BookmarkTab from '@/components/sidebar/BookmarkTab';
+import MoreTab from '@/components/sidebar/MoreTab';
 
 interface SidebarProps {
   announcements: Announcement[];
@@ -673,736 +676,124 @@ export default function Sidebar({
 
 
       {/* 탭 분기 렌더링 */}
-      {activeTab === 'SEARCH' && (
-        <div 
-          className={styles['search-panel-container']}
-          style={{ 
-            height: sheetHeight ? `${sheetHeight}px` : undefined,
-            '--sheet-min-height': isMounted ? `${minHeight}px` : '0px',
-            transform: (typeof window !== 'undefined' && window.innerWidth <= 768 && translateY > 0) 
-              ? `translateY(${translateY}px)` 
-              : undefined,
-            ...style
-          } as React.CSSProperties}
-          {...touchHandlers}
-        >
-          {/* 모바일 화면 전용 상단 드래그 핸들바 */}
-          <div className={styles['drag-handle-bar']} />
-
-          <div className={styles['sidebar-search']}>
-            <div className={styles['search-wrapper']}>
-              <svg
-                className={styles['search-icon']}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-              <input 
-                type="text" placeholder="공고명 또는 공급기관 검색..." 
-                className={styles['search-input']} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              {searchTerm && (
-                <button 
-                  onClick={() => setSearchTerm('')}
-                  className={styles['clear-btn']}
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-            
-            {/* ① 지역 구분 필터 태그 */}
-            <div className={`${styles['region-tags']} ${styles['desktop-only']}`}>
-              {['ALL', '서울', '인천', '경기', '기타'].map((r) => {
-                const label = r === 'ALL' ? '전체 지역' : r;
-                return (
-                  <span 
-                    key={r}
-                    className={`${styles['region-tag']} ${activeRegion === r ? styles.active : ''}`}
-                    onClick={() => setActiveRegion(r)}
-                  >
-                    {label}
-                  </span>
-                );
-              })}
-            </div>
-
-            {/* ② 접수 구분 필터 태그 */}
-            <div className={`${styles['filter-tags']} ${styles['desktop-only']}`}>
-              <span className={`${styles['filter-tag']} ${activeTabStatus === 'UPCOMING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('UPCOMING')}>
-                예정 ({getStatusCount('UPCOMING')})
-              </span>
-              <span className={`${styles['filter-tag']} ${activeTabStatus === 'ONGOING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('ONGOING')}>
-                접수중 ({getStatusCount('ONGOING')})
-              </span>
-              <span className={`${styles['filter-tag']} ${activeTabStatus === 'CLOSED' ? styles.active : ''}`} onClick={() => setActiveTabStatus('CLOSED')}>
-                마감 ({getStatusCount('CLOSED')})
-              </span>
-              <span className={`${styles['filter-tag']} ${activeTabStatus === 'HIDDEN' ? styles.active : ''}`} onClick={() => setActiveTabStatus('HIDDEN')}>
-                숨김 ({getHiddenStatusCount()})
-              </span>
-              <span className={`${styles['filter-tag']} ${activeTabStatus === 'FAVORITE' ? styles.active : ''}`} onClick={() => setActiveTabStatus('FAVORITE')}>
-                찜 ({getFavoriteStatusCount()})
-              </span>
-            </div>
-          </div>
-
-          {/* 모바일 화면 전용 필터 영역 (바텀 시트 내부에 위치) */}
-          <div className={styles['mobile-only-filters']}>
-            <div className={styles['search-wrapper']}>
-              <svg
-                className={styles['search-icon']}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-              <input 
-                type="text" placeholder="공고명 또는 공급기관 검색..." 
-                className={styles['search-input']} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              {searchTerm && (
-                <button 
-                  onClick={() => setSearchTerm('')}
-                  className={styles['clear-btn']}
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-            <div className={styles['region-tags']}>
-              {['ALL', '서울', '인천', '경기', '기타'].map((r) => {
-                const label = r === 'ALL' ? '전체 지역' : r;
-                return (
-                  <span 
-                    key={r}
-                    className={`${styles['region-tag']} ${activeRegion === r ? styles.active : ''}`}
-                    onClick={() => setActiveRegion(r)}
-                  >
-                    {label}
-                  </span>
-                );
-              })}
-            </div>
-            <div className={styles['filter-tags']}>
-              <span className={`${styles['filter-tag']} ${activeTabStatus === 'UPCOMING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('UPCOMING')}>
-                예정 ({getStatusCount('UPCOMING')})
-              </span>
-              <span className={`${styles['filter-tag']} ${activeTabStatus === 'ONGOING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('ONGOING')}>
-                접수중 ({getStatusCount('ONGOING')})
-              </span>
-              <span className={`${styles['filter-tag']} ${activeTabStatus === 'CLOSED' ? styles.active : ''}`} onClick={() => setActiveTabStatus('CLOSED')}>
-                마감 ({getStatusCount('CLOSED')})
-              </span>
-              <span className={`${styles['filter-tag']} ${activeTabStatus === 'HIDDEN' ? styles.active : ''}`} onClick={() => setActiveTabStatus('HIDDEN')}>
-                숨김 ({getHiddenStatusCount()})
-              </span>
-              <span className={`${styles['filter-tag']} ${activeTabStatus === 'FAVORITE' ? styles.active : ''}`} onClick={() => setActiveTabStatus('FAVORITE')}>
-                찜 ({getFavoriteStatusCount()})
-              </span>
-            </div>
-          </div>
-
-          <div 
-            ref={listRef} 
-            className={styles['sidebar-list']}
-            style={{ 
-              overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
-            } as React.CSSProperties}
-          >
-            {getSortedAnnouncements().length === 0 ? (
-              <div className={styles['empty-msg']}>결과가 없습니다.</div>
-            ) : (
-              getSortedAnnouncements().map((ann) => {
-                const isCurrentActive = ann.id === activeAnnId;
-                return (
-                  <AnnouncementCard
-                    key={ann.id} 
-                    ann={ann} 
-                    isActive={isCurrentActive}
-                    onClick={() => handleCardClick(ann.id)}
-                    expandedSections={expandedSections} 
-                    onToggleSection={(key) => toggleSection(key)}
-                    isComplexListOpen={isComplexListOpen}
-                    onToggleComplexList={() => setIsComplexListOpen(!isComplexListOpen)}
-                    isDisabled={disabledAnnIds.includes(ann.id)}
-                    onDisableToggle={() => handleToggleDisableAnn(ann.id)}
-                    isFavorite={favoriteAnnIds.includes(ann.id)}
-                    onFavoriteToggle={() => handleToggleFavoriteAnn(ann.id)}
-                  >
-                    {isCurrentActive && (
-                      <div className={styles['complex-search-container']}>
-                        <div className={styles['complex-search-wrapper']}>
-                          <input 
-                            type="text" 
-                            placeholder="주택명 검색..." 
-                            value={complexSearchTerm}
-                            onChange={(e) => setComplexSearchTerm(e.target.value)}
-                            className={styles['complex-search-input']}
-                          />
-                          {complexSearchTerm && (
-                            <button 
-                              onClick={() => setComplexSearchTerm('')}
-                              className={styles['complex-clear-btn']}
-                            >
-                              ✕
-                            </button>
-                          )}
-                        </div>
-                        <div className={styles['complexes-list-container']}>
-                          {filteredComplexes.length === 0 ? (
-                            <div className={styles['complex-empty-msg']}>
-                              {complexSearchTerm ? '검색 결과가 없습니다.' : '이 공고는 특정 단지 없이 개별적으로 지원되는 전세임대형 정책이거나, 필터 조건에 맞는 주택이 없습니다.'}
-                            </div>
-                          ) : (
-                            filteredComplexes.map((complex) => (
-                              <ComplexCard
-                                key={complex.id}
-                                complex={complex}
-                                isActive={activeComplexId === complex.id}
-                                onClick={() => onSelectComplex(complex)}
-                                isBookmarked={bookmarkedIds.includes(complex.id)}
-                                onBookmarkToggle={() => onToggleBookmark(complex.id)}
-                                onMouseEnter={() => onHoverComplex?.(complex.id)}
-                                onMouseLeave={() => onHoverComplex?.(null)}
-                              />
-                            ))
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </AnnouncementCard>
-                );
-              })
-            )}
-          </div>
-        </div>
+      {activeTab === "SEARCH" && (
+        <SearchTab
+          sheetHeight={sheetHeight}
+          maxHeight={maxHeight}
+          isMounted={isMounted}
+          minHeight={minHeight}
+          translateY={translateY}
+          touchHandlers={touchHandlers}
+          style={style}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          activeRegion={activeRegion}
+          setActiveRegion={setActiveRegion}
+          activeTabStatus={activeTabStatus}
+          setActiveTabStatus={setActiveTabStatus}
+          getStatusCount={getStatusCount}
+          getHiddenStatusCount={getHiddenStatusCount}
+          getFavoriteStatusCount={getFavoriteStatusCount}
+          listRef={listRef}
+          sortedAnnouncements={getSortedAnnouncements()}
+          activeAnnId={activeAnnId}
+          handleCardClick={handleCardClick}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+          isComplexListOpen={isComplexListOpen}
+          setIsComplexListOpen={setIsComplexListOpen}
+          disabledAnnIds={disabledAnnIds}
+          handleToggleDisableAnn={handleToggleDisableAnn}
+          favoriteAnnIds={favoriteAnnIds}
+          handleToggleFavoriteAnn={handleToggleFavoriteAnn}
+          complexSearchTerm={complexSearchTerm}
+          setComplexSearchTerm={setComplexSearchTerm}
+          filteredComplexes={filteredComplexes}
+          activeComplexId={activeComplexId}
+          onSelectComplex={onSelectComplex}
+          bookmarkedIds={bookmarkedIds}
+          onToggleBookmark={onToggleBookmark}
+          onHoverComplex={onHoverComplex}
+        />
       )}
 
-      {activeTab === 'BOOKMARK' && (
-        <div 
-          className={styles['bookmark-panel-container']}
-          style={{ 
-            height: sheetHeight ? `${sheetHeight}px` : undefined,
-            overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto',
-            '--sheet-min-height': isMounted ? `${minHeight}px` : '0px',
-            transform: (typeof window !== 'undefined' && window.innerWidth <= 768 && translateY > 0) 
-              ? `translateY(${translateY}px)` 
-              : undefined
-          } as React.CSSProperties}
-          {...touchHandlers}
-        >
-          {/* 모바일 화면 전용 상단 드래그 핸들바 */}
-          <div className={styles['drag-handle-bar']} />
-          <div className={styles['bookmark-header']}>
-            <h3 className={styles['bookmark-title']}>저장 목록</h3>
-            {member && (
-              <button 
-                className="btn-outline-primary-mini"
-                onClick={() => setShowNewFolderInput(!showNewFolderInput)}
-              >
-                {showNewFolderInput ? '취소' : '+ 폴더 추가'}
-              </button>
-            )}
-          </div>
-
-          {/* 게스트: 로그인 유도 뷰 */}
-          {!member && (
-            <div className={styles['guest-login-prompt']}>
-              <svg width={40} height={40} viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-              </svg>
-              <p className={styles['guest-login-text']}>저장 기능은 로그인 후<br />이용하실 수 있습니다.</p>
-              <button
-                className={styles['guest-login-btn']}
-                onClick={() => setAuthModalOpen(true)}
-              >
-                로그인하기
-              </button>
-            </div>
-          )}
-
-          {showNewFolderInput && (
-            <div className={styles['sidebar-folder-add-container']}>
-              <div className={styles['sidebar-folder-form-wrap']}>
-                <input
-                  type="text"
-                  placeholder="새 폴더 이름..."
-                  value={newFolderName}
-                  onChange={(e) => setNewFolderName(e.target.value)}
-                  maxLength={15}
-                  className={styles['sidebar-folder-input']}
-                />
-                <button 
-                  className={styles['sidebar-folder-submit']}
-                  onClick={() => {
-                    if (newFolderName.trim()) {
-                      onAddFolder(newFolderName.trim(), selectedSidebarColor);
-                      setNewFolderName('');
-                      setShowNewFolderInput(false);
-                    }
-                  }}
-                >
-                  추가
-                </button>
-              </div>
-              <div className={`color-picker-list ${styles['sidebar-color-picker']}`}>
-                {BOOKMARK_PRESET_COLORS.map((color) => (
-                  <span
-                    key={color}
-                    className={`color-picker-item ${selectedSidebarColor === color ? 'active' : ''}`}
-                    style={{ backgroundColor: color }}
-                    onClick={() => setSelectedSidebarColor(color)}
-                    title="폴더 색상 선택"
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {member && (
-            <div 
-              ref={bookmarkListRef} 
-              className={styles['folders-list-container']}
-              style={{
-                overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
-              }}
-            >
-            {bookmarkFolders.map((folder) => {
-              const isExpanded = activeFolderIds.includes(folder.id);
-              const folderItems = bookmarkItems.filter(item => item.folderId === folder.id);
-              const folderCount = folderItems.length;
-              const folderComplexes = allComplexes.filter(c => folderItems.map(i => i.complexId).includes(c.id));
-
-              return (
-                <div 
-                  key={folder.id} 
-                  id={`folder-card-${folder.id}`}
-                  className={`${styles['accordion-item']} ${isExpanded ? styles.active : ''} ${dragOverFolderId === folder.id ? styles['drag-over'] : ''}`}
-                  style={{
-                    ...(isExpanded ? { borderColor: folder.color } : {}),
-                    ...(dragOverFolderId === folder.id ? { borderColor: folder.color } : {})
-                  }}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    if (draggingComplexId) {
-                      const item = bookmarkItems.find(i => i.complexId === draggingComplexId);
-                      if (item && item.folderId === folder.id) {
-                        return;
-                      }
-                    }
-                    if (dragOverFolderId !== folder.id) {
-                      setDragOverFolderId(folder.id);
-                    }
-                  }}
-                  onDragLeave={() => {
-                    setDragOverFolderId(null);
-                  }}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    setDragOverFolderId(null);
-                    setDraggingComplexId(null); // 👈 부모 폴더 재마운트 시 onDragEnd 유실에 따른 드래그 상태 강제 해제
-                    const complexIdStr = e.dataTransfer.getData("text/plain");
-                    const complexId = parseInt(complexIdStr, 10);
-                    if (!isNaN(complexId) && onMoveBookmarkItem) {
-                      onMoveBookmarkItem(complexId, folder.id);
-                    }
-                  }}
-                >
-                  {/* 💡 아코디언 헤더: 폴더 행 */}
-                  <div 
-                    className={`${styles['folder-card']} ${isExpanded ? styles.expanded : ''}`}
-                    onClick={() => {
-                      if (isExpanded) {
-                        setActiveFolderIds(activeFolderIds.filter(id => id !== folder.id));
-                      } else {
-                        setActiveFolderIds([...activeFolderIds, folder.id]);
-                      }
-                    }}
-                  >
-                    <div className={styles['folder-info-left']}>
-                      <span 
-                        className={styles['folder-color-badge']} 
-                        style={{ backgroundColor: folder.color }}
-                      >
-                        <svg viewBox="0 0 24 24" fill="var(--color-white)">
-                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                        </svg>
-                      </span>
-                      {editingFolderId === folder.id ? (
-                        <div className={styles['folder-rename-form']} onClick={(e) => e.stopPropagation()}>
-                          <input
-                            type="text"
-                            value={editingFolderName}
-                            onChange={(e) => setEditingFolderName(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                handleSaveRename(folder.id);
-                              } else if (e.key === 'Escape') {
-                                setEditingFolderId(null);
-                              }
-                            }}
-                            className={styles['folder-rename-input']}
-                            autoFocus
-                            maxLength={15}
-                          />
-                          <button 
-                            className={styles['folder-rename-save']}
-                            onClick={() => handleSaveRename(folder.id)}
-                            title="저장"
-                          >
-                            ✓
-                          </button>
-                          <button 
-                            className={styles['folder-rename-cancel']}
-                            onClick={() => setEditingFolderId(null)}
-                            title="취소"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ) : (
-                        <div className={styles['folder-name-container']}>
-                          <span className={styles['folder-card-name']}>{folder.name}</span>
-                          {folder.id !== 'default' && (
-                            <button
-                              className={styles['folder-edit-btn']}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingFolderId(folder.id);
-                                setEditingFolderName(folder.name);
-                              }}
-                              title="폴더 이름 수정"
-                            >
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                              </svg>
-                            </button>
-                          )}
-                        </div>
-                      )}
-                      <span className={styles['folder-count-badge']}>{folderCount}</span>
-                    </div>
-                    <div className={styles['folder-info-right']} onClick={(e) => e.stopPropagation()}>
-                      {/* 💡 폴더가 열려있고 저장 단지가 있을 때만 노출되는 콤팩트 비교 토글 버튼 */}
-                      {isExpanded && folderCount > 0 && (
-                        <button 
-                          className={`btn-outline-primary-mini ${activeComparisonFolderId === folder.id ? 'active' : ''}`}
-                          onClick={() => onToggleComparison(folder.id)}
-                          title="상세 패널에서 단지 스펙 비교표를 엽니다"
-                        >
-                          {activeComparisonFolderId === folder.id ? '비교 표 닫기' : '단지 비교'}
-                        </button>
-                      )}
-
-                      {folder.id !== 'default' && (
-                        <button 
-                          className={styles['folder-delete-btn']}
-                          onClick={() => {
-                            if (confirm(`'${folder.name}' 폴더를 삭제하시겠습니까? 안의 저장 단지들도 함께 해제됩니다.`)) {
-                              onRemoveFolder(folder.id);
-                              if (isExpanded) {
-                                setActiveFolderIds(activeFolderIds.filter(id => id !== folder.id));
-                              }
-                            }
-                          }}
-                          title="폴더 삭제"
-                        >
-                          ✕
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* 💡 아코디언 바디: 단지 목록 */}
-                  {isExpanded && (
-                    <div className={styles['accordion-body']}>
-                      {folderCount === 0 ? (
-                        <div className={styles['empty-bookmark-msg']}>
-                          이 폴더에 저장된 단지가 없습니다.<br />지도에서 단지를 선택한 뒤 별표를 눌러 저장해 보세요.
-                        </div>
-                      ) : (
-                        <>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
-                            {folderComplexes.map((complex) => {
-                              const item = bookmarkItems.find(i => i.complexId === complex.id);
-                              const ann = announcements.find(a => a.id === complex.announcement_id);
-                              return (
-                                <div 
-                                  key={complex.id} 
-                                  className={`${styles['bookmark-card-wrapper']} ${draggingComplexId === complex.id ? styles.dragging : ''}`}
-                                  draggable={true}
-                                  onDragStart={(e) => {
-                                    e.dataTransfer.setData("text/plain", complex.id.toString());
-                                    setDraggingComplexId(complex.id);
-                                  }}
-                                  onDragEnd={() => {
-                                    setDraggingComplexId(null);
-                                  }}
-                                >
-                                  <ComplexCard
-                                    complex={complex}
-                                    isActive={activeComplexId === complex.id}
-                                    onClick={() => {
-                                      onSelectAnnouncement(complex.announcement_id);
-                                      setTimeout(() => {
-                                        onSelectComplex(complex);
-                                      }, 100);
-                                    }}
-                                    isBookmarked={true}
-                                    onBookmarkToggle={() => onToggleBookmark(complex.id)}
-                                    announcementTitle={ann?.title}
-                                    announcementStatus={ann ? getAnnouncementStatus(ann) : undefined}
-                                    announcementInstitution={ann?.institution}
-                                    announcement={ann}
-                                    onMouseEnter={() => onHoverComplex?.(complex.id)}
-                                    onMouseLeave={() => onHoverComplex?.(null)}
-                                  />
-                                  {item?.memo && (
-                                    <div className={styles['bookmark-card-memo']}>
-                                      <svg className={styles['memo-icon']} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M12 20h9"></path>
-                                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                                      </svg>
-                                      <span className={styles['memo-text']}>{item.memo}</span>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-            </div>
-          )}
-        </div>
+      {activeTab === "BOOKMARK" && (
+        <BookmarkTab
+          sheetHeight={sheetHeight}
+          maxHeight={maxHeight}
+          isMounted={isMounted}
+          minHeight={minHeight}
+          translateY={translateY}
+          touchHandlers={touchHandlers}
+          member={member}
+          showNewFolderInput={showNewFolderInput}
+          setShowNewFolderInput={setShowNewFolderInput}
+          setAuthModalOpen={setAuthModalOpen}
+          newFolderName={newFolderName}
+          setNewFolderName={setNewFolderName}
+          selectedSidebarColor={selectedSidebarColor}
+          setSelectedSidebarColor={setSelectedSidebarColor}
+          onAddFolder={onAddFolder}
+          bookmarkListRef={bookmarkListRef}
+          bookmarkFolders={bookmarkFolders}
+          activeFolderIds={activeFolderIds}
+          setActiveFolderIds={setActiveFolderIds}
+          bookmarkItems={bookmarkItems}
+          allComplexes={allComplexes}
+          announcements={announcements}
+          dragOverFolderId={dragOverFolderId}
+          setDragOverFolderId={setDragOverFolderId}
+          draggingComplexId={draggingComplexId}
+          setDraggingComplexId={setDraggingComplexId}
+          onMoveBookmarkItem={onMoveBookmarkItem}
+          editingFolderId={editingFolderId}
+          setEditingFolderId={setEditingFolderId}
+          editingFolderName={editingFolderName}
+          setEditingFolderName={setEditingFolderName}
+          handleSaveRename={handleSaveRename}
+          activeComparisonFolderId={activeComparisonFolderId}
+          onToggleComparison={onToggleComparison}
+          onRemoveFolder={onRemoveFolder}
+          onSelectAnnouncement={onSelectAnnouncement}
+          onSelectComplex={onSelectComplex}
+          onToggleBookmark={onToggleBookmark}
+          getAnnouncementStatus={getAnnouncementStatus}
+          onHoverComplex={onHoverComplex}
+        />
       )}
 
-      {activeTab === 'MORE' && (
-        <div 
-          className={styles['more-panel-container']}
-          style={{ 
-            height: sheetHeight ? `${sheetHeight}px` : undefined,
-            '--sheet-min-height': isMounted ? `${minHeight}px` : '0px',
-            transform: (typeof window !== 'undefined' && window.innerWidth <= 768 && translateY > 0) 
-              ? `translateY(${translateY}px)` 
-              : undefined,
-            ...style
-          } as React.CSSProperties}
-          {...touchHandlers}
-        >
-          {/* 모바일 화면 전용 상단 드래그 핸들바 */}
-          <div className={styles['drag-handle-bar']} />
-
-          <div 
-            className={styles['more-list-container']}
-            style={{ 
-              overflowY: 'auto'
-            } as React.CSSProperties}
-          >
-            {/* 회원정보 영역 */}
-            {member ? (
-              <div className={styles['more-profile-section']}>
-                {/* 프로필 헤더 영역 - 클릭 시 아코디언 토글 */}
-                <div
-                  className={`${styles['more-profile-header']} ${isProfileOpen ? styles['more-profile-header-open'] : ''}`}
-                  onClick={() => { setIsProfileOpen(v => !v); setProfileError(''); setProfileSuccess(''); }}
-                >
-                  <div className={styles['more-profile-avatar']}>{member.id.charAt(0).toUpperCase()}</div>
-                  <div className={styles['more-profile-info']}>
-                    <span className={styles['more-profile-id']}>{member.id}</span>
-                    <span className={styles['more-profile-sub']}>회원정보 수정</span>
-                  </div>
-                  <svg
-                    className={`${styles['more-profile-chevron']} ${isProfileOpen ? styles['more-profile-chevron-open'] : ''}`}
-                    width={16} height={16} viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"
-                  >
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </div>
-
-                {/* 아코디언 펼쳓 영역: 회원정보 수정 폼 */}
-                {isProfileOpen && (
-                  <div className={styles['more-profile-body']}>
-                    {profileError && <div className={styles['profile-error-banner']}>{profileError}</div>}
-                    {profileSuccess && <div className={styles['profile-success-banner']}>{profileSuccess}</div>}
-
-                    {/* 비밀번호 변경 */}
-                    <div className={styles['profile-form-group']}>
-                      <p className={styles['profile-form-title']}>비밀번호 변경</p>
-                      <label className={styles['profile-label']}>현재 비밀번호</label>
-                      <input
-                        type="password"
-                        className={styles['profile-input']}
-                        placeholder="현재 비밀번호"
-                        value={profileCurPwd}
-                        onChange={e => setProfileCurPwd(e.target.value)}
-                      />
-                      <label className={styles['profile-label']}>새 비밀번호 <span className={styles['profile-hint']}>(6자 이상)</span></label>
-                      <input
-                        type="password"
-                        className={styles['profile-input']}
-                        placeholder="새 비밀번호"
-                        value={profileNewPwd}
-                        onChange={e => setProfileNewPwd(e.target.value)}
-                      />
-                      <label className={styles['profile-label']}>새 비밀번호 확인</label>
-                      <input
-                        type="password"
-                        className={styles['profile-input']}
-                        placeholder="새 비밀번호 재입력"
-                        value={profileNewPwdConfirm}
-                        onChange={e => setProfileNewPwdConfirm(e.target.value)}
-                      />
-                      <button
-                        className={styles['profile-submit-btn']}
-                        disabled={isProfileSubmitting}
-                        onClick={() => handleProfileUpdate('password')}
-                      >
-                        {isProfileSubmitting ? '변경 중...' : '비밀번호 변경'}
-                      </button>
-                    </div>
-
-                    {/* 보안 질문/답변 수정 */}
-                    <div className={styles['profile-form-group']}>
-                      <p className={styles['profile-form-title']}>보안 질문/답변 수정</p>
-                      <label className={styles['profile-label']}>질문 선택</label>
-                      <select
-                        className={styles['profile-input']}
-                        value={profileSecQ}
-                        onChange={e => setProfileSecQ(e.target.value)}
-                      >
-                        {SECURITY_QUESTIONS.map(q => <option key={q} value={q}>{q}</option>)}
-                      </select>
-                      <label className={styles['profile-label']}>답변</label>
-                      <input
-                        type="text"
-                        className={styles['profile-input']}
-                        placeholder="보안 질문 답변"
-                        value={profileSecA}
-                        onChange={e => setProfileSecA(e.target.value)}
-                      />
-                      <button
-                        className={styles['profile-submit-btn']}
-                        disabled={isProfileSubmitting}
-                        onClick={() => handleProfileUpdate('security')}
-                      >
-                        {isProfileSubmitting ? '변경 중...' : '질문/답변 변경'}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className={styles['guest-login-prompt']}>
-                <svg width={36} height={36} viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="8" r="4" />
-                  <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-                </svg>
-                <p className={styles['guest-login-text']}>로그인 후 다양한<br />맞춤 서비스를 이용해보세요.</p>
-                <button
-                  className={styles['guest-login-btn']}
-                  onClick={() => setAuthModalOpen(true)}
-                >
-                  로그인하기
-                </button>
-              </div>
-            )}
-
-            <div className={styles['more-menu-group']}>
-              <div className={styles['more-menu-item']} onClick={toggleTheme}>
-                <span className={styles['more-menu-label']}>지도 모드</span>
-                <div className={styles['more-menu-value-wrapper']}>
-                  <span className={styles['more-menu-value']}>{isDarkMode ? "다크 모드" : "라이트 모드"}</span>
-                  <div
-                    className={`${styles['theme-toggle-switch']} ${isDarkMode ? styles['dark'] : ''}`}
-                    role="switch"
-                    aria-checked={isDarkMode}
-                    title={isDarkMode ? "다크 모드로 설정됨" : "라이트 모드로 설정됨"}
-                  >
-                    <div className={styles['theme-toggle-knob']}>
-                      {isDarkMode ? (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#facc15" stroke="#facc15" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                        </svg>
-                      ) : (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="12" cy="12" r="5"></circle>
-                          <line x1="12" y1="1" x2="12" y2="3"></line>
-                          <line x1="12" y1="21" x2="12" y2="23"></line>
-                          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                          <line x1="1" y1="12" x2="3" y2="12"></line>
-                          <line x1="21" y1="12" x2="23" y2="12"></line>
-                          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                        </svg>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles['more-menu-item']} onClick={() => setActiveModal('terms')}>
-                <span className={styles['more-menu-label']}>이용약관 및 정책</span>
-                <span className={styles['more-menu-chevron']}>
-                  <svg width={UI_SIZES.ICON_XS} height={UI_SIZES.ICON_XS} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.BOLD} strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                  </svg>
-                </span>
-              </div>
-              <div className={styles['more-menu-item']} onClick={() => setActiveModal('privacy')}>
-                <span className={styles['more-menu-label']}>개인정보처리방침</span>
-                <span className={styles['more-menu-chevron']}>
-                  <svg width={UI_SIZES.ICON_XS} height={UI_SIZES.ICON_XS} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.BOLD} strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                  </svg>
-                </span>
-              </div>
-            </div>
-
-            <div className={styles['more-info-box-wrapper']}>
-              <div className={styles['info-box']}>
-                <h4 className={styles['info-box-title']}>
-                  <svg className={styles['info-box-icon']} width={UI_SIZES.ICON_XS + 2} height={UI_SIZES.ICON_XS + 2} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.MEDIUM} strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="16" x2="12" y2="12"></line>
-                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                  </svg>
-                  법적 고지 및 데이터 출처
-                </h4>
-                <p className={styles['info-box-desc']}>
-                  본 서비스의 주택 공급 정보와 일정은 LH, GH 등 공공기관의 공고문 데이터를 기반으로 제공됩니다.
-                </p>
-                <p className={styles['info-box-desc']}>
-                  정확한 청약 신청은 시행기관의 공식 홈페이지에서 최종 확인해 주시기 바라며, 제공 정보의 불일치로 인한 법적 책임은 지지 않습니다.
-                </p>
-              </div>
-            </div>
-
-            <div className={styles['more-footer']}>
-              <p>&copy; 2026 공공맵 All rights reserved.</p>
-            </div>
-          </div>
-        </div>
+      {activeTab === "MORE" && (
+        <MoreTab
+          sheetHeight={sheetHeight}
+          minHeight={minHeight}
+          isMounted={isMounted}
+          translateY={translateY}
+          touchHandlers={touchHandlers}
+          style={style}
+          member={member}
+          isProfileOpen={isProfileOpen}
+          setIsProfileOpen={setIsProfileOpen}
+          profileError={profileError}
+          setProfileError={setProfileError}
+          profileSuccess={profileSuccess}
+          setProfileSuccess={setProfileSuccess}
+          profileCurPwd={profileCurPwd}
+          setProfileCurPwd={setProfileCurPwd}
+          profileNewPwd={profileNewPwd}
+          setProfileNewPwd={setProfileNewPwd}
+          profileNewPwdConfirm={profileNewPwdConfirm}
+          setProfileNewPwdConfirm={setProfileNewPwdConfirm}
+          isProfileSubmitting={isProfileSubmitting}
+          handleProfileUpdate={handleProfileUpdate}
+          profileSecQ={profileSecQ}
+          setProfileSecQ={setProfileSecQ}
+          profileSecA={profileSecA}
+          setProfileSecA={setProfileSecA}
+          setAuthModalOpen={setAuthModalOpen}
+          toggleTheme={toggleTheme}
+          isDarkMode={isDarkMode}
+          setActiveModal={setActiveModal}
+        />
       )}
 
       {activeModal && (
