@@ -3,6 +3,7 @@ import { Complex, Announcement } from '@/types';
 import { Tooltip } from '@mantine/core';
 import { formatDateWithTime } from '@/utils/formatters';
 import styles from './ComplexCard.module.css';
+import Badge from '@/components/ui/Badge';
 
 interface ComplexCardProps {
   complex: Complex;
@@ -289,7 +290,7 @@ export default function ComplexCard({
 
       {announcementTitle && (
         <div className={styles['card-ann-info']}>
-          <span className={styles['ann-badge']}>{announcementInstitution || '공고'}</span>
+          <Badge institution={announcementInstitution || '공고'} />
           <span className={styles['ann-title']} title={announcementTitle}>
             {announcementTitle}
           </span>
