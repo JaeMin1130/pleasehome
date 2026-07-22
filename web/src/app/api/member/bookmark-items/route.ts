@@ -24,11 +24,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'complex_id, folder_id가 필요합니다.' }, { status: 400 });
   }
 
-  userDb.prepare(
-    `INSERT INTO member_bookmark_items (member_id, complex_id, folder_id, memo)
-     VALUES (?, ?, ?, ?)
-     ON CONFLICT(member_id, complex_id) DO UPDATE SET folder_id = excluded.folder_id, memo = excluded.memo`
-  ).run(memberId, complex_id, folder_id, memo ?? null);
+  const existing = userDb
+    .prepare('SELECT 1 FROM member_bookmark_items WHERE member_id = ? AND complex_id = ?')
+    .get(memberId, complex_id);
+
+  if (existing) {
+    userDb
+      .prepare('UPDATE member_bookmark_items SET folder_id = ?, memo = ? WHERE member_id = ? AND complex_id = ?')
+      .run(folder_id, memo ?? null, memberId, complex_id);
+  } else {
+    userDb
+      .prepare('INSERT INTO member_bookmark_items (member_id, complex_id, folder_id, memo) VALUES (?, ?, ?, ?)')
+      .run(memberId, complex_id, folder_id, memo ?? null);
+  }
 
   return NextResponse.json({ success: true });
 }

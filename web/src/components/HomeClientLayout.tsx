@@ -7,6 +7,7 @@ import Sidebar from '@/components/Sidebar';
 import DetailPanel from '@/components/DetailPanel';
 import NavigationBar, { NavigationTabType } from '@/components/NavigationBar';
 import BookmarkModal from '@/components/ui/BookmarkModal';
+import AuthModal from '@/components/ui/AuthModal';
 import { formatMoney, formatRent, formatTargetGroup } from '@/utils/formatters';
 import { Announcement, Complex, FilterState, BookmarkFolder, BookmarkItem } from '@/types';
 import styles from '@/app/page.module.css';
@@ -64,6 +65,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
   });
 
   const { member } = useAuth();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   // 로컬스토리지 기반 다크모드/라이트모드 전역 테마 초기화 동기화
   useEffect(() => {
@@ -124,6 +126,10 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
 
   // 북마크 클릭 시 설정 팝업 호출 (이름 유지)
   const toggleBookmark = (complexId: number) => {
+    if (!member) {
+      setAuthModalOpen(true);
+      return;
+    }
     // 이미 저장되어 있는 단지라면 팝업 없이 즉시 목록에서 제외
     const isBookmarked = bookmarkItems.some(item => item.complexId === complexId);
     if (isBookmarked) {
@@ -708,6 +714,10 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
         onSave={handleSaveBookmark}
         onRemove={handleRemoveBookmark}
         onAddFolder={handleAddFolder}
+      />
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
       />
     </div>
   );

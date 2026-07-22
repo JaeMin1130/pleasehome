@@ -24,11 +24,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'id, name, color가 필요합니다.' }, { status: 400 });
   }
 
-  userDb.prepare(
-    `INSERT INTO member_bookmark_folders (id, member_id, name, color)
-     VALUES (?, ?, ?, ?)
-     ON CONFLICT(id, member_id) DO UPDATE SET name = excluded.name, color = excluded.color`
-  ).run(id, memberId, name, color);
+  const existing = userDb
+    .prepare('SELECT 1 FROM member_bookmark_folders WHERE id = ? AND member_id = ?')
+    .get(id, memberId);
+
+  if (existing) {
+    userDb
+      .prepare('UPDATE member_bookmark_folders SET name = ?, color = ? WHERE id = ? AND member_id = ?')
+      .run(name, color, id, memberId);
+  } else {
+    userDb
+      .prepare('INSERT INTO member_bookmark_folders (id, member_id, name, color) VALUES (?, ?, ?, ?)')
+      .run(id, memberId, name, color);
+  }
 
   return NextResponse.json({ success: true });
 }
