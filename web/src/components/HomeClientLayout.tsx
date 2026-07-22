@@ -645,9 +645,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
             '--sidebar-offset-width': isSidebarCollapsed ? '0px' : `${SIDEBAR_DEFAULT_WIDTH}px`
           } as React.CSSProperties}
           comparisonFolder={
-            activeComparisonFolderId === 'default'
-              ? { id: 'default', name: '내 저장 목록', color: '#3B82F6', createdAt: new Date().toISOString() }
-              : (bookmarkFolders.find(f => f.id === activeComparisonFolderId) || null)
+            bookmarkFolders.find(f => f.id === activeComparisonFolderId) || null
           }
           comparisonComplexes={
             activeComparisonFolderId 
