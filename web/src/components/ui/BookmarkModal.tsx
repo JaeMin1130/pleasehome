@@ -31,7 +31,7 @@ export default function BookmarkModal({
   const existingItem = bookmarkItems.find(item => item.complexId === complexId);
 
   const [selectedFolderId, setSelectedFolderId] = useState<string>(
-    existingItem ? existingItem.folderId : (folders.length > 0 ? folders[0].id : 'default')
+    existingItem ? existingItem.folderId : (folders.length > 0 ? folders[0].id : '')
   );
   const [memo, setMemo] = useState<string>(existingItem?.memo || '');
   const [newFolderName, setNewFolderName] = useState<string>('');
@@ -53,6 +53,10 @@ export default function BookmarkModal({
   };
 
   const handleSaveSubmit = () => {
+    if (!selectedFolderId) {
+      alert('저장할 폴더를 선택하거나 생성해 주세요.');
+      return;
+    }
     onSave(selectedFolderId, memo);
   };
 
@@ -113,26 +117,38 @@ export default function BookmarkModal({
             )}
 
             <div className={styles['folders-list']}>
-              {folders.map((folder) => (
-                <label 
-                  key={folder.id} 
-                  className={`${styles['folder-item']} ${selectedFolderId === folder.id ? styles.active : ''}`}
-                >
-                  <input
-                    type="radio"
-                    name="bookmark-folder"
-                    value={folder.id}
-                    checked={selectedFolderId === folder.id}
-                    onChange={() => setSelectedFolderId(folder.id)}
-                    className={styles['radio-input']}
-                  />
-                  <span 
-                    className={styles['folder-color-dot']} 
-                    style={{ backgroundColor: folder.color }}
-                  />
-                  <span className={styles['folder-name']}>{folder.name}</span>
-                </label>
-              ))}
+              {folders.length === 0 ? (
+                <div style={{
+                  padding: 'var(--spacing-md) 0',
+                  color: 'var(--text-muted)',
+                  fontSize: 'var(--font-size-sm)',
+                  textAlign: 'center',
+                  lineHeight: '1.5'
+                }}>
+                  생성된 폴더가 없습니다. 우측 상단의 <strong>'+ 새 폴더'</strong>를 눌러 저장용 폴더를 먼저 생성해 주세요.
+                </div>
+              ) : (
+                folders.map((folder) => (
+                  <label 
+                    key={folder.id} 
+                    className={`${styles['folder-item']} ${selectedFolderId === folder.id ? styles.active : ''}`}
+                  >
+                    <input
+                      type="radio"
+                      name="bookmark-folder"
+                      value={folder.id}
+                      checked={selectedFolderId === folder.id}
+                      onChange={() => setSelectedFolderId(folder.id)}
+                      className={styles['radio-input']}
+                    />
+                    <span 
+                      className={styles['folder-color-dot']} 
+                      style={{ backgroundColor: folder.color }}
+                    />
+                    <span className={styles['folder-name']}>{folder.name}</span>
+                  </label>
+                ))
+              )}
             </div>
           </div>
 

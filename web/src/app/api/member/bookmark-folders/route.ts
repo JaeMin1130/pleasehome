@@ -50,9 +50,9 @@ export async function DELETE(req: NextRequest) {
   if (!id) return NextResponse.json({ error: 'id가 필요합니다.' }, { status: 400 });
   if (id === 'default') return NextResponse.json({ error: '기본 폴더는 삭제할 수 없습니다.' }, { status: 400 });
 
-  // 폴더 삭제 시 소속 북마크 아이템은 기본 폴더로 이전
+  // 폴더 삭제 시 소속 북마크 아이템도 함께 삭제
   userDb.prepare(
-    "UPDATE member_bookmark_items SET folder_id = 'default' WHERE member_id = ? AND folder_id = ?"
+    "DELETE FROM member_bookmark_items WHERE member_id = ? AND folder_id = ?"
   ).run(memberId, id);
   userDb.prepare(
     'DELETE FROM member_bookmark_folders WHERE id = ? AND member_id = ?'

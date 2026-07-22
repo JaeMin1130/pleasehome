@@ -79,9 +79,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
     }
   }, []);
 
-  const DEFAULT_FOLDERS: BookmarkFolder[] = [
-    { id: 'default', name: '내 저장 목록', color: '#3B82F6', createdAt: new Date().toISOString() }
-  ];
+  const DEFAULT_FOLDERS: BookmarkFolder[] = [];
 
   // 회원 로그인 상태 변경 시 서버 데이터 동기화
   useEffect(() => {

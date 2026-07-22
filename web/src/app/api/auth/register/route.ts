@@ -29,10 +29,6 @@ export async function POST(req: NextRequest) {
       'INSERT INTO members (id, pwd_hash, security_q, security_a) VALUES (?, ?, ?, ?)'
     ).run(id, pwd_hash, security_q, security_a);
 
-    // 가입 즉시 기본 북마크 폴더 생성
-    userDb.prepare(
-      "INSERT INTO member_bookmark_folders (id, member_id, name, color) VALUES ('default', ?, '내 저장 목록', '#3B82F6')"
-    ).run(id);
 
     // 세션 쿠키 발급 (가입 후 자동 로그인)
     await setSessionCookie(id);
