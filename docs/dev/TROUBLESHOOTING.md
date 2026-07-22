@@ -52,3 +52,9 @@
 * **원인 (Cause)**: 1초 간격의 타이머 state가 메인 카드 컴포넌트에 직접 포함되어 있었음
 * **해결 (Solution)**: 카운트다운 타이머 로직을 memoized 컴포넌트(CountdownTimer)로 격리 분리함
 
+### [2026-07-22] 북마크 API 호출 시 ON CONFLICT 복합키 불일치 오류 해결
+* **분류**: 웹 프론트엔드
+* **현상 (Problem)**: 북마크 저장 및 폴더 생성 시 복합키 UNIQUE 제약 조건 불일치로 500 서버 에러가 발생함
+* **원인 (Cause)**: 배포 서버의 SQLite user_data.db 테이블 제약 조건이 API 쿼리 내 ON CONFLICT 컬럼 조합과 일치하지 않음
+* **해결 (Solution)**: ON CONFLICT UPSERT 문을 제거하고 SELECT 조회 후 INSERT/UPDATE 분기 처리로 쿼리 구조를 대체함
+
