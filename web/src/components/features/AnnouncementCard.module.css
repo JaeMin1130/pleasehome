@@ -98,8 +98,7 @@
     font-weight: var(--font-weight-semibold);
 }
 
-.header-badges .card-type,
-.header-badges :global(.badge) {
+.header-badges .card-type {
     color: var(--primary) !important;
     background-color: var(--primary-bg) !important;
 }
