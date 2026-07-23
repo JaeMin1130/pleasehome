@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import DetailPanel from '@/components/DetailPanel';
 import NavigationBar, { NavigationTabType } from '@/components/NavigationBar';
@@ -35,6 +35,7 @@ interface HomeClientLayoutProps {
 }
 
 function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeClientLayoutProps) {
+  const router = useRouter();
   const [announcements, setAnnouncements] = useState<Announcement[]>(initialAnnouncements);
   const [allComplexes, setAllComplexes] = useState<Complex[]>(initialComplexes);
   const [announcementUnits, setAnnouncementUnits] = useState<any[]>([]);
@@ -310,34 +311,10 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
     }
   }, [initialAnnouncements, initialComplexes]);
 
-  // 쿼리 파라미터가 유입되었을 때 해당 공고 활성화
+  // 💡 새로고침 또는 첫 진입 시 주소창의 쿼리 파라미터를 강제로 청소하여 초기화합니다.
   useEffect(() => {
-    if (annIdParam && announcements.length > 0) {
-      const parsedId = parseInt(annIdParam, 10);
-      if (!isNaN(parsedId)) {
-        const exists = announcements.some(a => a.id === parsedId);
-        if (exists) {
-          setActiveAnnId(parsedId);
-        }
-      }
-    }
-  }, [annIdParam, announcements]);
-
-  // 쿼리 파라미터로 단지 ID가 들어왔을 때 해당 단지 포커싱 및 정보 활성화
-  useEffect(() => {
-    if (compIdParam && allComplexes.length > 0) {
-      const parsedCompId = parseInt(compIdParam, 10);
-      if (!isNaN(parsedCompId)) {
-        const targetComplex = allComplexes.find(c => c.id === parsedCompId);
-        if (targetComplex) {
-          setActiveAnnId(targetComplex.announcement_id);
-          setSelectedComplex(targetComplex);
-          setActiveComplexId(targetComplex.id);
-          setIsPanelOpen(true);
-        }
-      }
-    }
-  }, [compIdParam, allComplexes]);
+    router.replace('/', { scroll: false });
+  }, [router]);
 
   useEffect(() => {
     if (activeAnnId === null) { setAnnouncementUnits([]); return; }
@@ -439,9 +416,9 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
 
     // URL 양방향 동기화 (Shallow Routing)
     if (id !== null) {
-      window.history.replaceState(null, '', `/?announcement_id=${id}`);
+      router.replace(`/?announcement_id=${id}`, { scroll: false });
     } else {
-      window.history.replaceState(null, '', '/');
+      router.replace('/', { scroll: false });
     }
   };
 
@@ -452,7 +429,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
       setSelectedComplex(complex);
       setActiveComplexId(complex.id);
       setIsPanelOpen(true);
-      window.history.replaceState(null, '', `/?complex_id=${complex.id}`);
+      router.replace(`/?complex_id=${complex.id}`, { scroll: false });
       
       // 모바일 뷰인 경우 사이드바 닫기
       if (activeTab !== null) {
@@ -478,11 +455,11 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
       // 단지 해제 시: 단지 탭에서는 무조건 주소를 / 로 롤백하고 공고 ID 상태도 클린 초기화
       if (activeTab === 'COMPLEX') {
         setActiveAnnId(null);
-        window.history.replaceState(null, '', '/');
+        router.replace('/', { scroll: false });
       } else if (activeAnnId !== null) {
-        window.history.replaceState(null, '', `/?announcement_id=${activeAnnId}`);
+        router.replace(`/?announcement_id=${activeAnnId}`, { scroll: false });
       } else {
-        window.history.replaceState(null, '', '/');
+        router.replace('/', { scroll: false });
       }
     } else {
       // 모바일 뷰인 경우 사이드바 닫기 전에 현재 탭 기억
@@ -499,7 +476,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
       }
 
       // 단지 선택 시: URL에 complex_id 설정
-      window.history.replaceState(null, '', `/?complex_id=${complex.id}`);
+      router.replace(`/?complex_id=${complex.id}`, { scroll: false });
     }
   };
 
@@ -510,7 +487,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
       setActiveComplexId(null);
       setActiveAnnId(null);
       setIsPanelOpen(false);
-      window.history.replaceState(null, '', '/');
+      router.replace('/', { scroll: false });
     }
 
     setActiveTab(tab);
@@ -725,7 +702,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
           announcements={announcements} 
           bookmarkedIds={bookmarkedIds}
           onToggleBookmark={toggleBookmark}
-          activeTab={activeTab}
+          activeTab={activeTab || lastActiveTab}
           onClose={() => { 
             setIsPanelOpen(false); 
             setActiveComplexId(null); 
@@ -739,9 +716,9 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
             }
 
             if (activeAnnId !== null) {
-              window.history.replaceState(null, '', `/?announcement_id=${activeAnnId}`);
+              router.replace(`/?announcement_id=${activeAnnId}`, { scroll: false });
             } else {
-              window.history.replaceState(null, '', '/');
+              router.replace('/', { scroll: false });
             }
           }} 
           style={{ 
