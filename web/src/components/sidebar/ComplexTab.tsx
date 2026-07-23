@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Complex, Announcement } from '@/types';
 import ComplexCard from '@/components/features/ComplexCard';
 import styles from '../Sidebar.module.css';
@@ -20,6 +20,11 @@ interface ComplexTabProps {
   bookmarkedIds: number[];
   onToggleBookmark: (complexId: number) => void;
   onHoverComplex?: (id: number | null) => void;
+  // 💡 부모 상태(HomeClientLayout)와 연동하여 지도 마커/시점과 실시간 싱크하기 위한 Props
+  complexSearchTerm: string;
+  setComplexSearchTerm: (term: string) => void;
+  complexActiveRegion: string;
+  onComplexActiveRegionChange: (region: string) => void;
 }
 
 export default function ComplexTab({
@@ -37,9 +42,11 @@ export default function ComplexTab({
   bookmarkedIds,
   onToggleBookmark,
   onHoverComplex,
+  complexSearchTerm,
+  setComplexSearchTerm,
+  complexActiveRegion,
+  onComplexActiveRegionChange,
 }: ComplexTabProps) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeRegion, setActiveRegion] = useState('ALL');
 
   // 지오코딩 및 공고 연동을 아우르는 지역 필터 판별 헬퍼 함수
   const matchesRegion = (complex: Complex, active: string): boolean => {
@@ -93,9 +100,9 @@ export default function ComplexTab({
   };
 
   const filteredComplexes = allComplexes.filter(c => {
-    const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         c.address.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesReg = matchesRegion(c, activeRegion);
+    const matchesSearch = c.name.toLowerCase().includes(complexSearchTerm.toLowerCase()) ||
+                         c.address.toLowerCase().includes(complexSearchTerm.toLowerCase());
+    const matchesReg = matchesRegion(c, complexActiveRegion);
     return matchesSearch && matchesReg;
   });
 
@@ -133,12 +140,12 @@ export default function ComplexTab({
             type="text"
             placeholder="단지명 또는 단지 주소 검색..."
             className={styles['search-input']}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={complexSearchTerm}
+            onChange={(e) => setComplexSearchTerm(e.target.value)}
           />
-          {searchTerm && (
+          {complexSearchTerm && (
             <button
-              onClick={() => setSearchTerm('')}
+              onClick={() => setComplexSearchTerm('')}
               className={styles['clear-btn']}
             >
               ✕
@@ -153,8 +160,8 @@ export default function ComplexTab({
             return (
               <span
                 key={r}
-                className={`${styles['region-tag']} ${activeRegion === r ? styles.active : ''}`}
-                onClick={() => setActiveRegion(r)}
+                className={`${styles['region-tag']} ${complexActiveRegion === r ? styles.active : ''}`}
+                onClick={() => onComplexActiveRegionChange(r)}
                 style={{ cursor: 'pointer', margin: 0 }}
               >
                 {label}

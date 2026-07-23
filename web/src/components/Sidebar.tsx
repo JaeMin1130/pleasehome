@@ -47,6 +47,10 @@ interface SidebarProps {
   activeComparisonFolderId: string | null;
   onToggleComparison: (folderId: string) => void;
   onHoverComplex?: (id: number | null) => void;
+  complexSearchTerm?: string;
+  setComplexSearchTerm?: (term: string) => void;
+  complexActiveRegion?: string;
+  onComplexActiveRegionChange?: (region: string) => void;
 }
 
 export default function Sidebar({ 
@@ -58,7 +62,11 @@ export default function Sidebar({
   bookmarkFolders, bookmarkItems, activeFolderIds, setActiveFolderIds,
   onAddFolder, onRemoveFolder, onUpdateFolder, onMoveBookmarkItem,
   activeComparisonFolderId, onToggleComparison,
-  onHoverComplex
+  onHoverComplex,
+  complexSearchTerm = '',
+  setComplexSearchTerm = () => {},
+  complexActiveRegion = 'ALL',
+  onComplexActiveRegionChange = () => {}
 }: SidebarProps) {
   const { member } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
@@ -107,7 +115,7 @@ export default function Sidebar({
     }
   }, [isCollapsed, minHeight, midHeight, setSheetHeight]);
 
-  const [complexSearchTerm, setComplexSearchTerm] = useState('');
+
   const [activeTabStatus, setActiveTabStatus] = useState<ApplicationStatus | 'HIDDEN' | 'FAVORITE'>('ONGOING');
   const [activeRegion, setActiveRegion] = useState<string>('ALL');
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
@@ -734,6 +742,10 @@ export default function Sidebar({
           bookmarkedIds={bookmarkedIds}
           onToggleBookmark={onToggleBookmark}
           onHoverComplex={onHoverComplex}
+          complexSearchTerm={complexSearchTerm}
+          setComplexSearchTerm={setComplexSearchTerm}
+          complexActiveRegion={complexActiveRegion}
+          onComplexActiveRegionChange={onComplexActiveRegionChange}
         />
       )}
 
