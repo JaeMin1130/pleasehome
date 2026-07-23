@@ -141,7 +141,7 @@ export default function ComplexTab({
       {/* 모바일 화면 전용 상단 드래그 핸들바 */}
       <div className={styles['drag-handle-bar']} />
 
-      <div className={styles['sidebar-search']}>
+      <div className={styles['complex-sidebar-search']}>
         <div className={styles['search-wrapper']}>
           <svg
             className={styles['search-icon']}
