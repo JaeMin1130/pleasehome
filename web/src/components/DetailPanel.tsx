@@ -30,6 +30,21 @@ export default function DetailPanel({
   activeTab
 }: DetailPanelProps) {
   const [units, setUnits] = useState<HousingUnit[]>([]);
+  const [panelExpandedSections, setPanelExpandedSections] = useState<{ [key: string]: boolean }>({});
+  const [isAnnActive, setIsAnnActive] = useState(false);
+
+  const handleTogglePanelSection = (sectionKey: string) => {
+    setPanelExpandedSections(prev => {
+      const next = { ...prev };
+      next[sectionKey] = !prev[sectionKey];
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    setPanelExpandedSections({});
+    setIsAnnActive(false);
+  }, [complex?.id]);
 
   const { 
     sheetHeight, 
@@ -490,10 +505,10 @@ export default function DetailPanel({
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
                     <AnnouncementCard
                       ann={relatedAnn}
-                      isActive={false}
-                      onClick={() => {}}
-                      expandedSections={{}}
-                      onToggleSection={() => {}}
+                      isActive={isAnnActive}
+                      onClick={() => setIsAnnActive(prev => !prev)}
+                      expandedSections={panelExpandedSections}
+                      onToggleSection={handleTogglePanelSection}
                       isComplexListOpen={false}
                       onToggleComplexList={() => {}}
                       isDisabled={false}
