@@ -388,8 +388,9 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
   }, [allComplexes, complexSearchTerm, complexActiveRegion, announcements]);
 
   // 저장 탭(BOOKMARK) 필터 조건 분기: 상세 필터와 무관하게 저장된 단지만 매핑
+  const currentEffectiveTabForMap = activeTab || lastActiveTab;
   let mapComplexes = filteredComplexes;
-  if (activeTab === 'BOOKMARK') {
+  if (currentEffectiveTabForMap === 'BOOKMARK') {
     if (activeFolderIds.length === 0) {
       // 1단계: 전체 저장 단지
       const allBookmarkedIds = bookmarkItems.map(item => item.complexId);
@@ -401,7 +402,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
         .map(item => item.complexId);
       mapComplexes = allComplexes.filter(c => folderBookmarkedIds.includes(c.id));
     }
-  } else if (activeTab === 'COMPLEX') {
+  } else if (currentEffectiveTabForMap === 'COMPLEX') {
     mapComplexes = filteredComplexesForComplexTab;
   }
 
@@ -452,8 +453,9 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
         setLastActiveTab(null);
       }
 
-      // 단지 해제 시: 단지 탭에서는 무조건 주소를 / 로 롤백하고 공고 ID 상태도 클린 초기화
-      if (activeTab === 'COMPLEX') {
+      // 단지 해제 시: 단지 탭(COMPLEX) 또는 저장 탭(BOOKMARK) 상태일 때는 공고 상태 소거 및 클린 롤백
+      const currentEffectiveTab = activeTab || lastActiveTab;
+      if (currentEffectiveTab === 'COMPLEX' || currentEffectiveTab === 'BOOKMARK') {
         setActiveAnnId(null);
         router.replace('/', { scroll: false });
       } else if (activeAnnId !== null) {
@@ -481,8 +483,9 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
   };
 
   const handleTabSelect = (tab: NavigationTabType | null) => {
-    // 💡 다른 탭으로 전환하는 순간, 열려있던 패널을 닫고 주소창을 클린(/) 상태로 초기화합니다.
-    if (tab !== activeTab) {
+    // 💡 사용자가 실제로 '다른 활성 탭'을 눌러 전환할 때만 패널을 닫고 주소를 청소합니다.
+    // 💡 모바일 뷰에서 사이드바를 임시로 접기 위해 tab === null 이 들어올 때는 정화 동작을 생략합니다.
+    if (tab !== null && tab !== activeTab) {
       setSelectedComplex(null);
       setActiveComplexId(null);
       setActiveAnnId(null);
@@ -686,11 +689,26 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
             if (activeComparisonFolderId === folderId) {
               setActiveComparisonFolderId(null);
               setIsPanelOpen(false);
+              
+              // 모바일 뷰에서 비교 해제 시 이전 활성화 탭 복원
+              if (typeof window !== 'undefined' && window.innerWidth <= 768 && lastActiveTab !== null) {
+                handleTabSelect(lastActiveTab);
+                setLastActiveTab(null);
+              }
             } else {
+              // 모바일 뷰인 경우 사이드바 닫기 전에 현재 탭 기억
+              if (activeTab !== null) {
+                setLastActiveTab(activeTab);
+              }
+              
               setActiveComparisonFolderId(folderId);
               setActiveComplexId(null);
               setSelectedComplex(null);
               setIsPanelOpen(true);
+
+              if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+                handleTabSelect(null);
+              }
             }
           }}
         />
