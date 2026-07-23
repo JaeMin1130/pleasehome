@@ -58,3 +58,28 @@
 * **원인 (Cause)**: 배포 서버의 SQLite user_data.db 테이블 제약 조건이 API 쿼리 내 ON CONFLICT 컬럼 조합과 일치하지 않음
 * **해결 (Solution)**: ON CONFLICT UPSERT 문을 제거하고 SELECT 조회 후 INSERT/UPDATE 분기 처리로 쿼리 구조를 대체함
 
+### [2026-07-23] Sidebar.tsx 런타임 ReferenceError (onSelectComplex is not defined) 해결
+* **분류**: 웹 프론트엔드
+* **현상 (Problem)**: `onSelectComplex is not defined` ReferenceError로 런타임 비정상 종료됨
+* **원인 (Cause)**: `ComplexTab` 의 Props 타입 정의부에는 속성을 추가했으나 컴포넌트 매개변수 구조분해할당에서 누락함
+* **해결 (Solution)**: 구조분해할당 인자에 `onSelectComplex`, `activeComplexId` 등을 명시적으로 추가하여 참조 오류를 해결함
+
+### [2026-07-23] 단지 상세 패널 내 연관 공고 아코디언 토글 시 리셋 및 미작동 버그 해결
+* **분류**: 웹 프론트엔드
+* **현상 (Problem)**: 상세 패널 내의 공고 카드 아코디언이 접히지 않거나 항상 펼쳐진 채로 나옴
+* **원인 (Cause)**: `useEffect` 의 디펜던시가 객체 참조 `[complex]` 로 잡혀있어 렌더링 시 아코디언 로컬 상태가 강제 리셋됨
+* **해결 (Solution)**: 디펜던시를 고유 ID 원시값 `[complex?.id]` 로 수정하고, `isAnnActive` 상태를 분리해 카드 클릭 시 접기 토글이 활성화되도록 패치함
+
+### [2026-07-23] 단지 선택 해제 시 주소창이 엉뚱한 공고 ID로 스위칭되는 동기화 버그 해결
+* **분류**: 웹 프론트엔드
+* **현상 (Problem)**: 단지 해제 시 주소창 URL이 `?announcement_id=3` 으로 튀어버림
+* **원인 (Cause)**: `compIdParam` 주소 변경을 감지하는 `useEffect`가 연관 공고 ID를 덮어쓰고, 해제 시 이전 상태 롤백 분기를 탄 것이 원인임
+* **해결 (Solution)**: 단지 탭(`COMPLEX`) 상태에서 카드를 해제할 때 공고 ID 상태를 `null` 로 정화하고 주소를 `/` 로 강제 롤백 처리함
+
+### [2026-07-23] 사이드바 탭 전환 시 상세 패널 및 주소 쿼리 꼬임 버그 해결
+* **분류**: 웹 프론트엔드
+* **현상 (Problem)**: 공고/단지 패널이 열린 상태에서 다른 탭으로 넘어가도 URL 쿼리가 지워지지 않고 남아있음
+* **원인 (Cause)**: 탭 셀렉터 `handleTabSelect` 내에 상세 정보 및 주소 파라미터 소거 로직이 부재함
+* **해결 (Solution)**: `handleTabSelect` 에 탭 스위칭 감지 구문을 추가하여, 탭 전환 시 모든 상세 패널을 닫고 URL을 `/` 로 즉시 정화함
+
+

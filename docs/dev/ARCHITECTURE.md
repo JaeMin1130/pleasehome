@@ -8,7 +8,7 @@
 
 초경량 가상 서버(NCP Micro 등, 1GB RAM) 환경에서의 안정적인 서비스 운영을 위해, 무거운 백엔드 연산(API 통신 및 PDF/Excel 대용량 데이터 가공)과 웹서버의 책임 영역을 정밀하게 격리합니다.
 * **데이터 적재(db-pipeline)**: 백엔드 파이프라인에서 수집 및 변환 작업을 선제적으로 수행하여 정제 캐싱된 SQLite 공고 DB(`public_housing.db`) 파일 형태로 빌드하여 배포 시 덮어씁니다.
-* **웹 서빙 및 회원 관리(web)**: Next.js 서버는 공고 DB(`public_housing.db`)를 Read-Only 조회를 수행하고, 회원 계정/찜/숨김/북마크 등 실시간 변경 데이터는 별도의 회원 전용 DB(`user_data.db`)에 격리 보관하여 배포 시 회원 데이터 유실을 완벽히 차단합니다. UI 컴포넌트는 `Sidebar`의 서브 탭(`SearchTab`, `BookmarkTab`, `MoreTab`) 및 기능별 단위(`AnnouncementCard`, `Map` 등)로 모듈화하여 리렌더링과 유지보수 효율을 극대화합니다.
+* **웹 서빙 및 회원 관리(web)**: Next.js 서버는 공고 DB(`public_housing.db`)를 Read-Only 조회를 수행하고, 회원 계정/찜/숨김/북마크 등 실시간 변경 데이터는 별도의 회원 전용 DB(`user_data.db`)에 격리 보관하여 배포 시 회원 데이터 유실을 완벽히 차단합니다. UI 컴포넌트는 `Sidebar`의 서브 탭(`SearchTab`, `BookmarkTab`, `MoreTab`, `ComplexTab`) 및 기능별 단위(`AnnouncementCard`, `Map` 등)로 모듈화하여 리렌더링과 유지보수 효율을 극대화합니다. 특히, `DetailPanel` 은 진입 탭 정보(`activeTab`)를 기준으로 조건부 렌더링(공고 탭: 주택형표, 단지 탭: 연관 공고 아코디언)을 처리하여 공고 상세와 단지 상세 구조를 단일 패널로 최적화 연동합니다.
 * **SSR 하이브리드 렌더링 및 SEO/애드센스 대응**: 메인 루트 페이지(`page.tsx`)를 SSR 서버 컴포넌트로 구동하여 초기 접속 시 구글 봇/검색엔진에게 텍스트 콘텐츠와 정적 HTML `<a>` 링크를 프리렌더링(ISR)해서 전달하고, 대화형 지도 UI는 클라이언트 컴포넌트(`HomeClientLayout.tsx`)로 분리 마운트합니다.
 
 ---
