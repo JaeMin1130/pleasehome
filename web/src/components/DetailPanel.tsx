@@ -5,6 +5,7 @@ import { useBottomSheetGesture } from '@/hooks/useBottomSheetGesture';
 import { Complex, HousingUnit, Announcement, FilterState, BookmarkFolder } from '@/types';
 import UnitTable from '@/components/features/UnitTable';
 import AnnouncementCard from '@/components/features/AnnouncementCard';
+import ComplexCard from '@/components/features/ComplexCard';
 import { formatTargetGroup, formatMoney, formatRent } from '@/utils/formatters';
 import styles from './DetailPanel.module.css';
 
@@ -20,6 +21,8 @@ interface DetailPanelProps {
   comparisonFolder?: BookmarkFolder | null;
   comparisonComplexes?: Complex[];
   activeTab: 'SEARCH' | 'COMPLEX' | 'BOOKMARK' | 'MORE' | null;
+  allComplexes?: Complex[];
+  onSelectComplex?: (complex: Complex) => void;
 }
 
 export default function DetailPanel({ 
@@ -27,11 +30,15 @@ export default function DetailPanel({
   bookmarkedIds, onToggleBookmark,
   comparisonFolder = null,
   comparisonComplexes = [],
-  activeTab
+  activeTab,
+  allComplexes = [],
+  onSelectComplex
 }: DetailPanelProps) {
   const [units, setUnits] = useState<HousingUnit[]>([]);
   const [panelExpandedSections, setPanelExpandedSections] = useState<{ [key: string]: boolean }>({});
   const [isAnnActive, setIsAnnActive] = useState(false);
+  const [isComplexListOpen, setIsComplexListOpen] = useState(false);
+  const [complexSearchTerm, setComplexSearchTerm] = useState('');
 
   const handleTogglePanelSection = (sectionKey: string) => {
     setPanelExpandedSections(prev => {
@@ -44,6 +51,8 @@ export default function DetailPanel({
   useEffect(() => {
     setPanelExpandedSections({});
     setIsAnnActive(false);
+    setIsComplexListOpen(false);
+    setComplexSearchTerm('');
   }, [complex?.id]);
 
   const { 
@@ -501,6 +510,17 @@ export default function DetailPanel({
                 if (!relatedAnn) {
                   return <div className={styles['empty-msg']}>이 단지와 매핑된 공고 정보가 없습니다.</div>;
                 }
+
+                // 해당 공고에 속한 단지 목록 필터링
+                const relatedComplexes = allComplexes.filter(c => c.announcement_id === relatedAnn.id);
+
+                // 검색어 필터링
+                const filteredComplexes = relatedComplexes.filter(c => {
+                  if (!complexSearchTerm) return true;
+                  return c.name.toLowerCase().includes(complexSearchTerm.toLowerCase()) || 
+                         c.address.toLowerCase().includes(complexSearchTerm.toLowerCase());
+                });
+
                 return (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
                     <AnnouncementCard
@@ -509,13 +529,53 @@ export default function DetailPanel({
                       onClick={() => setIsAnnActive(prev => !prev)}
                       expandedSections={panelExpandedSections}
                       onToggleSection={handleTogglePanelSection}
-                      isComplexListOpen={false}
-                      onToggleComplexList={() => {}}
+                      isComplexListOpen={isComplexListOpen}
+                      onToggleComplexList={() => setIsComplexListOpen(!isComplexListOpen)}
                       isDisabled={false}
                       onDisableToggle={() => {}}
                       isFavorite={false}
                       onFavoriteToggle={() => {}}
-                    />
+                    >
+                      {isAnnActive && (
+                        <div className={styles['complex-search-container']}>
+                          <div className={styles['complex-search-wrapper']}>
+                            <input 
+                              type="text" 
+                              placeholder="주택명 검색..." 
+                              value={complexSearchTerm}
+                              onChange={(e) => setComplexSearchTerm(e.target.value)}
+                              className={styles['complex-search-input']}
+                            />
+                            {complexSearchTerm && (
+                              <button 
+                                onClick={() => setComplexSearchTerm('')}
+                                className={styles['complex-clear-btn']}
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
+                          <div className={styles['complexes-list-container']}>
+                            {filteredComplexes.length === 0 ? (
+                              <div className={styles['complex-empty-msg']}>
+                                {complexSearchTerm ? '검색 결과가 없습니다.' : '이 공고에 속한 다른 단지가 없거나 필터 조건에 맞는 주택이 없습니다.'}
+                              </div>
+                            ) : (
+                              filteredComplexes.map((c) => (
+                                <ComplexCard
+                                  key={c.id}
+                                  complex={c}
+                                  isActive={complex.id === c.id}
+                                  onClick={() => onSelectComplex?.(c)}
+                                  isBookmarked={bookmarkedIds.includes(c.id)}
+                                  onBookmarkToggle={() => onToggleBookmark(c.id)}
+                                />
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </AnnouncementCard>
                   </div>
                 );
               })()}

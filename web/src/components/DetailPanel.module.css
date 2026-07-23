@@ -445,3 +445,69 @@
     overflow-y: auto;
   }
 }
+
+/* Sidebar.module.css에서 복사한 단지 검색 및 목록 스타일 */
+.complex-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.complex-search-input {
+  width: 100%;
+  padding: var(--spacing-6px) calc(var(--spacing-md) * 1.75) var(--spacing-6px) var(--spacing-10px);
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-md);
+  border: var(--spacing-3xs) solid var(--border-light);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.complex-search-input:focus {
+  border-color: var(--primary);
+}
+
+.complex-search-container {
+  margin-top: calc(var(--spacing-sm) * 0.5);
+}
+
+.complexes-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.complex-clear-btn {
+  position: absolute;
+  right: var(--spacing-sm);
+  top: var(--position-center);
+  transform: translateY(var(--transform-half));
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xs);
+  transition: color var(--transition-fast);
+}
+
+.complex-clear-btn:hover {
+  color: var(--text-primary);
+}
+
+.complex-empty-msg {
+  padding: var(--spacing-lg);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-base);
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-md);
+  border: var(--spacing-3xs) solid var(--border-light);
+}

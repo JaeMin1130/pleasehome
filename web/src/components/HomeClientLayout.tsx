@@ -755,6 +755,8 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
                 )
               : []
           }
+          allComplexes={allComplexes}
+          onSelectComplex={handleSelectComplex}
         />
 
         <div className={styles['app-map-container']}>
