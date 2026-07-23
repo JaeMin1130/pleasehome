@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { Complex, Announcement } from '@/types';
 import ComplexCard from '@/components/features/ComplexCard';
-import AnnouncementCard from '@/components/features/AnnouncementCard';
 import styles from '../Sidebar.module.css';
 
 interface ComplexTabProps {
@@ -21,8 +20,6 @@ interface ComplexTabProps {
   bookmarkedIds: number[];
   onToggleBookmark: (complexId: number) => void;
   onHoverComplex?: (id: number | null) => void;
-  onSelectAnnouncementAndComplex?: (annId: number, complex: Complex) => void;
-  onTabSelect?: (tab: any) => void;
 }
 
 export default function ComplexTab({
@@ -40,8 +37,6 @@ export default function ComplexTab({
   bookmarkedIds,
   onToggleBookmark,
   onHoverComplex,
-  onSelectAnnouncementAndComplex,
-  onTabSelect,
 }: ComplexTabProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeRegion, setActiveRegion] = useState('ALL');
@@ -184,7 +179,6 @@ export default function ComplexTab({
           <div className={styles['complexes-list-container']} style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '0 4px' }}>
             {filteredComplexes.map((complex) => {
               const isActive = activeComplexId === complex.id;
-              const relatedAnn = announcements.find(a => a.id === complex.announcement_id);
               
               return (
                 <div key={complex.id} className={styles['complex-card-wrapper']} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -198,43 +192,8 @@ export default function ComplexTab({
                     onBookmarkToggle={() => onToggleBookmark(complex.id)}
                     onMouseEnter={() => onHoverComplex?.(complex.id)}
                     onMouseLeave={() => onHoverComplex?.(null)}
-                    announcement={relatedAnn}
-                    announcementTitle={relatedAnn?.title}
-                    announcementInstitution={relatedAnn?.institution}
+                    // 💡 최초 카드 상태에서는 공고 제목 및 타임라인 바 등의 공고 정보 노출을 차단하여 "주소까지만" 나오도록 제어합니다.
                   />
-                  {isActive && relatedAnn && (
-                    <div 
-                      className={styles['complex-accordion-content']} 
-                      style={{ 
-                        padding: '10px 8px 12px 8px', 
-                        borderBottom: '1px solid var(--border)',
-                        background: 'var(--bg-card-hover, rgba(255, 255, 255, 0.02))',
-                        borderRadius: '0 0 8px 8px',
-                        marginTop: '-4px'
-                      }}
-                    >
-                      <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-                        대상 모집 공고
-                      </div>
-                      <AnnouncementCard
-                        ann={relatedAnn}
-                        isActive={false}
-                        onClick={() => {
-                          if (onSelectAnnouncementAndComplex) {
-                            onSelectAnnouncementAndComplex(relatedAnn.id, complex);
-                          }
-                        }}
-                        expandedSections={{}}
-                        onToggleSection={() => {}}
-                        isComplexListOpen={false}
-                        onToggleComplexList={() => {}}
-                        isDisabled={false}
-                        onDisableToggle={() => {}}
-                        isFavorite={false}
-                        onFavoriteToggle={() => {}}
-                      />
-                    </div>
-                  )}
                 </div>
               );
             })}

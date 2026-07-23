@@ -47,7 +47,6 @@ interface SidebarProps {
   activeComparisonFolderId: string | null;
   onToggleComparison: (folderId: string) => void;
   onHoverComplex?: (id: number | null) => void;
-  onSelectAnnouncementAndComplex?: (annId: number, complex: Complex) => void;
 }
 
 export default function Sidebar({ 
@@ -59,8 +58,7 @@ export default function Sidebar({
   bookmarkFolders, bookmarkItems, activeFolderIds, setActiveFolderIds,
   onAddFolder, onRemoveFolder, onUpdateFolder, onMoveBookmarkItem,
   activeComparisonFolderId, onToggleComparison,
-  onHoverComplex,
-  onSelectAnnouncementAndComplex
+  onHoverComplex
 }: SidebarProps) {
   const { member } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
@@ -736,8 +734,6 @@ export default function Sidebar({
           bookmarkedIds={bookmarkedIds}
           onToggleBookmark={onToggleBookmark}
           onHoverComplex={onHoverComplex}
-          onSelectAnnouncementAndComplex={onSelectAnnouncementAndComplex}
-          onTabSelect={onTabSelect}
         />
       )}
 

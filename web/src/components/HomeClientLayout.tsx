@@ -363,15 +363,6 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
     }
   };
 
-  const handleSelectAnnouncementAndComplex = (annId: number, complex: Complex) => {
-    setActiveAnnId(annId);
-    setSelectedComplex(complex);
-    setActiveComplexId(complex.id);
-    setIsPanelOpen(true);
-    setActiveTab('SEARCH');
-    window.history.replaceState(null, '', `/?complex_id=${complex.id}`);
-  };
-
   const handleSelectComplex = (complex: Complex) => {
     // 💡 비교 표가 열린 상태였다면 비교 모드를 자동 해제하고 해당 단지 상세 정보로 자연스럽게 이행
     if (activeComparisonFolderId !== null) {
@@ -557,7 +548,6 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
           width={SIDEBAR_DEFAULT_WIDTH} isCollapsed={isSidebarCollapsed} onCollapseChange={setIsSidebarCollapsed}
           displayComplexes={activeTab === 'BOOKMARK' ? mapComplexes : filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex}
           activeTab={activeTab} onTabSelect={handleTabSelect} allComplexes={allComplexes}
-          onSelectAnnouncementAndComplex={handleSelectAnnouncementAndComplex}
           bookmarkedIds={bookmarkedIds} onToggleBookmark={toggleBookmark}
           bookmarkFolders={bookmarkFolders}
           bookmarkItems={bookmarkItems}
@@ -633,6 +623,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
           announcements={announcements} 
           bookmarkedIds={bookmarkedIds}
           onToggleBookmark={toggleBookmark}
+          activeTab={activeTab}
           onClose={() => { 
             setIsPanelOpen(false); 
             setActiveComplexId(null); 
