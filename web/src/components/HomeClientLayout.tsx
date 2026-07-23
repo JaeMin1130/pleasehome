@@ -475,8 +475,11 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
         setLastActiveTab(null);
       }
 
-      // 단지 해제 시: 이전 공고가 활성화되어 있으면 공고 ID 유지, 없으면 /
-      if (activeAnnId !== null) {
+      // 단지 해제 시: 단지 탭에서는 무조건 주소를 / 로 롤백하고 공고 ID 상태도 클린 초기화
+      if (activeTab === 'COMPLEX') {
+        setActiveAnnId(null);
+        window.history.replaceState(null, '', '/');
+      } else if (activeAnnId !== null) {
         window.history.replaceState(null, '', `/?announcement_id=${activeAnnId}`);
       } else {
         window.history.replaceState(null, '', '/');
@@ -501,6 +504,15 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
   };
 
   const handleTabSelect = (tab: NavigationTabType | null) => {
+    // 💡 다른 탭으로 전환하는 순간, 열려있던 패널을 닫고 주소창을 클린(/) 상태로 초기화합니다.
+    if (tab !== activeTab) {
+      setSelectedComplex(null);
+      setActiveComplexId(null);
+      setActiveAnnId(null);
+      setIsPanelOpen(false);
+      window.history.replaceState(null, '', '/');
+    }
+
     setActiveTab(tab);
     if (tab === null) {
       setIsSidebarCollapsed(true);
