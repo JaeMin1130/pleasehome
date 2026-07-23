@@ -51,6 +51,7 @@ interface SidebarProps {
   setComplexSearchTerm?: (term: string) => void;
   complexActiveRegion?: string;
   onComplexActiveRegionChange?: (region: string) => void;
+  annRegionMap?: Record<number, string>;
 }
 
 export default function Sidebar({ 
@@ -66,7 +67,8 @@ export default function Sidebar({
   complexSearchTerm = '',
   setComplexSearchTerm = () => {},
   complexActiveRegion = 'ALL',
-  onComplexActiveRegionChange = () => {}
+  onComplexActiveRegionChange = () => {},
+  annRegionMap = {}
 }: SidebarProps) {
   const { member } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
@@ -746,6 +748,7 @@ export default function Sidebar({
           setComplexSearchTerm={setComplexSearchTerm}
           complexActiveRegion={complexActiveRegion}
           onComplexActiveRegionChange={onComplexActiveRegionChange}
+          annRegionMap={annRegionMap}
         />
       )}
 

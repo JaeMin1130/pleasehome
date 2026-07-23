@@ -25,6 +25,7 @@ interface ComplexTabProps {
   setComplexSearchTerm: (term: string) => void;
   complexActiveRegion: string;
   onComplexActiveRegionChange: (region: string) => void;
+  annRegionMap: Record<number, string>;
 }
 
 export default function ComplexTab({
@@ -46,54 +47,72 @@ export default function ComplexTab({
   setComplexSearchTerm,
   complexActiveRegion,
   onComplexActiveRegionChange,
+  annRegionMap,
 }: ComplexTabProps) {
 
   // 지오코딩 및 공고 연동을 아우르는 지역 필터 판별 헬퍼 함수
   const matchesRegion = (complex: Complex, active: string): boolean => {
     if (active === 'ALL') return true;
     
-    const ann = announcements.find(a => a.id === complex.announcement_id);
-    const annRegion = ann?.region || '';
-    const addr = complex.address || '';
+    // 💡 1단계: O(1) 맵에서 공고 표준 지역명을 검사하여 판별
+    const annRegion = annRegionMap[complex.announcement_id];
+    if (annRegion) {
+      if (active === '서울') return annRegion.startsWith('서울');
+      if (active === '인천') return annRegion.startsWith('인천');
+      if (active === '대전') return annRegion.startsWith('대전');
+      if (active === '대구') return annRegion.startsWith('대구');
+      if (active === '광주') return annRegion.startsWith('광주');
+      if (active === '울산') return annRegion.startsWith('울산');
+      if (active === '부산') return annRegion.startsWith('부산');
+      if (active === '세종') return annRegion.startsWith('세종');
+      if (active === '경기도') return annRegion.startsWith('경기');
+      if (active === '강원도') return annRegion.startsWith('강원');
+      if (active === '충청도') return annRegion.startsWith('충청');
+      if (active === '경상도') return annRegion.startsWith('경상');
+      if (active === '전라도') return annRegion.startsWith('전라') || annRegion.startsWith('전북');
+      return false;
+    }
     
+    // 💡 2단계: 공고 지역명이 아예 비어있을 때에만 예외적으로 도로명 주소 파싱을 수행
+    const addr = complex.address || '';
     if (active === '서울') {
-      return annRegion.startsWith('서울') || addr.startsWith('서울');
+      return addr.startsWith('서울');
     }
     if (active === '인천') {
-      return annRegion.startsWith('인천') || addr.startsWith('인천');
+      return addr.startsWith('인천');
     }
     if (active === '대전') {
-      return annRegion.startsWith('대전') || addr.startsWith('대전');
+      return addr.startsWith('대전');
     }
     if (active === '대구') {
-      return annRegion.startsWith('대구') || addr.startsWith('대구');
+      return addr.startsWith('대구');
     }
     if (active === '광주') {
-      return annRegion.startsWith('광주') || addr.startsWith('광주');
+      return addr.startsWith('광주');
     }
     if (active === '울산') {
-      return annRegion.startsWith('울산') || addr.startsWith('울산');
+      return addr.startsWith('울산');
     }
     if (active === '부산') {
-      return annRegion.startsWith('부산') || addr.startsWith('부산');
+      return addr.startsWith('부산');
     }
     if (active === '세종') {
-      return annRegion.startsWith('세종') || addr.startsWith('세종');
+      return addr.startsWith('세종');
     }
     if (active === '경기도') {
-      return annRegion.startsWith('경기') || addr.startsWith('경기');
+      return addr.startsWith('경기');
     }
     if (active === '강원도') {
-      return annRegion.startsWith('강원') || addr.startsWith('강원');
+      return addr.startsWith('강원');
     }
     if (active === '충청도') {
-      return annRegion.startsWith('충청') || addr.startsWith('충청');
+      return addr.startsWith('충청');
     }
     if (active === '경상도') {
-      return annRegion.startsWith('경상') || addr.startsWith('경상');
+      return addr.startsWith('경상');
     }
     if (active === '전라도') {
-      return annRegion.startsWith('전라') || annRegion.startsWith('전북') || addr.startsWith('전라') || addr.startsWith('전북');
+      return addr.startsWith('전라') || addr.startsWith('전북');
     }
     
     return false;
