@@ -15,7 +15,7 @@ pm2 save
 .venv/bin/python src/lh_notice/main.py --start-date 2026-07-20 --end-date 2026-07-21 --regions 서울 경기 인천 --pan-ss "공고중"
 .venv/bin/python src/lh_notice/main.py --start-date 2026-01-01 --end-date 2026-06-30 --regions 서울 경기 인천 --pan-ss "접수중"
 .venv/bin/python .agents/scripts/db_init.py
-.venv/bin/python .agents/scripts/convert_pdf_to_md.py LH_0000061129_20260703
+.venv/bin/python ../.agents/scripts/convert_pdf_to_md.py LH_0000061129_20260703
 .venv/bin/python ../.agents/scripts/insert_loader.py docs/md/LH_0000061140_20260720/data.json
 
 select count(*) from announcements;
