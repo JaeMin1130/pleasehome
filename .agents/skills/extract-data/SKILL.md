@@ -15,17 +15,39 @@ description: 마크다운 공고문 원본(document.md)을 본체 에이전트�
 * **동작**: 새로 적재할 대상 공고 디렉토리를 순회하며 `api_meta.json`을 읽고 다음 정보를 추출합니다.
   - 대상 공고의 고유 ID인 `pan_id`
   - 정정공고 여부를 가리기 위해 제목(`title`)에서 `[정정]`, `[정정공고]`, `(정정)` 등의 모든 접두사 노이즈를 제거한 **순수 제목 (Clean Title)**
-* **DB 대조**: SQLite DB([public_housing.db](file:///home/iru/app/pleasehome/db-pipeline/public_housing.db))의 `announcements` 테이블에서 기존 적재된 공고들의 `dtl_url` 내 `panId` 값 또는 `doc_path` 내의 `_{pan_id}_` 패턴을 정규식으로 추출하여, 대상 공고의 `pan_id`가 이미 등록되어 있는지 교차 대조합니다. (로컬 디렉토리 정리로 인해 `doc_path` 경로가 `!old` 등으로 변경되거나 삭제되었을 수 있으므로, 단순 물리 경로 비교 대신 반드시 고유 `pan_id` 매핑 대조를 수행해야 중복 적재를 완벽히 예방할 수 있습니다.)
-* **동시 인입 처리 (최종 정정공고 단독 적재 룰)**:
-  - 신규 인입된 여러 공고들 중 **동일한 순수 제목(Clean Title)을 공유하는 그룹**이 존재하고 해당 공고들이 DB에 아직 등록되지 않은 경우, 그룹 내 원본 및 중간 정정공고들은 모두 적재 대상에서 제외합니다.
-  - 오직 **해당 그룹에서 가장 마지막에 발행된 최종 정정공고 단 1건**만 선택하여 아래 1단계의 `extract-data` 스킬(신규 적재) 대상으로 분류합니다.
-* **분기 처리**:
-  - **기적재 공고의 정정**: DB에 원본 공고가 이미 적재되어 있는 상태에서 새로운 정정공고가 들어온 경우, 본 `extract-data` 스킬의 진행을 중단하고 [patch-correction 스킬](file:///home/iru/app/pleasehome/.agents/skills/patch-correction/SKILL.md)로 즉시 전환하여 부분 업데이트(Patch)를 수행합니다.
-  - **완전 신규 공고 (또는 최종 정정공고 단독 적재 대상)**: 아래 1단계로 진입하여 전체 데이터 추출 및 신규 적재 파이프라인을 정상 수행합니다.
-
-### 1단계: 본체 에이전트(Antigravity)의 document.md 분석 및 data.json 직접 생성
-* **동작**: 부모 에이전트(본체)는 공고문 원본인 `docs/md/{공고_폴더}/document.md` 파일을 직접 조회하여 완독합니다.
+* **DB 대조**: SQLite DB([public_housing.db](file:///home/iru/app/pleasehome/db-pipeline/public_housing.db))의 `announcements` 테이블에서 기존 적재된 공고들의 `dtl_url` 내 `panId` 값 또는 `doc_path` 내의 `_{pan_id}_` 패턴을 정규식으로 추출하여, 대상 공고의 `pan_id`가 이미 등록되어 있는지 교차 대조합니다. (로컬 디렉토리 정리로 인해 `doc_path` 경로가 `!old` 등으로 변경되거나 삭�### 1단계: 본체 에이전트(Antigravity)의 document.md 분석 및 data.json 직접 생성
+* **동작**: 부모 에이전트(본체)는 공고문 원본인 `db-pipeline/docs/md/{공고_폴더}/document.md` 파일을 직접 조회하여 완독합니다.
   - **서브에이전트 위임 허용 (컨텍스트 격리)**: 대용량 공고 처리 시 부모 에이전트의 컨텍스트 누적 및 토큰 낭비를 방지하기 위해, 부모 에이전트의 엄격한 프롬프트 통제 하에 독립된 서브에이전트(self 등)를 실행하여 `data.json` 데이터 추출 및 생성을 위임할 수 있습니다. 서브에이전트는 DB 적재 스크립트(`insert_loader.py`)를 실행하지 않고, 오직 지정된 공고 폴더 내에 완성형 `data.json`을 올바르게 빌드하는 작업까지만 전담합니다.
+  - **개별 독립 실행 (컨텍스트 관리)**: 한 세션에 대량의 공고를 몰아서 처리하지 않고, 개별 폴더 단위로 독립된 세션에서 작업을 직접 완결하여 부모 에이전트 및 서브에이전트의 컨텍스트를 청결하게 유지합니다.
+  - **하이브리드 추출 및 다단계 분할(Chain) 추출 전략**:
+    * **대용량 공고 판별**: 마크다운 파일 크기가 방대하거나, 단지/유닛 목록의 표(table)가 10줄을 초과하는 복잡한 대용량 공고의 경우, 환각을 원천 차단하기 위해 단일 세션에서 한 번에 JSON을 만들지 말고 **3단계 분할 추출**을 진행합니다.
+      1. **Step 1**: 메타/일정 정보 추출 (`announcement`, `schedules`, `limits`만 포함) $\rightarrow$ `temp_meta.json`으로 저장
+      2. **Step 2**: 단지/유닛 정보 추출 (`complexes`, `units`만 포함) $\rightarrow$ `temp_units.json`으로 저장
+         * **코드 생성(Code Gen) 분기**: 유닛 표 파싱 정밀도를 극대화하기 위해, 복잡하고 긴 테이블의 경우 LLM이 직접 파이썬 파싱 코드를 작성하고 이를 터미널에서 실행하여 데이터를 정규화한 뒤 `temp_units.json`에 기록하게 유도합니다.
+      3. **Step 3**: 상세 조건 서술글 추출 (`details` 6대 표준 카테고리만 포함) $\rightarrow$ `temp_details.json`으로 저장
+      4. **Step 4 (결합 및 검증)**: 파트별 JSON 파일이 완성되면, 병합/검증 스크립트([validate_schema.py](file:///home/iru/app/pleasehome/.agents/scripts/validate_schema.py))의 `--merge` 옵션을 사용하여 최종 `data.json`을 안전하게 구성합니다.
+         ```bash
+         python3 .agents/scripts/validate_schema.py db-pipeline/docs/md/{공고_폴더} --merge
+         ```
+    * **일반 공고**: 표 데이터가 단순하고 길이가 짧은 공고는 기존처럼 완제품 `data.json`을 다이렉트로 원스톱 추출한 뒤, 단일 검증 명령을 수행합니다.
+      ```bash
+      python3 .agents/scripts/validate_schema.py db-pipeline/docs/md/{공고_폴더}/data.json
+      ```
+
+### 2단계: Pydantic 기반 스키마 검증 및 자가 치유(Self-Correction) 피드백 루프
+* **역할 분담**: 서브에이전트가 생성한 모든 `data.json` 파일의 최종 검증과 데이터베이스 적재는 반드시 부모 에이전트가 직접 수행하며, 서브에이전트에 위임할 수 없습니다.
+* **스키마 검증 및 자동 후처리(Soft Correction)**:
+  - 부모 에이전트는 [validate_schema.py](file:///home/iru/app/pleasehome/.agents/scripts/validate_schema.py) 스크립트를 사용하여 데이터 유효성을 철저히 검사합니다.
+  - 기관명/지역명 정규화, 날짜 포맷 표준화, 상호전환 미지원 시 기본값 복사 등은 파이썬 코드가 자동으로 후처리(Soft Correction)하여 저장합니다.
+* **자가 치유(Self-Correction) 피드백 루프 (Hard Failure)**:
+  - 필수 필드 누락, 데이터 타입 붕괴 등 복구 불가능한 검증 에러 발생 시, 스크립트가 출력하는 JSON 경로와 한글 에러 명세를 활용하여 LLM에게 해당 부분만 집중 보정(Self-Correction)하도록 재생성을 요청합니다.
+  - 이 자가 치유 피드백 루프는 **최대 3회**까지 재시도합니다.
+* **결과 처리**:
+  - **검증 성공 시**: 부모 에이전트가 직접 [insert_loader.py](file:///home/iru/app/pleasehome/.agents/scripts/insert_loader.py)를 실행하여 데이터베이스 적재를 완료합니다.
+    ```bash
+    python3 .agents/scripts/insert_loader.py db-pipeline/docs/md/{공고_폴더}/data.json
+    ```
+  - **3회 이상 최종 검증 실패 시**: 데이터베이스에 강제 적재하지 않고 작업을 멈추며, 최종 작업 완료 보고 시 해당 공고의 분석 실패 특이사항 및 에러 원인을 요약 보고합니다. 위해, 부모 에이전트의 엄격한 프롬프트 통제 하에 독립된 서브에이전트(self 등)를 실행하여 `data.json` 데이터 추출 및 생성을 위임할 수 있습니다. 서브에이전트는 DB 적재 스크립트(`insert_loader.py`)를 실행하지 않고, 오직 지정된 공고 폴더 내에 완성형 `data.json`을 올바르게 빌드하는 작업까지만 전담합니다.
   - **개별 독립 실행 (컨텍스트 관리)**: 한 세션에 대량의 공고를 몰아서 처리하지 않고, 개별 폴더 단위로 독립된 세션에서 작업을 직접 완결하여 부모 에이전트 및 서브에이전트의 컨텍스트를 청결하게 유지합니다.
 * **완제품 빌드**: 아래에 상세히 규정된 스키마 사양과 비즈니스 룰을 준수하여, 최종 완성형 `data.json`을 작성해 공고 폴더 내에 저장합니다.
   - **`announcement`**: title, institution, subscription_type, region 정보
@@ -192,6 +214,12 @@ description: 마크다운 공고문 원본(document.md)을 본체 에이전트�
 
 단순 텍스트 요약이나 압축을 일절 금지하며, 사용자가 자가 진단 및 서류 준비를 완결할 수 있도록 **금액 수치, 기한 조항, 실무적 유의사항 및 예외 조건**을 마크다운 표(`|---|`)나 리스트 형태로 최대한 보존하여 상세히 기술해야 합니다.
 
+* **마크다운 가독성 및 계층 구조(Visual Hierarchy) 적용 필수 규칙 (NEW)**:
+  - **구조화된 제목 사용**: 단순 텍스트 나열을 일절 금지하고, 세부 주제별로 `### 1. 주제명`과 같이 `###` 제목 태그를 사용해 영역을 명확히 구분하십시오.
+  - **중요 어구 볼드(Bold) 적용**: 선정 기준, 소득 조건, 제출 서류 필수 요건 등 핵심 수치나 키워드에는 반드시 `**볼드체**`를 적용하여 시각적 강조를 부여하십시오.
+  - **번호 및 글머리 기호 다단계 구성**: 동일 레벨로 텍스트를 나열하지 말고, 우선순위나 단계가 있는 경우 번호 기호(`1.`, `2.`)를 쓰고, 하위 조건이 있는 경우 글머리 기호(`*`, `-`)를 2칸 들여쓰기하여 계층적으로 나열하십시오.
+  - **경계선 및 강조 블록 활용**: 주제가 전환되는 곳에는 구분선(`---`)을 활용하고, 중대한 경고나 특이 유의사항은 인용구(`>`) 또는 깃허브 얼럿 블록(`> [!IMPORTANT]`, `> [!WARNING]`)을 사용하여 시각적으로 격리하십시오.
+
 ### ① `'신청 자격 요건'` (sort_order: 1)
 
 * **기본 요건**: 무주택자 및 미혼 청년 기준(나이 출생일자 범위 명시).
@@ -241,3 +269,95 @@ description: 마크다운 공고문 원본(document.md)을 본체 에이전트�
 * 병역의무 이행 또는 편입·진학으로 주택 반환 시, 남은 계약기간이 1년 이상이면 **재계약 횟수 차감 없이 다시 신청 가능**하다는 특례 보존.
 * 거주 중 2세 이하 자녀 출생 시 동일 지자체 내 더 넓은 주택으로 변경 지원 조항 및 2024년 이후 출생 자녀가 있는 경우 성년이 될 때까지 계속 재계약 허용 조항 명시.
 * **기타 옵션 및 의무**: 빌트인 가전 품목, 파손 시 원상복구 비용 부담, 1/n 분할 관리비 안분 원칙 등 기재.
+
+---
+
+## 5. 중요 비즈니스 룰 Few-Shot Examples (입출력 예시)
+
+### ① 주택형(room_type) 및 단지 유형(complex_type) 분리 예시
+* **원본 마크다운 테이블 스니펫**:
+  | 주택단지명 | 주택유형 | 주택형 | 공급면적 |
+  |---|---|---|---|
+  | 행복가득 아파트 | 아파트 | 59A | 84.5㎡ |
+  | 상생빌라 | 다세대주택(원룸형) | 29형 | 39.2㎡ |
+
+* **잘못된 추출 (Anti-Pattern)**:
+  ```json
+  // units 배열 내에 복합 타입 명칭이 뭉뚱그려져 들어가거나 room_type에 혼입됨
+  "complexes": [{ "name": "상생빌라", "complex_type": "다세대주택(원룸형)" }],
+  "units": [
+    { "complex_name": "상생빌라", "room_type": "다세대주택(원룸형)" } // room_type에 단지 유형 혼입
+  ]
+  ```
+
+* **올바른 추출 (Best Practice)**:
+  ```json
+  "complexes": [
+    { "name": "행복가득 아파트", "complex_type": "아파트" },
+    { "name": "상생빌라", "complex_type": "다세대주택" } // complex_type은 단지 유형만 정형화
+  ],
+  "units": [
+    { "complex_name": "행복가득 아파트", "room_type": "59A" },
+    { "complex_name": "상생빌라", "room_type": "원룸형" } // 주택유형의 서술적 타입을 room_type으로 이동
+  ]
+  ```
+
+### ② 비대칭(한 방향) 상호전환 보증금-월세 매핑 예시
+* **원본 마크다운 조건문**:
+  > "본 공고는 임대보증금 증액(월임대료 감액)만 가능하며, 보증금 감액(월임대료 증액)은 불가합니다. (전환이율 연 6%)"
+  > *기본 조건: 보증금 30,000,000원 / 월세 150,000원*
+  > *증액 한도: 최대 10,000,000원 추가 납부 가능*
+
+* **잘못된 추출 (Anti-Pattern)**:
+  ```json
+  // 미지원되는 감액 필드를 계산 없이 null로 두거나 임의 계산
+  "deposit": 30000000, "monthly_rent": 150000,
+  "max_deposit": 40000000, "min_monthly_rent": 100000,
+  "min_deposit": null, "max_monthly_rent": null // null 기피 적재
+  ```
+
+* **올바른 추출 (Best Practice)**:
+  ```json
+  "deposit": 30000000,
+  "monthly_rent": 150000,
+  "max_deposit": 40000000, // 최대 증액 계산
+  "min_monthly_rent": 100000, // 최대 증액 시 감소된 월세 (150,000 - 10,000,000 * 0.06 / 12)
+  "min_deposit": 30000000, // 감액 미지원으로 기본값(deposit) 복사
+  "max_monthly_rent": 150000 // 감액 미지원으로 기본값(monthly_rent) 복사
+  ```
+  *(참고: validate_schema.py를 실행하면 min_deposit/max_monthly_rent가 비어있어도 자동으로 기본값이 자동 복사됩니다.)*
+
+### ③ 실질 공급 대상 1호 필터링 예시 (추가모집 잔여세대)
+* **원본 마크다운 스니펫**:
+  > "이번 동·호 지정 추가 모집 세대는 102동 402호(59A 타입) 단 1호입니다. (아래 층별 기본 분양가는 참고용입니다)"
+  | 주택형 | 층수 구분 | 기본 분양가 |
+  |---|---|---|
+  | 59A | 1층 | 250,000천원 |
+  | 59A | 2층 | 260,000천원 |
+  | 59A | 3층 | 270,000천원 |
+  | 59A | 4층 이상 | 280,000천원 |
+
+* **잘못된 추출 (Anti-Pattern)**:
+  ```json
+  // 실제 공급 대상이 아닌 1~3층 기본 예시 분양가까지 units에 모두 적재하는 행위
+  "units": [
+    { "room_type": "59A", "room_number": null, "supply_count": 0, "deposit": 250000000 },
+    { "room_type": "59A", "room_number": null, "supply_count": 0, "deposit": 260000000 },
+    { "room_type": "59A", "room_number": null, "supply_count": 0, "deposit": 270000000 },
+    { "room_type": "59A", "room_number": "102동 402호", "supply_count": 1, "deposit": 280000000 }
+  ]
+  ```
+
+* **올바른 추출 (Best Practice)**:
+  ```json
+  // 모집 대상에 해당하는 정확한 4층 단 1건의 유닛 레코드만 남깁니다.
+  "units": [
+    {
+      "room_type": "59A",
+      "room_number": "102동 402호",
+      "supply_count": 1,
+      "deposit": 280000000, // 4층에 해당하는 분양가
+      "monthly_rent": 0
+    }
+  ]
+  ```

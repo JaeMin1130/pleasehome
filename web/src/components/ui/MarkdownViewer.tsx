@@ -1,96 +1,73 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import styles from './MarkdownViewer.module.css';
 
-// 인라인 마크다운 (볼드, 이탤릭, 인라인 코드, 링크) 파싱 및 토큰화 헬퍼 함수
-const parseInlineMarkdown = (text: string): React.ReactNode[] => {
-  if (!text) return [];
+// ==========================================
+// 깃허브 스타일 얼럿 박스 및 표준 인용구 처리 컴포넌트
+// ==========================================
+const CustomBlockquote = ({ children }: { children: React.ReactNode }) => {
+  const childrenArray = React.Children.toArray(children);
   
-  // 1. 초기 텍스트 노드 상태 정의
-  let parts: { type: 'text' | 'bold' | 'italic' | 'code' | 'link'; content: string; url?: string }[] = [
-    { type: 'text', content: text }
-  ];
-
-  // 2. 볼드 처리 (**bold**)
-  parts = parts.flatMap(part => {
-    if (part.type !== 'text') return [part];
-    const subParts = part.content.split(/(\*\*.*?\*\*)/g);
-    return subParts.map(sp => {
-      if (sp.startsWith('**') && sp.endsWith('**')) {
-        return { type: 'bold', content: sp.slice(2, -2) };
+  if (childrenArray.length > 0) {
+    const firstChild = childrenArray[0];
+    
+    // blockquote 내 첫 번째 p 태그를 뒤져 얼럿 식별 키워드가 들어있는지 파악
+    if (React.isValidElement(firstChild)) {
+      const element = firstChild as React.ReactElement<any>;
+      if (element.props && element.props.children) {
+        const pChildren = React.Children.toArray(element.props.children);
+        if (pChildren.length > 0 && typeof pChildren[0] === 'string') {
+          const text = pChildren[0];
+          const match = text.match(/^\[!(NOTE|WARNING|IMPORTANT|TIP|CAUTION)\]\s*(.*)$/i);
+          
+          if (match) {
+            const type = match[1].toUpperCase();
+            const restText = match[2];
+            
+            // [!TYPE] 수식어 제거 및 나머지 텍스트로 대체
+            const newPChildren = [...pChildren];
+            if (restText.trim() === '') {
+              newPChildren.shift();
+            } else {
+              newPChildren[0] = restText;
+            }
+            
+            const newFirstChild = React.cloneElement(element, {}, ...newPChildren);
+            const remainingChildren = childrenArray.slice(1);
+            
+            let alertClass = styles['md-alert-note'];
+            let title = '안내';
+            if (type === 'WARNING') {
+              alertClass = styles['md-alert-warning'];
+              title = '경고';
+            } else if (type === 'IMPORTANT') {
+              alertClass = styles['md-alert-important'];
+              title = '중요';
+            } else if (type === 'TIP') {
+              alertClass = styles['md-alert-tip'];
+              title = '팁';
+            } else if (type === 'CAUTION') {
+              alertClass = styles['md-alert-caution'];
+              title = '주의';
+            }
+            
+            return (
+              <div className={`${styles['md-alert']} ${alertClass}`}>
+                <div className={styles['md-alert-title']}>{title}</div>
+                <div className={styles['md-alert-content']}>
+                  {newFirstChild}
+                  {remainingChildren}
+                </div>
+              </div>
+            );
+          }
+        }
       }
-      return { type: 'text', content: sp };
-    });
-  });
-
-  // 3. 이탤릭 처리 (*italic* 또는 _italic_)
-  parts = parts.flatMap(part => {
-    if (part.type !== 'text') return [part];
-    const subParts = part.content.split(/(\*.*?\*|__.*?__|_.*?_)/g);
-    return subParts.map(sp => {
-      if ((sp.startsWith('*') && sp.endsWith('*')) || (sp.startsWith('_') && sp.endsWith('_'))) {
-        const cleanContent = sp.slice(1, -1);
-        return { type: 'italic', content: cleanContent };
-      }
-      return { type: 'text', content: sp };
-    });
-  });
-
-  // 4. 인라인 코드 처리 (`code`)
-  parts = parts.flatMap(part => {
-    if (part.type !== 'text') return [part];
-    const subParts = part.content.split(/(`.*?`)/g);
-    return subParts.map(sp => {
-      if (sp.startsWith('`') && sp.endsWith('`')) {
-        return { type: 'code', content: sp.slice(1, -1) };
-      }
-      return { type: 'text', content: sp };
-    });
-  });
-
-  // 5. 링크 처리 ([text](url))
-  parts = parts.flatMap(part => {
-    if (part.type !== 'text') return [part];
-    const subParts = part.content.split(/(\[.*?\]\(.*?\))/g);
-    return subParts.map(sp => {
-      const match = sp.match(/\[(.*?)\]\((.*?)\)/);
-      if (match) {
-        return { type: 'link', content: match[1], url: match[2] };
-      }
-      return { type: 'text', content: sp };
-    });
-  });
-
-  // 6. 각 토큰 타입을 React 컴포넌트로 스타일링하여 맵핑
-  return parts.map((part, idx) => {
-    switch (part.type) {
-      case 'bold':
-        return (
-          <strong key={idx} className={styles['md-bold']}>
-            {part.content}
-          </strong>
-        );
-      case 'italic':
-        return (
-          <em key={idx} className={styles['md-italic']}>
-            {part.content}
-          </em>
-        );
-      case 'code':
-        return (
-          <code key={idx} className={styles['md-code']}>
-            {part.content}
-          </code>
-        );
-      case 'link':
-        return (
-          <a key={idx} href={part.url} target="_blank" rel="noopener noreferrer" className={styles['md-link']}>
-            {part.content}
-          </a>
-        );
-      default:
-        return part.content;
     }
-  });
+  }
+  
+  return <blockquote className={styles['md-blockquote']}>{children}</blockquote>;
 };
 
 interface MarkdownViewerProps {
@@ -99,198 +76,57 @@ interface MarkdownViewerProps {
 
 export default function MarkdownViewer({ content }: MarkdownViewerProps) {
   if (!content) return null;
-  
-  const lines = content.split('\n');
-  const renderedElements: React.ReactNode[] = [];
-  
-  // 💡 Immutability 경고를 우회하기 위해 변수 재할당 없이 헬퍼 객체의 속성을 수정하여 상태를 관리
-  const tableState = {
-    inTable: false,
-    rows: [] as string[][]
-  };
-
-  const flushTable = (key: string | number) => {
-    if (tableState.rows.length === 0) return null;
-    
-    let hasHeader = false;
-    let headerRow: string[] = [];
-    let bodyRows: string[][] = [];
-    
-    if (tableState.rows.length >= 2) {
-      const isDivider = tableState.rows[1].every(cell => /^[:\-\s]+$/.test(cell.trim()));
-      if (isDivider) {
-        hasHeader = true;
-        headerRow = tableState.rows[0];
-        bodyRows = tableState.rows.slice(2);
-      } else {
-        bodyRows = tableState.rows;
-      }
-    } else {
-      bodyRows = tableState.rows;
-    }
-
-    const R = bodyRows.length;
-    const C = R > 0 ? bodyRows[0].length : 0;
-    const rowSpans = Array.from({ length: R }, () => Array(C).fill(1));
-    const showCell = Array.from({ length: R }, () => Array(C).fill(true));
-
-    if (C > 0) {
-      let r = 0;
-      while (r < R) {
-        let span = 1;
-        const currentText = bodyRows[r][0].trim();
-        if (currentText !== '') {
-          while (
-            r + span < R && 
-            bodyRows[r + span][0].trim() === currentText
-          ) {
-            rowSpans[r][0] = span + 1;
-            showCell[r + span][0] = false;
-            span++;
-          }
-        }
-        r += span;
-      }
-    }
-
-    const element = (
-      <div key={key} className={styles['md-table-container']}>
-        <table className={styles['md-table']}>
-          {hasHeader && (
-            <thead>
-              <tr className={styles['md-thead-tr']}>
-                {headerRow.map((cell, cIdx) => (
-                  <th key={cIdx} className={styles['md-th']}>
-                    {parseInlineMarkdown(cell.trim())}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-          )}
-          <tbody>
-            {bodyRows.map((row, rIdx) => (
-              <tr key={rIdx} className={styles['md-tr']}>
-                {row.map((cell, cIdx) => {
-                  if (!showCell[rIdx][cIdx]) return null;
-                  
-                  return (
-                    <td 
-                      key={cIdx} 
-                      rowSpan={rowSpans[rIdx][cIdx]}
-                      className={`${styles['md-td']} ${rowSpans[rIdx][cIdx] > 1 ? styles['md-td-span'] : ''}`}
-                    >
-                      {parseInlineMarkdown(cell.trim())}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-    
-    // 재할당 없이 속성만 변경하여 상태 초기화
-    tableState.rows.length = 0;
-    tableState.inTable = false;
-    return element;
-  };
-
-  let i = 0;
-  while (i < lines.length) {
-    const line = lines[i];
-    const content = line.trim();
-    
-    if (content === '---' || content === '***' || content === '___') {
-      if (tableState.inTable) {
-        const tableElement = flushTable(`table-${i}`);
-        if (tableElement) renderedElements.push(tableElement);
-      }
-      renderedElements.push(<hr key={`hr-${i}`} className={styles['md-hr']} />);
-      i++;
-      continue;
-    }
-    
-    const isTableRow = content.startsWith('|') && content.endsWith('|');
-    
-    if (isTableRow) {
-      tableState.inTable = true;
-      const cells = content.slice(1, -1).split('|');
-      tableState.rows.push(cells);
-      i++;
-      continue;
-    } else {
-      if (tableState.inTable) {
-        const tableElement = flushTable(`table-${i}`);
-        if (tableElement) renderedElements.push(tableElement);
-      }
-    }
-    
-    const headerMatch = content.match(/^(#{1,6})\s+(.*)$/);
-    if (headerMatch) {
-      const level = headerMatch[1].length;
-      const titleText = headerMatch[2];
-      const parsedTitle = parseInlineMarkdown(titleText);
-      
-      if (level <= 3) {
-        renderedElements.push(<h4 key={`h-${i}`} className={styles['md-h4']}>{parsedTitle}</h4>);
-      } else {
-        renderedElements.push(<h5 key={`h-${i}`} className={styles['md-h5']}>{parsedTitle}</h5>);
-      }
-      i++;
-      continue;
-    }
-    
-    const listMatch = content.match(/^[-*]\s+(.*)$/);
-    if (listMatch) {
-      const listText = listMatch[1];
-      renderedElements.push(
-        <div key={`li-${i}`} className={styles['md-li']}>
-          <span className={styles['md-bullet']}>•</span>
-          <div className={styles['md-text']}>{parseInlineMarkdown(listText)}</div>
-        </div>
-      );
-      i++;
-      continue;
-    }
-
-    const orderedListMatch = content.match(/^(\d+)\.\s+(.*)$/);
-    if (orderedListMatch) {
-      const num = orderedListMatch[1];
-      const listText = orderedListMatch[2];
-      renderedElements.push(
-        <div key={`ol-${i}`} className={styles['md-li']}>
-          <span className={styles['md-bullet-num']}>{num}.</span>
-          <div className={styles['md-text']}>{parseInlineMarkdown(listText)}</div>
-        </div>
-      );
-      i++;
-      continue;
-    }
-    
-    if (content === '') {
-      renderedElements.push(<div key={`empty-${i}`} className={styles['md-empty-space']} />);
-      i++;
-      continue;
-    }
-    
-    renderedElements.push(
-      <p key={`p-${i}`} className={styles['md-p']}>
-        {parseInlineMarkdown(content)}
-      </p>
-    );
-    
-    i++;
-  }
-  
-  if (tableState.inTable) {
-    const tableElement = flushTable(`table-end`);
-    if (tableElement) renderedElements.push(tableElement);
-  }
 
   return (
     <div className={styles['md-container']}>
-      {renderedElements}
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          h1: ({ children }) => <h2 className={styles['md-h4']}>{children}</h2>, // 크기 밸런스를 위해 h1~h3은 h4 스타일 매핑
+          h2: ({ children }) => <h2 className={styles['md-h4']}>{children}</h2>,
+          h3: ({ children }) => <h3 className={styles['md-h4']}>{children}</h3>,
+          h4: ({ children }) => <h4 className={styles['md-h4']}>{children}</h4>,
+          h5: ({ children }) => <h5 className={styles['md-h5']}>{children}</h5>,
+          h6: ({ children }) => <h6 className={styles['md-h5']}>{children}</h6>,
+          p: ({ children }) => <p className={styles['md-p']}>{children}</p>,
+          strong: ({ children }) => <strong className={styles['md-bold']}>{children}</strong>,
+          em: ({ children }) => <em className={styles['md-italic']}>{children}</em>,
+          code({ className, children, ...props }) {
+            const match = /language-(\w+)/.exec(className || '');
+            return match ? (
+              <pre className={styles['md-pre-block']}>
+                <code className={className} {...props}>
+                  {children}
+                </code>
+              </pre>
+            ) : (
+              <code className={styles['md-code']} {...props}>
+                {children}
+              </code>
+            );
+          },
+          a: ({ href, children }) => (
+            <a href={href} target="_blank" rel="noopener noreferrer" className={styles['md-link']}>
+              {children}
+            </a>
+          ),
+          hr: () => <hr className={styles['md-hr']} />,
+          ul: ({ children }) => <ul className={styles['md-ul']}>{children}</ul>,
+          ol: ({ children }) => <ol className={styles['md-ol']}>{children}</ol>,
+          li: ({ children }) => <li className={styles['md-li-item']}>{children}</li>,
+          table: ({ children }) => (
+            <div className={styles['md-table-container']}>
+              <table className={styles['md-table']}>{children}</table>
+            </div>
+          ),
+          tr: ({ children }) => <tr className={styles['md-tr']}>{children}</tr>,
+          th: ({ children }) => <th className={styles['md-th']}>{children}</th>,
+          td: ({ children }) => <td className={styles['md-td']}>{children}</td>,
+          blockquote: ({ children }) => <CustomBlockquote>{children}</CustomBlockquote>
+        }}
+      >
+        {content}
+      </ReactMarkdown>
     </div>
   );
 }
