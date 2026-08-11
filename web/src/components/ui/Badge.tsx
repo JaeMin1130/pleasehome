@@ -4,16 +4,14 @@ interface BadgeProps {
   institution: string;
 }
 
-export default function Badge({ institution }: BadgeProps) {
-  const badgeClass = institution.includes('SH') 
-    ? 'badge-sh' 
-    : institution.includes('LH') 
-      ? 'badge-lh' 
-      : institution.includes('HUG')
-        ? 'badge-hug'
-        : institution.includes('경기') || institution.includes('GH')
-          ? 'badge-gh'
-          : 'badge-private';
+const getBadgeClass = (inst: string) => {
+  if (inst.includes('SH')) return 'badge-sh';
+  if (inst.includes('LH')) return 'badge-lh';
+  if (inst.includes('HUG')) return 'badge-hug';
+  if (inst.includes('경기') || inst.includes('GH')) return 'badge-gh';
+  return 'badge-private';
+};
 
-  return <span className={`badge ${badgeClass}`}>{institution}</span>;
+export default function Badge({ institution }: BadgeProps) {
+  return <span className={`badge ${getBadgeClass(institution)}`}>{institution}</span>;
 }

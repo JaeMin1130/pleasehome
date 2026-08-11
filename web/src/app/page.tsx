@@ -11,17 +11,17 @@ export default async function HomePage() {
 
   try {
     const annRows = db.prepare('SELECT * FROM announcements ORDER BY id DESC').all() as any[];
-    announcements = annRows.map((ann) => {
-      const schedules = db.prepare('SELECT * FROM announcement_schedules WHERE announcement_id = ?').all(ann.id);
-      const details = db.prepare('SELECT * FROM announcement_details WHERE announcement_id = ? ORDER BY sort_order ASC, id ASC').all(ann.id);
-      const limits = db.prepare('SELECT * FROM announcement_limits WHERE announcement_id = ?').all(ann.id);
-      return {
-        ...ann,
-        schedules,
-        details,
-        limits,
-      };
-    });
+    const allSchedules = db.prepare('SELECT * FROM announcement_schedules').all() as any[];
+    const allDetails = db.prepare('SELECT * FROM announcement_details ORDER BY sort_order ASC, id ASC').all() as any[];
+
+    const schedulesMap = allSchedules.reduce((acc, s) => ((acc[s.announcement_id] = acc[s.announcement_id] || []).push(s), acc), {} as Record<number, any[]>);
+    const detailsMap = allDetails.reduce((acc, d) => ((acc[d.announcement_id] = acc[d.announcement_id] || []).push(d), acc), {} as Record<number, any[]>);
+
+    announcements = annRows.map((ann) => ({
+      ...ann,
+      schedules: schedulesMap[ann.id] || [],
+      details: detailsMap[ann.id] || [],
+    }));
 
     complexes = db.prepare('SELECT * FROM complexes').all() as Complex[];
   } catch (error) {

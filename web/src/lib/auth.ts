@@ -21,28 +21,15 @@ export async function verifyPassword(plain: string, hash: string): Promise<boole
 // ── 세션 토큰 (HMAC-SHA256 서명, memberId를 페이로드로) ──────────
 function sign(memberId: string): string {
   const payload = Buffer.from(memberId).toString('base64url');
-  const sig = crypto
-    .createHmac('sha256', HMAC_SECRET)
-    .update(payload)
-    .digest('base64url');
+  const sig = crypto.createHmac('sha256', HMAC_SECRET).update(payload).digest('base64url');
   return `${payload}.${sig}`;
 }
 
 function verify(token: string): string | null {
-  const parts = token.split('.');
-  if (parts.length !== 2) return null;
-  const [payload, sig] = parts;
-  const expected = crypto
-    .createHmac('sha256', HMAC_SECRET)
-    .update(payload)
-    .digest('base64url');
-  // timing-safe 비교
-  if (expected.length !== sig.length) return null;
-  try {
-    if (!crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(sig))) return null;
-  } catch {
-    return null;
-  }
+  const [payload, sig] = token.split('.');
+  if (!payload || !sig) return null;
+  const expected = crypto.createHmac('sha256', HMAC_SECRET).update(payload).digest('base64url');
+  if (expected.length !== sig.length || !crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(sig))) return null;
   return Buffer.from(payload, 'base64url').toString();
 }
 
