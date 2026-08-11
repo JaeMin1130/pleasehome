@@ -15,7 +15,7 @@ description: 마크다운 공고문 원본(document.md)을 본체 에이전트�
 * **동작**: 새로 적재할 대상 공고 디렉토리를 순회하며 `api_meta.json`을 읽고 다음 정보를 추출합니다.
   - 대상 공고의 고유 ID인 `pan_id`
   - 정정공고 여부를 가리기 위해 제목(`title`)에서 `[정정]`, `[정정공고]`, `(정정)` 등의 모든 접두사 노이즈를 제거한 **순수 제목 (Clean Title)**
-* **DB 대조**: SQLite DB([public_housing.db](file:///home/iru/app/pleasehome/db-pipeline/public_housing.db))의 `announcements` 테이블에서 기존 적재된 공고들의 `dtl_url` 내 `panId` 값 또는 `doc_path` 내의 `_{pan_id}_` 패턴을 정규식으로 추출하여, 대상 공고의 `pan_id`가 이미 등록되어 있는지 교차 대조합니다. (로컬 디렉토리 정리로 인해 `doc_path` 경로가 `!old` 등으로 변경되거나 삭�### 1단계: 본체 에이전트(Antigravity)의 document.md 분석 및 data.json 직접 생성
+* **DB 대조**: SQLite DB([public_housing.db](file:///home/iru/app/pleasehome/db-pipeline/public_housing.db))의 `announcements` 테이블에서 기존 적재된 공고들의 `dtl_url` 내 `panId` 값 또는 `doc_path` 내의 `_{pan_id}_` 패턴을 정규식으로 추출하여, 대상 공고의 `pan_id`가 이미 등록되어 있는지 교차 대조합니다.
 * **동작**: 부모 에이전트(본체)는 공고문 원본인 `db-pipeline/docs/md/{공고_폴더}/document.md` 파일을 직접 조회하여 완독합니다.
   - **서브에이전트 위임 허용 (컨텍스트 격리)**: 대용량 공고 처리 시 부모 에이전트의 컨텍스트 누적 및 토큰 낭비를 방지하기 위해, 부모 에이전트의 엄격한 프롬프트 통제 하에 독립된 서브에이전트(self 등)를 실행하여 `data.json` 데이터 추출 및 생성을 위임할 수 있습니다. 서브에이전트는 DB 적재 스크립트(`insert_loader.py`)를 실행하지 않고, 오직 지정된 공고 폴더 내에 완성형 `data.json`을 올바르게 빌드하는 작업까지만 전담합니다.
   - **개별 독립 실행 (컨텍스트 관리)**: 한 세션에 대량의 공고를 몰아서 처리하지 않고, 개별 폴더 단위로 독립된 세션에서 작업을 직접 완결하여 부모 에이전트 및 서브에이전트의 컨텍스트를 청결하게 유지합니다.
@@ -98,7 +98,9 @@ description: 마크다운 공고문 원본(document.md)을 본체 에이전트�
     "title": "Clean announcement title (string)",
     "institution": "LH", // LH, SH, GH, iH, HUG, 민간 중 하나
     "subscription_type": "공공분양", // 공공분양, 매입임대, 영구임대, 국민임대, 행복주택, 장기전세, 민간분양 등
-    "region": "경기도" // 17대 행정구역명 중 하나
+    "region": "경기도", // 17대 행정구역명 중 하나
+    "dtl_url": "https://apply.lh.or.kr/... (string or null)", // PC 상세페이지 URL
+    "dtl_url_mob": "https://m.apply.lh.or.kr/... (string or null)" // 모바일 상세페이지 URL
   },
   "schedules": [
     {

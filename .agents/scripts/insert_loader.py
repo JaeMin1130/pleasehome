@@ -202,8 +202,8 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
                 api_meta.get("AIS_TP_CD_NM") or ann_info["subscription_type"],
                 api_meta.get("CNP_CD_NM") or ann_info.get("region"),
                 relative_doc_path,
-                api_meta.get("DTL_URL") or "",
-                api_meta.get("DTL_URL_MOB") or ""
+                ann_info.get("dtl_url") or api_meta.get("DTL_URL") or api_meta.get("PAN_DTL_URL") or "",
+                ann_info.get("dtl_url_mob") or api_meta.get("DTL_URL_MOB") or api_meta.get("PAN_DTL_URL_MOB") or ""
             )
         )
         ann_id = cursor.lastrowid

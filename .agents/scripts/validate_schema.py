@@ -75,6 +75,8 @@ class AnnouncementModel(BaseModel):
     institution: str = Field(..., description="시행 기관 (LH, SH, GH, iH, HUG, 민간)")
     subscription_type: str = Field(..., description="청약 구분 (공공분양, 행복주택, 국민임대 등)")
     region: Optional[str] = Field(None, description="17대 광역지자체 표준명")
+    dtl_url: Optional[str] = Field(None, description="PC 상세페이지 URL")
+    dtl_url_mob: Optional[str] = Field(None, description="모바일 상세페이지 URL")
 
     @field_validator('institution', mode='before')
     @classmethod
