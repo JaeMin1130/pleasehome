@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Announcement } from '@/types';
 import Link from 'next/link';
-import { Stepper, Tooltip } from '@mantine/core';
+import Tooltip from '@/components/ui/Tooltip';
 import Badge from '@/components/ui/Badge';
 import MarkdownViewer from '@/components/ui/MarkdownViewer';
 import { formatMoney, formatDate, formatInterestRate, formatDateWithTime, superClean } from '@/utils/formatters';

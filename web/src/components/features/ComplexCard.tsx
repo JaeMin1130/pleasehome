@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Complex, Announcement } from '@/types';
-import { Tooltip } from '@mantine/core';
+import Tooltip from '@/components/ui/Tooltip';
 import { formatDateWithTime } from '@/utils/formatters';
 import styles from './ComplexCard.module.css';
 import Badge from '@/components/ui/Badge';

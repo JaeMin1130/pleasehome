@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import '@mantine/core/styles.css';
 import "./globals.css";
-import { MantineProvider } from '@mantine/core';
 import Script from 'next/script';
 import { AuthProvider } from '@/contexts/AuthContext';
 
@@ -72,11 +70,9 @@ export default function RootLayout({
             gtag('config', 'G-08HBBMLTLQ');
           `}
         </Script>
-        <MantineProvider>
-          <AuthProvider>
-            {children}
-          </AuthProvider>
-        </MantineProvider>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
