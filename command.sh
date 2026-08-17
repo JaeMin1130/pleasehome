@@ -1,38 +1,54 @@
-npm run build:pack
-scp -i /home/iru/app/pleasehome/db-pipeline/public-housing-key.pem /home/iru/app/pleasehome/web/announce_deploy.tar.gz iru@101.79.19.118:/home/iru/app/pleasehome/web/announce_deploy.tar.gz
-scp -i /home/iru/app/pleasehome/db-pipeline/public-housing-key.pem /home/iru/app/pleasehome/db-pipeline/public_housing.db iru@101.79.19.118:/home/iru/app/pleasehome/db-pipeline/public_housing.db
-ssh -i /home/iru/app/pleasehome/db-pipeline/public-housing-key.pem iru@101.79.19.118 "cd /home/iru/app/pleasehome/web && tar -xzf announce_deploy.tar.gz && pm2 reload pleasehome"
+#!/usr/bin/env bash
+set -e
 
+BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+KEY_PATH="$BASE_DIR/db-pipeline/public-housing-key.pem"
+SERVER_HOST="101.79.19.118"
+SERVER_USER="iru"
+REMOTE_PATH="/home/iru/app/pleasehome"
 
-pm2 delete pleasehome                                                                                                                                                                                           
-pm2 start server.js --name "pleasehome"                                                                                                                                                                         
-pm2 save 
+function deploy() {
+  echo "🚀 [1/4] Next.js Standalone 배포 패키지 빌드 시작..."
+  npm --prefix "$BASE_DIR/web" run build:pack
 
+  echo "📦 [2/4] 웹 빌드 번들 전송 중 (announce_deploy.tar.gz)..."
+  scp -i "$KEY_PATH" "$BASE_DIR/web/announce_deploy.tar.gz" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/web/announce_deploy.tar.gz"
 
-# 공고중  /  접수중  /  접수마감  /  정정공고중
-# 서울 부산 대구 인천 광주 대전 울산 세종 경기 강원 충북 충남 전북 전남 경북 경남 제주
-.venv/bin/python src/lh_notice/main.py --start-date 2026-01-01 --end-date 2026-06-30 --pan-nm "[정정공고]군포송정A-1BL 행복주택 입주자격완화 예비입주자 모집"
-.venv/bin/python src/lh_notice/main.py --start-date 2026-07-20 --end-date 2026-07-21 --regions 서울 경기 인천 --pan-ss "공고중"
-.venv/bin/python src/lh_notice/main.py --start-date 2026-01-01 --end-date 2026-06-30 --regions 서울 경기 인천 --pan-ss "접수중"
-.venv/bin/python .agents/scripts/db_init.py
-.venv/bin/python ../.agents/scripts/convert_pdf_to_md.py LH_0000061129_20260703
-.venv/bin/python ../.agents/scripts/insert_loader.py docs/md/LH_0000061140_20260720/data.json
+  echo "🗄️ [3/4] 최신 공고 데이터베이스 전송 중 (public_housing.db)..."
+  scp -i "$KEY_PATH" "$BASE_DIR/db-pipeline/public_housing.db" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/db-pipeline/public_housing.db"
 
-select count(*) from announcements;
+  echo "🔄 [4/4] 실서버 압축 해제 및 PM2 무중단 리로드..."
+  ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "cd $REMOTE_PATH/web && tar -xzf announce_deploy.tar.gz && pm2 reload pleasehome"
 
+  echo "✅ 배포가 성공적으로 완료되었습니다!"
+}
 
-netsh interface portproxy delete v4tov4 listenport=3000 listenaddress=0.0.0.0
+function db_status() {
+  echo "📊 SQLite Database Status:"
+  python3 -c "
+import sqlite3
+conn = sqlite3.connect('$BASE_DIR/db-pipeline/public_housing.db')
+c = conn.cursor()
+c.execute('SELECT COUNT(*) FROM announcements'); print('Announcements:', c.fetchone()[0])
+c.execute('SELECT COUNT(*) FROM complexes'); print('Complexes:    ', c.fetchone()[0])
+c.execute('SELECT COUNT(*) FROM housing_units'); print('Housing Units:', c.fetchone()[0])
+"
+}
 
-
-sqlite3 /home/iru/app/pleasehome/db-pipeline/public_housing.db \
-"ATTACH DATABASE '/home/iru/app/pleasehome/db-pipeline/user_data.db' AS user_db; \
-CREATE TABLE IF NOT EXISTS user_db.members AS SELECT * FROM main.members WHERE 1=0; \
-INSERT OR IGNORE INTO user_db.members SELECT * FROM main.members; \
-CREATE TABLE IF NOT EXISTS user_db.member_hidden_anns AS SELECT * FROM main.member_hidden_anns WHERE 1=0; \
-INSERT OR IGNORE INTO user_db.member_hidden_anns SELECT * FROM main.member_hidden_anns; \
-CREATE TABLE IF NOT EXISTS user_db.member_bookmark_folders AS SELECT * FROM main.member_bookmark_folders WHERE 1=0; \
-INSERT OR IGNORE INTO user_db.member_bookmark_folders SELECT * FROM main.member_bookmark_folders; \
-CREATE TABLE IF NOT EXISTS user_db.member_bookmark_items AS SELECT * FROM main.member_bookmark_items WHERE 1=0; \
-INSERT OR IGNORE INTO user_db.member_bookmark_items SELECT * FROM main.member_bookmark_items; \
-CREATE TABLE IF NOT EXISTS user_db.member_favorites AS SELECT * FROM main.member_favorites WHERE 1=0; \
-INSERT OR IGNORE INTO user_db.member_favorites SELECT * FROM main.member_favorites;"
+case "$1" in
+  deploy)
+    deploy
+    ;;
+  pack)
+    npm --prefix "$BASE_DIR/web" run build:pack
+    ;;
+  status|db:status)
+    db_status
+    ;;
+  *)
+    echo "사용법: ./command.sh [명령어]"
+    echo "  deploy     : Next.js 번들 빌드 + DB 전송 + PM2 무중단 원클릭 배포"
+    echo "  pack       : web/announce_deploy.tar.gz 로컬 압축 빌드만 수행"
+    echo "  db:status  : 로컬 public_housing.db 적재 현황 요약 조회"
+    ;;
+esac

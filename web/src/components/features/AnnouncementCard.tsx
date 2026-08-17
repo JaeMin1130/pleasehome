@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Announcement } from '@/types';
 import Link from 'next/link';
 import Tooltip from '@/components/ui/Tooltip';
@@ -7,6 +7,7 @@ import MarkdownViewer from '@/components/ui/MarkdownViewer';
 import { formatMoney, formatDate, formatInterestRate, formatDateWithTime, superClean } from '@/utils/formatters';
 import styles from './AnnouncementCard.module.css';
 import OfficialAnnouncementLink from './OfficialAnnouncementLink';
+import { useDDay } from '@/hooks/useDDay';
 
 export interface AccordionSectionProps {
   title: React.ReactNode;
@@ -73,123 +74,6 @@ interface AnnouncementCardProps {
   onFavoriteToggle?: (e: React.MouseEvent) => void;
 }
 
-const CountdownTimer = React.memo(function CountdownTimer({
-  minStart,
-  maxEnd,
-  applySchedules,
-}: {
-  minStart: Date | null;
-  maxEnd: Date | null;
-  applySchedules: any[];
-}) {
-  const [dDayText, setDDayText] = useState<string | null>(null);
-
-  useEffect(() => {
-    const calculateDDay = () => {
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      
-      let currentStatus: 'CLOSED' | 'UPCOMING' | 'ONGOING' = 'CLOSED';
-      if (minStart) {
-        const startDate = new Date(minStart.getFullYear(), minStart.getMonth(), minStart.getDate());
-        if (today < startDate) {
-          currentStatus = 'UPCOMING';
-        } else if (!maxEnd || now <= maxEnd) {
-          currentStatus = 'ONGOING';
-        } else {
-          currentStatus = 'CLOSED';
-        }
-      }
-
-      if (currentStatus === 'UPCOMING' && minStart) {
-        const startDate = new Date(minStart.getFullYear(), minStart.getMonth(), minStart.getDate());
-        const diffTime = startDate.getTime() - today.getTime();
-        if (diffTime > 0) {
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          return `접수 D-${diffDays}`;
-        }
-      } else if (currentStatus === 'ONGOING') {
-        if (!maxEnd) {
-          return '상시모집';
-        }
-
-        const diffTime = maxEnd.getTime() - now.getTime();
-
-        if (diffTime > 0) {
-          const hoursLeft = diffTime / (1000 * 60 * 60);
-          if (hoursLeft < 24) {
-            const hours = Math.floor(diffTime / (1000 * 60 * 60));
-            const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diffTime % (1000 * 60)) / 1000);
-            
-            const hStr = String(hours).padStart(2, '0');
-            const mStr = String(minutes).padStart(2, '0');
-            const sStr = String(seconds).padStart(2, '0');
-            
-            return `마감 ${hStr}:${mStr}:${sStr}`;
-          } else {
-            const endDate = new Date(maxEnd.getFullYear(), maxEnd.getMonth(), maxEnd.getDate());
-            const diffDaysTime = endDate.getTime() - today.getTime();
-            const diffDays = Math.ceil(diffDaysTime / (1000 * 60 * 60 * 24));
-            return `마감 D-${diffDays}`;
-          }
-        } else if (diffTime <= 0) {
-          const endDate = new Date(maxEnd.getFullYear(), maxEnd.getMonth(), maxEnd.getDate());
-          if (today.getTime() === endDate.getTime()) {
-            return '오늘 마감';
-          }
-        }
-      }
-      return null;
-    };
-
-    setDDayText(calculateDDay());
-
-    const intervalId = setInterval(() => {
-      setDDayText(calculateDDay());
-    }, 1000);
-
-    return () => clearInterval(intervalId);
-  }, [minStart, maxEnd]);
-
-  if (!dDayText) return null;
-
-  if (applySchedules.length > 0) {
-    return (
-      <Tooltip 
-        label={
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '2px 0' }}>
-            <div style={{ fontWeight: 'bold', borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '4px', marginBottom: '4px' }}>
-              접수 기간 안내
-            </div>
-            {applySchedules.map((s, idx) => {
-              const dateRange = s.start_date || s.end_date
-                ? `${formatDateWithTime(s.start_date)} ~ ${formatDateWithTime(s.end_date)}`
-                : s.raw_text || '-';
-              return (
-                <div key={s.id || idx} style={{ fontSize: '11px', whiteSpace: 'nowrap' }}>
-                  • {dateRange} {s.notes ? `(${s.notes})` : ''}
-                </div>
-              );
-            })}
-          </div>
-        } 
-        position="top" 
-        withArrow 
-        color="grey"
-        offset={2}
-        transitionProps={{ transition: 'fade', duration: 150 }}
-      >
-        <span className={styles['d-day-badge']}>
-          {dDayText}
-        </span>
-      </Tooltip>
-    );
-  }
-
-  return <span className={styles['d-day-badge']}>{dDayText}</span>;
-});
-
 export default function AnnouncementCard({ 
   ann, 
   isActive, 
@@ -204,6 +88,7 @@ export default function AnnouncementCard({
   isFavorite,
   onFavoriteToggle
 }: AnnouncementCardProps) {
+  const { dDayText, status: announcementStatus, applySchedules } = useDDay(ann);
 
   const instClass = ann.institution.includes('SH') 
     ? 'sh' 
@@ -214,50 +99,6 @@ export default function AnnouncementCard({
         : ann.institution.includes('경기') || ann.institution.includes('GH')
           ? 'gh'
           : 'private';
-
-  const { minStart, maxEnd } = useMemo(() => {
-    const applySchedules = ann.schedules.filter(s => s.schedule_type.includes('신청접수'));
-    let min: Date | null = null;
-    let max: Date | null = null;
-    for (const s of applySchedules) {
-      if (s.start_date) {
-        const start = new Date(s.start_date);
-        if (!isNaN(start.getTime())) {
-          if (!min || start < min) min = start;
-        }
-      }
-      if (s.end_date) {
-        const end = new Date(s.end_date);
-        if (!isNaN(end.getTime())) {
-          if (!max || end > max) max = end;
-        }
-      }
-    }
-    return { minStart: min, maxEnd: max };
-  }, [ann.schedules]);
-
-  const getApplySchedules = () => {
-    const applySchedules = ann.schedules.filter(s => s.schedule_type.includes('신청접수'));
-    if (applySchedules.length === 0) return [];
-    
-    // Sort schedules chronologically by start_date
-    return [...applySchedules].sort((a, b) => {
-      const dateA = a.start_date ? new Date(a.start_date).getTime() : 0;
-      const dateB = b.start_date ? new Date(b.start_date).getTime() : 0;
-      return dateA - dateB;
-    });
-  };
-
-  const getAnnouncementStatus = () => {
-    if (!minStart) return 'CLOSED';
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const startDate = new Date(minStart.getFullYear(), minStart.getMonth(), minStart.getDate());
-    
-    if (today < startDate) return 'UPCOMING';
-    else if (!maxEnd || now <= maxEnd) return 'ONGOING';
-    else return 'CLOSED';
-  };
 
   const getTimelineSteps = () => {
     const sortedScheds = [...ann.schedules].sort((a, b) => {
@@ -329,8 +170,6 @@ export default function AnnouncementCard({
     return { steps, sortedScheds };
   };
 
-  const applySchedules = getApplySchedules();
-
   return (
     <div 
       id={`ann-card-${ann.id}`}
@@ -343,7 +182,35 @@ export default function AnnouncementCard({
           <span className={styles['card-type']}>{ann.subscription_type}</span>
         </div>
         <div className={styles['header-right-actions']}>
-          <CountdownTimer minStart={minStart} maxEnd={maxEnd} applySchedules={applySchedules} />
+          {dDayText && (
+            applySchedules.length > 0 ? (
+              <Tooltip 
+                label={
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '2px 0' }}>
+                    <div style={{ fontWeight: 'bold', borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '4px', marginBottom: '4px' }}>
+                      접수 기간 안내
+                    </div>
+                    {applySchedules.map((s, idx) => {
+                      const dateRange = s.start_date || s.end_date
+                        ? `${formatDateWithTime(s.start_date)} ~ ${formatDateWithTime(s.end_date)}`
+                        : s.raw_text || '-';
+                      return (
+                        <div key={s.id || idx} style={{ fontSize: '11px', whiteSpace: 'nowrap' }}>
+                          • {dateRange} {s.notes ? `(${s.notes})` : ''}
+                        </div>
+                      );
+                    })}
+                  </div>
+                }
+              >
+                <span className={styles['d-day-badge']}>
+                  {dDayText}
+                </span>
+              </Tooltip>
+            ) : (
+              <span className={styles['d-day-badge']}>{dDayText}</span>
+            )
+          )}
           {onFavoriteToggle && (
             <button
               className={`${styles['favorite-btn']} ${isFavorite ? styles.favorited : ''}`}
@@ -423,8 +290,7 @@ export default function AnnouncementCard({
 
       {/* 접수 마감(CLOSED) 상태의 공고에 대해서만 진행 단계 바 렌더링 */}
       {(() => {
-        const currentStatus = getAnnouncementStatus();
-        if (currentStatus !== 'CLOSED') return null;
+        if (announcementStatus !== 'CLOSED') return null;
 
         const { steps, sortedScheds } = getTimelineSteps();
         if (steps.length === 0) return null;

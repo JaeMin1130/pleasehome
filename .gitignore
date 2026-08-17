@@ -18,6 +18,7 @@
 /db-pipeline/docs/pdf/GH_*
 /db-pipeline/docs/pdf/!old
 /db-pipeline/docs/md/
+/db-pipeline/scratch/
 /web/.next/
 /web/node_modules/
 !/db-pipeline/.venv/
