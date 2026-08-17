@@ -2,12 +2,20 @@ const fs = require('fs');
 const path = require('path');
 const Database = require('better-sqlite3');
 
-// 1. env.local 수동 파싱 (추가 npm 의존성 배제)
-const envPath = path.join(__dirname, '.env.local');
+const baseDir = path.resolve(__dirname, '..', '..');
+
+// 1. env.local 파싱
+const envCandidates = [
+  path.join(baseDir, 'web', '.env.local'),
+  path.join(baseDir, '.env.local'),
+  path.join(__dirname, '.env.local')
+];
+
+let envPath = envCandidates.find(p => fs.existsSync(p));
 let naverClientId = '';
 let naverClientSecret = '';
 
-if (fs.existsSync(envPath)) {
+if (envPath) {
   const envContent = fs.readFileSync(envPath, 'utf8');
   envContent.split(/\r?\n/).forEach((line) => {
     const parts = line.split('=');
@@ -29,18 +37,18 @@ if (!naverClientId || !naverClientSecret) {
 }
 
 // 2. SQLite 커넥션 설정
-const dbPath = path.join(__dirname, '..', 'db-pipeline', 'public_housing.db');
+const dbPath = path.join(baseDir, 'db-pipeline', 'public_housing.db');
 const db = new Database(dbPath);
 
 // 3. 지오코딩이 필요한 단지(좌표가 NULL인 단지) 조회
 const complexes = db.prepare('SELECT id, address, name FROM complexes WHERE latitude IS NULL OR longitude IS NULL').all();
 
 if (complexes.length === 0) {
-  console.log('모든 주택 단지의 좌표가 이미 업데이트되어 있습니다. (증분 업데이트 대상 없음)');
+  console.log('✅ 모든 주택 단지의 좌표가 이미 업데이트되어 있습니다. (지오코딩 필요 없음)');
   process.exit(0);
 }
 
-console.log(`총 ${complexes.length}개의 신규 단지에 대해 지오코딩 마이그레이션을 시작합니다...`);
+console.log(`📍 총 ${complexes.length}개의 신규 단지에 대해 네이버 지오코딩을 시작합니다...`);
 
 // 4. 네이버 지오코딩 API 호출 함수
 async function fetchGeocode(address) {
@@ -54,10 +62,9 @@ async function fetchGeocode(address) {
 
   // B. 2차 시도 (폴백): 주소 뒷단어를 하나씩 잘라내며 행정동 수준까지 재시도
   const words = cleanAddr.split(/\s+/);
-  // 단어가 최소 3개 이상(시/도, 시/군/구, 동/읍/면이 보장되는 마지노선)일 때까지만 단어를 떼어냄
   for (let i = words.length - 1; i >= 3; i--) {
     const fallbackAddr = words.slice(0, i).join(' ');
-    console.log(`   └─ [Fallback Retry] 주소 축소 검색 시도: "${fallbackAddr}"`);
+    console.log(`   └─ [Fallback] 주소 축소 재검색: "${fallbackAddr}"`);
     coords = await callNaverGeocodeApi(fallbackAddr);
     if (coords) {
       return { ...coords, isImprecise: 1 };
@@ -67,7 +74,6 @@ async function fetchGeocode(address) {
   return null;
 }
 
-// API 호출부 분리
 async function callNaverGeocodeApi(queryAddr) {
   const url = `https://maps.apigw.ntruss.com/map-geocode/v2/geocode?query=${encodeURIComponent(queryAddr)}`;
   try {
@@ -112,7 +118,7 @@ async function run() {
     if (coords) {
       updateStmt.run(coords.lat, coords.lng, coords.isImprecise, comp.id);
       successCount++;
-      // 네이버 API 요청 속도 제한(Rate Limiting) 준수 및 부하 방지를 위해 100ms 지연
+      // 네이버 API 레이트 리밋 보호용 100ms 딜레이
       await new Promise(resolve => setTimeout(resolve, 100));
     } else {
       console.warn(`[Fail] 지오코딩 실패: "${comp.address}"`);
@@ -120,7 +126,7 @@ async function run() {
     }
   }
 
-  console.log(`\n🎉 지오코딩 마이그레이션 완료! (성공: ${successCount}건, 실패: ${failCount}건)`);
+  console.log(`\n🎉 지오코딩 완료! (성공: ${successCount}건, 실패: ${failCount}건)`);
   db.close();
 }
 
