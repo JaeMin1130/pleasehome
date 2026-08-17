@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState, Suspense, useMemo } from 'react';
+import { useEffect, useState, Suspense, useMemo, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { useSearchParams, useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import DetailPanel from '@/components/DetailPanel';
 import NavigationBar, { NavigationTabType } from '@/components/NavigationBar';
@@ -35,7 +34,6 @@ interface HomeClientLayoutProps {
 }
 
 function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeClientLayoutProps) {
-  const router = useRouter();
   const [announcements, setAnnouncements] = useState<Announcement[]>(initialAnnouncements);
   const [allComplexes, setAllComplexes] = useState<Complex[]>(initialComplexes);
   const [announcementUnits, setAnnouncementUnits] = useState<any[]>([]);
@@ -298,9 +296,24 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
     maxMonthlyRent: FILTER_DEFAULT_LIMITS.maxMonthlyRent
   });
 
-  const searchParams = useSearchParams();
-  const annIdParam = searchParams.get('announcement_id');
-  const compIdParam = searchParams.get('complex_id');
+  // 💡 가벼운 브라우저 히스토리 기반 Shallow URL 동기화 (화면 깜빡임 및 RSC 지연 방지)
+  const updateUrl = (annId: number | null, compId: number | null, pushToHistory = false) => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams();
+    if (annId !== null) params.set('announcement_id', String(annId));
+    if (compId !== null) params.set('complex_id', String(compId));
+    const qs = params.toString();
+    const newUrl = qs ? `/?${qs}` : '/';
+
+    const currentPath = window.location.pathname + window.location.search;
+    if (currentPath !== newUrl) {
+      if (pushToHistory) {
+        window.history.pushState({ annId, compId }, '', newUrl);
+      } else {
+        window.history.replaceState({ annId, compId }, '', newUrl);
+      }
+    }
+  };
 
   useEffect(() => {
     if (initialAnnouncements.length === 0) {
@@ -311,10 +324,64 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
     }
   }, [initialAnnouncements, initialComplexes]);
 
-  // 💡 새로고침 또는 첫 진입 시 주소창의 쿼리 파라미터를 강제로 청소하여 초기화합니다.
+  // 💡 URL 쿼리 파라미터(딥링크) 초기 동기화 (새로고침 또는 외부 링크 유입 시 복원)
+  const isInitialSyncDone = useRef(false);
   useEffect(() => {
-    router.replace('/', { scroll: false });
-  }, [router]);
+    if (isInitialSyncDone.current) return;
+    if (allComplexes.length === 0 && announcements.length === 0) return;
+
+    isInitialSyncDone.current = true;
+    const params = new URLSearchParams(window.location.search);
+    const annParam = params.get('announcement_id');
+    const compParam = params.get('complex_id');
+
+    if (compParam) {
+      const compId = Number(compParam);
+      const targetComp = allComplexes.find(c => c.id === compId);
+      if (targetComp) {
+        setSelectedComplex(targetComp);
+        setActiveComplexId(targetComp.id);
+        setIsPanelOpen(true);
+        if (targetComp.announcement_id) {
+          setActiveAnnId(targetComp.announcement_id);
+        }
+      }
+    } else if (annParam) {
+      const annId = Number(annParam);
+      const targetAnn = announcements.find(a => a.id === annId);
+      if (targetAnn) {
+        setActiveAnnId(annId);
+      }
+    }
+  }, [allComplexes, announcements]);
+
+  // 💡 브라우저 뒤로가기 / 앞으로가기(popstate) 이벤트 연동
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const annParam = params.get('announcement_id');
+      const compParam = params.get('complex_id');
+
+      const annId = annParam ? Number(annParam) : null;
+      const compId = compParam ? Number(compParam) : null;
+
+      setActiveAnnId(annId);
+
+      if (compId !== null) {
+        const comp = allComplexes.find(c => c.id === compId) || null;
+        setSelectedComplex(comp);
+        setActiveComplexId(compId);
+        setIsPanelOpen(comp !== null);
+      } else {
+        setSelectedComplex(null);
+        setActiveComplexId(null);
+        setIsPanelOpen(false);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [allComplexes]);
 
   useEffect(() => {
     if (activeAnnId === null) { setAnnouncementUnits([]); return; }
@@ -410,16 +477,18 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
   const isPolicyOnly = activeAnnId !== null && displayComplexes.length === 0;
 
   const handleSelectAnnouncement = (id: number | null) => {
-    setActiveAnnId(id);
-    setActiveComplexId(null);
-    setSelectedComplex(null);
-    setIsPanelOpen(false);
-
-    // URL 양방향 동기화 (Shallow Routing)
-    if (id !== null) {
-      router.replace(`/?announcement_id=${id}`, { scroll: false });
+    if (activeAnnId === id) {
+      setActiveAnnId(null);
+      setActiveComplexId(null);
+      setSelectedComplex(null);
+      setIsPanelOpen(false);
+      updateUrl(null, null, true);
     } else {
-      router.replace('/', { scroll: false });
+      setActiveAnnId(id);
+      setActiveComplexId(null);
+      setSelectedComplex(null);
+      setIsPanelOpen(false);
+      updateUrl(id, null, true);
     }
   };
 
@@ -430,7 +499,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
       setSelectedComplex(complex);
       setActiveComplexId(complex.id);
       setIsPanelOpen(true);
-      router.replace(`/?complex_id=${complex.id}`, { scroll: false });
+      updateUrl(activeAnnId || complex.announcement_id || null, complex.id, true);
       
       // 모바일 뷰인 경우 사이드바 닫기
       if (activeTab !== null) {
@@ -453,15 +522,14 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
         setLastActiveTab(null);
       }
 
-      // 단지 해제 시: 단지 탭(COMPLEX) 또는 저장 탭(BOOKMARK) 상태일 때는 공고 상태 소거 및 클린 롤백
       const currentEffectiveTab = activeTab || lastActiveTab;
       if (currentEffectiveTab === 'COMPLEX' || currentEffectiveTab === 'BOOKMARK') {
         setActiveAnnId(null);
-        router.replace('/', { scroll: false });
+        updateUrl(null, null, true);
       } else if (activeAnnId !== null) {
-        router.replace(`/?announcement_id=${activeAnnId}`, { scroll: false });
+        updateUrl(activeAnnId, null, true);
       } else {
-        router.replace('/', { scroll: false });
+        updateUrl(null, null, true);
       }
     } else {
       // 모바일 뷰인 경우 사이드바 닫기 전에 현재 탭 기억
@@ -477,27 +545,26 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
         handleTabSelect(null);
       }
 
-      // 단지 선택 시: URL에 complex_id 설정
-      router.replace(`/?complex_id=${complex.id}`, { scroll: false });
+      // 단지 선택 시: 상위 공고 ID와 단지 ID를 함께 보존
+      updateUrl(activeAnnId || complex.announcement_id || null, complex.id, true);
     }
   };
 
   const handleTabSelect = (tab: NavigationTabType | null) => {
     // 💡 사용자가 실제로 '다른 활성 탭'을 눌러 전환할 때만 패널을 닫고 주소를 청소합니다.
-    // 💡 모바일 뷰에서 사이드바를 임시로 접기 위해 tab === null 이 들어올 때는 정화 동작을 생략합니다.
     if (tab !== null && tab !== activeTab) {
       setSelectedComplex(null);
       setActiveComplexId(null);
       setActiveAnnId(null);
       setIsPanelOpen(false);
-      router.replace('/', { scroll: false });
+      updateUrl(null, null, true);
     }
 
     setActiveTab(tab);
     if (tab === null) {
       setIsSidebarCollapsed(true);
     } else {
-      setIsSidebarCollapsed(false); // 💡 탭 활성화 시 기본 펼침(중간 높이) 상태로 시작하도록 지정
+      setIsSidebarCollapsed(false);
       if (tab === 'BOOKMARK') {
         setActiveFolderIds([]);
       }
@@ -733,11 +800,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
               setLastActiveTab(null);
             }
 
-            if (activeAnnId !== null) {
-              router.replace(`/?announcement_id=${activeAnnId}`, { scroll: false });
-            } else {
-              router.replace('/', { scroll: false });
-            }
+            updateUrl(activeAnnId, null, true);
           }} 
           style={{ 
             '--sidebar-offset-width': isSidebarCollapsed ? '0px' : `${SIDEBAR_DEFAULT_WIDTH}px`
