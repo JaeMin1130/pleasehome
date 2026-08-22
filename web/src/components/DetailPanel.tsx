@@ -103,19 +103,9 @@ export default function DetailPanel({
       .then((res) => res.json())
       .then((data: HousingUnit[]) => {
         setUnits(data);
-        
-        // 고유 결합 키 및 소득 등급 추출하여 첫 번째 값을 기본 선택값으로 적용
-        const combos = Array.from(
-          new Set(data.map((u) => `${u.supply_type || ''}_${u.target_group || ''}`))
-        ).filter(combo => combo !== '_').sort();
-        
-        const incomes = Array.from(
-          new Set(data.map((u) => u.income_group).filter((g): g is string => !!g))
-        ).sort();
-
-        setSelectedTarget(combos.length > 0 ? (combos[0] as string) : 'ALL');
-        setSelectedIncome(incomes.length > 0 ? (incomes[0] as string) : 'ALL');
-        
+        setSelectedType('ALL');
+        setSelectedTarget('ALL');
+        setSelectedIncome('ALL');
         setLoading(false);
       })
       .catch((err) => {
@@ -365,6 +355,16 @@ export default function DetailPanel({
     });
   };
 
+  // 신청 대상 칩 활성화 판별 (현재 선택된 주택형/소득 기준)
+  const isTargetValid = (combo: string) => {
+    return units.some((u) => {
+      const comboKey = `${u.supply_type || ''}_${u.target_group || ''}`;
+      return (selectedType === 'ALL' || (u.room_type && u.room_type.startsWith(selectedType))) &&
+             (selectedIncome === 'ALL' || u.income_group === selectedIncome) &&
+             (comboKey === combo);
+    });
+  };
+
   // 공급유형 + 신청대상 결합 한글 라벨 생성 헬퍼 함수
   const getTargetLabel = (supplyType: string | null, targetGroup: string | null) => {
     if (!supplyType && !targetGroup) return '정보 없음';
@@ -585,75 +585,79 @@ export default function DetailPanel({
               <h4 className={styles['panel-section-title']}>주택형별 공급 및 가격 정보</h4>
               
               <div className={styles['panel-filter-row']}>
-                {/* 신청 대상 (공급유형+신청대상 그룹화) 필터 칩 탭 */}
+                {/* 1. 신청 대상 드롭다운 */}
                 {!loading && targetCombos.length > 0 && (
                   <div className={styles['filter-group-wrap']}>
-                    <span className={styles['filter-label']}>신청 대상:</span>
-                    <div className={styles['filter-tabs-container']}>
-                      {targetCombos.map((combo) => {
-                        const [supplyType, targetGroup] = combo.split('_');
-                        const label = getTargetLabel(supplyType || null, targetGroup || null);
-                        return (
-                          <button
-                            key={combo}
-                            className={`${styles['filter-tab-btn']} ${selectedTarget === combo ? styles.active : ''}`}
-                            onClick={() => setSelectedTarget(combo)}
-                          >
-                            {label}
-                          </button>
-                        );
-                      })}
+                    <label htmlFor="filter-target" className={styles['filter-label']}>신청 대상</label>
+                    <div className={styles['select-wrapper']}>
+                      <select
+                        id="filter-target"
+                        className={styles['filter-select']}
+                        value={selectedTarget}
+                        onChange={(e) => setSelectedTarget(e.target.value)}
+                      >
+                        <option value="ALL">전체 (모든 신청 대상)</option>
+                        {targetCombos.map((combo) => {
+                          const [supplyType, targetGroup] = combo.split('_');
+                          const label = getTargetLabel(supplyType || null, targetGroup || null);
+                          const isValid = isTargetValid(combo);
+                          return (
+                            <option key={combo} value={combo} disabled={!isValid}>
+                              {label}{!isValid ? ' (해당 주택형/소득 없음)' : ''}
+                            </option>
+                          );
+                        })}
+                      </select>
                     </div>
                   </div>
                 )}
 
-                {/* 소득/순위 필터 칩 탭 */}
+                {/* 2. 소득/순위 드롭다운 */}
                 {!loading && incomeGroups.length > 0 && (
                   <div className={styles['filter-group-wrap']}>
-                    <span className={styles['filter-label']}>소득/순위:</span>
-                    <div className={styles['filter-tabs-container']}>
-                      {incomeGroups.map((income) => {
-                        const isValid = isIncomeValid(income);
-                        return (
-                          <button
-                            key={income}
-                            className={`${styles['filter-tab-btn']} ${selectedIncome === income ? styles.active : ''}`}
-                            disabled={!isValid}
-                            onClick={() => setSelectedIncome(income)}
-                          >
-                            {income}
-                          </button>
-                        );
-                      })}
+                    <label htmlFor="filter-income" className={styles['filter-label']}>소득/순위</label>
+                    <div className={styles['select-wrapper']}>
+                      <select
+                        id="filter-income"
+                        className={styles['filter-select']}
+                        value={selectedIncome}
+                        onChange={(e) => setSelectedIncome(e.target.value)}
+                      >
+                        <option value="ALL">전체 (모든 소득/순위)</option>
+                        {incomeGroups.map((income) => {
+                          const isValid = isIncomeValid(income);
+                          return (
+                            <option key={income} value={income} disabled={!isValid}>
+                              {income}{!isValid ? ' (해당 주택형/대상 없음)' : ''}
+                            </option>
+                          );
+                        })}
+                      </select>
                     </div>
                   </div>
                 )}
 
-
-                {/* 주택형 필터 칩 탭 */}
-                {!loading && units.length > 0 && (
+                {/* 3. 주택형 드롭다운 */}
+                {!loading && baseTypes.length > 0 && (
                   <div className={styles['filter-group-wrap']}>
-                    <span className={styles['filter-label']}>주택형:</span>
-                    <div className={styles['filter-tabs-container']}>
-                      <button
-                        className={`${styles['filter-tab-btn']} ${selectedType === 'ALL' ? styles.active : ''}`}
-                        onClick={() => setSelectedType('ALL')}
+                    <label htmlFor="filter-type" className={styles['filter-label']}>주택형</label>
+                    <div className={styles['select-wrapper']}>
+                      <select
+                        id="filter-type"
+                        className={styles['filter-select']}
+                        value={selectedType}
+                        onChange={(e) => setSelectedType(e.target.value)}
                       >
-                        전체
-                      </button>
-                      {baseTypes.map((type) => {
-                        const isValid = isTypeValid(type);
-                        return (
-                          <button
-                            key={type}
-                            className={`${styles['filter-tab-btn']} ${selectedType === type ? styles.active : ''}`}
-                            disabled={!isValid}
-                            onClick={() => setSelectedType(type)}
-                          >
-                            {type}
-                          </button>
-                        );
-                      })}
+                        <option value="ALL">전체 (모든 주택형)</option>
+                        {baseTypes.map((type) => {
+                          const isValid = isTypeValid(type);
+                          return (
+                            <option key={type} value={type} disabled={!isValid}>
+                              {type}{!isValid ? ' (해당 대상/소득 없음)' : ''}
+                            </option>
+                          );
+                        })}
+                      </select>
                     </div>
                   </div>
                 )}

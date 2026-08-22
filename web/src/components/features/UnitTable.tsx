@@ -84,8 +84,7 @@ export default function UnitTable({
         <thead>
           <tr>
             <th>주택형 (면적)</th>
-            <th>호실</th>
-            <th>방 개수</th>
+            <th>공급 구분(대상)</th>
             <th>공급 / 예비</th>
             <th>임대 보증금</th>
             <th>월 임대료</th>
@@ -146,8 +145,17 @@ export default function UnitTable({
                       </span>
                     </td>
                   )}
-                  <td>{unit.room_number || '-'}</td>
-                  <td>{unit.room_count ? `${unit.room_count}개` : '-'}</td>
+                  <td>
+                    <span>
+                      {unit.supply_type || (unit.target_group ? formatTargetGroup(unit.target_group) : '일반공급')}
+                    </span>
+                    {unit.target_group && unit.supply_type && unit.target_group !== '상관없음' && unit.supply_type !== formatTargetGroup(unit.target_group) && (
+                      <span className={styles['target-sub-text']}> ({formatTargetGroup(unit.target_group)})</span>
+                    )}
+                    {unit.room_number && (
+                      <span className={styles['room-number-tag']}>{unit.room_number}</span>
+                    )}
+                  </td>
                   <td>
                     <span className={styles['bold-text']}>{unit.supply_count}호</span>
                     {unit.reserve_count > 0 && ` / ${unit.reserve_count}호`}
@@ -163,7 +171,7 @@ export default function UnitTable({
                 {/* 아코디언 확장 영역 (방안 1: 모의 계산 슬라이더) */}
                 {isExpanded && (
                   <tr className={styles['accordion-row']}>
-                    <td colSpan={6} className={styles['accordion-cell']}>
+                    <td colSpan={5} className={styles['accordion-cell']}>
                       <div className={styles['conversion-box']}>
                         {hasConversion && unit.monthly_rent > 0 ? (
                           <>

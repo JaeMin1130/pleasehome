@@ -206,3 +206,18 @@
     color: var(--text-muted);
     font-size: var(--font-size-xs);
 }
+
+.target-sub-text {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+}
+
+.room-number-tag {
+    font-size: var(--font-size-2xs);
+    color: var(--primary);
+    background-color: var(--primary-bg);
+    padding: 1px 4px;
+    border-radius: var(--radius-xs);
+    margin-left: var(--spacing-2xs);
+    display: inline-block;
+}

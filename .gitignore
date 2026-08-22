@@ -13,6 +13,7 @@
 !/db-pipeline/
 
 # Blacklist
+/docs/reference
 /db-pipeline/docs/pdf/LH_*
 /db-pipeline/docs/pdf/SH_*
 /db-pipeline/docs/pdf/GH_*
@@ -24,5 +25,6 @@
 !/db-pipeline/.venv/
 *.db
 *.pem
+*.pub
 *.gz
 *.pyc

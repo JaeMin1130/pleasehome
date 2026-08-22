@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Script from 'next/script';
 import { db } from '@/lib/db';
-import { formatMoney, formatTargetGroup, formatDateWithTime, superClean } from '@/utils/formatters';
+import { formatMoney, formatDateWithTime, superClean } from '@/utils/formatters';
 import MarkdownViewer from '@/components/ui/MarkdownViewer';
 import styles from './detail.module.css';
 import OfficialAnnouncementLink from '@/components/features/OfficialAnnouncementLink';
@@ -49,7 +49,6 @@ export default async function AnnouncementDetailPage({ params }: PageProps) {
   let ann: any = null;
   let schedules: any[] = [];
   let details: any[] = [];
-  let limits: any[] = [];
   let complexes: any[] = [];
   let units: any[] = [];
 
@@ -60,7 +59,6 @@ export default async function AnnouncementDetailPage({ params }: PageProps) {
     }
     schedules = db.prepare('SELECT * FROM announcement_schedules WHERE announcement_id = ?').all(annId);
     details = db.prepare('SELECT * FROM announcement_details WHERE announcement_id = ? ORDER BY sort_order ASC, id ASC').all(annId);
-    limits = db.prepare('SELECT * FROM announcement_limits WHERE announcement_id = ?').all(annId);
     complexes = db.prepare('SELECT * FROM complexes WHERE announcement_id = ? ORDER BY address ASC').all(annId);
     units = db.prepare('SELECT * FROM housing_units WHERE announcement_id = ? ORDER BY exclusive_area ASC').all(annId);
   } catch (error) {
@@ -185,53 +183,7 @@ export default async function AnnouncementDetailPage({ params }: PageProps) {
           </section>
         )}
 
-        {/* 2. 지원 조건 및 한도액 */}
-        {limits.length > 0 && (
-          <section className={styles.detailSection}>
-            <details className={styles.details} open>
-              <summary className={styles.summary}>
-                <span className={styles.summaryTitle}>
-                  💰 지원 조건 및 한도액
-                </span>
-                <span className={styles.toggleIcon}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                  </svg>
-                </span>
-              </summary>
-              <div className={styles.detailContent} style={{ borderTop: 'none' }}>
-                <div className={styles.tableWrapper} style={{ marginBottom: 0 }}>
-                  <table className={styles.table}>
-                    <thead>
-                      <tr>
-                        <th>신청 대상</th>
-                        <th>최대 지원 한도액</th>
-                        <th>임대보증금 비율</th>
-                        <th>본인 부담</th>
-                        <th>이자율(금리)</th>
-                        <th>비고</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {limits.map((lim) => (
-                        <tr key={lim.id}>
-                          <td><strong>{formatTargetGroup(lim.target_group)}</strong></td>
-                          <td>{formatMoney(lim.max_support_amount)}</td>
-                          <td>{lim.deposit_limit ? `${lim.deposit_limit}%` : '-'}</td>
-                          <td>{lim.tenant_share ? `${lim.tenant_share}%` : '-'}</td>
-                          <td>{lim.interest_rate ? `${lim.interest_rate}%` : '-'}</td>
-                          <td>{lim.notes || '-'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </details>
-          </section>
-        )}
-
-        {/* 3. 소속 주택 단지 목록 요약 */}
+        {/* 2. 소속 주택 단지 목록 요약 */}
         {complexes.length > 0 && (
           <section className={styles.detailSection}>
             <details className={styles.details} open>
