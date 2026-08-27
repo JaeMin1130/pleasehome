@@ -13,22 +13,33 @@ function geocode() {
 }
 
 function deploy() {
-  echo "📍 [1/5] 신규 단지 네이버 지오코딩(위경도 좌표) 확인 및 갱신..."
+  echo "📍 [1/6] 신규 단지 네이버 지오코딩(위경도 좌표) 확인 및 갱신..."
   NODE_PATH="$BASE_DIR/web/node_modules" node "$BASE_DIR/db-pipeline/scripts/migrate_coords.js"
 
-  echo "🚀 [2/5] Next.js Standalone 배포 패키지 빌드 시작..."
+  echo "🚀 [2/6] Next.js Standalone 배포 패키지 빌드..."
   npm --prefix "$BASE_DIR/web" run build:pack
 
-  echo "📦 [3/5] 웹 빌드 번들 전송 중 (announce_deploy.tar.gz)..."
-  scp -i "$KEY_PATH" "$BASE_DIR/web/announce_deploy.tar.gz" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/web/announce_deploy.tar.gz"
+  echo "☕ [3/6] Spring Boot 백엔드 JAR 패키징 빌드..."
+  "$BASE_DIR/backend/gradlew" -p "$BASE_DIR/backend" build -x test
 
-  echo "🗄️ [4/5] 최신 공고 데이터베이스 전송 중 (public_housing.db)..."
+  echo "📦 [4/6] 빌드 번들 및 데이터베이스 실서버 전송 중..."
+  scp -i "$KEY_PATH" "$BASE_DIR/web/announce_deploy.tar.gz" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/web/announce_deploy.tar.gz"
+  scp -i "$KEY_PATH" "$BASE_DIR/backend/build/libs/backend-0.0.1-SNAPSHOT.jar" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/backend/backend.jar"
   scp -i "$KEY_PATH" "$BASE_DIR/db-pipeline/public_housing.db" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/db-pipeline/public_housing.db"
 
-  echo "🔄 [5/5] 실서버 압축 해제 및 PM2 무중단 리로드..."
+  echo "🔄 [5/6] 실서버 웹(Next.js) 압축 해제 및 PM2 무중단 리로드..."
   ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "cd $REMOTE_PATH/web && tar -xzf announce_deploy.tar.gz && pm2 reload pleasehome"
 
-  echo "✅ 배포가 성공적으로 완료되었습니다!"
+  echo "🔄 [6/6] 실서버 백엔드(Spring Boot) 프로세스 재시작 (128M~256M 힙 메모리)..."
+  ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "
+    fuser -k 8080/tcp 2>/dev/null || pkill -f backend.jar 2>/dev/null || true
+    mkdir -p $REMOTE_PATH/backend
+    cd $REMOTE_PATH/backend
+    nohup java -Xms128m -Xmx256m -jar backend.jar > backend.log 2>&1 &
+    sleep 2
+  "
+
+  echo "✅ 프론트엔드 + 백엔드 + DB 통합 배포가 성공적으로 완료되었습니다!"
 }
 
 function db_status() {
