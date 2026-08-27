@@ -16,11 +16,12 @@ function deploy() {
   echo "📍 [1/6] 신규 단지 네이버 지오코딩(위경도 좌표) 확인 및 갱신..."
   NODE_PATH="$BASE_DIR/web/node_modules" node "$BASE_DIR/db-pipeline/scripts/migrate_coords.js"
 
-  echo "🚀 [2/6] Next.js Standalone 배포 패키지 빌드..."
-  npm --prefix "$BASE_DIR/web" run build:pack
-
-  echo "☕ [3/6] Spring Boot 백엔드 JAR 패키징 빌드..."
+  echo "☕ [2/6] Spring Boot 백엔드 JAR 패키징 빌드..."
   "$BASE_DIR/backend/gradlew" -p "$BASE_DIR/backend" build -x test
+
+  echo "🚀 [3/6] Next.js Standalone 배포 패키지 빌드 (공고/단지 전수 프리렌더링)..."
+  fuser 8080/tcp >/dev/null 2>&1 || (nohup java -Xms128m -Xmx256m -jar "$BASE_DIR/backend/build/libs/backend-0.0.1-SNAPSHOT.jar" >/dev/null 2>&1 & sleep 4)
+  npm --prefix "$BASE_DIR/web" run build:pack
 
   echo "📦 [4/6] 빌드 번들 및 데이터베이스 실서버 전송 중..."
   ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "mkdir -p $REMOTE_PATH/backend $REMOTE_PATH/web $REMOTE_PATH/db-pipeline"
