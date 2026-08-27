@@ -28,15 +28,15 @@ function deploy() {
   scp -i "$KEY_PATH" "$BASE_DIR/backend/build/libs/backend-0.0.1-SNAPSHOT.jar" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/backend/backend.jar"
   scp -i "$KEY_PATH" "$BASE_DIR/db-pipeline/public_housing.db" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/db-pipeline/public_housing.db"
 
-  echo "🔄 [5/6] 실서버 웹(Next.js) 압축 해제 및 PM2 무중단 리로드..."
-  ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "cd $REMOTE_PATH/web && tar -xzf announce_deploy.tar.gz && pm2 reload pleasehome"
-
-  echo "🔄 [6/6] 실서버 백엔드(Spring Boot) PM2 프로세스 재시작 (128M~256M 힙 메모리)..."
+  echo "🔄 [5/6] 실서버 백엔드(Spring Boot) PM2 프로세스 재시작 (128M~256M 힙 메모리)..."
   ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "
     cd $REMOTE_PATH/backend
     pm2 restart pleasehome-backend 2>/dev/null || pm2 start 'java -Xms128m -Xmx256m -jar backend.jar' --name pleasehome-backend --cwd $REMOTE_PATH/backend
     pm2 save
   "
+
+  echo "🔄 [6/6] 실서버 웹(Next.js) 압축 해제 및 PM2 무중단 리로드..."
+  ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "cd $REMOTE_PATH/web && tar -xzf announce_deploy.tar.gz && pm2 reload pleasehome"
 
   echo "✅ 프론트엔드 + 백엔드 + DB 통합 배포가 성공적으로 완료되었습니다!"
 }
