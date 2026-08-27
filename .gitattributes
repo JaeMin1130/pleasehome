@@ -1,0 +1,10 @@
+# Auto detect text files and normalize line endings
+* text=auto
+
+# GitHub Linguist language overrides
+# Exclude raw documents and data files from language statistics to accurately reflect Kotlin/TypeScript/Python
+*.md linguist-documentation
+*.json linguist-documentation
+docs/** linguist-documentation
+db-pipeline/docs/** linguist-documentation
+web/public/** linguist-documentation

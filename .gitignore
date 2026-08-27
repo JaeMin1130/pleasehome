@@ -3,6 +3,7 @@
 
 # Whitelist allowed directories & files (추적을 허용할 핵심 자산 화이트리스트)
 !/.gitignore
+!/.gitattributes
 !/README.md
 !/AGENTS.md
 !/llms.txt
