@@ -93,3 +93,9 @@
 * **현상 (Problem)**: 쿼리가 묻어있는 상태로 새로고침 시 상세 패널이 순간 열렸다가 닫히며 화면이 흔들림
 * **원인 (Cause)**: URL 쿼리를 감지해 공고/단지를 강제 활성화해주던 `useEffect` 훅이 비동기 URL 청소 훅보다 먼저 기동함
 * **해결 (Solution)**: URL 파라미터를 읽어 단지/공고를 강제 자동 활성화해주던 `useEffect` 감지 훅 2개를 완전히 삭제하여 해결함
+
+### [2026-08-27] Next.js Standalone 배포 시 Nginx 리버스 프록시 /api/ 직접 라우팅 및 CORS 해결
+* **분류**: 인프라 / 백엔드
+* **현상 (Problem)**: Kotlin + Spring Boot 백엔드 분리 후 실서버 배포 시 클라이언트 AJAX API 호출이 404/403으로 실패하여 공고 미출력 및 로그인 불가 발생
+* **원인 (Cause)**: Next.js Standalone 배포 모드(`server.js`)에서 클라이언트의 동적 `fetch('/api/...')`가 rewrites 프록시를 정상적으로 경유하지 못함. 또한 백엔드 CORS allowed-origins에 프로덕션 도메인(`pleasehome.com`)이 누락됨
+* **해결 (Solution)**: Nginx 설정에 `location /api/` 블록을 추가하여 Spring Boot(`http://127.0.0.1:8080`)로 직접 리버스 프록시하도록 구성하고, Spring Boot `application.yml` 및 `WebConfig.kt`에 `pleasehome.com` CORS 허용 및 `ResponseCookie(SameSite=Lax)`를 적용함

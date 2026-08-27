@@ -78,6 +78,11 @@ flowchart TB
         SSR_Pages --> ClientUI
     end
 
+    %% 0. 웹 서버 및 리버스 프록시
+    subgraph Gateway["0. Web Server & Reverse Proxy (Nginx :80/:443)"]
+        NginxRoute["Nginx Reverse Proxy<br>• /api/* → Spring Boot (:8080)<br>• /* (Web/Static) → Next.js (:3000)"]
+    end
+
     %% 연결 관계 (Data Flow)
     LH_SH --> Fetch
     Geo <-->|좌표 변환| NaverGeo
@@ -86,12 +91,13 @@ flowchart TB
     Repo <--> HousingDB
     Repo <--> UserDB
 
-    SSR_Pages -->|Internal Fetch (REST API)| Controller
-    ClientUI -->|Client Fetch (REST API)| Controller
+    Browser <-->|HTTPS| Gateway
+    Gateway -->|/api/* 다이렉트 프록시| Controller
+    Gateway -->|웹 요청 및 정적 자원| SSR_Pages
+    SSR_Pages -->|Internal SSR Fetch| Controller
 
     NaverMap --> MapComp
-    Browser <--> ClientUI
-    SearchBot -->|정적 HTML / JSON-LD 수집| SSR_Pages
+    SearchBot -->|정적 HTML / JSON-LD 수집| Gateway
 ```
 
 ---
