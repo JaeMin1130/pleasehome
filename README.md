@@ -96,6 +96,42 @@ flowchart TB
 
 ---
 
+## 📋 REST API 엔드포인트 규격 (23 Endpoints)
+
+Spring Boot 백엔드 코어 서버에서 제공하는 23개 RESTful API 전체 명세입니다.
+
+| 도메인 (Domain) | Method | Endpoint | 설명 및 비즈니스 로직 | 인증/권한 |
+| :--- | :--- | :--- | :--- | :--- |
+| **공고 (Announcements)** | `GET` | `/api/announcements` | 전체 모집 공고 목록 및 연관 일정/조건 조회 | Public |
+| | `GET` | `/api/announcements/{id}` | 특정 공고 단건 조회 | Public |
+| | `GET` | `/api/announcements/{id}/details` | 공고 상세, 일정, 조건, 소속 단지 및 평형 종합 번들 (SSR 최적화) | Public |
+| **단지 (Complexes)** | `GET` | `/api/complexes` | 전체 또는 공고별 단지 목록 조회 (`?announcement_id=`) | Public |
+| | `GET` | `/api/complexes/{id}` | 특정 단지 단건 조회 | Public |
+| | `GET` | `/api/complexes/{id}/details` | 단지 상세, 소속 평형 목록 및 동일 단지 과거 공고 이력 번들 | Public |
+| **평형 & 사이트맵** | `GET` | `/api/housing-units` | 주택 평형 목록 조회 (`?complex_id=`, `?announcement_id=`) | Public |
+| | `GET` | `/api/sitemap/paths` | 검색엔진(SEO)용 전체 공고 및 단지 ID 경로 목록 조회 | Public |
+| **인증 (Auth)** | `POST` | `/api/auth/register` | 신규 회원가입 (BCrypt 암호화, 세션 쿠키 발급) | Public |
+| | `POST` | `/api/auth/login` | 로그인 인증 (세션 쿠키 `pleasehome_session` 발급) | Public |
+| | `POST` | `/api/auth/logout` | 로그아웃 (세션 쿠키 즉시 만료) | Public |
+| | `GET` | `/api/auth/me` | 현재 세션 사용자 정보 조회 | Member |
+| | `PATCH` | `/api/auth/update` | 비밀번호 및 보안 질문/답변 변경 | Member |
+| | `GET` | `/api/auth/find-account` | 계정 찾기 보안 질문 조회 (`?id=`) | Public |
+| | `POST` | `/api/auth/find-account` | 보안 답변 검증 및 비밀번호 재설정 | Public |
+| **사용자 인터랙션** | `GET` | `/api/member/favorites` | 찜한 공고 ID 목록 조회 | Member |
+| | `POST` | `/api/member/favorites` | 공고 찜 등록 (**숨김 자동 해제** - `@Transactional` 상호 배제) | Member |
+| | `DELETE` | `/api/member/favorites` | 공고 찜 해제 | Member |
+| | `GET` | `/api/member/hidden-anns` | 숨김 공고 ID 목록 조회 | Member |
+| | `POST` | `/api/member/hidden-anns` | 공고 숨김 등록 (**찜 자동 해제** - `@Transactional` 상호 배제) | Member |
+| | `DELETE` | `/api/member/hidden-anns/{id}` | 공고 숨김 해제 | Member |
+| **북마크 (Bookmarks)** | `GET` | `/api/member/bookmark-folders` | 회원의 북마크 폴더 목록 조회 | Member |
+| | `POST` | `/api/member/bookmark-folders` | 북마크 폴더 생성 및 수정 | Member |
+| | `DELETE` | `/api/member/bookmark-folders/{id}` | 북마크 폴더 삭제 (**하위 북마크 아이템 동반 Cascade 삭제**) | Member |
+| | `GET` | `/api/member/bookmark-items` | 북마크 저장 단지 목록 조회 | Member |
+| | `POST` | `/api/member/bookmark-items` | 단지 북마크 저장 및 폴더 이동/메모 수정 | Member |
+| | `DELETE` | `/api/member/bookmark-items/{id}` | 단지 북마크 삭제 | Member |
+
+---
+
 ## 🖥️ 주요 서비스 기능 (Key Features)
 
 ```text
