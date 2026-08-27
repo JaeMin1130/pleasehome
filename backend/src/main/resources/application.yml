@@ -1,0 +1,24 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: pleasehome-backend
+  housing:
+    datasource:
+      url: jdbc:sqlite:../db-pipeline/public_housing.db
+      driver-class-name: org.sqlite.JDBC
+  user:
+    datasource:
+      url: jdbc:sqlite:../db-pipeline/user_data.db
+      driver-class-name: org.sqlite.JDBC
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.community.dialect.SQLiteDialect
+
+cors:
+  allowed-origins: "http://localhost:3000,http://127.0.0.1:3000"

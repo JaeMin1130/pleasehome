@@ -48,5 +48,7 @@
 * **배경 & 맥락**: 모바일 화면 규격 확보를 위해 `activeTab`이 `null`로 바뀌는 UI 레이아웃의 부작용(마커 증발, 패널 분기 꼬임)을 차단하여 뷰의 일관성과 지도 스크롤을 복원함
 * **상태**: 승인됨 (Accepted)
 
-
-
+### [2026-08-27] #11. Kotlin + Spring Boot 백엔드 분리 및 3단 분리(3-Tier) 아키텍처 채택
+* **결정 사항**: 기존 Next.js API Routes 및 DB 직접 접근 방식을 분리하여 Kotlin + Spring Boot 3.x 기반의 독립 REST API 서버를 구축하고 3단 분리(db-pipeline + backend + web) 구조를 채택함
+* **배경 & 맥락**: 엔터프라이즈 레벨의 안정성, 트랜잭션 무결성(@Transactional), 계층형 아키텍처 및 QueryDSL 동적 쿼리 최적화를 달성하고, 실무 표준(Spring Boot + Next.js)에 부합하는 구조로 마이그레이션하여 백엔드 역량을 극대화함
+* **상태**: 승인됨 (Accepted)

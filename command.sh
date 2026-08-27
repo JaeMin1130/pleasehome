@@ -44,23 +44,57 @@ c.execute('SELECT COUNT(*) FROM housing_units'); print('Housing Units:', c.fetch
 }
 
 case "$1" in
-  deploy)
-    deploy
+  # --- 백엔드 (Kotlin + Spring Boot) ---
+  backend:run|backend:dev)
+    "$BASE_DIR/backend/gradlew" -p "$BASE_DIR/backend" bootRun
     ;;
+  backend:test)
+    "$BASE_DIR/backend/gradlew" -p "$BASE_DIR/backend" test
+    ;;
+  backend:build)
+    "$BASE_DIR/backend/gradlew" -p "$BASE_DIR/backend" build -x test
+    ;;
+
+  # --- 프론트엔드 (Next.js) ---
+  web:run|web:dev)
+    npm --prefix "$BASE_DIR/web" run dev
+    ;;
+  web:build)
+    npm --prefix "$BASE_DIR/web" run build
+    ;;
+  web:start)
+    npm --prefix "$BASE_DIR/web" run start
+    ;;
+
+  # --- 데이터 파이프라인 & 배포 ---
   geocode)
     geocode
     ;;
   pack)
     npm --prefix "$BASE_DIR/web" run build:pack
     ;;
+  deploy)
+    deploy
+    ;;
   status|db:status)
     db_status
     ;;
   *)
     echo "사용법: ./command.sh [명령어]"
-    echo "  deploy     : 네이버 지오코딩 + Next.js 번들 빌드 + DB 전송 + PM2 무중단 원클릭 배포"
-    echo "  geocode    : 좌표가 누락된(NULL) 신규 단지 네이버 지오코딩만 단독 실행"
-    echo "  pack       : web/announce_deploy.tar.gz 로컬 압축 빌드만 수행"
-    echo "  db:status  : 로컬 public_housing.db 적재 현황 요약 조회"
+    echo ""
+    echo "  [백엔드 - Kotlin + Spring Boot]"
+    echo "    backend:run    : Spring Boot API 서버 로컬 실행 (포트 8080)"
+    echo "    backend:test   : 백엔드 전체 REST API & 트랜잭션 통합 테스트"
+    echo "    backend:build  : 백엔드 JAR 패키징 빌드"
+    echo ""
+    echo "  [프론트엔드 - Next.js]"
+    echo "    web:run        : Next.js 프론트엔드 개발 서버 실행 (포트 3000)"
+    echo "    web:build      : Next.js 프로덕션 빌드"
+    echo "    web:start      : Next.js 프로덕션 서버 실행"
+    echo ""
+    echo "  [데이터 & 배포]"
+    echo "    geocode        : 좌표 누락 신규 단지 네이버 지오코딩 실행"
+    echo "    deploy         : 전체 파이프라인 및 서비스 원클릭 실서버 배포"
+    echo "    db:status      : 로컬 SQLite 공고/단지 적재 현황 요약"
     ;;
 esac
