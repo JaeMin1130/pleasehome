@@ -11,7 +11,7 @@ def init_db():
     if env_path:
         db_path = os.path.abspath(os.path.expanduser(env_path))
     else:
-        db_path = os.path.join(base_dir, "public_housing.db")
+        db_path = os.path.join(base_dir, "db-pipeline", "public_housing.db")
     
     print(f"데이터베이스 생성 대상 경로: {db_path}")
     

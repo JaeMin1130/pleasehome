@@ -34,3 +34,5 @@
 *.gz
 *.pyc
 *.log
+*.env*
+!/.env.example
