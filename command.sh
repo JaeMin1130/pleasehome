@@ -31,13 +31,11 @@ function deploy() {
   echo "🔄 [5/6] 실서버 웹(Next.js) 압축 해제 및 PM2 무중단 리로드..."
   ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "cd $REMOTE_PATH/web && tar -xzf announce_deploy.tar.gz && pm2 reload pleasehome"
 
-  echo "🔄 [6/6] 실서버 백엔드(Spring Boot) 프로세스 재시작 (128M~256M 힙 메모리)..."
+  echo "🔄 [6/6] 실서버 백엔드(Spring Boot) PM2 프로세스 재시작 (128M~256M 힙 메모리)..."
   ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "
-    fuser -k 8080/tcp 2>/dev/null || pkill -f backend.jar 2>/dev/null || true
-    mkdir -p $REMOTE_PATH/backend
     cd $REMOTE_PATH/backend
-    nohup java -Xms128m -Xmx256m -jar backend.jar > backend.log 2>&1 &
-    sleep 2
+    pm2 restart pleasehome-backend 2>/dev/null || pm2 start 'java -Xms128m -Xmx256m -jar backend.jar' --name pleasehome-backend --cwd $REMOTE_PATH/backend
+    pm2 save
   "
 
   echo "✅ 프론트엔드 + 백엔드 + DB 통합 배포가 성공적으로 완료되었습니다!"
