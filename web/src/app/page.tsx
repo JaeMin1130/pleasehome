@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { db } from '@/lib/db';
 import HomeClientLayout from '@/components/HomeClientLayout';
+import { fetchAnnouncements, fetchComplexes } from '@/lib/api';
 import { Announcement, Complex } from '@/types';
 
 export const revalidate = 3600; // 1시간 주기 점진적 정적 재생성(ISR)
@@ -10,20 +10,12 @@ export default async function HomePage() {
   let complexes: Complex[] = [];
 
   try {
-    const annRows = db.prepare('SELECT * FROM announcements ORDER BY id DESC').all() as any[];
-    const allSchedules = db.prepare('SELECT * FROM announcement_schedules').all() as any[];
-    const allDetails = db.prepare('SELECT * FROM announcement_details ORDER BY sort_order ASC, id ASC').all() as any[];
-
-    const schedulesMap = allSchedules.reduce((acc, s) => ((acc[s.announcement_id] = acc[s.announcement_id] || []).push(s), acc), {} as Record<number, any[]>);
-    const detailsMap = allDetails.reduce((acc, d) => ((acc[d.announcement_id] = acc[d.announcement_id] || []).push(d), acc), {} as Record<number, any[]>);
-
-    announcements = annRows.map((ann) => ({
-      ...ann,
-      schedules: schedulesMap[ann.id] || [],
-      details: detailsMap[ann.id] || [],
-    }));
-
-    complexes = db.prepare('SELECT * FROM complexes').all() as Complex[];
+    const [annData, compData] = await Promise.all([
+      fetchAnnouncements(),
+      fetchComplexes()
+    ]);
+    announcements = annData as Announcement[];
+    complexes = compData as Complex[];
   } catch (error) {
     console.error('Failed to fetch initial SSR data in page.tsx:', error);
   }

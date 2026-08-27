@@ -2,16 +2,16 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Script from 'next/script';
-import { db } from '@/lib/db';
+import { fetchComplexDetails, fetchSitemapPaths } from '@/lib/api';
 import { formatMoney, formatTargetGroup } from '@/utils/formatters';
 import styles from './complex.module.css';
 
 export const revalidate = 3600; // 1시간 주기로 점진적 정적 재생성(ISR) 활성화
 
 export async function generateStaticParams() {
-  const complexes = db.prepare('SELECT id FROM complexes').all() as { id: number }[];
-  return complexes.map((c) => ({
-    complexId: String(c.id),
+  const { complexes } = await fetchSitemapPaths();
+  return complexes.map((id: number) => ({
+    complexId: String(id),
   }));
 }
 
@@ -25,8 +25,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (isNaN(compId)) return { title: '주택 단지 상세 정보 | PleaseHome' };
 
   try {
-    const complex = db.prepare('SELECT name, address FROM complexes WHERE id = ?').get(compId) as any;
-    if (!complex) return { title: '단지를 찾을 수 없습니다 | PleaseHome' };
+    const data = await fetchComplexDetails(compId);
+    if (!data || !data.complex) return { title: '단지를 찾을 수 없습니다 | PleaseHome' };
+    const complex = data.complex;
     return {
       title: `${complex.name} - 청약 단지 상세 정보 및 평형별 임대 조건 | PleaseHome`,
       description: `${complex.address}에 위치한 ${complex.name}의 세부 평형별 임대보증금, 월세 정보 및 과거 청약 히스토리 모음입니다.`,
@@ -44,39 +45,15 @@ export default async function ComplexDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  let complex: any = null;
-  let ann: any = null;
-  let units: any[] = [];
-  let historyList: any[] = [];
-
-  try {
-    // 1. 단지 기본 정보 조회
-    complex = db.prepare('SELECT * FROM complexes WHERE id = ?').get(compId);
-    if (!complex) {
-      notFound();
-    }
-
-    // 2. 소속 공고 정보 조회
-    if (complex.announcement_id) {
-      ann = db.prepare('SELECT * FROM announcements WHERE id = ?').get(complex.announcement_id);
-    }
-
-    // 3. 단지 소속 평형 목록 조회
-    units = db.prepare('SELECT * FROM housing_units WHERE complex_id = ? ORDER BY exclusive_area ASC').all(compId);
-
-    // 4. 동일 단지(이름 또는 주소 일치)의 다른 공고 히스토리 조회
-    historyList = db.prepare(`
-      SELECT c.id as complex_id, c.announcement_id, a.title, a.subscription_type, a.institution
-      FROM complexes c
-      JOIN announcements a ON c.announcement_id = a.id
-      WHERE c.name = ? AND c.address = ? AND c.id != ?
-      ORDER BY a.id DESC
-    `).all(complex.name, complex.address, compId);
-
-  } catch (error) {
-    console.error('DB fetch error in complex detail:', error);
+  const data = await fetchComplexDetails(compId);
+  if (!data || !data.complex) {
     notFound();
   }
+
+  const complex = data.complex;
+  const ann = data.announcement;
+  const units: any[] = data.units || [];
+  const historyList: any[] = data.historyList || [];
 
   // 검색엔진용 JSON-LD (구조화 데이터) 생성
   const jsonLd = {

@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
-import { db } from '@/lib/db';
+import { fetchSitemapPaths } from '@/lib/api';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://pleasehome.com';
 
   const routes = [
@@ -26,21 +26,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   try {
+    const { announcements, complexes } = await fetchSitemapPaths();
+
     // 1. 공고 상세 경로 추가
-    const announcements = db.prepare('SELECT id FROM announcements').all() as { id: number }[];
-    
-    const announcementRoutes = announcements.map((ann) => ({
-      url: `${baseUrl}/announcements/details/${ann.id}`,
+    const announcementRoutes = announcements.map((id: number) => ({
+      url: `${baseUrl}/announcements/details/${id}`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     }));
 
     // 2. 단지 상세 경로 추가 (SEO 유입 극대화)
-    const complexes = db.prepare('SELECT id FROM complexes').all() as { id: number }[];
-
-    const complexRoutes = complexes.map((comp) => ({
-      url: `${baseUrl}/complexes/${comp.id}`,
+    const complexRoutes = complexes.map((id: number) => ({
+      url: `${baseUrl}/complexes/${id}`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.7,

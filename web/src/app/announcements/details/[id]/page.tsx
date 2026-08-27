@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Script from 'next/script';
-import { db } from '@/lib/db';
+import { fetchAnnouncementDetails, fetchSitemapPaths } from '@/lib/api';
 import { formatMoney, formatDateWithTime, superClean } from '@/utils/formatters';
 import MarkdownViewer from '@/components/ui/MarkdownViewer';
 import styles from './detail.module.css';
@@ -11,9 +11,9 @@ import OfficialAnnouncementLink from '@/components/features/OfficialAnnouncement
 export const revalidate = 3600; // 1시간 주기로 점진적 정적 재생성(ISR) 활성화
 
 export async function generateStaticParams() {
-  const announcements = db.prepare('SELECT id FROM announcements').all() as { id: number }[];
-  return announcements.map((a) => ({
-    id: String(a.id),
+  const { announcements } = await fetchSitemapPaths();
+  return announcements.map((id: number) => ({
+    id: String(id),
   }));
 }
 
@@ -27,11 +27,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (isNaN(annId)) return { title: '공고 상세 정보 | PleaseHome' };
 
   try {
-    const ann = db.prepare('SELECT title, institution, subscription_type FROM announcements WHERE id = ?').get(annId) as any;
-    if (!ann) return { title: '공고를 찾을 수 없습니다 | PleaseHome' };
+    const data = await fetchAnnouncementDetails(annId);
+    if (!data) return { title: '공고를 찾을 수 없습니다 | PleaseHome' };
     return {
-      title: `${ann.title} - ${ann.institution} | PleaseHome`,
-      description: `${ann.institution}에서 공급하는 ${ann.subscription_type} 청약 공고의 상세 입주 기준 및 신청 정보 가이드입니다.`,
+      title: `${data.title} - ${data.institution} | PleaseHome`,
+      description: `${data.institution}에서 공급하는 ${data.subscription_type} 청약 공고의 상세 입주 기준 및 신청 정보 가이드입니다.`,
     };
   } catch {
     return { title: '공고 상세 정보 | PleaseHome' };
@@ -46,25 +46,16 @@ export default async function AnnouncementDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  let ann: any = null;
-  let schedules: any[] = [];
-  let details: any[] = [];
-  let complexes: any[] = [];
-  let units: any[] = [];
-
-  try {
-    ann = db.prepare('SELECT * FROM announcements WHERE id = ?').get(annId);
-    if (!ann) {
-      notFound();
-    }
-    schedules = db.prepare('SELECT * FROM announcement_schedules WHERE announcement_id = ?').all(annId);
-    details = db.prepare('SELECT * FROM announcement_details WHERE announcement_id = ? ORDER BY sort_order ASC, id ASC').all(annId);
-    complexes = db.prepare('SELECT * FROM complexes WHERE announcement_id = ? ORDER BY address ASC').all(annId);
-    units = db.prepare('SELECT * FROM housing_units WHERE announcement_id = ? ORDER BY exclusive_area ASC').all(annId);
-  } catch (error) {
-    console.error('DB fetch error in announcement detail:', error);
+  const data = await fetchAnnouncementDetails(annId);
+  if (!data) {
     notFound();
   }
+
+  const ann = data;
+  const schedules: any[] = data.schedules || [];
+  const details: any[] = data.details || [];
+  const complexes: any[] = data.complexes || [];
+  const units: any[] = data.units || [];
 
   // 검색엔진용 JSON-LD (구조화 데이터) 생성
   const firstSchedule = schedules[0];
