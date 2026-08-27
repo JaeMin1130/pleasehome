@@ -52,3 +52,8 @@
 * **결정 사항**: 기존 Next.js API Routes 및 DB 직접 접근 방식을 분리하여 Kotlin + Spring Boot 3.x 기반의 독립 REST API 서버를 구축하고 3단 분리(db-pipeline + backend + web) 구조를 채택함
 * **배경 & 맥락**: 엔터프라이즈 레벨의 안정성, 트랜잭션 무결성(@Transactional), 계층형 아키텍처 및 QueryDSL 동적 쿼리 최적화를 달성하고, 실무 표준(Spring Boot + Next.js)에 부합하는 구조로 마이그레이션하여 백엔드 역량을 극대화함
 * **상태**: 승인됨 (Accepted)
+
+### [2026-08-27] #12. Nginx 기반 /api/ 직접 리버스 프록시 및 PM2 프로세스 매니저 통합 관리
+* **결정 사항**: 웹 서버(Nginx)에서 `/api/*` 경로를 Spring Boot(8080)로 직접 리버스 프록시하고, 실서버 백엔드를 PM2(`pleasehome-backend`) 프로세스로 등록 관리함
+* **배경 & 맥락**: Next.js Standalone rewrites 프록시의 클라이언트 AJAX 통신 한계를 극복하고, 네트워크 지연(2중 홉) 없는 직접 통신 및 SSH 세션 종료 시에도 백엔드가 무중단 자동 재기동되도록 인프라를 표준화함
+* **상태**: 승인됨 (Accepted)

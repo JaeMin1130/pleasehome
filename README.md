@@ -2,20 +2,22 @@
 
 > 🌐 **실제 서비스 URL**: [https://pleasehome.com](https://pleasehome.com)
 
+[![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org/)
+[![Spring Boot 3.x](https://img.shields.io/badge/Spring_Boot_3.x-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Next.js 16.x](https://img.shields.io/badge/Next.js%2016.x-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Nginx](https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white)](https://nginx.org/)
-[![Next.js 16.x](https://img.shields.io/badge/Next.js%2016.x-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![PM2](https://img.shields.io/badge/PM2-2B037A?style=for-the-badge&logo=pm2&logoColor=white)](https://pm2.keymetrics.io/)
-[![Naver Maps API](https://img.shields.io/badge/Naver%20Maps%20API-03C75A?style=for-the-badge&logo=naver&logoColor=white)](https://www.ncloud.com/)
 [![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org/)
-[![Mantine UI](https://img.shields.io/badge/Mantine_UI-339AF0?style=for-the-badge&logo=mantine&logoColor=white)](https://mantine.dev/)
-[![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS_v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-**PleaseHome(플리즈홈)**은 LH, SH, GH 등 공공기관에서 발행하는 방대하고 복잡한 임대주택 입주자 모집 공고를 정밀 분석하여, 사용자 친화적인 지도 기반 인터페이스로 제공하는 풀스택 서비스입니다. 
+**PleaseHome(플리즈홈)**은 LH, SH, GH 등 공공기관에서 발행하는 방대하고 복잡한 임대주택 입주자 모집 공고를 정밀 분석하여, 사용자 친화적인 지도 기반 인터페이스로 제공하는 3-Tier 풀스택 서비스입니다.
 
-기존에 분리되어 운영되던 프론트엔드(Next.js 대시보드)와 백엔드(Python 데이터 파이프라인)를 하나의 모노레포(Monorepo)로 통합하여 유지보수성 및 개발 생산성을 극대화하였습니다.
+* **1. 데이터 적재 계층 (`db-pipeline`)**: Python 기반 비정형 공고문(PDF/Excel) 파싱 및 시맨틱 정합성 검증 ETL 파이프라인.
+* **2. 백엔드 코어 계층 (`backend`)**: Kotlin + Spring Boot 3.x, Spring Data JPA, QueryDSL 기반 23개 RESTful API 및 @Transactional 트랜잭션 관리 서버.
+* **3. 프론트엔드 대시보드 계층 (`web`)**: Next.js 16 (App Router), React 19, Naver Maps SDK 기반 반응형 지도 대시보드.
+* **0. 웹 서버 & 프록시 계층 (`Nginx`)**: `/api/*` 경로를 Spring Boot(:8080)로, `/*` 웹 요청을 Next.js(:3000)로 다이렉트 리버스 프록시.
 
 ---
 
@@ -169,25 +171,28 @@ source .venv/bin/activate # Windows: .venv\Scripts\activate
 # 패키지 설치
 pip install requests python-dotenv lxml openpyxl python-docx opendataloader-pdf
 
-# LH API 통신 및 PDF 다운로드 스크립트 실행
-cd src/lh_notice
-python main.py
-```
+### 3. 로컬 서버 실행 (3-Tier 통합)
 
-### 4. 프론트엔드 대시보드 실행 (웹 서비스)
+프로젝트 루트의 [`command.sh`](file:///home/iru/app/pleasehome/command.sh)를 통해 백엔드와 프론트엔드를 간편하게 실행할 수 있습니다:
+
 ```bash
-# Node 패키지 설치 (Mantine Core, Tailwind v4, better-sqlite3 동시 구성)
-cd web
-npm install
+# [1] Spring Boot 백엔드 서버 기동 (포트 8080)
+./command.sh backend:run
 
-# 로컬 웹 개발 서버 가동
-npm run dev
+# [2] Next.js 프론트엔드 대시보드 기동 (포트 3000)
+./command.sh web:run
+
+# [3] 백엔드 단위/통합 테스트 실행
+./command.sh backend:test
 ```
 서버 가동 후 브라우저를 통해 [http://localhost:3000](http://localhost:3000) 에 접속하시면 지도 대시보드 화면을 확인하실 수 있습니다.
 
----
+### 4. 실서버 원클릭 통합 배포 (Zero-Downtime)
 
-## 🚀 CI/CD 및 배포 파이프라인 (Deployment Pipeline)
+```bash
+# Nginx + PM2(pleasehome + pleasehome-backend) 기반 원클릭 배포
+./command.sh deploy
+```
 
 본 프로젝트는 최소한의 클라우드 서버 자원(Micro 단위, 1GB RAM)을 효율적으로 활용하기 위해 격리된 무중단 배포(Zero-Downtime) 전략을 취하고 있습니다. 서버 성능 최적화와 실서비스 데이터의 안전한 보호를 위해 소스 코드 배포와 데이터베이스 배포가 정밀하게 분리(격리)되어 수행됩니다.
 
