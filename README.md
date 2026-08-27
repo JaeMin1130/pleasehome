@@ -84,27 +84,59 @@
 
 ---
 
-## 📐 시스템 아키텍처 (Architecture)
+## 📐 시스템 아키텍처 (3-Tier Architecture)
 
-웹 서비스 운영의 효율성과 시스템 자원의 최적화를 위해 **데이터 적재(db-pipeline)**와 **웹 서빙(web)**의 책임을 명확하게 분리합니다.
+웹 서비스 운영의 신뢰성과 시스템 자원 최적화를 위해 **데이터 파이프라인(db-pipeline) - 백엔드 코어(backend) - 프론트엔드 대시보드(web)**의 책임을 엄격하게 3단계로 분리합니다.
 
 ```mermaid
-graph TD
-    subgraph "db-pipeline (Data Pipeline)"
-        LH_API[LH OpenAPI] --> |공고 및 첨부파일 Fetch| Python_ETL[Python 데이터 파이프라인]
-        Python_ETL --> |가공 및 병합| SQLite[(SQLite Database)]
-        Python_ETL --> |문서 저장| PDF_Storage[PDF Documents]
+flowchart TB
+    %% 0. 웹 서버 및 리버스 프록시
+    subgraph Gateway["0. Web Server & Reverse Proxy (Nginx :80/:443)"]
+        NginxRoute["Nginx Reverse Proxy<br>• /api/* → Spring Boot (:8080)<br>• /* (Web/Static) → Next.js (:3000)"]
     end
 
-    subgraph "web (Web Dashboard)"
-        SQLite -.-> |Read-Only 연결| Next_Server[Next.js App Router]
-        Next_Server --> |지도 시각화 및 UI 서빙| Client[Web Browser]
-        Naver_Map[Naver Maps API] --> Client
+    %% 1. 데이터 파이프라인
+    subgraph Pipeline["1. Data Pipeline (db-pipeline)"]
+        LH_API["LH/SH/GH OpenAPI & PDF/Excel"] --> Python_ETL["Python ETL 파이프라인<br>(마크다운 변환 & 시맨틱 검증)"]
+        Python_ETL --> Geo["위경도 좌표 Geocoding"]
     end
+
+    %% 2. 영속성 계층 (Dual DB)
+    subgraph Storage["Persistence Layer (SQLite Dual DB)"]
+        HousingDB[("public_housing.db<br>• 공고/단지/평형 (Read-Only)")]
+        UserDB[("user_data.db<br>• 회원/찜/숨김/북마크 (Read-Write)")]
+    end
+
+    %% 3. 백엔드 코어
+    subgraph Backend["2. Core Backend (Kotlin + Spring Boot 3.x)"]
+        Controller["REST API Controllers (23개 규격)"]
+        BizLogic["Business Layer<br>• Spring Security & BCrypt 인증<br>• @Transactional 찜/숨김 상호 배제 로직"]
+        Repo["Spring Data JPA & QueryDSL Repositories"]
+        Controller --> BizLogic --> Repo
+    end
+
+    %% 4. 프론트엔드 대시보드
+    subgraph Frontend["3. Frontend Web Dashboard (Next.js 16 + React 19)"]
+        SSR["Next.js App Router (SSR / ISR)"]
+        ClientUI["React Client UI & Naver Maps SDK"]
+        SSR --> ClientUI
+    end
+
+    %% 데이터 흐름 연결
+    Geo --> HousingDB
+    Repo <--> HousingDB
+    Repo <--> UserDB
+
+    Browser["사용자 브라우저 (Desktop / Mobile)"] <-->|HTTPS| Gateway
+    Gateway -->|/api/* 다이렉트 REST API| Controller
+    Gateway -->|웹 요청 및 정적 자원| SSR
+    SSR -->|Internal SSR Fetch| Controller
 ```
 
 > **아키텍처 설계 철학**: 
-> 초경량 가상 서버(NCP Micro 등)에서의 안정적인 무중단 서비스를 위해, 무거운 API 통신 및 데이터 가공 작업은 백엔드 파이프라인에서 선제적으로 처리하여 완성된 SQLite `.db` 파일 형태로 빌드합니다. 프론트엔드는 완성된 DB를 조용히 조회하여 빠른 화면 서빙에 집중하며, 메인 페이지(`page.tsx`)를 SSR 서버 컴포넌트로 구동하여 초기 접속 시 구글 봇 및 검색엔진에 정적 HTML 텍스트/링크를 프리렌더링(ISR)해서 전달하여 구글 애드센스 승인과 SEO 노출을 보장합니다.
+> 1. **관심사의 완벽한 격리**: 무거운 비정형 데이터 수집/가공(ETL)은 독립 파이프라인에서 선제적으로 처리하고, 코어 백엔드(Spring Boot)는 비즈니스 트랜잭션 무결성과 고성능 REST API 서빙에만 집중합니다.
+> 2. **무중단 이중 데이터베이스 (Dual DB)**: 배포 시 공고 DB(`public_housing.db`)를 갱신하더라도 실서버 회원 DB(`user_data.db`)는 물리적으로 격리되어 있어 데이터 유실 위험이 원천 차단됩니다.
+> 3. **Nginx 직접 라우팅**: Nginx가 클라이언트 API 호출을 Spring Boot(`:8080`)로 직접 리버스 프록시하여 Node.js 2중 홉 지연 없이 즉각적인 응답 속도를 보장합니다.
 
 ---
 
@@ -112,24 +144,30 @@ graph TD
 
 ```text
 pleasehome/
-├── web/                   # 웹 프론트엔드 (Next.js 16.x)
-│   ├── .agents/                # AI 에이전트 소통/행동 규칙 및 가이드라인 스킬 모음
-│   ├── docs/                   # 프론트엔드 배포 가이드 및 상세 [트러블슈팅 로그](file:///home/iru/app/pleasehome/web/docs/dev/TROUBLESHOOTING.md)
-│   ├── src/app/                # App Router 기반 페이지 & REST API (상세 SEO용 동적 SSR 라우트 개설)
-│   ├── src/components/         # 네이버 지도, 사이드바, 즐겨찾기, 타임라인 등 핵심 React 컴포넌트
-│   ├── public/                 # 이미지 및 마크 등 정적 에셋 파일
-│   └── package.json            # Node.js 패키지 의존성 (Mantine UI 9.x, TailwindCSS v4, better-sqlite3 포함)
-├── db-pipeline/                    # 데이터 파이프라인 백엔드 (Python 3.12.x)
-│   ├── .agents/scripts/        # PDF-마크다운 변환, DB 초기화, 데이터 정상 적재 및 감사 스크립트 모음
-│   ├── src/lh_notice/          # LH API 연동 및 데이터 수집 스크립트 (api.py, main.py)
-│   ├── docs/pdf/               # OpenAPI 수집을 통해 저장된 원본 PDF 임대 공고문 보존소
-│   ├── docs/md/                # PDF에서 마크다운 형태로 파싱 변환된 document.md 및 data.json 보존소
-│   ├── public_housing.db       # 최종 가공 적재된 SQLite3 공고 데이터베이스
-│   ├── user_data.db            # 실서버 회원/찜/숨김/북마크 독립 SQLite3 데이터베이스 (배포 덮어쓰기 대상 제외)
-│   └── PROJECT.md              # 파이프라인 전역 개발 환경 및 스키마 물리 명세서 (SSOT)
-├── docs/                       # 각종 통합 설계 및 서버 배포 가이드 문서
-├── .gitignore                  # 통합 형상 관리 예외 규칙
-└── README.md                   # 프로젝트 메인 문서 (Current)
+├── backend/                        # 코어 백엔드 서버 (Kotlin + Spring Boot 3.x)
+│   ├── src/main/kotlin/            # 엔티티, JPA 리포지토리, 서비스, 23개 REST 컨트롤러
+│   │   ├── config/                 # Housing / Member 독립 Dual DataSource & WebConfig
+│   │   ├── housing/                # 공고/단지/평형/사이트맵 도메인
+│   │   └── member/                 # 인증/회원/찜/숨김/북마크 도메인 (@Transactional)
+│   ├── src/test/kotlin/            # Spring Boot + SQLite 통합 테스트
+│   ├── build.gradle.kts            # Gradle 의존성 (Spring Data JPA, SQLite, Security Crypto)
+│   └── application.yml             # 서버 포트(8080), Dual DataSource, CORS 설정
+├── web/                            # 웹 프론트엔드 (Next.js 16.x + React 19)
+│   ├── src/app/                    # App Router 기반 페이지 (SSR/ISR 정적 최적화)
+│   ├── src/components/             # 네이버 지도, 사이드바, 필터, 북마크 드래그앤드롭 등 React 컴포넌트
+│   ├── src/lib/api.ts              # Spring Boot REST API 통신 및 SSR 페치 클라이언트
+│   ├── public/                     # 정적 에셋 파일
+│   └── package.json                # 프론트엔드 패키지 의존성 (React 19, TailwindCSS v4)
+├── db-pipeline/                    # 데이터 파이프라인 (Python 3.12.x)
+│   ├── src/lh_notice/              # LH OpenAPI 통신 및 원본 PDF/Excel 수집
+│   ├── docs/pdf/                   # 수집된 원본 공고문 PDF 보존소
+│   ├── docs/md/                    # 정제된 마크다운(document.md) 및 data.json
+│   ├── public_housing.db           # 최종 정제 적재된 SQLite3 공고 DB
+│   └── user_data.db                # 실서버 회원/인증 독립 SQLite3 DB
+├── docs/                           # 아키텍처(ARCHITECTURE.md), 의사결정(DECISION.md), 트러블슈팅(TROUBLESHOOTING.md)
+├── command.sh                      # 로컬 실행, 테스트, 빌드 및 실서버 원클릭 통합 배포 쉘 스크립트
+├── .gitignore                      # 통합 형상 관리 예외 규칙
+└── README.md                       # 프로젝트 메인 포트폴리오 문서
 ```
 
 ---
@@ -137,6 +175,7 @@ pleasehome/
 ## 🛠️ 개발 환경 구축 및 실행 가이드 (Getting Started)
 
 ### 1. 사전 요구사항 (Prerequisites)
+* **Java**: OpenJDK 17 이상
 * **Node.js**: v20.x 이상 (npm v10+)
 * **Python**: v3.12.x 이상
 * **Database**: SQLite 3.x 이상
