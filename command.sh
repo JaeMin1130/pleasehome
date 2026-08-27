@@ -23,6 +23,7 @@ function deploy() {
   "$BASE_DIR/backend/gradlew" -p "$BASE_DIR/backend" build -x test
 
   echo "📦 [4/6] 빌드 번들 및 데이터베이스 실서버 전송 중..."
+  ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "mkdir -p $REMOTE_PATH/backend $REMOTE_PATH/web $REMOTE_PATH/db-pipeline"
   scp -i "$KEY_PATH" "$BASE_DIR/web/announce_deploy.tar.gz" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/web/announce_deploy.tar.gz"
   scp -i "$KEY_PATH" "$BASE_DIR/backend/build/libs/backend-0.0.1-SNAPSHOT.jar" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/backend/backend.jar"
   scp -i "$KEY_PATH" "$BASE_DIR/db-pipeline/public_housing.db" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/db-pipeline/public_housing.db"
