@@ -2,12 +2,14 @@ package com.pleasehome.backend.member.service
 
 import com.pleasehome.backend.member.entity.Member
 import com.pleasehome.backend.member.repository.MemberRepository
-import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.http.HttpHeaders
+import org.springframework.http.ResponseCookie
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -64,12 +66,13 @@ class AuthService(
     }
 
     fun logout(response: HttpServletResponse): Map<String, Any> {
-        val cookie = Cookie(cookieName, "").apply {
-            path = "/"
-            isHttpOnly = true
-            maxAge = 0
-        }
-        response.addCookie(cookie)
+        val cookie = ResponseCookie.from(cookieName, "")
+            .path("/")
+            .httpOnly(true)
+            .sameSite("Lax")
+            .maxAge(Duration.ZERO)
+            .build()
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString())
         return mapOf("success" to true)
     }
 
@@ -158,11 +161,12 @@ class AuthService(
     }
 
     private fun setSessionCookie(response: HttpServletResponse, memberId: String) {
-        val cookie = Cookie(cookieName, memberId).apply {
-            path = "/"
-            isHttpOnly = true
-            maxAge = 60 * 60 * 24 * 30 // 30 days
-        }
-        response.addCookie(cookie)
+        val cookie = ResponseCookie.from(cookieName, memberId)
+            .path("/")
+            .httpOnly(true)
+            .sameSite("Lax")
+            .maxAge(Duration.ofDays(30))
+            .build()
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString())
     }
 }

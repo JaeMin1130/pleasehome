@@ -21,4 +21,4 @@ spring:
         dialect: org.hibernate.community.dialect.SQLiteDialect
 
 cors:
-  allowed-origins: "http://localhost:3000,http://127.0.0.1:3000"
+  allowed-origins: "http://localhost:3000,http://127.0.0.1:3000,https://pleasehome.com,https://www.pleasehome.com"
