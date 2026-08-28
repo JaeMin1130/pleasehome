@@ -75,27 +75,25 @@ def force_fail_log(db_path, doc_path, error_message, title=None, institution=Non
             )
             existing = cursor.fetchone()
             if existing:
-                print(f"[강제 실패 로깅] 이전 공고 ID {existing[0]}의 기존 데이터를 초기화합니다.")
-                cursor.execute("DELETE FROM announcements WHERE id = ?", (existing[0],))
-            
-            # API 메타데이터에서 필드 직접 회득
-            api_meta = get_meta_from_folder(relative_doc_path, base_dir)
-            
-            final_title = api_meta.get("PAN_NM") or title or f"데이터 추출 실패 공고 ({os.path.basename(doc_path)})"
-            final_inst = api_meta.get("_institution") or institution or "알수없음"
-            final_sub_type = api_meta.get("AIS_TP_CD_NM") or subscription_type or "알수없음"
-            final_region = api_meta.get("CNP_CD_NM") or region
-            dtl_url = api_meta.get("DTL_URL", "")
-            dtl_url_mob = api_meta.get("DTL_URL_MOB", "")
-            
-            cursor.execute(
-                """
-                INSERT INTO announcements (title, institution, subscription_type, region, doc_path, dtl_url, dtl_url_mob)
-                VALUES (?, ?, ?, ?, ?, ?, ?);
-                """,
-                (final_title, final_inst, final_sub_type, final_region, relative_doc_path, dtl_url, dtl_url_mob)
-            )
-            ann_id = cursor.lastrowid
+                ann_id = existing[0]
+                print(f"[강제 실패 로깅] 이전 공고 ID {ann_id}의 정보를 업데이트합니다.")
+                cursor.execute(
+                    """
+                    UPDATE announcements 
+                    SET title = ?, institution = ?, subscription_type = ?, region = ?, dtl_url = ?, dtl_url_mob = ?
+                    WHERE id = ?;
+                    """,
+                    (final_title, final_inst, final_sub_type, final_region, dtl_url, dtl_url_mob, ann_id)
+                )
+            else:
+                cursor.execute(
+                    """
+                    INSERT INTO announcements (title, institution, subscription_type, region, doc_path, dtl_url, dtl_url_mob)
+                    VALUES (?, ?, ?, ?, ?, ?, ?);
+                    """,
+                    (final_title, final_inst, final_sub_type, final_region, relative_doc_path, dtl_url, dtl_url_mob)
+                )
+                ann_id = cursor.lastrowid
             
         # 2. 원본 마크다운 파일을 announcement_details에 통째로 우회 적재 (우아한 성능 저하)
         full_md_path = doc_path
@@ -176,37 +174,72 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
         else:
             relative_doc_path = raw_doc_path
             
-        # 3. announcements 테이블 적재 (기존 중복 데이터 존재 시 트랜잭션 롤백용 삭제)
+        # 3. announcements 및 complexes 기존 ID 보존형 조회
         cursor.execute(
             "SELECT id FROM announcements WHERE doc_path = ?", 
             (relative_doc_path,)
         )
         existing = cursor.fetchone()
-        if existing:
-            print(f"[기존 데이터 발견] 이전 공고 ID {existing[0]}의 데이터를 삭제하고 재적재합니다.")
-            cursor.execute("DELETE FROM announcements WHERE id = ?", (existing[0],))
-            
-        # API 메타데이터를 우선 적용하여 announcements 테이블 적재
+        
+        existing_complexes = {}
         api_meta = get_meta_from_folder(relative_doc_path, base_dir)
         
-        cursor.execute(
-            """
-            INSERT INTO announcements (
-                title, institution, subscription_type, region, doc_path, dtl_url, dtl_url_mob
+        if existing:
+            ann_id = existing[0]
+            print(f"[기존 데이터 발견] 이전 공고 ID {ann_id}의 ID 및 소속 단지 ID를 영구 보존하며 갱신합니다.")
+            
+            # 기존 단지들의 (name, address) -> id 및 name -> id 매핑 수집
+            cursor.execute("SELECT id, name, address FROM complexes WHERE announcement_id = ?", (ann_id,))
+            for c_id, c_name, c_addr in cursor.fetchall():
+                if c_name and c_addr:
+                    existing_complexes[(c_name, c_addr)] = c_id
+                if c_name and c_name not in existing_complexes:
+                    existing_complexes[c_name] = c_id
+            
+            # 자식 테이블 정리 (외래키 제약조건 순서: housing_units -> complexes -> others)
+            cursor.execute("DELETE FROM housing_units WHERE announcement_id = ?", (ann_id,))
+            cursor.execute("DELETE FROM complexes WHERE announcement_id = ?", (ann_id,))
+            cursor.execute("DELETE FROM announcement_schedules WHERE announcement_id = ?", (ann_id,))
+            cursor.execute("DELETE FROM announcement_limits WHERE announcement_id = ?", (ann_id,))
+            cursor.execute("DELETE FROM announcement_details WHERE announcement_id = ?", (ann_id,))
+            
+            # announcements 테이블 UPDATE
+            cursor.execute(
+                """
+                UPDATE announcements 
+                SET title = ?, institution = ?, subscription_type = ?, region = ?, doc_path = ?, dtl_url = ?, dtl_url_mob = ?, updated_at = datetime('now')
+                WHERE id = ?;
+                """,
+                (
+                    api_meta.get("PAN_NM") or ann_info["title"],
+                    api_meta.get("_institution") or ann_info["institution"],
+                    api_meta.get("AIS_TP_CD_NM") or ann_info["subscription_type"],
+                    api_meta.get("CNP_CD_NM") or ann_info.get("region"),
+                    relative_doc_path,
+                    ann_info.get("dtl_url") or api_meta.get("DTL_URL") or api_meta.get("PAN_DTL_URL") or "",
+                    ann_info.get("dtl_url_mob") or api_meta.get("DTL_URL_MOB") or api_meta.get("PAN_DTL_URL_MOB") or "",
+                    ann_id
+                )
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?);
-            """,
-            (
-                api_meta.get("PAN_NM") or ann_info["title"],
-                api_meta.get("_institution") or ann_info["institution"],
-                api_meta.get("AIS_TP_CD_NM") or ann_info["subscription_type"],
-                api_meta.get("CNP_CD_NM") or ann_info.get("region"),
-                relative_doc_path,
-                ann_info.get("dtl_url") or api_meta.get("DTL_URL") or api_meta.get("PAN_DTL_URL") or "",
-                ann_info.get("dtl_url_mob") or api_meta.get("DTL_URL_MOB") or api_meta.get("PAN_DTL_URL_MOB") or ""
+        else:
+            cursor.execute(
+                """
+                INSERT INTO announcements (
+                    title, institution, subscription_type, region, doc_path, dtl_url, dtl_url_mob, created_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'));
+                """,
+                (
+                    api_meta.get("PAN_NM") or ann_info["title"],
+                    api_meta.get("_institution") or ann_info["institution"],
+                    api_meta.get("AIS_TP_CD_NM") or ann_info["subscription_type"],
+                    api_meta.get("CNP_CD_NM") or ann_info.get("region"),
+                    relative_doc_path,
+                    ann_info.get("dtl_url") or api_meta.get("DTL_URL") or api_meta.get("PAN_DTL_URL") or "",
+                    ann_info.get("dtl_url_mob") or api_meta.get("DTL_URL_MOB") or api_meta.get("PAN_DTL_URL_MOB") or ""
+                )
             )
-        )
-        ann_id = cursor.lastrowid
+            ann_id = cursor.lastrowid
         
         # 4. announcement_schedules 테이블 적재
         for sched in json_data.get("schedules", []):
@@ -238,19 +271,31 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
                 (ann_id, det["section_title"], det["section_content"], det["sort_order"])
             )
             
-        # 7. complexes 및 housing_units 테이블 적재 (단지명 + 주소 복합 키 매핑 적용)
+        # 7. complexes 및 housing_units 테이블 적재 (단지명 + 주소 복합 키 매핑 및 기존 ID 보존 적용)
         complex_name_to_id = {}
         complex_key_to_id = {}
         for comp in json_data.get("complexes", []):
             cleaned_addr = clean_address(comp["address"])
-            cursor.execute(
-                """
-                INSERT INTO complexes (announcement_id, name, address, heating_type, has_elevator, parking_info, complex_type)
-                VALUES (?, ?, ?, ?, ?, ?, ?);
-                """,
-                (ann_id, comp["name"], cleaned_addr, comp.get("heating_type"), comp.get("has_elevator"), comp.get("parking_info"), comp.get("complex_type"))
-            )
-            inserted_id = cursor.lastrowid
+            existing_comp_id = existing_complexes.get((comp["name"], cleaned_addr)) or existing_complexes.get(comp["name"])
+            
+            if existing_comp_id:
+                cursor.execute(
+                    """
+                    INSERT INTO complexes (id, announcement_id, name, address, heating_type, has_elevator, parking_info, complex_type)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+                    """,
+                    (existing_comp_id, ann_id, comp["name"], cleaned_addr, comp.get("heating_type"), comp.get("has_elevator"), comp.get("parking_info"), comp.get("complex_type"))
+                )
+                inserted_id = existing_comp_id
+            else:
+                cursor.execute(
+                    """
+                    INSERT INTO complexes (announcement_id, name, address, heating_type, has_elevator, parking_info, complex_type)
+                    VALUES (?, ?, ?, ?, ?, ?, ?);
+                    """,
+                    (ann_id, comp["name"], cleaned_addr, comp.get("heating_type"), comp.get("has_elevator"), comp.get("parking_info"), comp.get("complex_type"))
+                )
+                inserted_id = cursor.lastrowid
             complex_name_to_id[comp["name"]] = inserted_id
             if comp["name"] and cleaned_addr:
                 complex_key_to_id[(comp["name"], cleaned_addr)] = inserted_id
