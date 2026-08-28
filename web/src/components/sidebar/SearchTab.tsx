@@ -8,10 +8,7 @@ import styles from '../Sidebar.module.css';
 
 interface SearchTabProps {
   sheetHeight: number | null;
-  maxHeight: number;
-  isMounted: boolean;
   minHeight: number;
-  translateY: number;
   touchHandlers: any;
   style?: React.CSSProperties;
   searchTerm: string;
@@ -47,10 +44,7 @@ interface SearchTabProps {
 
 export default function SearchTab({
   sheetHeight,
-  maxHeight,
-  isMounted,
   minHeight,
-  translateY,
   touchHandlers,
   style,
   searchTerm,
@@ -88,10 +82,7 @@ export default function SearchTab({
       className={styles['search-panel-container']}
       style={{ 
         height: sheetHeight ? `${sheetHeight}px` : undefined,
-        '--sheet-min-height': isMounted ? `${minHeight}px` : '0px',
-        transform: (typeof window !== 'undefined' && window.innerWidth <= 768 && translateY > 0) 
-          ? `translateY(${translateY}px)` 
-          : undefined,
+        '--sheet-min-height': `${minHeight}px`,
         ...style
       } as React.CSSProperties}
       {...touchHandlers}
@@ -227,9 +218,6 @@ export default function SearchTab({
       <div 
         ref={listRef} 
         className={styles['sidebar-list']}
-        style={{ 
-          overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
-        } as React.CSSProperties}
       >
         {sortedAnnouncements.length === 0 ? (
           <div className={styles['empty-msg']}>결과가 없습니다.</div>

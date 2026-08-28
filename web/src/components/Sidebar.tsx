@@ -71,7 +71,6 @@ export default function Sidebar({
   const { 
     sheetHeight, 
     setSheetHeight, 
-    translateY,
     touchHandlers, 
     minHeight, 
     midHeight, 
@@ -667,23 +666,14 @@ export default function Sidebar({
       className={`${styles['app-sidebar']} ${isCollapsed ? styles.collapsed : ''} ${isHiddenFully ? styles.hidden : ''}`} 
       style={{ 
         width: width ? `${width}px` : undefined,
-        height: sheetHeight ? `${sheetHeight}px` : undefined,
         ...style
       }}
-      {...touchHandlers}
     >
-      {/* 모바일 화면 전용 상단 드래그 핸들바 */}
-      <div className={styles['drag-handle-bar']} />
-
-
       {/* 탭 분기 렌더링 */}
       {activeTab === "SEARCH" && (
         <SearchTab
           sheetHeight={sheetHeight}
-          maxHeight={maxHeight}
-          isMounted={isMounted}
           minHeight={minHeight}
-          translateY={translateY}
           touchHandlers={touchHandlers}
           style={style}
           searchTerm={searchTerm}
@@ -718,14 +708,10 @@ export default function Sidebar({
         />
       )}
 
-
       {activeTab === "BOOKMARK" && (
         <BookmarkTab
           sheetHeight={sheetHeight}
-          maxHeight={maxHeight}
-          isMounted={isMounted}
           minHeight={minHeight}
-          translateY={translateY}
           touchHandlers={touchHandlers}
           member={member}
           showNewFolderInput={showNewFolderInput}
@@ -768,8 +754,6 @@ export default function Sidebar({
         <MoreTab
           sheetHeight={sheetHeight}
           minHeight={minHeight}
-          isMounted={isMounted}
-          translateY={translateY}
           touchHandlers={touchHandlers}
           style={style}
           member={member}

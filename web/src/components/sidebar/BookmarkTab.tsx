@@ -8,10 +8,7 @@ import { BOOKMARK_PRESET_COLORS } from '@/constants';
 
 interface BookmarkTabProps {
   sheetHeight: number | null;
-  maxHeight: number;
-  isMounted: boolean;
   minHeight: number;
-  translateY: number;
   touchHandlers: any;
   member: any;
   showNewFolderInput: boolean;
@@ -51,10 +48,7 @@ interface BookmarkTabProps {
 
 export default function BookmarkTab({
   sheetHeight,
-  maxHeight,
-  isMounted,
   minHeight,
-  translateY,
   touchHandlers,
   member,
   showNewFolderInput,
@@ -96,11 +90,7 @@ export default function BookmarkTab({
       className={styles['bookmark-panel-container']}
       style={{ 
         height: sheetHeight ? `${sheetHeight}px` : undefined,
-        overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto',
-        '--sheet-min-height': isMounted ? `${minHeight}px` : '0px',
-        transform: (typeof window !== 'undefined' && window.innerWidth <= 768 && translateY > 0) 
-          ? `translateY(${translateY}px)` 
-          : undefined
+        '--sheet-min-height': `${minHeight}px`
       } as React.CSSProperties}
       {...touchHandlers}
     >
@@ -176,9 +166,6 @@ export default function BookmarkTab({
         <div 
           ref={bookmarkListRef} 
           className={styles['folders-list-container']}
-          style={{
-            overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
-          }}
         >
         {bookmarkFolders.map((folder) => {
           const isExpanded = activeFolderIds.includes(folder.id);

@@ -7,8 +7,6 @@ import { UI_SIZES, UI_STROKE_WIDTHS, SECURITY_QUESTIONS } from '@/constants';
 interface MoreTabProps {
   sheetHeight: number | null;
   minHeight: number;
-  isMounted: boolean;
-  translateY: number;
   touchHandlers: any;
   style?: React.CSSProperties;
   member: any;
@@ -39,8 +37,6 @@ interface MoreTabProps {
 export default function MoreTab({
   sheetHeight,
   minHeight,
-  isMounted,
-  translateY,
   touchHandlers,
   style,
   member,
@@ -72,10 +68,7 @@ export default function MoreTab({
       className={styles['more-panel-container']}
       style={{ 
         height: sheetHeight ? `${sheetHeight}px` : undefined,
-        '--sheet-min-height': isMounted ? `${minHeight}px` : '0px',
-        transform: (typeof window !== 'undefined' && window.innerWidth <= 768 && translateY > 0) 
-          ? `translateY(${translateY}px)` 
-          : undefined,
+        '--sheet-min-height': `${minHeight}px`,
         ...style
       } as React.CSSProperties}
       {...touchHandlers}

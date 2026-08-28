@@ -34,10 +34,8 @@ export default function DetailPanel({
     sheetHeight, 
     setSheetHeight, 
     touchHandlers, 
-    translateY,
     minHeight, 
-    midHeight, 
-    maxHeight 
+    midHeight 
   } = useBottomSheetGesture({
     scrollSelector: '[class*="panel-body"], [class*="comparison-table-wrapper"]',
     onMinHeightReached: () => {
@@ -136,10 +134,7 @@ export default function DetailPanel({
         className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''}`}
         style={{
           ...style,
-          height: sheetHeight ? `${sheetHeight}px` : undefined,
-          transform: (typeof window !== 'undefined' && window.innerWidth <= 768 && translateY > 0) 
-            ? `translateY(${translateY}px)` 
-            : undefined
+          height: sheetHeight ? `${sheetHeight}px` : undefined
         }}
         {...touchHandlers}
       >
@@ -159,9 +154,6 @@ export default function DetailPanel({
 
         <div 
           className={styles['panel-body']}
-          style={{
-            overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
-          }}
         >
           <div>
             {comparisonComplexes.length === 0 ? (
@@ -171,9 +163,6 @@ export default function DetailPanel({
           ) : (
             <div 
               className={styles['comparison-table-wrapper']}
-              style={{
-                overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
-              }}
             >
               <table className={styles['comparison-table']}>
                 <thead>
@@ -363,10 +352,7 @@ export default function DetailPanel({
       className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''}`} 
       style={{
         ...style,
-        height: sheetHeight ? `${sheetHeight}px` : undefined,
-        transform: (typeof window !== 'undefined' && window.innerWidth <= 768 && translateY > 0) 
-          ? `translateY(${translateY}px)` 
-          : undefined
+        height: sheetHeight ? `${sheetHeight}px` : undefined
       }}
       {...touchHandlers}
     >
@@ -393,9 +379,6 @@ export default function DetailPanel({
 
       <div 
         className={styles['panel-body']}
-        style={{
-          overflowY: (sheetHeight !== null && sheetHeight < maxHeight) ? 'hidden' : 'auto'
-        }}
       >
         <div>
           <div className={styles['info-grid']}>
