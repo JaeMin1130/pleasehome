@@ -409,8 +409,9 @@ export default function DetailPanel({
               {complex.latitude && complex.longitude && (
                 <div className={styles['directions-container']}>
                   <a
-                    href={`https://map.naver.com/index.nhn?slng=${complex.longitude}&slat=${complex.latitude}&stext=${encodeURIComponent(complex.name)}&menu=route`}
+                    href={`https://map.naver.com/index.nhn?elng=${complex.longitude}&elat=${complex.latitude}&etext=${encodeURIComponent(complex.name)}&menu=route`}
                     target="naver_map_directions"
+                    rel="noopener noreferrer"
                     className={styles['direction-btn-naver']}
                     title="네이버 지도 앱/웹으로 길찾기"
                   >
@@ -422,8 +423,9 @@ export default function DetailPanel({
                     네이버 길찾기
                   </a>
                   <a
-                    href={`https://map.kakao.com/link/from/${encodeURIComponent(complex.name)},${complex.latitude},${complex.longitude}`}
+                    href={`https://map.kakao.com/link/to/${encodeURIComponent(complex.name)},${complex.latitude},${complex.longitude}`}
                     target="kakao_map_directions"
+                    rel="noopener noreferrer"
                     className={styles['direction-btn-kakao']}
                     title="카카오맵 앱/웹으로 길찾기"
                   >
