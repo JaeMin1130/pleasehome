@@ -16,7 +16,6 @@ import {
 } from '@/constants';
 import AuthModal from '@/components/ui/AuthModal';
 import SearchTab from '@/components/sidebar/SearchTab';
-import ComplexTab from '@/components/sidebar/ComplexTab';
 import BookmarkTab from '@/components/sidebar/BookmarkTab';
 import MoreTab from '@/components/sidebar/MoreTab';
 
@@ -30,8 +29,8 @@ interface SidebarProps {
   displayComplexes: Complex[];
   activeComplexId: number | null;
   onSelectComplex: (complex: Complex) => void;
-  activeTab: 'SEARCH' | 'COMPLEX' | 'BOOKMARK' | 'MORE' | null;
-  onTabSelect?: (tab: 'SEARCH' | 'COMPLEX' | 'BOOKMARK' | 'MORE' | null) => void;
+  activeTab: 'SEARCH' | 'BOOKMARK' | 'MORE' | null;
+  onTabSelect?: (tab: 'SEARCH' | 'BOOKMARK' | 'MORE' | null) => void;
   allComplexes: Complex[];
   style?: React.CSSProperties;
   bookmarkedIds: number[];
@@ -47,11 +46,6 @@ interface SidebarProps {
   activeComparisonFolderId: string | null;
   onToggleComparison: (folderId: string) => void;
   onHoverComplex?: (id: number | null) => void;
-  complexSearchTerm?: string;
-  setComplexSearchTerm?: (term: string) => void;
-  complexActiveRegion?: string;
-  onComplexActiveRegionChange?: (region: string) => void;
-  annRegionMap?: Record<number, string>;
 }
 
 export default function Sidebar({ 
@@ -63,15 +57,11 @@ export default function Sidebar({
   bookmarkFolders, bookmarkItems, activeFolderIds, setActiveFolderIds,
   onAddFolder, onRemoveFolder, onUpdateFolder, onMoveBookmarkItem,
   activeComparisonFolderId, onToggleComparison,
-  onHoverComplex,
-  complexSearchTerm = '',
-  setComplexSearchTerm = () => {},
-  complexActiveRegion = 'ALL',
-  onComplexActiveRegionChange = () => {},
-  annRegionMap = {}
+  onHoverComplex
 }: SidebarProps) {
   const { member } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
+  const [complexSearchTerm, setComplexSearchTerm] = useState('');
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -728,29 +718,6 @@ export default function Sidebar({
         />
       )}
 
-      {activeTab === "COMPLEX" && (
-        <ComplexTab
-          sheetHeight={sheetHeight}
-          maxHeight={maxHeight}
-          isMounted={isMounted}
-          minHeight={minHeight}
-          translateY={translateY}
-          touchHandlers={touchHandlers}
-          style={style}
-          allComplexes={allComplexes}
-          announcements={announcements}
-          activeComplexId={activeComplexId}
-          onSelectComplex={onSelectComplex}
-          bookmarkedIds={bookmarkedIds}
-          onToggleBookmark={onToggleBookmark}
-          onHoverComplex={onHoverComplex}
-          complexSearchTerm={complexSearchTerm}
-          setComplexSearchTerm={setComplexSearchTerm}
-          complexActiveRegion={complexActiveRegion}
-          onComplexActiveRegionChange={onComplexActiveRegionChange}
-          annRegionMap={annRegionMap}
-        />
-      )}
 
       {activeTab === "BOOKMARK" && (
         <BookmarkTab

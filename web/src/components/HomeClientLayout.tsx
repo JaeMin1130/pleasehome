@@ -215,76 +215,6 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
   const [activeTab, setActiveTab] = useState<NavigationTabType | null>('SEARCH');
   const [lastActiveTab, setLastActiveTab] = useState<NavigationTabType | null>(null);
 
-  // 💡 단지탭 검색어, 활성지역, 지도 이동 오버라이드 관리 상태 정의
-  const [complexSearchTerm, setComplexSearchTerm] = useState('');
-  const [complexActiveRegion, setComplexActiveRegion] = useState('ALL');
-  const [mapCenterOverride, setMapCenterOverride] = useState<{ lat: number; lng: number } | null>(null);
-
-  // 💡 공고 ID -> 지역명 캐싱 맵 (O(1) 룩업용)
-  const annRegionMap = useMemo(() => {
-    const map: Record<number, string> = {};
-    announcements.forEach(a => {
-      if (a.region) map[a.id] = a.region;
-    });
-    return map;
-  }, [announcements]);
-
-  const REGION_CENTERS: Record<string, { lat: number; lng: number }> = {
-    ALL: { lat: 36.3, lng: 127.8 },
-    서울: { lat: 37.5665, lng: 126.9780 },
-    인천: { lat: 37.4563, lng: 126.7052 },
-    대전: { lat: 36.3504, lng: 127.3845 },
-    대구: { lat: 35.8711, lng: 128.6014 },
-    광주: { lat: 35.1595, lng: 126.8526 },
-    울산: { lat: 35.5384, lng: 129.3114 },
-    부산: { lat: 35.1798, lng: 129.0750 },
-    세종: { lat: 36.4800, lng: 127.2890 },
-    경기도: { lat: 37.2636, lng: 127.0286 },
-    강원도: { lat: 37.8854, lng: 127.7298 },
-    충청도: { lat: 36.6358, lng: 127.4914 },
-    경상도: { lat: 35.8500, lng: 128.5600 },
-    전라도: { lat: 35.7000, lng: 127.1500 }
-  };
-
-  const matchesRegion = (complex: Complex, active: string): boolean => {
-    if (active === 'ALL') return true;
-    const annRegion = annRegionMap[complex.announcement_id];
-
-    if (annRegion) {
-      if (active === '서울') return annRegion.startsWith('서울');
-      if (active === '인천') return annRegion.startsWith('인천');
-      if (active === '대전') return annRegion.startsWith('대전');
-      if (active === '대구') return annRegion.startsWith('대구');
-      if (active === '광주') return annRegion.startsWith('광주');
-      if (active === '울산') return annRegion.startsWith('울산');
-      if (active === '부산') return annRegion.startsWith('부산');
-      if (active === '세종') return annRegion.startsWith('세종');
-      if (active === '경기도') return annRegion.startsWith('경기');
-      if (active === '강원도') return annRegion.startsWith('강원');
-      if (active === '충청도') return annRegion.startsWith('충청');
-      if (active === '경상도') return annRegion.startsWith('경상');
-      if (active === '전라도') return annRegion.startsWith('전라') || annRegion.startsWith('전북');
-      return false;
-    }
-
-    // 💡 2단계: 공고 지역명이 없을 때에만 폴백으로 도로명 주소 파싱을 수행
-    const addr = complex.address || '';
-    if (active === '서울') return addr.startsWith('서울');
-    if (active === '인천') return addr.startsWith('인천');
-    if (active === '대전') return addr.startsWith('대전');
-    if (active === '대구') return addr.startsWith('대구');
-    if (active === '광주') return addr.startsWith('광주');
-    if (active === '울산') return addr.startsWith('울산');
-    if (active === '부산') return addr.startsWith('부산');
-    if (active === '세종') return addr.startsWith('세종');
-    if (active === '경기도') return addr.startsWith('경기');
-    if (active === '강원도') return addr.startsWith('강원');
-    if (active === '충청도') return addr.startsWith('충청');
-    if (active === '경상도') return addr.startsWith('경상');
-    if (active === '전라도') return addr.startsWith('전라') || addr.startsWith('전북');
-
-    return false;
-  };
 
   const [filterState, setFilterState] = useState<FilterState>({
     targetGroup: 'ALL',
@@ -445,15 +375,6 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
     });
   }, [displayComplexes, announcementUnits, filterState]);
 
-  const filteredComplexesForComplexTab = useMemo(() => {
-    return allComplexes.filter(c => {
-      const matchesSearch = c.name.toLowerCase().includes(complexSearchTerm.toLowerCase()) ||
-                           c.address.toLowerCase().includes(complexSearchTerm.toLowerCase());
-      const matchesReg = matchesRegion(c, complexActiveRegion);
-      return matchesSearch && matchesReg;
-    });
-  }, [allComplexes, complexSearchTerm, complexActiveRegion, announcements]);
-
   // 저장 탭(BOOKMARK) 필터 조건 분기: 상세 필터와 무관하게 저장된 단지만 매핑
   const currentEffectiveTabForMap = activeTab || lastActiveTab;
   let mapComplexes = filteredComplexes;
@@ -469,8 +390,6 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
         .map(item => item.complexId);
       mapComplexes = allComplexes.filter(c => folderBookmarkedIds.includes(c.id));
     }
-  } else if (currentEffectiveTabForMap === 'COMPLEX') {
-    mapComplexes = filteredComplexesForComplexTab;
   }
 
   const activeAnn = announcements.find(a => a.id === activeAnnId);
@@ -523,7 +442,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
       }
 
       const currentEffectiveTab = activeTab || lastActiveTab;
-      if (currentEffectiveTab === 'COMPLEX' || currentEffectiveTab === 'BOOKMARK') {
+      if (currentEffectiveTab === 'BOOKMARK') {
         setActiveAnnId(null);
         updateUrl(null, null, true);
       } else if (activeAnnId !== null) {
@@ -689,14 +608,6 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
           width={SIDEBAR_DEFAULT_WIDTH} isCollapsed={isSidebarCollapsed} onCollapseChange={setIsSidebarCollapsed}
           displayComplexes={activeTab === 'BOOKMARK' ? mapComplexes : filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex}
           activeTab={activeTab} onTabSelect={handleTabSelect} allComplexes={allComplexes}
-          complexSearchTerm={complexSearchTerm}
-          setComplexSearchTerm={setComplexSearchTerm}
-          complexActiveRegion={complexActiveRegion}
-          onComplexActiveRegionChange={(r) => {
-            setComplexActiveRegion(r);
-            setMapCenterOverride(REGION_CENTERS[r]);
-          }}
-          annRegionMap={annRegionMap}
           bookmarkedIds={bookmarkedIds} onToggleBookmark={toggleBookmark}
           bookmarkFolders={bookmarkFolders}
           bookmarkItems={bookmarkItems}
@@ -818,8 +729,6 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
                 )
               : []
           }
-          allComplexes={allComplexes}
-          onSelectComplex={handleSelectComplex}
         />
 
         <div className={styles['app-map-container']}>
@@ -832,7 +741,6 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
             bookmarkedIds={bookmarkedIds} 
             bookmarkItems={bookmarkItems}
             bookmarkFolders={bookmarkFolders}
-            centerOverride={mapCenterOverride}
           />
           
           {isPolicyOnly && activeAnn && (

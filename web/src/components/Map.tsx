@@ -34,10 +34,9 @@ interface MapProps {
   bookmarkedIds: number[];
   bookmarkItems: BookmarkItem[];
   bookmarkFolders: BookmarkFolder[];
-  centerOverride?: { lat: number; lng: number } | null;
 }
 
-export default function Map({ complexes, activeComplexId, hoveredComplexId, onSelectComplex, isSidebarCollapsed, bookmarkedIds, bookmarkItems, bookmarkFolders, centerOverride }: MapProps) {
+export default function Map({ complexes, activeComplexId, hoveredComplexId, onSelectComplex, isSidebarCollapsed, bookmarkedIds, bookmarkItems, bookmarkFolders }: MapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [naverMap, setNaverMap] = useState<any>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -76,15 +75,6 @@ export default function Map({ complexes, activeComplexId, hoveredComplexId, onSe
       initMap();
     }
   }, []);
-
-  // 🗺️ 외부 지역 필터 선택에 따른 카메라 강제 PanTo 이동 효과 연동
-  useEffect(() => {
-    if (!naverMap || !centerOverride || !window.naver || !window.naver.maps) return;
-    naverMap.panTo(new window.naver.maps.LatLng(centerOverride.lat, centerOverride.lng), {
-      duration: 500,
-      easing: 'easeOutQuad'
-    });
-  }, [centerOverride, naverMap]);
 
   // 2. 주택 단지 마커 생성 및 갱신 (마커 재사용 최적화)
   useEffect(() => {

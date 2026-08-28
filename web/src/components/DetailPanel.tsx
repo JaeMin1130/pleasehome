@@ -4,8 +4,6 @@ import { useEffect, useState } from 'react';
 import { useBottomSheetGesture } from '@/hooks/useBottomSheetGesture';
 import { Complex, HousingUnit, Announcement, FilterState, BookmarkFolder } from '@/types';
 import UnitTable from '@/components/features/UnitTable';
-import AnnouncementCard from '@/components/features/AnnouncementCard';
-import ComplexCard from '@/components/features/ComplexCard';
 import { formatTargetGroup, formatMoney, formatRent } from '@/utils/formatters';
 import styles from './DetailPanel.module.css';
 
@@ -20,9 +18,7 @@ interface DetailPanelProps {
   onToggleBookmark: (complexId: number) => void;
   comparisonFolder?: BookmarkFolder | null;
   comparisonComplexes?: Complex[];
-  activeTab: 'SEARCH' | 'COMPLEX' | 'BOOKMARK' | 'MORE' | null;
-  allComplexes?: Complex[];
-  onSelectComplex?: (complex: Complex) => void;
+  activeTab: 'SEARCH' | 'BOOKMARK' | 'MORE' | null;
 }
 
 export default function DetailPanel({ 
@@ -30,30 +26,9 @@ export default function DetailPanel({
   bookmarkedIds, onToggleBookmark,
   comparisonFolder = null,
   comparisonComplexes = [],
-  activeTab,
-  allComplexes = [],
-  onSelectComplex
+  activeTab
 }: DetailPanelProps) {
   const [units, setUnits] = useState<HousingUnit[]>([]);
-  const [panelExpandedSections, setPanelExpandedSections] = useState<{ [key: string]: boolean }>({});
-  const [isAnnActive, setIsAnnActive] = useState(false);
-  const [isComplexListOpen, setIsComplexListOpen] = useState(false);
-  const [complexSearchTerm, setComplexSearchTerm] = useState('');
-
-  const handleTogglePanelSection = (sectionKey: string) => {
-    setPanelExpandedSections(prev => {
-      const next = { ...prev };
-      next[sectionKey] = !prev[sectionKey];
-      return next;
-    });
-  };
-
-  useEffect(() => {
-    setPanelExpandedSections({});
-    setIsAnnActive(false);
-    setIsComplexListOpen(false);
-    setComplexSearchTerm('');
-  }, [complex?.id]);
 
   const { 
     sheetHeight, 
@@ -500,185 +475,100 @@ export default function DetailPanel({
         </div>
 
         <div>
-          {activeTab === 'COMPLEX' ? (
-            <>
-              <h4 className={styles['panel-section-title']}>연관 모집 공고 정보</h4>
-              {loading ? (
-                <div className={styles['loading-msg']}>공고 정보를 불러오는 중입니다...</div>
-              ) : (() => {
-                const relatedAnn = announcements.find(a => a.id === complex.announcement_id);
-                if (!relatedAnn) {
-                  return <div className={styles['empty-msg']}>이 단지와 매핑된 공고 정보가 없습니다.</div>;
-                }
-
-                // 해당 공고에 속한 단지 목록 필터링
-                const relatedComplexes = allComplexes.filter(c => c.announcement_id === relatedAnn.id);
-
-                // 검색어 필터링
-                const filteredComplexes = relatedComplexes.filter(c => {
-                  if (!complexSearchTerm) return true;
-                  return c.name.toLowerCase().includes(complexSearchTerm.toLowerCase()) || 
-                         c.address.toLowerCase().includes(complexSearchTerm.toLowerCase());
-                });
-
-                return (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
-                    <AnnouncementCard
-                      ann={relatedAnn}
-                      isActive={isAnnActive}
-                      onClick={() => setIsAnnActive(prev => !prev)}
-                      expandedSections={panelExpandedSections}
-                      onToggleSection={handleTogglePanelSection}
-                      isComplexListOpen={isComplexListOpen}
-                      onToggleComplexList={() => setIsComplexListOpen(!isComplexListOpen)}
-                      isDisabled={false}
-                      onDisableToggle={() => {}}
-                      isFavorite={false}
-                      onFavoriteToggle={() => {}}
-                    >
-                      {isAnnActive && (
-                        <div className={styles['complex-search-container']}>
-                          <div className={styles['complex-search-wrapper']}>
-                            <input 
-                              type="text" 
-                              placeholder="주택명 검색..." 
-                              value={complexSearchTerm}
-                              onChange={(e) => setComplexSearchTerm(e.target.value)}
-                              className={styles['complex-search-input']}
-                            />
-                            {complexSearchTerm && (
-                              <button 
-                                onClick={() => setComplexSearchTerm('')}
-                                className={styles['complex-clear-btn']}
-                              >
-                                ✕
-                              </button>
-                            )}
-                          </div>
-                          <div className={styles['complexes-list-container']}>
-                            {filteredComplexes.length === 0 ? (
-                              <div className={styles['complex-empty-msg']}>
-                                {complexSearchTerm ? '검색 결과가 없습니다.' : '이 공고에 속한 다른 단지가 없거나 필터 조건에 맞는 주택이 없습니다.'}
-                              </div>
-                            ) : (
-                              filteredComplexes.map((c) => (
-                                <ComplexCard
-                                  key={c.id}
-                                  complex={c}
-                                  isActive={complex.id === c.id}
-                                  onClick={() => onSelectComplex?.(c)}
-                                  isBookmarked={bookmarkedIds.includes(c.id)}
-                                  onBookmarkToggle={() => onToggleBookmark(c.id)}
-                                />
-                              ))
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </AnnouncementCard>
-                  </div>
-                );
-              })()}
-            </>
-          ) : (
-            <>
-              <h4 className={styles['panel-section-title']}>주택형별 공급 및 가격 정보</h4>
-              
-              <div className={styles['panel-filter-row']}>
-                {/* 1. 신청 대상 드롭다운 */}
-                {!loading && targetCombos.length > 0 && (
-                  <div className={styles['filter-group-wrap']}>
-                    <label htmlFor="filter-target" className={styles['filter-label']}>신청 대상</label>
-                    <div className={styles['select-wrapper']}>
-                      <select
-                        id="filter-target"
-                        className={styles['filter-select']}
-                        value={selectedTarget}
-                        onChange={(e) => setSelectedTarget(e.target.value)}
-                      >
-                        <option value="ALL">전체 (모든 신청 대상)</option>
-                        {targetCombos.map((combo) => {
-                          const [supplyType, targetGroup] = combo.split('_');
-                          const label = getTargetLabel(supplyType || null, targetGroup || null);
-                          const isValid = isTargetValid(combo);
-                          return (
-                            <option key={combo} value={combo} disabled={!isValid}>
-                              {label}{!isValid ? ' (해당 주택형/소득 없음)' : ''}
-                            </option>
-                          );
-                        })}
-                      </select>
-                    </div>
-                  </div>
-                )}
-
-                {/* 2. 소득/순위 드롭다운 */}
-                {!loading && incomeGroups.length > 0 && (
-                  <div className={styles['filter-group-wrap']}>
-                    <label htmlFor="filter-income" className={styles['filter-label']}>소득/순위</label>
-                    <div className={styles['select-wrapper']}>
-                      <select
-                        id="filter-income"
-                        className={styles['filter-select']}
-                        value={selectedIncome}
-                        onChange={(e) => setSelectedIncome(e.target.value)}
-                      >
-                        <option value="ALL">전체 (모든 소득/순위)</option>
-                        {incomeGroups.map((income) => {
-                          const isValid = isIncomeValid(income);
-                          return (
-                            <option key={income} value={income} disabled={!isValid}>
-                              {income}{!isValid ? ' (해당 주택형/대상 없음)' : ''}
-                            </option>
-                          );
-                        })}
-                      </select>
-                    </div>
-                  </div>
-                )}
-
-                {/* 3. 주택형 드롭다운 */}
-                {!loading && baseTypes.length > 0 && (
-                  <div className={styles['filter-group-wrap']}>
-                    <label htmlFor="filter-type" className={styles['filter-label']}>주택형</label>
-                    <div className={styles['select-wrapper']}>
-                      <select
-                        id="filter-type"
-                        className={styles['filter-select']}
-                        value={selectedType}
-                        onChange={(e) => setSelectedType(e.target.value)}
-                      >
-                        <option value="ALL">전체 (모든 주택형)</option>
-                        {baseTypes.map((type) => {
-                          const isValid = isTypeValid(type);
-                          return (
-                            <option key={type} value={type} disabled={!isValid}>
-                              {type}{!isValid ? ' (해당 대상/소득 없음)' : ''}
-                            </option>
-                          );
-                        })}
-                      </select>
-                    </div>
-                  </div>
-                )}
+          <h4 className={styles['panel-section-title']}>주택형별 공급 및 가격 정보</h4>
+          
+          <div className={styles['panel-filter-row']}>
+            {/* 1. 신청 대상 드롭다운 */}
+            {!loading && targetCombos.length > 0 && (
+              <div className={styles['filter-group-wrap']}>
+                <label htmlFor="filter-target" className={styles['filter-label']}>신청 대상</label>
+                <div className={styles['select-wrapper']}>
+                  <select
+                    id="filter-target"
+                    className={styles['filter-select']}
+                    value={selectedTarget}
+                    onChange={(e) => setSelectedTarget(e.target.value)}
+                  >
+                    <option value="ALL">전체 (모든 신청 대상)</option>
+                    {targetCombos.map((combo) => {
+                      const [supplyType, targetGroup] = combo.split('_');
+                      const label = getTargetLabel(supplyType || null, targetGroup || null);
+                      const isValid = isTargetValid(combo);
+                      return (
+                        <option key={combo} value={combo} disabled={!isValid}>
+                          {label}{!isValid ? ' (해당 소득/주택형 없음)' : ''}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
               </div>
+            )}
 
-              {loading ? (
-                <div className={styles['loading-msg']}>공급 정보를 불러오는 중입니다...</div>
-              ) : filteredUnits.length === 0 ? (
-                <div className={styles['empty-msg']}>조건에 맞는 공급 주택형이 없습니다.</div>
-              ) : (
-                <UnitTable
-                  units={filteredUnits}
-                  sliderValues={sliderValues}
-                  onSliderChange={handleSliderChange}
-                />
-              )}
-            </>
+            {/* 2. 소득 / 순위 드롭다운 */}
+            {!loading && incomeGroups.length > 0 && (
+              <div className={styles['filter-group-wrap']}>
+                <label htmlFor="filter-income" className={styles['filter-label']}>소득 / 순위</label>
+                <div className={styles['select-wrapper']}>
+                  <select
+                    id="filter-income"
+                    className={styles['filter-select']}
+                    value={selectedIncome}
+                    onChange={(e) => setSelectedIncome(e.target.value)}
+                  >
+                    <option value="ALL">전체 (모든 소득구간)</option>
+                    {incomeGroups.map((income) => {
+                      const isValid = isIncomeValid(income);
+                      return (
+                        <option key={income} value={income} disabled={!isValid}>
+                          {income}{!isValid ? ' (해당 대상/주택형 없음)' : ''}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {/* 3. 주택형 드롭다운 */}
+            {!loading && baseTypes.length > 0 && (
+              <div className={styles['filter-group-wrap']}>
+                <label htmlFor="filter-type" className={styles['filter-label']}>주택형</label>
+                <div className={styles['select-wrapper']}>
+                  <select
+                    id="filter-type"
+                    className={styles['filter-select']}
+                    value={selectedType}
+                    onChange={(e) => setSelectedType(e.target.value)}
+                  >
+                    <option value="ALL">전체 (모든 주택형)</option>
+                    {baseTypes.map((type) => {
+                      const isValid = isTypeValid(type);
+                      return (
+                        <option key={type} value={type} disabled={!isValid}>
+                          {type}{!isValid ? ' (해당 대상/소득 없음)' : ''}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {loading ? (
+            <div className={styles['loading-msg']}>공급 정보를 불러오는 중입니다...</div>
+          ) : filteredUnits.length === 0 ? (
+            <div className={styles['empty-msg']}>조건에 맞는 공급 주택형이 없습니다.</div>
+          ) : (
+            <UnitTable
+              units={filteredUnits}
+              sliderValues={sliderValues}
+              onSliderChange={handleSliderChange}
+            />
           )}
         </div>
       </div>
     </div>
   );
 }
-

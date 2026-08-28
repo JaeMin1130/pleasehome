@@ -6,7 +6,7 @@ import { UI_SIZES, UI_STROKE_WIDTHS } from '@/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import AuthModal from '@/components/ui/AuthModal';
 
-export type NavigationTabType = 'SEARCH' | 'COMPLEX' | 'BOOKMARK' | 'MORE';
+export type NavigationTabType = 'SEARCH' | 'BOOKMARK' | 'MORE';
  
 interface NavigationBarProps {
   activeTab: NavigationTabType | null;
@@ -110,17 +110,6 @@ export default function NavigationBar({
             <span className={styles['nav-label']}>공고</span>
           </button>
  
-          <button
-            className={`${styles['nav-item']} ${activeTab === 'COMPLEX' ? styles.active : ''}`}
-            onClick={() => onTabSelect(activeTab === 'COMPLEX' ? null : 'COMPLEX')}
-            title="단지 탐색"
-          >
-            <svg className={styles['nav-icon']} width={UI_SIZES.ICON_XL} height={UI_SIZES.ICON_XL} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.BOLD} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-              <circle cx="12" cy="10" r="3"/>
-            </svg>
-            <span className={styles['nav-label']}>단지</span>
-          </button>
  
           <button
             className={`${styles['nav-item']} ${activeTab === 'BOOKMARK' ? styles.active : ''}`}
