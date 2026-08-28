@@ -103,13 +103,9 @@ export function useBottomSheetGesture({
     const endY = e.changedTouches?.[0]?.clientY ?? startYRef.current;
     const deltaY = endY - startYRef.current;
 
-    // 1. 핸들바 탭 (클릭) 시 순환 토글 (MIN -> MID -> MAX -> MID)
+    // 1. 핸들바 탭 (클릭) 시 순환 토글 (MIN -> MID -> MAX -> MIN)
     if (isHandleTouchedRef.current && Math.abs(deltaY) < 10) {
-      let nextState: 0 | 1 | 2 = 1;
-      if (sheetState === 0) nextState = 1;
-      else if (sheetState === 1) nextState = 2;
-      else nextState = 1;
-
+      const nextState: 0 | 1 | 2 = sheetState === 0 ? 1 : sheetState === 1 ? 2 : 0;
       const targetHeight = nextState === 0 ? finalMinHeight : nextState === 1 ? finalMidHeight : finalMaxHeight;
       setSheetState(nextState);
       setSheetHeight(targetHeight);
