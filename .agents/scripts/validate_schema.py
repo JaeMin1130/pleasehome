@@ -139,12 +139,6 @@ class ScheduleModel(BaseModel):
         raise ValueError(f"날짜 형식이 YYYY-MM-DD HH:MM:SS 규격에 맞지 않습니다 (입력값: '{v}')")
 
 
-class LimitModel(BaseModel):
-    limit_type: Optional[str] = Field(None, description="한도 유형")
-    description: Optional[str] = Field(None, description="상세 조건 설명")
-    notes: Optional[str] = Field(None, description="비고")
-
-
 class ComplexModel(BaseModel):
     name: str = Field(..., description="단지명")
     address: str = Field(..., description="지번/도로명 주소")
@@ -245,7 +239,6 @@ class DetailModel(BaseModel):
 class DataJsonModel(BaseModel):
     announcement: AnnouncementModel
     schedules: List[ScheduleModel] = Field(default_factory=list)
-    limits: List[LimitModel] = Field(default_factory=list)
     complexes: List[ComplexModel] = Field(default_factory=list)
     units: List[UnitModel] = Field(default_factory=list)
     details: List[DetailModel] = Field(default_factory=list)
@@ -312,7 +305,6 @@ def merge_temp_files(directory: str) -> dict:
     merged = {
         "announcement": meta_data.get("announcement", {}),
         "schedules": meta_data.get("schedules", []),
-        "limits": meta_data.get("limits", []),
         "complexes": units_data.get("complexes", []),
         "units": units_data.get("units", []),
         "details": details_data.get("details", [])

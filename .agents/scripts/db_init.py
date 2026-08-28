@@ -66,23 +66,7 @@ def init_db():
         );
         """,
         """
-        -- [4] announcement_limits: 전세임대 지원 한도액 및 조건 테이블
-        CREATE TABLE IF NOT EXISTS announcement_limits (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, -- 지원조건 ID (고유 식별자)
-            announcement_id INTEGER NOT NULL,     -- 소속 공고 ID (announcements.id 외래키)
-            target_group VARCHAR(100),            -- 지원 대상군 (예: '청년', '신혼부부', '다자녀가구')
-            max_support_amount BIGINT,            -- 최대 지원금액 (융자 보증금 한도액, 원 단위)
-            deposit_limit BIGINT,                 -- 대상 주택의 최대 임차보증금 한도 (원 단위)
-            tenant_share BIGINT,                  -- 입주자 본인 기본 부담 보증금 (원 단위)
-            interest_rate REAL,                   -- 지원금에 대한 기본 연 이자율 (퍼센트 단위)
-            max_monthly_rent BIGINT,              -- 혼합형 주택 공급 시 최대 허용 월 임대료 (원 단위)
-            notes TEXT,                           -- 한도 조건 관련 비고 및 유의사항
-            attributes TEXT,                      -- 비정형 추가 한도 속성
-            FOREIGN KEY (announcement_id) REFERENCES announcements (id) ON DELETE CASCADE
-        );
-        """,
-        """
-        -- [5] complexes: 모집 주택 단지 정보 테이블
+        -- [4] complexes: 모집 주택 단지 정보 테이블
         CREATE TABLE IF NOT EXISTS complexes (
             id INTEGER PRIMARY KEY AUTOINCREMENT, -- 단지 ID (고유 식별자)
             announcement_id INTEGER NOT NULL,     -- 소속 공고 ID (announcements.id 외래키)
@@ -102,7 +86,7 @@ def init_db():
         );
         """,
         """
-        -- [6] housing_units: 단지별/평형별 세부 주택 공급 조건 및 가격 테이블
+        -- [5] housing_units: 단지별/평형별 세부 주택 공급 조건 및 가격 테이블
         CREATE TABLE IF NOT EXISTS housing_units (
             id INTEGER PRIMARY KEY AUTOINCREMENT, -- 모집 조건 ID (고유 식별자)
             announcement_id INTEGER NOT NULL,     -- 소속 공고 ID (announcements.id 외래키)
@@ -131,7 +115,7 @@ def init_db():
         );
         """,
         """
-        -- [7] data_load_logs: 데이터 적재 이력 로그 테이블
+        -- [6] data_load_logs: 데이터 적재 이력 로그 테이블
         CREATE TABLE IF NOT EXISTS data_load_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT, -- 로그 ID (고유 식별자)
             announcement_id INTEGER,              -- 적재 대상 공고 ID
@@ -143,7 +127,6 @@ def init_db():
         """,
         "CREATE INDEX IF NOT EXISTS idx_schedules_announcement ON announcement_schedules (announcement_id);",
         "CREATE INDEX IF NOT EXISTS idx_details_announcement ON announcement_details (announcement_id);",
-        "CREATE INDEX IF NOT EXISTS idx_limits_announcement ON announcement_limits (announcement_id);",
         "CREATE INDEX IF NOT EXISTS idx_complexes_announcement ON complexes (announcement_id);",
         "CREATE INDEX IF NOT EXISTS idx_units_lookup ON housing_units (complex_id, announcement_id);"
     ]

@@ -409,35 +409,6 @@ export default function AnnouncementCard({
               </AccordionSection>
             )}
 
-            {ann.limits && ann.limits.length > 0 && (
-              <AccordionSection
-                title={`${currentNum++}. 보증금 및 지원한도`}
-                isOpen={!!expandedSections[`${ann.id}-limits`]}
-                onToggle={() => onToggleSection(`${ann.id}-limits`)}
-              >
-                <table className={styles['limits-table']}>
-                  <thead>
-                    <tr><th>대상군</th><th>지원한도액</th><th>이율/임대료</th></tr>
-                  </thead>
-                  <tbody>
-                    {ann.limits.map((l) => (
-                      <tr key={l.id}>
-                        <td>{l.target_group || '전체'}</td>
-                        <td>
-                          {l.max_support_amount ? formatMoney(l.max_support_amount) : '-'}
-                          {l.deposit_limit && <div className={styles['limit-text']}>한도: {formatMoney(l.deposit_limit)}</div>}
-                        </td>
-                        <td>
-                          {l.interest_rate ? formatInterestRate(l.interest_rate) : '-'}
-                          {l.max_monthly_rent ? <div className={styles['rent-text']}>{formatMoney(l.max_monthly_rent)}/월</div> : ''}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </AccordionSection>
-            )}
-
             {ann.details && ann.details.length > 0 && ann.details.map((d) => {
                const lines = d.section_content ? d.section_content.split('\n') : [];
                const firstLine = lines[0] || '';

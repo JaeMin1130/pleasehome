@@ -87,41 +87,6 @@ class AnnouncementDetail(
 )
 
 @Entity
-@Table(name = "announcement_limits")
-class AnnouncementLimit(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
-
-    @Column(name = "announcement_id", nullable = false)
-    var announcementId: Long = 0,
-
-    @Column(name = "target_group")
-    var targetGroup: String? = null,
-
-    @Column(name = "max_support_amount")
-    var maxSupportAmount: Long? = null,
-
-    @Column(name = "deposit_limit")
-    var depositLimit: Long? = null,
-
-    @Column(name = "tenant_share")
-    var tenantShare: Long? = null,
-
-    @Column(name = "interest_rate")
-    var interestRate: Double? = null,
-
-    @Column(name = "max_monthly_rent")
-    var maxMonthlyRent: Long? = null,
-
-    @Column(columnDefinition = "TEXT")
-    var notes: String? = null,
-
-    @Column(columnDefinition = "TEXT")
-    var attributes: String? = null
-)
-
-@Entity
 @Table(name = "complexes")
 class Complex(
     @Id

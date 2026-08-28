@@ -57,15 +57,6 @@
     margin-top: var(--spacing-2xs);
 }
 
-.limit-text {
-    font-size: var(--font-size-xs);
-    color: var(--text-muted);
-}
-
-.rent-text {
-    font-size: var(--font-size-xs);
-}
-
 .section-content-flex {
     display: flex;
     flex-direction: column;

@@ -16,17 +16,6 @@ export interface Detail {
   sort_order: number;
 }
 
-export interface Limit {
-  id: number;
-  target_group: string | null;
-  max_support_amount: number | null;
-  deposit_limit: number | null;
-  tenant_share: number | null;
-  interest_rate: number | null;
-  max_monthly_rent: number | null;
-  notes: string | null;
-}
-
 export interface Announcement {
   id: number;
   title: string;
@@ -38,7 +27,6 @@ export interface Announcement {
   dtl_url_mob?: string | null;
   schedules: Schedule[];
   details: Detail[];
-  limits: Limit[];
 }
 
 export interface Complex {

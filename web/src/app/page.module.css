@@ -52,36 +52,6 @@
     word-break: keep-all;
 }
 
-.policy-limits-box {
-    background-color: var(--bg-body);
-    border: var(--spacing-3xs) solid var(--border-light);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-md);
-    text-align: left;
-}
-
-.policy-limit-item {
-    display: flex;
-    justify-content: space-between;
-    font-size: var(--font-size-sm);
-    padding: var(--spacing-sm) 0;
-    border-bottom: var(--spacing-3xs) solid var(--border-light);
-}
-
-.policy-limit-item:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
-.policy-limit-lbl {
-    color: var(--text-secondary);
-}
-
-.policy-limit-val {
-    font-weight: var(--font-weight-semibold);
-    color: var(--text-primary);
-}
-
 .floating-filter-container {
     position: absolute;
     top: var(--spacing-20px);

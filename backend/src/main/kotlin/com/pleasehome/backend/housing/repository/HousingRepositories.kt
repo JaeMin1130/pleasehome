@@ -23,12 +23,6 @@ interface AnnouncementDetailRepository : JpaRepository<AnnouncementDetail, Long>
 }
 
 @Repository
-interface AnnouncementLimitRepository : JpaRepository<AnnouncementLimit, Long> {
-    fun findAllByAnnouncementId(announcementId: Long): List<AnnouncementLimit>
-    fun findAllByAnnouncementIdIn(announcementIds: List<Long>): List<AnnouncementLimit>
-}
-
-@Repository
 interface ComplexRepository : JpaRepository<Complex, Long> {
     fun findAllByAnnouncementId(announcementId: Long): List<Complex>
     fun findAllByAnnouncementIdIn(announcementIds: List<Long>): List<Complex>

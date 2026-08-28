@@ -200,7 +200,6 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
             cursor.execute("DELETE FROM housing_units WHERE announcement_id = ?", (ann_id,))
             cursor.execute("DELETE FROM complexes WHERE announcement_id = ?", (ann_id,))
             cursor.execute("DELETE FROM announcement_schedules WHERE announcement_id = ?", (ann_id,))
-            cursor.execute("DELETE FROM announcement_limits WHERE announcement_id = ?", (ann_id,))
             cursor.execute("DELETE FROM announcement_details WHERE announcement_id = ?", (ann_id,))
             
             # announcements 테이블 UPDATE
@@ -251,17 +250,7 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
                 (ann_id, sched["schedule_type"], sched.get("start_date"), sched.get("end_date"), sched["raw_text"], sched.get("notes"))
             )
             
-        # 5. announcement_limits 테이블 적재
-        for lim in json_data.get("limits", []):
-            cursor.execute(
-                """
-                INSERT INTO announcement_limits (announcement_id, target_group, max_support_amount, deposit_limit, tenant_share, interest_rate, max_monthly_rent, notes)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?);
-                """,
-                (ann_id, lim.get("target_group"), lim.get("max_support_amount"), lim.get("deposit_limit"), lim.get("tenant_share"), lim.get("interest_rate"), lim.get("max_monthly_rent"), lim.get("notes"))
-            )
-            
-        # 6. announcement_details 테이블 적재
+        # 5. announcement_details 테이블 적재
         for det in json_data.get("details", []):
             cursor.execute(
                 """
@@ -271,7 +260,7 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
                 (ann_id, det["section_title"], det["section_content"], det["sort_order"])
             )
             
-        # 7. complexes 및 housing_units 테이블 적재 (단지명 + 주소 복합 키 매핑 및 기존 ID 보존 적용)
+        # 6. complexes 및 housing_units 테이블 적재 (단지명 + 주소 복합 키 매핑 및 기존 ID 보존 적용)
         complex_name_to_id = {}
         complex_key_to_id = {}
         for comp in json_data.get("complexes", []):

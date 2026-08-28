@@ -11,7 +11,6 @@ class HousingService(
     private val announcementRepository: AnnouncementRepository,
     private val scheduleRepository: AnnouncementScheduleRepository,
     private val detailRepository: AnnouncementDetailRepository,
-    private val limitRepository: AnnouncementLimitRepository,
     private val complexRepository: ComplexRepository,
     private val unitRepository: HousingUnitRepository
 ) {
@@ -23,7 +22,6 @@ class HousingService(
         val annIds = announcements.mapNotNull { it.id }
         val schedulesMap = scheduleRepository.findAllByAnnouncementIdIn(annIds).groupBy { it.announcementId }
         val detailsMap = detailRepository.findAllByAnnouncementIdInOrderBySortOrderAscIdAsc(annIds).groupBy { it.announcementId }
-        val limitsMap = limitRepository.findAllByAnnouncementIdIn(annIds).groupBy { it.announcementId }
 
         return announcements.map { ann ->
             val id = ann.id ?: 0
@@ -40,8 +38,7 @@ class HousingService(
                 "created_at" to ann.createdAt,
                 "updated_at" to ann.updatedAt,
                 "schedules" to (schedulesMap[id]?.map { scheduleToMap(it) } ?: emptyList<Any>()),
-                "details" to (detailsMap[id]?.map { detailToMap(it) } ?: emptyList<Any>()),
-                "limits" to (limitsMap[id]?.map { limitToMap(it) } ?: emptyList<Any>())
+                "details" to (detailsMap[id]?.map { detailToMap(it) } ?: emptyList<Any>())
             )
         }
     }
@@ -50,7 +47,6 @@ class HousingService(
         val ann = announcementRepository.findById(id).orElseThrow { NoSuchElementException("공고를 찾을 수 없습니다. (ID: $id)") }
         val schedules = scheduleRepository.findAllByAnnouncementId(id).map { scheduleToMap(it) }
         val details = detailRepository.findAllByAnnouncementIdOrderBySortOrderAscIdAsc(id).map { detailToMap(it) }
-        val limits = limitRepository.findAllByAnnouncementId(id).map { limitToMap(it) }
 
         return mapOf(
             "id" to ann.id,
@@ -65,8 +61,7 @@ class HousingService(
             "created_at" to ann.createdAt,
             "updated_at" to ann.updatedAt,
             "schedules" to schedules,
-            "details" to details,
-            "limits" to limits
+            "details" to details
         )
     }
 
@@ -151,19 +146,6 @@ class HousingService(
         "section_title" to d.sectionTitle,
         "section_content" to d.sectionContent,
         "sort_order" to d.sortOrder
-    )
-
-    private fun limitToMap(l: AnnouncementLimit) = mapOf(
-        "id" to l.id,
-        "announcement_id" to l.announcementId,
-        "target_group" to l.targetGroup,
-        "max_support_amount" to l.maxSupportAmount,
-        "deposit_limit" to l.depositLimit,
-        "tenant_share" to l.tenantShare,
-        "interest_rate" to l.interestRate,
-        "max_monthly_rent" to l.maxMonthlyRent,
-        "notes" to l.notes,
-        "attributes" to l.attributes
     )
 
     private fun complexToMap(c: Complex) = mapOf(

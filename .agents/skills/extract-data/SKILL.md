@@ -44,11 +44,11 @@ description: 마크다운 공고문 원본(document.md)을 분석하여 complexe
   - **개별 독립 실행**: 한 세션에 대량의 공고를 몰아서 처리하지 않고, 개별 폴더 단위로 독립된 세션에서 작업을 완결합니다.
   - **하이브리드 추출 및 다단계 분할(Chain) 추출 전략**:
     - **대용량/복잡 공고** (마크다운이 방대하거나 유닛 표가 10줄을 초과하는 경우): 환각을 방지하기 위해 3단계 분할 추출을 진행합니다.
-      1. **Step 1**: 메타/일정 정보 추출 (`announcement`, `schedules`, `limits`) $\rightarrow$ `temp_meta.json`
-      2. **Step 2**: 단지/유닛 정보 추출 (`complexes`, `units`, 필요 시 파이썬 파싱 코드 실행) $\rightarrow$ `temp_units.json`
-      3. **Step 3**: 상세 조건 서술글 추출 (`details` 6대 카테고리) $\rightarrow$ `temp_details.json`
-      4. **Step 4 (병합)**: `python3 .agents/scripts/validate_schema.py db-pipeline/docs/md/{공고_폴더} --merge`
-    - **일반 공고**: 완제품 `data.json`을 다이렉트로 원스톱 추출합니다.
+       1. **Step 1**: 메타/일정 정보 추출 (`announcement`, `schedules`) $\rightarrow$ `temp_meta.json`
+       2. **Step 2**: 단지/유닛 정보 추출 (`complexes`, `units`, 필요 시 파이썬 파싱 코드 실행) $\rightarrow$ `temp_units.json`
+       3. **Step 3**: 상세 조건 서술글 추출 (`details` 6대 카테고리) $\rightarrow$ `temp_details.json`
+       4. **Step 4 (병합)**: `python3 .agents/scripts/validate_schema.py db-pipeline/docs/md/{공고_폴더} --merge`
+     - **일반 공고**: 완제품 `data.json`을 다이렉트로 원스톱 추출합니다.
 
 #### 2단계: Pydantic 기반 스키마 검증 및 자가 치유(Self-Correction)
 * **스키마 검증**: 부모 에이전트는 [validate_schema.py](file:///home/iru/app/pleasehome/.agents/scripts/validate_schema.py)를 실행하여 데이터 유효성을 철저히 검사합니다.
@@ -115,13 +115,6 @@ description: 마크다운 공고문 원본(document.md)을 분석하여 complexe
       "start_date": "YYYY-MM-DD HH:MM:SS (or null)",
       "end_date": "YYYY-MM-DD HH:MM:SS (or null)",
       "notes": "Details or notes"
-    }
-  ],
-  "limits": [
-    {
-      "limit_type": "string (e.g., 소득한도, 자산한도)",
-      "description": "string (details of limit)",
-      "notes": "string (optional)"
     }
   ],
   "complexes": [

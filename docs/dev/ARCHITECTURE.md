@@ -148,7 +148,7 @@ sequenceDiagram
 ### 4.1. 공고 및 단지 데이터 도메인 (Core Housing - 7개)
 | Method | Endpoint | 설명 | Request / Query |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/api/announcements` | 전체 공고 목록 조회 (일정/상세안내/한도액 포함) | None |
+| `GET` | `/api/announcements` | 전체 공고 목록 조회 (일정/상세안내 포함) | None |
 | `GET` | `/api/announcements/{id}/details` | 공고 종합 상세 번들 조회 (SSR 전용) | Path: `id` |
 | `GET` | `/api/complexes` | 단지 목록 조회 | Query: `announcement_id` (선택) |
 | `GET` | `/api/complexes/{id}/details` | 단지 상세 및 과거 동일 단지 공고 이력 조회 (SSR 전용) | Path: `id` |

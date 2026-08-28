@@ -846,19 +846,6 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
               </div>
               <h2 className={styles['policy-title']}>{activeAnn.subscription_type} 지원 제도 안내</h2>
               <p className={styles['policy-desc']}>본 공고는 입주자가 원하는 주택을 직접 물색하면, 기관이 집주인과 전세계약을 체결한 후 저렴하게 재임대하는 정책입니다.</p>
-              {activeAnn.limits && activeAnn.limits.length > 0 && (
-                <div className={styles['policy-limits-box']}>
-                  <div className={styles['summary-title']}>지원 조건 요약</div>
-                  {activeAnn.limits.map((limit) => (
-                    <div key={limit.id} className={styles['policy-limit-item']}>
-                      <span className={styles['policy-limit-lbl']}>{limit.target_group || '기본 지원'}</span>
-                      <span className={styles['policy-limit-val']}>
-                        {limit.max_support_amount ? `최대 ${formatMoney(limit.max_support_amount)} 지원` : '상세 조건 참조'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           )}
         </div>
