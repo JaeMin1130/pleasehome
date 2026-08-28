@@ -975,16 +975,26 @@
 
   .mobile-only-filters .region-tags {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: var(--spacing-2xs);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--spacing-3xs);
     width: 100%;
   }
 
   .mobile-only-filters .filter-tags {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: var(--spacing-3xs);
     width: 100%;
+  }
+
+  .mobile-only-filters .region-tag,
+  .mobile-only-filters .filter-tag {
+    padding: var(--spacing-6px) 2px;
+    font-size: 11px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* 부모 사이드바 래퍼는 모바일에서도 화면 전체 투명 래퍼 역할을 유지 (지도 터치 통과) */
@@ -995,12 +1005,13 @@
     right: 0;
     bottom: calc(var(--spacing-md) * 3.75); /* 하단 탭바 바로 위까지 */
     width: 100vw;
+    max-width: 100vw;
     height: auto;
     background-color: transparent;
     border-right: none;
     pointer-events: none;
     z-index: var(--z-index-dropdown);
-    overflow: visible;
+    overflow: hidden;
     display: block;
     transition: none;
   }
@@ -1042,6 +1053,8 @@
     bottom: calc(var(--spacing-md) * 3.75); /* 하단 탭바 바로 위 */
     left: 0;
     right: 0;
+    width: 100vw;
+    max-width: 100vw;
     height: 45dvh; /* 기본 높이 (드래그 시 인라인 style로 덮어씌워짐) */
     background-color: var(--bg-surface);
     border-top: var(--spacing-3xs) solid var(--border-light);
@@ -1050,7 +1063,9 @@
     pointer-events: auto; /* 터치 활성화 */
     z-index: var(--z-index-base);
     padding: 0 var(--spacing-md) var(--spacing-md) var(--spacing-md);
-    overflow-y: hidden; /* 헤더 영역은 스크롤되지 않도록 hidden */
+    overflow-x: hidden;
+    overflow-y: hidden;
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     transform: translateY(0);
@@ -1074,6 +1089,10 @@
   .sidebar-list {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     padding: 0;
     background-color: transparent;
     display: flex;

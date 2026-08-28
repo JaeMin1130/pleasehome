@@ -328,6 +328,8 @@
 .timeline-bar-wrapper {
     position: relative;
     width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
     margin-bottom: var(--spacing-sm);
     padding-top: var(--spacing-md);
     --dot-size: var(--spacing-md);
@@ -338,6 +340,7 @@
     align-items: flex-start;
     /* 💡 상단 정렬로 닷 센터 라인을 완벽히 일치시킴 */
     width: 100%;
+    max-width: 100%;
     position: relative;
     padding: 0;
     margin: 0;
