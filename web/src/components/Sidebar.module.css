@@ -973,27 +973,28 @@
     margin-bottom: var(--spacing-sm);
   }
 
-  .mobile-only-filters .region-tags {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: var(--spacing-3xs);
+  .mobile-only-filters .region-tags,
+  .mobile-only-filters .filter-tags {
+    display: flex;
+    gap: var(--spacing-xs);
     width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: var(--spacing-3xs);
   }
 
-  .mobile-only-filters .filter-tags {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: var(--spacing-3xs);
-    width: 100%;
+  .mobile-only-filters .region-tags::-webkit-scrollbar,
+  .mobile-only-filters .filter-tags::-webkit-scrollbar {
+    display: none;
   }
 
   .mobile-only-filters .region-tag,
   .mobile-only-filters .filter-tag {
-    padding: var(--spacing-6px) 2px;
-    font-size: 11px;
+    flex-shrink: 0;
+    padding: var(--spacing-6px) var(--spacing-12px);
+    font-size: var(--font-size-xs);
     text-align: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
   }
 
@@ -1003,7 +1004,7 @@
     top: 0;
     left: 0;
     right: 0;
-    bottom: calc(var(--spacing-md) * 3.75); /* 하단 탭바 바로 위까지 */
+    bottom: calc(var(--spacing-md) * 3.75 + env(safe-area-inset-bottom, 0px)); /* 하단 탭바 바로 위까지 */
     width: 100vw;
     max-width: 100vw;
     height: auto;
@@ -1050,7 +1051,7 @@
   .bookmark-panel-container,
   .more-panel-container {
     position: fixed;
-    bottom: calc(var(--spacing-md) * 3.75); /* 하단 탭바 바로 위 */
+    bottom: calc(var(--spacing-md) * 3.75 + env(safe-area-inset-bottom, 0px)); /* 하단 탭바 바로 위 */
     left: 0;
     right: 0;
     width: 100vw;
@@ -1065,6 +1066,7 @@
     padding: 0 var(--spacing-md) var(--spacing-md) var(--spacing-md);
     overflow-x: hidden;
     overflow-y: hidden;
+    overscroll-behavior-y: contain;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;

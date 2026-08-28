@@ -443,18 +443,16 @@
   .app-detail-panel {
     position: fixed;
     top: auto;
-    bottom: calc(var(--spacing-md) * 3.75); /* 하단 네비게이션바 바로 위 고정 */
+    bottom: calc(var(--spacing-md) * 3.75 + env(safe-area-inset-bottom, 0px)); /* 하단 네비게이션바 바로 위 고정 */
     left: 0;
     right: 0;
     width: 100vw;
     height: 45dvh; /* 기본 초기높이 */
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     z-index: calc(var(--z-index-dropdown) + 10);
-    position: fixed;
-    left: 0;
-    right: 0;
     transform: translateY(100%); /* 기본 닫힘 상태 */
     transition: transform var(--transition-panel), height var(--transition-panel);
+    overscroll-behavior-y: contain;
   }
 
   .app-detail-panel.open {

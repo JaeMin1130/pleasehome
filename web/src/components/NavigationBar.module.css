@@ -159,11 +159,11 @@
     left: 0;
     right: 0;
     width: 100vw;
-    height: calc(var(--spacing-md) * 3.75);
+    height: calc(var(--spacing-md) * 3.75 + env(safe-area-inset-bottom, 0px));
     border-right: none;
     border-top: var(--spacing-3xs) solid var(--border-light);
     flex-direction: row;
-    padding-bottom: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     z-index: 1000;
     justify-content: flex-start;
   }
