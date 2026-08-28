@@ -287,14 +287,21 @@
   }
 
   .floating-filter-dropdown {
-    width: calc(var(--spacing-lg) * 11); /* 264px (디자인 토큰화) */
+    width: min(calc(100vw - var(--spacing-xl)), calc(var(--spacing-lg) * 12));
     max-height: 55dvh;
     top: calc(100% + var(--spacing-sm));
     right: 0;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   }
 
   .floating-filter-dropdown .overlay-body {
     padding: var(--spacing-md);
     gap: var(--spacing-md);
+  }
+
+  .double-slider-container .thumb::-webkit-slider-thumb {
+    height: calc(var(--spacing-md) * 1.4);
+    width: calc(var(--spacing-md) * 1.4);
+    margin-top: calc(var(--spacing-xs) * -2);
   }
 }
