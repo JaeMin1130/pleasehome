@@ -8,6 +8,7 @@ interface MoreTabProps {
   sheetHeight: number | null;
   minHeight: number;
   touchHandlers: any;
+  onToggleSheetHeight?: () => void;
   style?: React.CSSProperties;
   member: any;
   isProfileOpen: boolean;
@@ -38,6 +39,7 @@ export default function MoreTab({
   sheetHeight,
   minHeight,
   touchHandlers,
+  onToggleSheetHeight,
   style,
   member,
   isProfileOpen,
@@ -74,7 +76,13 @@ export default function MoreTab({
       {...touchHandlers}
     >
       {/* 모바일 화면 전용 상단 드래그 핸들바 */}
-      <div className={styles['drag-handle-bar']} />
+      <div 
+        className={styles['drag-handle-bar']} 
+        onClick={onToggleSheetHeight}
+        role="button"
+        tabIndex={0}
+        aria-label="바텀시트 크기 전환"
+      />
 
       <div 
         className={styles['more-list-container']}

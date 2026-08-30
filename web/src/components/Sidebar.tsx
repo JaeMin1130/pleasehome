@@ -71,6 +71,7 @@ export default function Sidebar({
   const { 
     sheetHeight, 
     setSheetHeight, 
+    toggleSheetHeight,
     touchHandlers, 
     minHeight, 
     midHeight, 
@@ -675,6 +676,7 @@ export default function Sidebar({
           sheetHeight={sheetHeight}
           minHeight={minHeight}
           touchHandlers={touchHandlers}
+          onToggleSheetHeight={toggleSheetHeight}
           style={style}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
@@ -713,6 +715,7 @@ export default function Sidebar({
           sheetHeight={sheetHeight}
           minHeight={minHeight}
           touchHandlers={touchHandlers}
+          onToggleSheetHeight={toggleSheetHeight}
           member={member}
           showNewFolderInput={showNewFolderInput}
           setShowNewFolderInput={setShowNewFolderInput}
@@ -755,6 +758,7 @@ export default function Sidebar({
           sheetHeight={sheetHeight}
           minHeight={minHeight}
           touchHandlers={touchHandlers}
+          onToggleSheetHeight={toggleSheetHeight}
           style={style}
           member={member}
           isProfileOpen={isProfileOpen}

@@ -1022,9 +1022,12 @@
     height: var(--spacing-xs); /* 4px */
     background-color: var(--border-strong);
     border-radius: var(--radius-pill);
-    margin: var(--spacing-sm) auto var(--spacing-sm) auto;
+    margin: var(--spacing-sm) auto var(--spacing-xs) auto;
     flex-shrink: 0;
-    cursor: grab;
+    cursor: pointer;
+    padding: var(--spacing-xs) 0;
+    background-clip: content-box;
+    box-sizing: content-box;
   }
 
   /* 검색창 영역 - 모바일에서는 상단에 띄우지 않고 탭 시트 내부로 완전 이식 */

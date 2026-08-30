@@ -205,11 +205,6 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
-      setIsSidebarCollapsed(true);
-    }
-  }, []);
 
   const [activeComparisonFolderId, setActiveComparisonFolderId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<NavigationTabType | null>('SEARCH');
@@ -420,12 +415,9 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
       setIsPanelOpen(true);
       updateUrl(activeAnnId || complex.announcement_id || null, complex.id, true);
       
-      // 모바일 뷰인 경우 사이드바 닫기
-      if (activeTab !== null) {
-        setLastActiveTab(activeTab);
-      }
+      // 모바일 뷰인 경우 사이드바 접기 (공고 상태 유지)
       if (typeof window !== 'undefined' && window.innerWidth <= 768) {
-        handleTabSelect(null);
+        setIsSidebarCollapsed(true);
       }
       return;
     }
@@ -435,10 +427,9 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
       setActiveComplexId(null);
       setIsPanelOpen(false);
       
-      // 모바일 뷰에서 단지 해제 시 이전 활성화 탭 복원
-      if (typeof window !== 'undefined' && window.innerWidth <= 768 && lastActiveTab !== null) {
-        handleTabSelect(lastActiveTab);
-        setLastActiveTab(null);
+      // 모바일 뷰에서 단지 해제 시 사이드바 다시 펼치기
+      if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+        setIsSidebarCollapsed(false);
       }
 
       const currentEffectiveTab = activeTab || lastActiveTab;
@@ -451,17 +442,13 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
         updateUrl(null, null, true);
       }
     } else {
-      // 모바일 뷰인 경우 사이드바 닫기 전에 현재 탭 기억
-      if (activeTab !== null) {
-        setLastActiveTab(activeTab);
-      }
-
       setSelectedComplex(complex);
       setActiveComplexId(complex.id);
       setIsPanelOpen(true);
       
+      // 모바일 뷰에서 단지 선택 시 사이드바 접기 (공고/탭 상태 온전히 보존)
       if (typeof window !== 'undefined' && window.innerWidth <= 768) {
-        handleTabSelect(null);
+        setIsSidebarCollapsed(true);
       }
 
       // 단지 선택 시: 상위 공고 ID와 단지 ID를 함께 보존
@@ -474,7 +461,9 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
     if (tab !== null && tab !== activeTab) {
       setSelectedComplex(null);
       setActiveComplexId(null);
-      setActiveAnnId(null);
+      if (tab !== 'SEARCH') {
+        setActiveAnnId(null);
+      }
       setIsPanelOpen(false);
       updateUrl(null, null, true);
     }
@@ -705,10 +694,8 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
             setSelectedComplex(null);
             setActiveComparisonFolderId(null);
 
-            if (typeof window !== 'undefined' && window.innerWidth <= 768 && lastActiveTab !== null) {
-              handleTabSelect(lastActiveTab);
+            if (typeof window !== 'undefined' && window.innerWidth <= 768) {
               setIsSidebarCollapsed(false);
-              setLastActiveTab(null);
             }
 
             updateUrl(activeAnnId, null, true);

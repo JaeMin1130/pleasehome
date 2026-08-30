@@ -10,6 +10,7 @@ interface SearchTabProps {
   sheetHeight: number | null;
   minHeight: number;
   touchHandlers: any;
+  onToggleSheetHeight?: () => void;
   style?: React.CSSProperties;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
@@ -46,6 +47,7 @@ export default function SearchTab({
   sheetHeight,
   minHeight,
   touchHandlers,
+  onToggleSheetHeight,
   style,
   searchTerm,
   setSearchTerm,
@@ -88,7 +90,13 @@ export default function SearchTab({
       {...touchHandlers}
     >
       {/* 모바일 화면 전용 상단 드래그 핸들바 */}
-      <div className={styles['drag-handle-bar']} />
+      <div 
+        className={styles['drag-handle-bar']} 
+        onClick={onToggleSheetHeight}
+        role="button"
+        tabIndex={0}
+        aria-label="바텀시트 크기 전환"
+      />
 
       <div className={styles['sidebar-search']}>
         <div className={styles['search-wrapper']}>

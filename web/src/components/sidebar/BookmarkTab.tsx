@@ -10,6 +10,7 @@ interface BookmarkTabProps {
   sheetHeight: number | null;
   minHeight: number;
   touchHandlers: any;
+  onToggleSheetHeight?: () => void;
   member: any;
   showNewFolderInput: boolean;
   setShowNewFolderInput: (show: boolean) => void;
@@ -50,6 +51,7 @@ export default function BookmarkTab({
   sheetHeight,
   minHeight,
   touchHandlers,
+  onToggleSheetHeight,
   member,
   showNewFolderInput,
   setShowNewFolderInput,
@@ -95,7 +97,13 @@ export default function BookmarkTab({
       {...touchHandlers}
     >
       {/* 모바일 화면 전용 상단 드래그 핸들바 */}
-      <div className={styles['drag-handle-bar']} />
+      <div 
+        className={styles['drag-handle-bar']} 
+        onClick={onToggleSheetHeight}
+        role="button"
+        tabIndex={0}
+        aria-label="바텀시트 크기 전환"
+      />
       <div className={styles['bookmark-header']}>
         <h3 className={styles['bookmark-title']}>저장 목록</h3>
         {member && (
