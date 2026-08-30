@@ -99,3 +99,16 @@
 * **현상 (Problem)**: Kotlin + Spring Boot 백엔드 분리 후 실서버 배포 시 클라이언트 AJAX API 호출이 404/403으로 실패하여 공고 미출력 및 로그인 불가 발생
 * **원인 (Cause)**: Next.js Standalone 배포 모드(`server.js`)에서 클라이언트의 동적 `fetch('/api/...')`가 rewrites 프록시를 정상적으로 경유하지 못함. 또한 백엔드 CORS allowed-origins에 프로덕션 도메인(`pleasehome.com`)이 누락됨
 * **해결 (Solution)**: Nginx 설정에 `location /api/` 블록을 추가하여 Spring Boot(`http://127.0.0.1:8080`)로 직접 리버스 프록시하도록 구성하고, Spring Boot `application.yml` 및 `WebConfig.kt`에 `pleasehome.com` CORS 허용 및 `ResponseCookie(SameSite=Lax)`를 적용함
+
+### [2026-08-28] 네이버/카카오 길찾기 목적지 좌표 역전 오류 해결
+* **분류**: 웹 프론트엔드
+* **현상 (Problem)**: 길찾기 버튼 클릭 시 사용자 출발지 대신 목적지 좌표가 출발지로 설정되어 길찾기 실패함
+* **원인 (Cause)**: 링크 쿼리 파라미터가 도착지(to, elat, elng) 대신 출발지(from, slat, slng)로 지정되어 있었음
+* **해결 (Solution)**: 네이버는 elat/elng/etext, 카카오는 to/경도,위도로 목적지 파라미터를 교체하여 해결함
+
+### [2026-08-28] useBottomSheetGesture 탭 토글 시 TypeScript 타입 Narrowing 불일치 해결
+* **분류**: 웹 프론트엔드
+* **현상 (Problem)**: next build 시 TS 타입 narrowing 불일치로 Type error(types '1 | 2' and '0' have no overlap) 발생함
+* **원인 (Cause)**: if-else 분기문으로 인해 nextState의 타입 추론이 1 | 2로 제한되어 0 비교문이 unreachable로 처리됨
+* **해결 (Solution)**: 삼항 연산자를 활용하여 0, 1, 2 순환 삼항식을 구성해 타입 정의를 명확히 일치시킴
+

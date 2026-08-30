@@ -223,7 +223,7 @@ pleasehome/
 ## 📑 아키텍처 및 의사결정 문서 (SSOT Documentation)
 
 * 📐 **[서비스 아키텍처 명세서 (ARCHITECTURE.md)](docs/dev/ARCHITECTURE.md)**: 3-Tier 시스템 구성도, 데이터 흐름도 및 23개 REST API 엔드포인트 전체 규격서
-* ⚖️ **[설계 의사결정 기록 (DECISION.md)](docs/dev/DECISION.md)**: Kotlin/Spring Boot 전환(ADR #11), Dual DB 분리(ADR #2), 상호 배제 트랜잭션(ADR #1) 등 12건의 ADR
+* ⚖️ **[설계 의사결정 기록 (DECISION.md)](docs/dev/DECISION.md)**: Kotlin/Spring Boot 전환(ADR #11), 모바일 UX 개선(ADR #14), Dual DB 분리(ADR #2), 상호 배제 트랜잭션(ADR #1) 등 14건의 ADR
 * 🚨 **[트러블슈팅 및 문제 해결 기록 (TROUBLESHOOTING.md)](docs/dev/TROUBLESHOOTING.md)**: Nginx 리버스 프록시 연동, SSR Hydration, N+1 쿼리 최적화 등 기술적 문제 해결 이력
 
 ---
