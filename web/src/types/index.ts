@@ -54,6 +54,13 @@ export interface Complex {
   has_elevator?: boolean;
   parking_info?: string;
   complex_type?: string;
+  min_deposit?: number | null;
+  max_deposit?: number | null;
+  min_monthly_rent?: number | null;
+  max_monthly_rent?: number | null;
+  min_exclusive_area?: number | null;
+  max_exclusive_area?: number | null;
+  total_supply_count?: number | null;
   latitude: number | null;
   longitude: number | null;
   is_imprecise: number;

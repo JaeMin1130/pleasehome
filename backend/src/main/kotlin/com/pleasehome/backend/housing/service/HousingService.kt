@@ -70,7 +70,10 @@ class HousingService(
         val ann = getAnnouncementById(id)
         val rgs = recruitmentGroupRepository.findAllByAnnouncementId(id)
         val rgMap = rgs.associateBy { it.id ?: 0L }
-        val complexes = complexRepository.findAllByAnnouncementId(id).map { complexToMap(it, rgMap[it.recruitmentGroupId]) }
+        val summaries = unitRepository.findUnitSummaryByAnnouncementId(id).associateBy { it.getComplexId() ?: 0L }
+        val complexes = complexRepository.findAllByAnnouncementId(id).map { 
+            complexToMap(it, rgMap[it.recruitmentGroupId], summaries[it.id]) 
+        }
         val units = unitRepository.findAllByAnnouncementIdOrderByExclusiveAreaAsc(id).map { unitToMap(it) }
 
         return ann + mapOf(
@@ -90,13 +93,21 @@ class HousingService(
         val rgMap = if (rgIds.isNotEmpty()) {
             recruitmentGroupRepository.findAllById(rgIds).associateBy { it.id ?: 0L }
         } else emptyMap()
-        return list.map { complexToMap(it, rgMap[it.recruitmentGroupId]) }
+
+        val summaries = if (announcementId != null) {
+            unitRepository.findUnitSummaryByAnnouncementId(announcementId).associateBy { it.getComplexId() ?: 0L }
+        } else {
+            unitRepository.findUnitSummaryGroupedByComplex().associateBy { it.getComplexId() ?: 0L }
+        }
+
+        return list.map { complexToMap(it, rgMap[it.recruitmentGroupId], summaries[it.id]) }
     }
 
     fun getComplexById(id: Long): Map<String, Any?> {
         val complex = complexRepository.findById(id).orElseThrow { NoSuchElementException("단지를 찾을 수 없습니다. (ID: $id)") }
         val rg = complex.recruitmentGroupId?.let { recruitmentGroupRepository.findById(it).orElse(null) }
-        return complexToMap(complex, rg)
+        val summary = unitRepository.findUnitSummaryGroupedByComplex().find { it.getComplexId() == id }
+        return complexToMap(complex, rg, summary)
     }
 
     fun getComplexFullDetails(id: Long): Map<String, Any?> {
@@ -104,6 +115,7 @@ class HousingService(
         val ann = announcementRepository.findById(complex.announcementId).orElse(null)
         val units = unitRepository.findAllByComplexIdOrderByExclusiveAreaAsc(id).map { unitToMap(it) }
         val rg = complex.recruitmentGroupId?.let { recruitmentGroupRepository.findById(it).orElse(null) }
+        val summary = unitRepository.findUnitSummaryGroupedByComplex().find { it.getComplexId() == id }
         val historyList = complexRepository.findHistoryList(complex.name, complex.address, id).map {
             mapOf(
                 "complex_id" to it.getComplexId(),
@@ -114,7 +126,7 @@ class HousingService(
             )
         }
 
-        val complexMap = complexToMap(complex, rg) + mapOf(
+        val complexMap = complexToMap(complex, rg, summary) + mapOf(
             "recruitment_group" to (if (rg != null) recruitmentGroupToMap(rg) else null)
         )
 
@@ -172,13 +184,24 @@ class HousingService(
         "notes" to rg.notes
     )
 
-    private fun complexToMap(c: Complex, rg: AnnouncementRecruitmentGroup? = null) = mapOf(
+    private fun complexToMap(
+        c: Complex, 
+        rg: AnnouncementRecruitmentGroup? = null,
+        summary: UnitSummaryProjection? = null
+    ) = mapOf(
         "id" to c.id,
         "announcement_id" to c.announcementId,
         "recruitment_group_id" to c.recruitmentGroupId,
         "recruitment_group_name" to rg?.name,
         "recruitment_group_supply_count" to rg?.supplyCount,
         "recruitment_group_reserve_count" to rg?.reserveCount,
+        "min_deposit" to summary?.getMinDeposit(),
+        "max_deposit" to summary?.getMaxDeposit(),
+        "min_monthly_rent" to summary?.getMinMonthlyRent(),
+        "max_monthly_rent" to summary?.getMaxMonthlyRent(),
+        "min_exclusive_area" to summary?.getMinExclusiveArea(),
+        "max_exclusive_area" to summary?.getMaxExclusiveArea(),
+        "total_supply_count" to summary?.getTotalSupplyCount(),
         "name" to c.name,
         "address" to c.address,
         "heating_type" to c.heatingType,

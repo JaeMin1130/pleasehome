@@ -20,6 +20,48 @@ interface ComplexCardProps {
   onMouseLeave?: () => void;
 }
 
+function formatMoney(amount: number): string {
+  if (amount >= 100_000_000) {
+    const eok = Math.floor(amount / 100_000_000);
+    const man = Math.round((amount % 100_000_000) / 10_000);
+    return man > 0 ? `${eok}억 ${man.toLocaleString()}만` : `${eok}억`;
+  }
+  if (amount >= 10_000) {
+    return `${Math.round(amount / 10_000).toLocaleString()}만`;
+  }
+  return `${amount.toLocaleString()}원`;
+}
+
+function formatMoneyRange(min?: number | null, max?: number | null): string | null {
+  if (min === undefined || min === null) return null;
+  if (max === undefined || max === null || min === max) return formatMoney(min);
+  return `${formatMoney(min)} ~ ${formatMoney(max)}`;
+}
+
+function formatAreaRange(min?: number | null, max?: number | null): string | null {
+  if (min === undefined || min === null) return null;
+  const minFixed = Math.round(min * 10) / 10;
+  if (max === undefined || max === null || min === max) return `${minFixed}㎡`;
+  const maxFixed = Math.round(max * 10) / 10;
+  return `${minFixed}~${maxFixed}㎡`;
+}
+
+function extractShortRegion(address: string): string {
+  if (!address) return '';
+  const parts = address.trim().split(/\s+/);
+  if (parts.length === 0) return '';
+  
+  const city = parts[0].replace(/(특별시|광역시|특별자치시|특별자치도|도)$/, '');
+  if (parts.length > 1) {
+    const second = parts[1];
+    if (parts.length > 2 && second.endsWith('시') && (parts[2].endsWith('구') || parts[2].endsWith('군'))) {
+      return `${second} ${parts[2]}`;
+    }
+    return `${city} ${second}`;
+  }
+  return city;
+}
+
 export default function ComplexCard({ 
   complex, 
   isActive, 
@@ -147,21 +189,10 @@ export default function ComplexCard({
       onMouseLeave={onMouseLeave}
     >
       <div className={styles['card-top-row']}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', flex: 1, minWidth: 0 }}>
+        <div className={styles['card-title-group']}>
           <span className={styles['complex-name']}>{complex.name}</span>
-          {complex.recruitment_group_name && (
-            <span style={{
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              padding: '2px 6px',
-              borderRadius: '4px',
-              backgroundColor: '#eff6ff',
-              color: '#1d4ed8',
-              border: '1px solid #bfdbfe',
-              whiteSpace: 'nowrap'
-            }}>
-              {complex.recruitment_group_name}
-            </span>
+          {extractShortRegion(complex.address) && (
+            <span className={styles['region-badge']}>{extractShortRegion(complex.address)}</span>
           )}
         </div>
         <div className={styles['header-right-actions']}>
@@ -182,22 +213,43 @@ export default function ComplexCard({
           </button>
         </div>
       </div>
-      <span className={styles['complex-address']}>
-        <svg 
-          width="14" 
-          height="14" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="currentColor" 
-          strokeWidth="2" 
-          strokeLinecap="round" 
-          strokeLinejoin="round"
-        >
-          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-          <circle cx="12" cy="10" r="3"></circle>
-        </svg>
-        {complex.address}
-      </span>
+
+      {/* 💡 깔끔하고 통일성 있는 정보 블록 (산만한 뱃지 배제) */}
+      {(() => {
+        const priceDisplay = formatMoneyRange(complex.min_deposit, complex.max_deposit);
+        const rentDisplay = complex.max_monthly_rent && complex.max_monthly_rent > 0 
+          ? formatMoneyRange(complex.min_monthly_rent, complex.max_monthly_rent) 
+          : null;
+        const areaDisplay = formatAreaRange(complex.min_exclusive_area, complex.max_exclusive_area);
+
+        const metaItems: string[] = [];
+        if (complex.recruitment_group_name) metaItems.push(`모집단위: ${complex.recruitment_group_name}`);
+        if (areaDisplay) metaItems.push(`전용 ${areaDisplay}`);
+        if (complex.total_supply_count != null) metaItems.push(`공급 ${complex.total_supply_count}호`);
+        if (complex.complex_type) metaItems.push(complex.complex_type);
+
+        return (
+          <div className={styles['card-info-block']}>
+            <div className={styles['price-line']}>
+              <span className={styles['price-label']}>
+                {rentDisplay ? '보증금' : '분양/보증금'}
+              </span>
+              <span className={styles['price-val']}>
+                {priceDisplay || '가격 정보 미정'}
+              </span>
+              {rentDisplay && (
+                <span className={styles['rent-val']}>/ 월 {rentDisplay}</span>
+              )}
+            </div>
+
+            {metaItems.length > 0 && (
+              <div className={styles['meta-line']}>
+                {metaItems.join(' · ')}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {announcementTitle && (
         <div className={styles['card-ann-info']}>

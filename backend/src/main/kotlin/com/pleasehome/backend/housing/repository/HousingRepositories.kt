@@ -58,4 +58,47 @@ interface HousingUnitRepository : JpaRepository<HousingUnit, Long> {
     fun findAllByComplexIdOrderByExclusiveAreaAsc(complexId: Long): List<HousingUnit>
     fun findAllByAnnouncementIdOrderByExclusiveAreaAsc(announcementId: Long): List<HousingUnit>
     fun findAllByOrderByExclusiveAreaAsc(): List<HousingUnit>
+
+    @Query("""
+        SELECT u.complexId as complexId, 
+               MIN(u.deposit) as minDeposit, 
+               MAX(u.deposit) as maxDeposit,
+               MIN(u.monthlyRent) as minMonthlyRent, 
+               MAX(u.monthlyRent) as maxMonthlyRent,
+               MIN(u.exclusiveArea) as minExclusiveArea, 
+               MAX(u.exclusiveArea) as maxExclusiveArea,
+               COUNT(u.id) as unitCount,
+               SUM(u.supplyCount) as totalSupplyCount
+        FROM HousingUnit u
+        GROUP BY u.complexId
+    """)
+    fun findUnitSummaryGroupedByComplex(): List<UnitSummaryProjection>
+
+    @Query("""
+        SELECT u.complexId as complexId, 
+               MIN(u.deposit) as minDeposit, 
+               MAX(u.deposit) as maxDeposit,
+               MIN(u.monthlyRent) as minMonthlyRent, 
+               MAX(u.monthlyRent) as maxMonthlyRent,
+               MIN(u.exclusiveArea) as minExclusiveArea, 
+               MAX(u.exclusiveArea) as maxExclusiveArea,
+               COUNT(u.id) as unitCount,
+               SUM(u.supplyCount) as totalSupplyCount
+        FROM HousingUnit u
+        WHERE u.announcementId = :announcementId
+        GROUP BY u.complexId
+    """)
+    fun findUnitSummaryByAnnouncementId(announcementId: Long): List<UnitSummaryProjection>
+}
+
+interface UnitSummaryProjection {
+    fun getComplexId(): Long?
+    fun getMinDeposit(): Long?
+    fun getMaxDeposit(): Long?
+    fun getMinMonthlyRent(): Long?
+    fun getMaxMonthlyRent(): Long?
+    fun getMinExclusiveArea(): Double?
+    fun getMaxExclusiveArea(): Double?
+    fun getUnitCount(): Long?
+    fun getTotalSupplyCount(): Long?
 }
