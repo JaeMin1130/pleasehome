@@ -142,6 +142,13 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
     """
     JSON 구조 데이터를 받아 파일로 저장(옵션)하고 public_housing.db에 트랜잭션 적재합니다.
     """
+    # 0. 6대 필수 섹션 비공백 검증 (Pre-flight Validation)
+    required_sections = ["announcement", "schedules", "recruitment_groups", "complexes", "units", "details"]
+    for sec in required_sections:
+        val = json_data.get(sec)
+        if val is None or (isinstance(val, (list, dict, str)) and len(val) == 0):
+            raise ValueError(f"[적재 차단] data.json의 필수 섹션 '{sec}'이(가) 비어 있거나 누락되었습니다. (6대 섹션 모두 최소 1건 이상 필수)")
+
     # 1. JSON 파일 물리 저장 (절충안 반영)
     if dest_json_path:
         os.makedirs(os.path.dirname(dest_json_path), exist_ok=True)

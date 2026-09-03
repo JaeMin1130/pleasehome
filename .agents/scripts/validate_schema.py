@@ -252,11 +252,25 @@ class DetailModel(BaseModel):
 
 class DataJsonModel(BaseModel):
     announcement: AnnouncementModel
-    schedules: List[ScheduleModel] = Field(default_factory=list)
-    recruitment_groups: List[RecruitmentGroupModel] = Field(default_factory=list)
-    complexes: List[ComplexModel] = Field(default_factory=list)
-    units: List[UnitModel] = Field(default_factory=list)
-    details: List[DetailModel] = Field(default_factory=list)
+    schedules: List[ScheduleModel] = Field(..., min_length=1, description="청약 일정 배열 (최소 1건 이상 필수)")
+    recruitment_groups: List[RecruitmentGroupModel] = Field(..., min_length=1, description="모집단위/주택군 배열 (최소 1건 이상 필수)")
+    complexes: List[ComplexModel] = Field(..., min_length=1, description="단지 배열 (최소 1건 이상 필수)")
+    units: List[UnitModel] = Field(..., min_length=1, description="주택 평형/유닛 조건 배열 (최소 1건 이상 필수)")
+    details: List[DetailModel] = Field(..., min_length=1, description="상세 요약 섹션 배열 (최소 1건 이상 필수)")
+
+    @model_validator(mode="after")
+    def validate_non_empty_sections(self) -> 'DataJsonModel':
+        sections = {
+            "schedules (청약 일정)": self.schedules,
+            "recruitment_groups (모집단위)": self.recruitment_groups,
+            "complexes (단지)": self.complexes,
+            "units (주택 유닛)": self.units,
+            "details (상세 요약)": self.details,
+        }
+        empty_sections = [name for name, data in sections.items() if not data or len(data) == 0]
+        if empty_sections:
+            raise ValueError(f"다음 필수 섹션이 비어 있습니다 (어느 하나도 빈 배열일 수 없습니다): {', '.join(empty_sections)}")
+        return self
 
 
 # ==========================================
