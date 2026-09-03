@@ -11,6 +11,7 @@ class HousingService(
     private val announcementRepository: AnnouncementRepository,
     private val scheduleRepository: AnnouncementScheduleRepository,
     private val detailRepository: AnnouncementDetailRepository,
+    private val recruitmentGroupRepository: AnnouncementRecruitmentGroupRepository,
     private val complexRepository: ComplexRepository,
     private val unitRepository: HousingUnitRepository
 ) {
@@ -67,10 +68,13 @@ class HousingService(
 
     fun getAnnouncementFullDetails(id: Long): Map<String, Any?> {
         val ann = getAnnouncementById(id)
-        val complexes = complexRepository.findAllByAnnouncementId(id).map { complexToMap(it) }
+        val rgs = recruitmentGroupRepository.findAllByAnnouncementId(id)
+        val rgIdToName = rgs.associate { (it.id ?: 0L) to it.name }
+        val complexes = complexRepository.findAllByAnnouncementId(id).map { complexToMap(it, rgIdToName[it.recruitmentGroupId]) }
         val units = unitRepository.findAllByAnnouncementIdOrderByExclusiveAreaAsc(id).map { unitToMap(it) }
 
         return ann + mapOf(
+            "recruitment_groups" to rgs.map { recruitmentGroupToMap(it) },
             "complexes" to complexes,
             "units" to units
         )
@@ -82,18 +86,24 @@ class HousingService(
         } else {
             complexRepository.findAll()
         }
-        return list.map { complexToMap(it) }
+        val rgIds = list.mapNotNull { it.recruitmentGroupId }.distinct()
+        val rgMap = if (rgIds.isNotEmpty()) {
+            recruitmentGroupRepository.findAllById(rgIds).associate { (it.id ?: 0L) to it.name }
+        } else emptyMap()
+        return list.map { complexToMap(it, rgMap[it.recruitmentGroupId]) }
     }
 
     fun getComplexById(id: Long): Map<String, Any?> {
         val complex = complexRepository.findById(id).orElseThrow { NoSuchElementException("단지를 찾을 수 없습니다. (ID: $id)") }
-        return complexToMap(complex)
+        val rgName = complex.recruitmentGroupId?.let { recruitmentGroupRepository.findById(it).orElse(null)?.name }
+        return complexToMap(complex, rgName)
     }
 
     fun getComplexFullDetails(id: Long): Map<String, Any?> {
         val complex = complexRepository.findById(id).orElseThrow { NoSuchElementException("단지를 찾을 수 없습니다. (ID: $id)") }
         val ann = announcementRepository.findById(complex.announcementId).orElse(null)
         val units = unitRepository.findAllByComplexIdOrderByExclusiveAreaAsc(id).map { unitToMap(it) }
+        val rg = complex.recruitmentGroupId?.let { recruitmentGroupRepository.findById(it).orElse(null) }
         val historyList = complexRepository.findHistoryList(complex.name, complex.address, id).map {
             mapOf(
                 "complex_id" to it.getComplexId(),
@@ -104,8 +114,12 @@ class HousingService(
             )
         }
 
+        val complexMap = complexToMap(complex, rg?.name) + mapOf(
+            "recruitment_group" to (if (rg != null) recruitmentGroupToMap(rg) else null)
+        )
+
         return mapOf(
-            "complex" to complexToMap(complex),
+            "complex" to complexMap,
             "announcement" to (if (ann != null) announcementToSimpleMap(ann) else null),
             "units" to units,
             "historyList" to historyList
@@ -148,9 +162,21 @@ class HousingService(
         "sort_order" to d.sortOrder
     )
 
-    private fun complexToMap(c: Complex) = mapOf(
+    private fun recruitmentGroupToMap(rg: AnnouncementRecruitmentGroup) = mapOf(
+        "id" to rg.id,
+        "announcement_id" to rg.announcementId,
+        "name" to rg.name,
+        "region" to rg.region,
+        "supply_count" to rg.supplyCount,
+        "reserve_count" to rg.reserveCount,
+        "notes" to rg.notes
+    )
+
+    private fun complexToMap(c: Complex, rgName: String? = null) = mapOf(
         "id" to c.id,
         "announcement_id" to c.announcementId,
+        "recruitment_group_id" to c.recruitmentGroupId,
+        "recruitment_group_name" to rgName,
         "name" to c.name,
         "address" to c.address,
         "heating_type" to c.heatingType,

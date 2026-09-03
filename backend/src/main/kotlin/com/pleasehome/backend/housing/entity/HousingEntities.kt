@@ -87,6 +87,30 @@ class AnnouncementDetail(
 )
 
 @Entity
+@Table(name = "announcement_recruitment_groups")
+class AnnouncementRecruitmentGroup(
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long? = null,
+
+    @Column(name = "announcement_id", nullable = false)
+    var announcementId: Long = 0,
+
+    @Column(nullable = false)
+    var name: String = "",
+
+    var region: String? = null,
+
+    @Column(name = "supply_count", nullable = false)
+    var supplyCount: Int = 0,
+
+    @Column(name = "reserve_count", nullable = false)
+    var reserveCount: Int = 0,
+
+    var notes: String? = null
+)
+
+@Entity
 @Table(name = "complexes")
 class Complex(
     @Id
@@ -95,6 +119,9 @@ class Complex(
 
     @Column(name = "announcement_id", nullable = false)
     var announcementId: Long = 0,
+
+    @Column(name = "recruitment_group_id")
+    var recruitmentGroupId: Long? = null,
 
     @Column(nullable = false)
     var name: String = "",

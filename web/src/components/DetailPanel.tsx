@@ -177,6 +177,16 @@ export default function DetailPanel({
                 </thead>
                 <tbody>
                   <tr>
+                    <td className={styles['comp-label']}>신청 주택군</td>
+                    {comparisonComplexes.map((c) => (
+                      <td key={c.id} className={styles['comp-val']}>
+                        {c.recruitment_group_name ? (
+                          <span style={{ fontWeight: 600, color: '#1d4ed8' }}>{c.recruitment_group_name}</span>
+                        ) : '-'}
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
                     <td className={styles['comp-label']}>단지 유형</td>
                     {comparisonComplexes.map((c) => (
                       <td key={c.id} className={styles['comp-val']}>{c.complex_type || '정보 없음'}</td>
@@ -394,6 +404,19 @@ export default function DetailPanel({
                 {loading ? '계산 중...' : `${totalSupplyCount}호 / ${totalReserveCount}호`}
               </span>
             </div>
+            {complex.recruitment_group_name && (
+              <div className={`${styles['info-card']} ${styles['full-width']}`}>
+                <span className={styles['info-label']}>신청 모집단위 (주택군)</span>
+                <span className={styles['info-val']} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1d4ed8', fontWeight: 600 }}>
+                  <span>{complex.recruitment_group_name}</span>
+                  {complex.recruitment_group && (
+                    <span style={{ fontSize: '0.8rem', fontWeight: 'normal', color: '#4b5563' }}>
+                      (주택군 총 공급 {complex.recruitment_group.supply_count}호 / 모집 예비자 {complex.recruitment_group.reserve_count}명)
+                    </span>
+                  )}
+                </span>
+              </div>
+            )}
             <div className={`${styles['info-card']} ${styles['full-width']}`}>
               <span className={`${styles['info-label']} ${styles['info-label-wrapper']}`}>
                 단지 주소

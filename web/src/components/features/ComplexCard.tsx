@@ -147,7 +147,23 @@ export default function ComplexCard({
       onMouseLeave={onMouseLeave}
     >
       <div className={styles['card-top-row']}>
-        <span className={styles['complex-name']}>{complex.name}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', flex: 1, minWidth: 0 }}>
+          <span className={styles['complex-name']}>{complex.name}</span>
+          {complex.recruitment_group_name && (
+            <span style={{
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              padding: '2px 6px',
+              borderRadius: '4px',
+              backgroundColor: '#eff6ff',
+              color: '#1d4ed8',
+              border: '1px solid #bfdbfe',
+              whiteSpace: 'nowrap'
+            }}>
+              {complex.recruitment_group_name}
+            </span>
+          )}
+        </div>
         <div className={styles['header-right-actions']}>
           {dDayText && (
             <span className={styles['d-day-badge']}>{dDayText}</span>

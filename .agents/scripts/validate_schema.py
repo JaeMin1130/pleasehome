@@ -139,6 +139,19 @@ class ScheduleModel(BaseModel):
         raise ValueError(f"날짜 형식이 YYYY-MM-DD HH:MM:SS 규격에 맞지 않습니다 (입력값: '{v}')")
 
 
+class RecruitmentGroupModel(BaseModel):
+    name: str = Field(..., description="주택군 / 모집단위명")
+    region: Optional[str] = Field(None, description="소재 지역")
+    supply_count: int = Field(0, description="주택군 총 공급호수")
+    reserve_count: int = Field(0, description="주택군 총 모집 예비자수")
+    notes: Optional[str] = Field(None, description="비고")
+
+    @field_validator('supply_count', 'reserve_count', mode='before')
+    @classmethod
+    def parse_int_fields(cls, v: Any) -> int:
+        return clean_int(v)
+
+
 class ComplexModel(BaseModel):
     name: str = Field(..., description="단지명")
     address: str = Field(..., description="지번/도로명 주소")
@@ -146,6 +159,7 @@ class ComplexModel(BaseModel):
     has_elevator: Optional[bool] = Field(None, description="엘리베이터 여부")
     parking_info: Optional[str] = Field(None, description="주차장 세부 정보")
     complex_type: Optional[str] = Field(None, description="단지 유형")
+    recruitment_group: Optional[str] = Field(None, description="소속 모집단위(주택군)명")
 
     @field_validator('has_elevator', mode='before')
     @classmethod
@@ -239,6 +253,7 @@ class DetailModel(BaseModel):
 class DataJsonModel(BaseModel):
     announcement: AnnouncementModel
     schedules: List[ScheduleModel] = Field(default_factory=list)
+    recruitment_groups: List[RecruitmentGroupModel] = Field(default_factory=list)
     complexes: List[ComplexModel] = Field(default_factory=list)
     units: List[UnitModel] = Field(default_factory=list)
     details: List[DetailModel] = Field(default_factory=list)

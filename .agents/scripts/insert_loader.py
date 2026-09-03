@@ -174,10 +174,17 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
         else:
             relative_doc_path = raw_doc_path
             
-        # 3. announcements 및 complexes 기존 ID 보존형 조회
+        folder_name = os.path.basename(os.path.dirname(raw_doc_path))
+
+        # 3. announcements 및 complexes 기존 ID 보존형 조회 (doc_path 정확 매칭 또는 공고 고유 폴더명 매칭)
         cursor.execute(
-            "SELECT id FROM announcements WHERE doc_path = ?", 
-            (relative_doc_path,)
+            """
+            SELECT id FROM announcements 
+            WHERE doc_path = ? 
+               OR doc_path LIKE ?
+            ORDER BY id ASC LIMIT 1;
+            """, 
+            (relative_doc_path, f"%{folder_name}%")
         )
         existing = cursor.fetchone()
         
@@ -196,9 +203,10 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
                 if c_name and c_name not in existing_complexes:
                     existing_complexes[c_name] = c_id
             
-            # 자식 테이블 정리 (외래키 제약조건 순서: housing_units -> complexes -> others)
+            # 자식 테이블 정리 (외래키 제약조건 순서: housing_units -> complexes -> recruitment_groups -> others)
             cursor.execute("DELETE FROM housing_units WHERE announcement_id = ?", (ann_id,))
             cursor.execute("DELETE FROM complexes WHERE announcement_id = ?", (ann_id,))
+            cursor.execute("DELETE FROM announcement_recruitment_groups WHERE announcement_id = ?", (ann_id,))
             cursor.execute("DELETE FROM announcement_schedules WHERE announcement_id = ?", (ann_id,))
             cursor.execute("DELETE FROM announcement_details WHERE announcement_id = ?", (ann_id,))
             
@@ -260,29 +268,71 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
                 (ann_id, det["section_title"], det["section_content"], det["sort_order"])
             )
             
-        # 6. complexes 및 housing_units 테이블 적재 (단지명 + 주소 복합 키 매핑 및 기존 ID 보존 적용)
+        # 방어적 캐스팅 및 디폴팅 헬퍼 함수
+        def to_int(val, default=0):
+            if val is None:
+                return default
+            try:
+                return int(val)
+            except ValueError:
+                clean_val = re.sub(r'[^\d-]', '', str(val))
+                return int(clean_val) if clean_val else default
+
+        def to_float(val, default=None):
+            if val is None:
+                return default
+            try:
+                return float(val)
+            except ValueError:
+                clean_val = re.sub(r'[^\d.-]', '', str(val))
+                return float(clean_val) if clean_val else default
+
+        # 6. announcement_recruitment_groups 테이블 적재
+        recruitment_group_name_to_id = {}
+        for rg in json_data.get("recruitment_groups", []):
+            cursor.execute(
+                """
+                INSERT INTO announcement_recruitment_groups (
+                    announcement_id, name, region, supply_count, reserve_count, notes
+                )
+                VALUES (?, ?, ?, ?, ?, ?);
+                """,
+                (
+                    ann_id,
+                    rg["name"],
+                    rg.get("region"),
+                    to_int(rg.get("supply_count"), 0),
+                    to_int(rg.get("reserve_count"), 0),
+                    rg.get("notes")
+                )
+            )
+            recruitment_group_name_to_id[rg["name"]] = cursor.lastrowid
+
+        # 7. complexes 및 housing_units 테이블 적재 (단지명 + 주소 복합 키 매핑 및 기존 ID 보존, FK 연결)
         complex_name_to_id = {}
         complex_key_to_id = {}
         for comp in json_data.get("complexes", []):
             cleaned_addr = clean_address(comp["address"])
             existing_comp_id = existing_complexes.get((comp["name"], cleaned_addr)) or existing_complexes.get(comp["name"])
+            rg_name = comp.get("recruitment_group")
+            rg_id = recruitment_group_name_to_id.get(rg_name) if rg_name else None
             
             if existing_comp_id:
                 cursor.execute(
                     """
-                    INSERT INTO complexes (id, announcement_id, name, address, heating_type, has_elevator, parking_info, complex_type)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+                    INSERT INTO complexes (id, announcement_id, name, address, heating_type, has_elevator, parking_info, complex_type, recruitment_group_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
                     """,
-                    (existing_comp_id, ann_id, comp["name"], cleaned_addr, comp.get("heating_type"), comp.get("has_elevator"), comp.get("parking_info"), comp.get("complex_type"))
+                    (existing_comp_id, ann_id, comp["name"], cleaned_addr, comp.get("heating_type"), comp.get("has_elevator"), comp.get("parking_info"), comp.get("complex_type"), rg_id)
                 )
                 inserted_id = existing_comp_id
             else:
                 cursor.execute(
                     """
-                    INSERT INTO complexes (announcement_id, name, address, heating_type, has_elevator, parking_info, complex_type)
-                    VALUES (?, ?, ?, ?, ?, ?, ?);
+                    INSERT INTO complexes (announcement_id, name, address, heating_type, has_elevator, parking_info, complex_type, recruitment_group_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?);
                     """,
-                    (ann_id, comp["name"], cleaned_addr, comp.get("heating_type"), comp.get("has_elevator"), comp.get("parking_info"), comp.get("complex_type"))
+                    (ann_id, comp["name"], cleaned_addr, comp.get("heating_type"), comp.get("has_elevator"), comp.get("parking_info"), comp.get("complex_type"), rg_id)
                 )
                 inserted_id = cursor.lastrowid
             complex_name_to_id[comp["name"]] = inserted_id
@@ -301,26 +351,13 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
             # 주소 매핑이 없거나 실패한 경우, 단지명 단독으로 Fallback 매핑
             if not comp_id and comp_name:
                 comp_id = complex_name_to_id.get(comp_name)
-            
-            # 방어적 캐스팅 및 디폴팅 로직 적용
-            def to_int(val, default=0):
-                if val is None:
-                    return default
-                try:
-                    return int(val)
-                except ValueError:
-                    # 숫자가 아닌 문자(쉼표, 원 등) 제거 후 재도전
-                    clean_val = re.sub(r'[^\d-]', '', str(val))
-                    return int(clean_val) if clean_val else default
 
-            def to_float(val, default=None):
-                if val is None:
-                    return default
-                try:
-                    return float(val)
-                except ValueError:
-                    clean_val = re.sub(r'[^\d.-]', '', str(val))
-                    return float(clean_val) if clean_val else default
+            # 매입임대 등 낱개 호실(room_number 존재)의 경우 supply=0, reserve=1 왜곡 자동 정규화
+            sup_cnt = to_int(unit.get("supply_count"), 0)
+            res_cnt = to_int(unit.get("reserve_count"), 0)
+            if unit.get("room_number") and sup_cnt == 0 and res_cnt == 1:
+                sup_cnt = 1
+                res_cnt = 0
 
             cursor.execute(
                 """
@@ -337,7 +374,7 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
                     unit.get("room_type"), unit.get("supply_type"),
                     to_float(unit.get("exclusive_area")), to_float(unit.get("contract_area")), 
                     unit.get("target_group"), unit.get("income_group"),
-                    to_int(unit.get("supply_count"), 0), to_int(unit.get("reserve_count"), 0), 
+                    sup_cnt, res_cnt, 
                     to_int(unit.get("deposit")), to_int(unit.get("monthly_rent"), 0),
                     to_int(unit.get("max_deposit"), None), to_int(unit.get("min_deposit"), None), 
                     to_int(unit.get("max_monthly_rent"), None), to_int(unit.get("min_monthly_rent"), None),

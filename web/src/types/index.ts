@@ -16,6 +16,16 @@ export interface Detail {
   sort_order: number;
 }
 
+export interface RecruitmentGroup {
+  id: number;
+  announcement_id: number;
+  name: string;
+  region?: string | null;
+  supply_count: number;
+  reserve_count: number;
+  notes?: string | null;
+}
+
 export interface Announcement {
   id: number;
   title: string;
@@ -27,11 +37,15 @@ export interface Announcement {
   dtl_url_mob?: string | null;
   schedules: Schedule[];
   details: Detail[];
+  recruitment_groups?: RecruitmentGroup[];
 }
 
 export interface Complex {
   id: number;
   announcement_id: number;
+  recruitment_group_id?: number | null;
+  recruitment_group_name?: string | null;
+  recruitment_group?: RecruitmentGroup | null;
   name: string;
   address: string;
   heating_type?: string;
