@@ -5,7 +5,8 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
-import org.springframework.jdbc.datasource.DriverManagerDataSource
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import org.springframework.orm.jpa.JpaTransactionManager
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter
@@ -26,11 +27,19 @@ class MemberDbConfig(
 ) {
 
     @Bean
-    fun memberDataSource(): DataSource =
-        DriverManagerDataSource().apply {
-            setDriverClassName("org.sqlite.JDBC")
-            url = dbUrl
+    fun memberDataSource(): DataSource {
+        val config = HikariConfig().apply {
+            driverClassName = "org.sqlite.JDBC"
+            jdbcUrl = dbUrl
+            maximumPoolSize = 5
+            minimumIdle = 1
+            idleTimeout = 600000
+            connectionTimeout = 30000
+            connectionInitSql = "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA cache_size=-32000; PRAGMA temp_store=MEMORY;"
+            poolName = "MemberHikariPool"
         }
+        return HikariDataSource(config)
+    }
 
     @Bean
     fun memberEntityManagerFactory(

@@ -65,3 +65,16 @@ class SitemapController(
     fun getSitemapPaths(): Map<String, Any> =
         housingService.getSitemapPaths()
 }
+
+@RestController
+@RequestMapping("/api/cache")
+class CacheController(
+    private val housingService: HousingService
+) {
+
+    @PostMapping("/evict")
+    fun evictCache(): Map<String, Any> {
+        housingService.evictHousingCaches()
+        return mapOf("success" to true, "message" to "All housing caches evicted successfully.")
+    }
+}

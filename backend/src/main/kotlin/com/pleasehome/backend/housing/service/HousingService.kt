@@ -2,6 +2,8 @@ package com.pleasehome.backend.housing.service
 
 import com.pleasehome.backend.housing.entity.*
 import com.pleasehome.backend.housing.repository.*
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -16,6 +18,7 @@ class HousingService(
     private val unitRepository: HousingUnitRepository
 ) {
 
+    @Cacheable("announcements")
     fun getAllAnnouncements(): List<Map<String, Any?>> {
         val announcements = announcementRepository.findAllByOrderByIdDesc()
         if (announcements.isEmpty()) return emptyList()
@@ -44,6 +47,7 @@ class HousingService(
         }
     }
 
+    @Cacheable("announcement", key = "#id")
     fun getAnnouncementById(id: Long): Map<String, Any?> {
         val ann = announcementRepository.findById(id).orElseThrow { NoSuchElementException("공고를 찾을 수 없습니다. (ID: $id)") }
         val schedules = scheduleRepository.findAllByAnnouncementId(id).map { scheduleToMap(it) }
@@ -66,6 +70,7 @@ class HousingService(
         )
     }
 
+    @Cacheable("announcementDetails", key = "#id")
     fun getAnnouncementFullDetails(id: Long): Map<String, Any?> {
         val ann = getAnnouncementById(id)
         val rgs = recruitmentGroupRepository.findAllByAnnouncementId(id)
@@ -83,6 +88,7 @@ class HousingService(
         )
     }
 
+    @Cacheable("complexes", key = "#announcementId ?: 'all'")
     fun getComplexes(announcementId: Long?): List<Map<String, Any?>> {
         val list = if (announcementId != null) {
             complexRepository.findAllByAnnouncementId(announcementId)
@@ -103,19 +109,21 @@ class HousingService(
         return list.map { complexToMap(it, rgMap[it.recruitmentGroupId], summaries[it.id]) }
     }
 
+    @Cacheable("complex", key = "#id")
     fun getComplexById(id: Long): Map<String, Any?> {
         val complex = complexRepository.findById(id).orElseThrow { NoSuchElementException("단지를 찾을 수 없습니다. (ID: $id)") }
         val rg = complex.recruitmentGroupId?.let { recruitmentGroupRepository.findById(it).orElse(null) }
-        val summary = unitRepository.findUnitSummaryGroupedByComplex().find { it.getComplexId() == id }
+        val summary = unitRepository.findUnitSummaryByComplexId(id)
         return complexToMap(complex, rg, summary)
     }
 
+    @Cacheable("complexDetails", key = "#id")
     fun getComplexFullDetails(id: Long): Map<String, Any?> {
         val complex = complexRepository.findById(id).orElseThrow { NoSuchElementException("단지를 찾을 수 없습니다. (ID: $id)") }
         val ann = announcementRepository.findById(complex.announcementId).orElse(null)
         val units = unitRepository.findAllByComplexIdOrderByExclusiveAreaAsc(id).map { unitToMap(it) }
         val rg = complex.recruitmentGroupId?.let { recruitmentGroupRepository.findById(it).orElse(null) }
-        val summary = unitRepository.findUnitSummaryGroupedByComplex().find { it.getComplexId() == id }
+        val summary = unitRepository.findUnitSummaryByComplexId(id)
         val historyList = complexRepository.findHistoryList(complex.name, complex.address, id).map {
             mapOf(
                 "complex_id" to it.getComplexId(),
@@ -147,6 +155,7 @@ class HousingService(
         return list.map { unitToMap(it) }
     }
 
+    @Cacheable("sitemapPaths")
     fun getSitemapPaths(): Map<String, Any> {
         val annIds = announcementRepository.findAll().mapNotNull { it.id }
         val complexIds = complexRepository.findAll().mapNotNull { it.id }
@@ -154,6 +163,14 @@ class HousingService(
             "announcements" to annIds,
             "complexes" to complexIds
         )
+    }
+
+    @CacheEvict(
+        value = ["announcements", "announcement", "announcementDetails", "complexes", "complex", "complexDetails", "sitemapPaths"],
+        allEntries = true
+    )
+    fun evictHousingCaches() {
+        // 모든 주택 공고/단지 캐시 일괄 무효화
     }
 
     private fun scheduleToMap(s: AnnouncementSchedule) = mapOf(

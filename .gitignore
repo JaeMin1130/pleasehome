@@ -29,6 +29,7 @@
 /backend/.kotlin/
 !/db-pipeline/.venv/
 *.db
+*.db-*
 *.pem
 *.pub
 *.gz

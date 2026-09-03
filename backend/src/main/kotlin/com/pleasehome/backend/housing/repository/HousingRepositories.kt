@@ -91,6 +91,23 @@ interface HousingUnitRepository : JpaRepository<HousingUnit, Long> {
         GROUP BY u.complexId
     """)
     fun findUnitSummaryByAnnouncementId(announcementId: Long): List<UnitSummaryProjection>
+
+    @Query("""
+        SELECT u.complexId as complexId, 
+               MIN(u.deposit) as minDeposit, 
+               MAX(u.deposit) as maxDeposit,
+               MIN(u.monthlyRent) as minMonthlyRent, 
+               MAX(u.monthlyRent) as maxMonthlyRent,
+               MIN(u.exclusiveArea) as minExclusiveArea, 
+               MAX(u.exclusiveArea) as maxExclusiveArea,
+               COUNT(u.id) as unitCount,
+               SUM(u.supplyCount) as totalSupplyCount,
+               SUM(u.reserveCount) as totalReserveCount
+        FROM HousingUnit u
+        WHERE u.complexId = :complexId
+        GROUP BY u.complexId
+    """)
+    fun findUnitSummaryByComplexId(complexId: Long): UnitSummaryProjection?
 }
 
 interface UnitSummaryProjection {

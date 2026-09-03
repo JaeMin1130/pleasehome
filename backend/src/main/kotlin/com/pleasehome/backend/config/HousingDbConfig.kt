@@ -6,7 +6,8 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
-import org.springframework.jdbc.datasource.DriverManagerDataSource
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import org.springframework.orm.jpa.JpaTransactionManager
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter
@@ -28,11 +29,19 @@ class HousingDbConfig(
 
     @Primary
     @Bean
-    fun housingDataSource(): DataSource =
-        DriverManagerDataSource().apply {
-            setDriverClassName("org.sqlite.JDBC")
-            url = dbUrl
+    fun housingDataSource(): DataSource {
+        val config = HikariConfig().apply {
+            driverClassName = "org.sqlite.JDBC"
+            jdbcUrl = dbUrl
+            maximumPoolSize = 10
+            minimumIdle = 2
+            idleTimeout = 600000
+            connectionTimeout = 30000
+            connectionInitSql = "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA cache_size=-64000; PRAGMA temp_store=MEMORY;"
+            poolName = "HousingHikariPool"
         }
+        return HikariDataSource(config)
+    }
 
     @Primary
     @Bean

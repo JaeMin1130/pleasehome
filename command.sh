@@ -7,6 +7,11 @@ SERVER_HOST="101.79.19.118"
 SERVER_USER="iru"
 REMOTE_PATH="/home/iru/app/pleasehome"
 
+PYTHON_BIN="$BASE_DIR/db-pipeline/.venv/bin/python3"
+if [ ! -f "$PYTHON_BIN" ]; then
+  PYTHON_BIN="python3"
+fi
+
 function geocode() {
   echo "📍 신규 단지 네이버 지오코딩(위경도 좌표) 확인 및 갱신..."
   NODE_PATH="$BASE_DIR/web/node_modules" node "$BASE_DIR/db-pipeline/scripts/migrate_coords.js"
@@ -36,7 +41,7 @@ function deploy_backend() {
   echo "🔄 [백엔드 배포 3/3] 실서버 Spring Boot PM2 재시작..."
   ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "
     cd $REMOTE_PATH/backend
-    pm2 restart pleasehome-backend 2>/dev/null || pm2 start 'java -Xms128m -Xmx256m -jar backend.jar' --name pleasehome-backend --cwd $REMOTE_PATH/backend
+    pm2 restart pleasehome-backend 2>/dev/null || pm2 start 'java -Xms256m -Xmx512m -jar backend.jar' --name pleasehome-backend --cwd $REMOTE_PATH/backend
     pm2 save
   "
   echo "✅ 백엔드(Spring Boot) 배포가 완료되었습니다!"
@@ -44,7 +49,7 @@ function deploy_backend() {
 
 function deploy_web() {
   echo "🚀 [프론트 배포 1/3] Next.js Standalone 배포 패키지 빌드..."
-  fuser 8080/tcp >/dev/null 2>&1 || (nohup java -Xms128m -Xmx256m -jar "$BASE_DIR/backend/build/libs/backend-0.0.1-SNAPSHOT.jar" >/dev/null 2>&1 & sleep 4)
+  fuser 8080/tcp >/dev/null 2>&1 || (nohup java -Xms256m -Xmx512m -jar "$BASE_DIR/backend/build/libs/backend-0.0.1-SNAPSHOT.jar" >/dev/null 2>&1 & sleep 4)
   npm --prefix "$BASE_DIR/web" run build:pack
 
   echo "📦 [프론트 배포 2/3] 빌드 번들 실서버 전송 중..."
@@ -66,7 +71,7 @@ function deploy() {
 
 function db_status() {
   echo "📊 SQLite Database Status:"
-  python3 -c "
+  "$PYTHON_BIN" -c "
 import sqlite3
 conn = sqlite3.connect('$BASE_DIR/db-pipeline/public_housing.db')
 c = conn.cursor()
@@ -74,6 +79,27 @@ c.execute('SELECT COUNT(*) FROM announcements'); print('Announcements:', c.fetch
 c.execute('SELECT COUNT(*) FROM complexes'); print('Complexes:    ', c.fetchone()[0])
 c.execute('SELECT COUNT(*) FROM housing_units'); print('Housing Units:', c.fetchone()[0])
 "
+}
+
+function fetch_notices() {
+  local start_date="$1"
+  local end_date="$2"
+  shift 2 2>/dev/null || true
+
+  if [ -z "$start_date" ] || [ -z "$end_date" ]; then
+    echo "❌ 시작일과 종료일이 필요합니다."
+    echo "사용법: ./command.sh notice:fetch <시작일(YYYY-MM-DD)> <종료일(YYYY-MM-DD)> [추가옵션...]"
+    echo "예시:   ./command.sh notice:fetch 2026-09-01 2026-09-03"
+    return 1
+  fi
+
+  echo "📥 [공고 수집] LH OpenAPI 공고 및 첨부파일 다운로드 ($start_date ~ $end_date)..."
+  "$PYTHON_BIN" "$BASE_DIR/db-pipeline/src/lh_notice/main.py" --start-date "$start_date" --end-date "$end_date" "$@"
+}
+
+function convert_pdf() {
+  echo "📄 [PDF 변환] 마크다운 변환 및 표준화 실행..."
+  "$PYTHON_BIN" "$BASE_DIR/.agents/scripts/convert_pdf_to_md.py" "$@"
 }
 
 case "$1" in
@@ -100,6 +126,12 @@ case "$1" in
     ;;
 
   # --- 데이터 파이프라인 & 배포 ---
+  notice:fetch|fetch:notice|fetch)
+    fetch_notices "$2" "$3" "${@:4}"
+    ;;
+  pdf:convert|convert:pdf|convert)
+    convert_pdf "${@:2}"
+    ;;
   geocode)
     geocode
     ;;
@@ -133,6 +165,10 @@ case "$1" in
     echo "    web:run          : Next.js 프론트엔드 개발 서버 실행 (포트 3000)"
     echo "    web:build        : Next.js 프로덕션 빌드"
     echo "    web:start        : Next.js 프로덕션 서버 실행"
+    echo ""
+    echo "  [데이터 수집 & 변환]"
+    echo "    notice:fetch <시작일> <종료일> : LH OpenAPI 공고 및 원본 PDF/Excel 다운로드"
+    echo "    pdf:convert [대상폴더/파일]   : PDF 공고문을 마크다운(document.md)으로 변환"
     echo ""
     echo "  [배포 & 데이터 파이프라인]"
     echo "    deploy:web       : 프론트엔드(Next.js)만 단독 빌드 및 실서버 배포"
