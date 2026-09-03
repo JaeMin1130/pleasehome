@@ -80,7 +80,7 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
   return (
     <div className={styles['md-container']}>
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[[remarkGfm, { singleTilde: false }]]}
         components={{
           h1: ({ children }) => <h2 className={styles['md-h4']}>{children}</h2>, // 크기 밸런스를 위해 h1~h3은 h4 스타일 매핑
           h2: ({ children }) => <h2 className={styles['md-h4']}>{children}</h2>,
