@@ -281,14 +281,26 @@
   gap: var(--spacing-xs);
   flex: 1;
   min-width: 0;
+  flex-wrap: wrap;
 }
 
 .region-badge {
   font-size: 0.725rem;
   font-weight: var(--font-weight-semibold);
+  color: var(--primary);
+  background-color: var(--primary-bg);
+  border: 1px solid var(--border-medium);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.type-badge {
+  font-size: 0.725rem;
+  font-weight: var(--font-weight-medium);
   color: var(--text-secondary);
-  background-color: var(--bg-surface-secondary, #f3f4f6);
-  border: 1px solid var(--border-light, #e5e7eb);
+  background-color: var(--bg-surface-secondary, rgba(156, 163, 175, 0.15));
+  border: 1px solid var(--border-light, rgba(156, 163, 175, 0.3));
   padding: 1px 6px;
   border-radius: var(--radius-sm);
   white-space: nowrap;
@@ -324,7 +336,11 @@
 .rent-val {
   font-size: 0.825rem;
   font-weight: var(--font-weight-semibold);
-  color: #047857;
+  color: #059669;
+}
+
+:global([data-theme='dark']) .rent-val {
+  color: #34d399;
 }
 
 .meta-line {

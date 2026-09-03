@@ -202,6 +202,7 @@ class HousingService(
         "min_exclusive_area" to summary?.getMinExclusiveArea(),
         "max_exclusive_area" to summary?.getMaxExclusiveArea(),
         "total_supply_count" to summary?.getTotalSupplyCount(),
+        "total_reserve_count" to summary?.getTotalReserveCount(),
         "name" to c.name,
         "address" to c.address,
         "heating_type" to c.heatingType,

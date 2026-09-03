@@ -61,6 +61,7 @@ export interface Complex {
   min_exclusive_area?: number | null;
   max_exclusive_area?: number | null;
   total_supply_count?: number | null;
+  total_reserve_count?: number | null;
   latitude: number | null;
   longitude: number | null;
   is_imprecise: number;

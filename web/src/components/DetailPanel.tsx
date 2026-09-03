@@ -399,9 +399,13 @@ export default function DetailPanel({
               </span>
             </div>
             <div className={styles['info-card']}>
-              <span className={styles['info-label']}>공급 / 예비</span>
+              <span className={styles['info-label']}>해당 단지 공급 규모</span>
               <span className={styles['info-val']}>
-                {loading ? '계산 중...' : `${totalSupplyCount}호 / ${totalReserveCount}호`}
+                {loading ? '계산 중...' : (
+                  totalReserveCount > 0 
+                    ? `공급 ${totalSupplyCount}호 (예비 ${totalReserveCount}명)`
+                    : `공급 ${totalSupplyCount}호`
+                )}
               </span>
             </div>
             {complex.recruitment_group_name && (

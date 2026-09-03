@@ -194,6 +194,9 @@ export default function ComplexCard({
           {extractShortRegion(complex.address) && (
             <span className={styles['region-badge']}>{extractShortRegion(complex.address)}</span>
           )}
+          {complex.complex_type && (
+            <span className={styles['type-badge']}>{complex.complex_type}</span>
+          )}
         </div>
         <div className={styles['header-right-actions']}>
           {dDayText && (
@@ -214,7 +217,7 @@ export default function ComplexCard({
         </div>
       </div>
 
-      {/* 💡 깔끔하고 통일성 있는 정보 블록 (산만한 뱃지 배제) */}
+      {/* 💡 깔끔하고 통일성 있는 정보 블록 (단지 기준 공급/예비수 반영) */}
       {(() => {
         const priceDisplay = formatMoneyRange(complex.min_deposit, complex.max_deposit);
         const rentDisplay = complex.max_monthly_rent && complex.max_monthly_rent > 0 
@@ -223,10 +226,46 @@ export default function ComplexCard({
         const areaDisplay = formatAreaRange(complex.min_exclusive_area, complex.max_exclusive_area);
 
         const metaItems: string[] = [];
-        if (complex.recruitment_group_name) metaItems.push(`모집단위: ${complex.recruitment_group_name}`);
-        if (areaDisplay) metaItems.push(`전용 ${areaDisplay}`);
-        if (complex.total_supply_count != null) metaItems.push(`공급 ${complex.total_supply_count}호`);
-        if (complex.complex_type) metaItems.push(complex.complex_type);
+        const isMultiComplexGroup = Boolean(
+          complex.recruitment_group_name && 
+          complex.recruitment_group_name !== complex.name
+        );
+
+        if (isMultiComplexGroup) {
+          // 복수 단지가 묶인 주택군: 모집단위 라벨과 모집단위 총 공급/예비수 노출
+          metaItems.push(`모집단위: ${complex.recruitment_group_name}`);
+
+          const groupSupply = complex.recruitment_group_supply_count;
+          const groupReserve = complex.recruitment_group_reserve_count;
+
+          if (groupSupply != null && groupSupply > 0) {
+            if (groupReserve != null && groupReserve > 0) {
+              metaItems.push(`공급 ${groupSupply}호 (예비 ${groupReserve}명)`);
+            } else {
+              metaItems.push(`공급 ${groupSupply}호`);
+            }
+          } else if (groupReserve != null && groupReserve > 0) {
+            metaItems.push(`예비 ${groupReserve}명`);
+          }
+        } else {
+          // 단독 단지 (아파트 등 1:1 매핑): 모집단위명 생략, 해당 단지 실물 공급/예비수 노출
+          const supplyNum = complex.total_supply_count;
+          const reserveNum = complex.total_reserve_count;
+
+          if (supplyNum != null && supplyNum > 0) {
+            if (reserveNum != null && reserveNum > 0) {
+              metaItems.push(`공급 ${supplyNum}호 (예비 ${reserveNum}명)`);
+            } else {
+              metaItems.push(`공급 ${supplyNum}호`);
+            }
+          } else if (reserveNum != null && reserveNum > 0) {
+            metaItems.push(`예비 ${reserveNum}명`);
+          }
+        }
+
+        if (areaDisplay) {
+          metaItems.push(`전용 ${areaDisplay}`);
+        }
 
         return (
           <div className={styles['card-info-block']}>

@@ -68,7 +68,8 @@ interface HousingUnitRepository : JpaRepository<HousingUnit, Long> {
                MIN(u.exclusiveArea) as minExclusiveArea, 
                MAX(u.exclusiveArea) as maxExclusiveArea,
                COUNT(u.id) as unitCount,
-               SUM(u.supplyCount) as totalSupplyCount
+               SUM(u.supplyCount) as totalSupplyCount,
+               SUM(u.reserveCount) as totalReserveCount
         FROM HousingUnit u
         GROUP BY u.complexId
     """)
@@ -83,7 +84,8 @@ interface HousingUnitRepository : JpaRepository<HousingUnit, Long> {
                MIN(u.exclusiveArea) as minExclusiveArea, 
                MAX(u.exclusiveArea) as maxExclusiveArea,
                COUNT(u.id) as unitCount,
-               SUM(u.supplyCount) as totalSupplyCount
+               SUM(u.supplyCount) as totalSupplyCount,
+               SUM(u.reserveCount) as totalReserveCount
         FROM HousingUnit u
         WHERE u.announcementId = :announcementId
         GROUP BY u.complexId
@@ -101,4 +103,5 @@ interface UnitSummaryProjection {
     fun getMaxExclusiveArea(): Double?
     fun getUnitCount(): Long?
     fun getTotalSupplyCount(): Long?
+    fun getTotalReserveCount(): Long?
 }
