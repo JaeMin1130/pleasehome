@@ -45,6 +45,8 @@ export interface Complex {
   announcement_id: number;
   recruitment_group_id?: number | null;
   recruitment_group_name?: string | null;
+  recruitment_group_supply_count?: number | null;
+  recruitment_group_reserve_count?: number | null;
   recruitment_group?: RecruitmentGroup | null;
   name: string;
   address: string;

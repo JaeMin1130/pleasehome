@@ -69,8 +69,8 @@ class HousingService(
     fun getAnnouncementFullDetails(id: Long): Map<String, Any?> {
         val ann = getAnnouncementById(id)
         val rgs = recruitmentGroupRepository.findAllByAnnouncementId(id)
-        val rgIdToName = rgs.associate { (it.id ?: 0L) to it.name }
-        val complexes = complexRepository.findAllByAnnouncementId(id).map { complexToMap(it, rgIdToName[it.recruitmentGroupId]) }
+        val rgMap = rgs.associateBy { it.id ?: 0L }
+        val complexes = complexRepository.findAllByAnnouncementId(id).map { complexToMap(it, rgMap[it.recruitmentGroupId]) }
         val units = unitRepository.findAllByAnnouncementIdOrderByExclusiveAreaAsc(id).map { unitToMap(it) }
 
         return ann + mapOf(
@@ -88,15 +88,15 @@ class HousingService(
         }
         val rgIds = list.mapNotNull { it.recruitmentGroupId }.distinct()
         val rgMap = if (rgIds.isNotEmpty()) {
-            recruitmentGroupRepository.findAllById(rgIds).associate { (it.id ?: 0L) to it.name }
+            recruitmentGroupRepository.findAllById(rgIds).associateBy { it.id ?: 0L }
         } else emptyMap()
         return list.map { complexToMap(it, rgMap[it.recruitmentGroupId]) }
     }
 
     fun getComplexById(id: Long): Map<String, Any?> {
         val complex = complexRepository.findById(id).orElseThrow { NoSuchElementException("단지를 찾을 수 없습니다. (ID: $id)") }
-        val rgName = complex.recruitmentGroupId?.let { recruitmentGroupRepository.findById(it).orElse(null)?.name }
-        return complexToMap(complex, rgName)
+        val rg = complex.recruitmentGroupId?.let { recruitmentGroupRepository.findById(it).orElse(null) }
+        return complexToMap(complex, rg)
     }
 
     fun getComplexFullDetails(id: Long): Map<String, Any?> {
@@ -114,7 +114,7 @@ class HousingService(
             )
         }
 
-        val complexMap = complexToMap(complex, rg?.name) + mapOf(
+        val complexMap = complexToMap(complex, rg) + mapOf(
             "recruitment_group" to (if (rg != null) recruitmentGroupToMap(rg) else null)
         )
 
@@ -172,11 +172,13 @@ class HousingService(
         "notes" to rg.notes
     )
 
-    private fun complexToMap(c: Complex, rgName: String? = null) = mapOf(
+    private fun complexToMap(c: Complex, rg: AnnouncementRecruitmentGroup? = null) = mapOf(
         "id" to c.id,
         "announcement_id" to c.announcementId,
         "recruitment_group_id" to c.recruitmentGroupId,
-        "recruitment_group_name" to rgName,
+        "recruitment_group_name" to rg?.name,
+        "recruitment_group_supply_count" to rg?.supplyCount,
+        "recruitment_group_reserve_count" to rg?.reserveCount,
         "name" to c.name,
         "address" to c.address,
         "heating_type" to c.heatingType,

@@ -117,10 +117,20 @@ description: 공고문 원본(document.md)을 분석하여 complexes, units가 �
       "notes": "Details or notes"
     }
   ],
+  "recruitment_groups": [
+    {
+      "name": "모집단위/주택군명 (string, 예: 26-6 계양구(뷰온) 또는 단일단지명)",
+      "region": "소재 지역 (string or null)",
+      "supply_count": "주택군 총 공급호수 (integer)",
+      "reserve_count": "주택군 총 모집 예비자수 (integer)",
+      "notes": "비고 or null (string)"
+    }
+  ],
   "complexes": [
     {
       "name": "단지명/블록명 (string)",
       "address": "지번/도로명 상세주소 (string)",
+      "recruitment_group": "소속 모집단위(주택군)명 (string, recruitment_groups의 name과 일치 -> DB 적재 시 recruitment_group_id FK로 자동 변환)",
       "heating_type": "지역난방 or 개별난방 or 중앙난방 (string)",
       "has_elevator": "true or false or null (boolean)",
       "parking_info": "parking space details (string or null)",
@@ -183,8 +193,12 @@ description: 공고문 원본(document.md)을 분석하여 complexes, units가 �
 8. **상태 보존형 마크다운 표 파싱 규약 (Stateful Row Parser Protocol)**:
    * 마크다운 표에서 병합되거나 생략된 공백 셀(`| |`)은 절대로 건너뛰지(continue) 않고, 직전 행(Context)의 유효한 값(자치구, 지구명, 단지명, 평형, 보증금, 임대료, 전용면적 등)을 상태 변수에 기억하여 자동 상속받아 채워야 합니다.
    * `주거약자`, `우선공급`, `다자녀` 등 하위 공급구분 행의 평형/금액 칸이 비어 있더라도 직전 일반공급 행의 임대조건을 그대로 상속하여 전수 추출해야 합니다.
-9. **총 공급규모(공가+예비자) 1:1 전수 교차 검증 엄수**:
-   * 공고문 서두의 총 모집인원과 추출된 `units` 세대수 합계(`sum(supply_count + reserve_count)`)가 단 1세대라도 불일치하면 적재를 즉시 차단하고 검증합니다. ([누적 규칙 #7])
+9. **총 공급규모(공가+예비자) 1:1 전수 교차 검증 엄수 ([누적 규칙 #7])**:
+   * **아파트 및 단일 청약단위 공고**: 공고문 서두의 총 모집인원과 추출된 `units` 세대수 합계(`sum(supply_count + reserve_count)`)가 단 1세대라도 불일치하면 적재를 즉시 차단합니다.
+   * **매입임대 및 다중 주택군 공고**:
+     1. 실물 공급호수: `공고문 총 공급호수 == sum(recruitment_groups.supply_count) == sum(units.supply_count)`
+     2. 예비자 모집인원: `공고문 총 예비자수 == sum(recruitment_groups.reserve_count)`
+     * 위 1:1 전수 교차 검증을 통과하기 전에는 절대로 DB에 적재해서는 안 됩니다.
 10. **공급 대상(`target_group`) 및 공급 유형(`supply_type`) 표준 정규화**:
     * `target_group`에는 자의적인 수식어(예: `"일반서민"`)를 붙이지 않고, 표준 규격 명칭(`"청년"`, `"신혼부부"`, `"다자녀"`, `"고령자"`, `"주거약자"`, `"일반"`, `"상관없음"`)으로 엄격 정규화합니다.
     * 공가 입주자(즉시 입주)는 `supply_count`, 예비 입주자(대기자)는 `reserve_count`로 명확히 분리하여 기록합니다.
@@ -193,6 +207,13 @@ description: 공고문 원본(document.md)을 분석하여 complexes, units가 �
     * `<br>`, `&gt;`, `&lt;` 등의 HTML 엔티티 대신 표준 마크다운 개행 및 문자를 사용합니다.
 12. **지구 단위 통합 청약 건의 단지 분할/복제 금지**:
     * 공고문에서 지구/단지 묶음 단위로 통합 청약(전산 추첨 배정)하는 건은 개별 아파트 단지로 임의 분할하거나 유닛을 복제하지 않고, `지구명 (단지묶음명)` 기준의 단일 대표 단지로만 등록합니다. (예: `은평1지구 (상림마을 6-1~8-3단지)`)
+13. **매입임대 낱개 호실(room_number) 1호/0호 정규화 및 예비자 분리 원칙**:
+    * 호실 번호(`room_number`)가 존재하는 물리적 개별 방은 **무조건 `supply_count = 1, reserve_count = 0`**으로 기록합니다.
+    * "이 방은 예비자를 뽑는 방이다"라며 `supply_count: 0, reserve_count: 1`을 넣는 안티패턴을 엄격히 금지합니다.
+    * 주택군 전체의 예비자 규모(예: 176명)는 개별 방에 쪼개 넣지 않고, 오직 상위 `recruitment_groups[].reserve_count`에만 기록합니다.
+14. **단지-주택군 간 외래키(FK) 정규화 연계 규약**:
+    * `data.json`의 `complexes[].recruitment_group` 텍스트 명칭은 적재기([insert_loader.py](file:///home/iru/app/pleasehome/.agents/scripts/insert_loader.py))가 실행될 때 DB의 `announcement_recruitment_groups.id` 정수형 PK를 찾아 **`complexes.recruitment_group_id` 외래키(FK)**로 100% 자동 변환하여 영속화합니다.
+    * 따라서 `complexes`의 모든 단지는 반드시 자신이 속한 `recruitment_groups`의 `name`과 정확히 일치하는 값을 `"recruitment_group"` 필드에 명시해야 합니다.
 
 ---
 
@@ -228,7 +249,10 @@ description: 공고문 원본(document.md)을 분석하여 complexes, units가 �
    * **서류 제출 기한 및 등기우편 주소**.
 
 6. **`'기관별 특화 및 유의사항'`** (`sort_order: 6`):
-   * **공가 vs 예비입주자 공급 특성**: 즉시 입주 vs 순차 입주, 예비입주자 자격 유효기간(1년 등), 타 공공임대 당첨 시 기존 예비자 순번 소멸 규정.
+   * **매입임대/다중 주택군 특화 규격 필수 수록**:
+     - **[주택군별 공급호수 및 모집 예비자수 전수 인원표]**: 공고문 원본의 주택군별 공급호수와 예비자 인원을 마크다운 표로 100% 빠짐없이 수록.
+     - **[통합 순번 및 동호 지정 계약 룰 안내]**: 주택군별 통합 순번 발표, 주택 열람 기간, 순번에 따른 희망 주택 지정 계약 체결 방식 상세 명시.
+   * **공가 vs 예비입주자 공급 특성**: 즉시 입주 vs 순차 입주, 예비입주자 자격 유효기간(6개월~1년 등), 타 공공임대 당첨 시 기존 예비자 순번 소멸 규정.
    * **단지별/지구별 특이사항**: 타 지자체 행정구역 소재 단지 전입 의무, 지구단위 통합청약 무작위 전산배정 유의사항.
    * **불법 전대/양도 처벌 규정**: 계약 해지, 강제 퇴거 및 3년 이하 징역 또는 3천만원 이하 벌금형 명시.
 
