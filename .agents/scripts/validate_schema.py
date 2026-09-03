@@ -239,12 +239,20 @@ class UnitModel(BaseModel):
 class DetailModel(BaseModel):
     section_title: str = Field(..., description="상세 섹션 제목")
     section_content: str = Field(..., description="상세 마크다운 내용")
-    sort_order: int = Field(..., description="정렬 순서 (1~6)")
+    sort_order: int = Field(..., description="정렬 순서 (1~7)")
 
     @field_validator('section_title')
     @classmethod
     def check_section_title(cls, v: str) -> str:
-        allowed = ["신청 자격 요건", "소득 및 자산 기준", "임대 조건 및 융자 혜택", "선정 및 배점 기준", "신청 방법 및 제출 서류", "기관별 특화 및 유의사항"]
+        allowed = [
+            "모집단위별 공급 및 예비자 현황",
+            "신청 자격 요건",
+            "소득 및 자산 기준",
+            "임대 조건 및 융자 혜택",
+            "선정 및 배점 기준",
+            "신청 방법 및 제출 서류",
+            "기관별 특화 및 유의사항"
+        ]
         if v not in allowed:
             raise ValueError(f"상세 섹션 제목(section_title)은 {allowed} 중 하나여야 합니다 (입력값: '{v}')")
         return v
