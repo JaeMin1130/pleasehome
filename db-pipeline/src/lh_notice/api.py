@@ -1,6 +1,24 @@
 import os
+import time
 import requests
 import urllib.parse
+
+DEFAULT_TIMEOUT = 30  # 초 단위 타임아웃
+
+def _request_api(url, params, timeout=DEFAULT_TIMEOUT, retries=2):
+    """타임아웃 및 재시도 로직이 적용된 공통 API 요청 헬퍼"""
+    last_exception = None
+    for attempt in range(1 + retries):
+        try:
+            response = requests.get(url, params=params, timeout=timeout)
+            response.raise_for_status()
+            return response.json()
+        except (requests.exceptions.Timeout, requests.exceptions.RequestException) as e:
+            last_exception = e
+            if attempt < retries:
+                time.sleep(2)
+                continue
+            raise last_exception
 
 """고객센터 공지사항 목록 조회 API 호출"""
 def get_notice_list(page_no=1, page_size=10, start_date=None, end_date=None, bbs_tl=None, upp_ais_tp_cd=None):
@@ -24,10 +42,7 @@ def get_notice_list(page_no=1, page_size=10, start_date=None, end_date=None, bbs
         params["BBS_TL"] = bbs_tl
     if upp_ais_tp_cd:
         params["UPP_AIS_TP_CD"] = upp_ais_tp_cd
-        
-    response = requests.get(url, params=params)
-    response.raise_for_status()
-    return response.json()
+    return _request_api(url, params=params)
 
 """고객센터 공지사항별 상세정보 조회 API 호출"""
 def get_notice_detail(sys_ds_cd, bbs_sn):
@@ -42,10 +57,7 @@ def get_notice_detail(sys_ds_cd, bbs_sn):
         "CCR_CNNT_SYS_DS_CD": sys_ds_cd,
         "BBS_SN": bbs_sn
     }
-    
-    response = requests.get(url, params=params)
-    response.raise_for_status()
-    return response.json()
+    return _request_api(url, params=params)
 
 """분양임대공고문 목록 조회 API 호출"""
 def get_lease_notice_list(page_no=1, page_size=10, start_date=None, end_date=None, pan_nm=None, 
@@ -78,10 +90,7 @@ def get_lease_notice_list(page_no=1, page_size=10, start_date=None, end_date=Non
         params["CLSG_ST_DT"] = clsg_st_dt
     if clsg_ed_dt:
         params["CLSG_ED_DT"] = clsg_ed_dt
-        
-    response = requests.get(url, params=params)
-    response.raise_for_status()
-    return response.json()
+    return _request_api(url, params=params)
 
 """분양임대공고별 상세정보(첨부파일 포함) 조회 API 호출"""
 def get_lease_notice_detail(spl_inf_tp_cd, ccr_cnnt_sys_ds_cd, pan_id, upp_ais_tp_cd, ais_tp_cd=None):
@@ -100,10 +109,7 @@ def get_lease_notice_detail(spl_inf_tp_cd, ccr_cnnt_sys_ds_cd, pan_id, upp_ais_t
     }
     if ais_tp_cd:
         params["AIS_TP_CD"] = ais_tp_cd
-        
-    response = requests.get(url, params=params)
-    response.raise_for_status()
-    return response.json()
+    return _request_api(url, params=params)
 
 """분양임대공고별 공급정보(금액, 면적, 모집호수 등) 조회 API 호출"""
 def get_lease_supply_info(spl_inf_tp_cd, ccr_cnnt_sys_ds_cd, pan_id, upp_ais_tp_cd=None, ais_tp_cd=None):
@@ -123,10 +129,7 @@ def get_lease_supply_info(spl_inf_tp_cd, ccr_cnnt_sys_ds_cd, pan_id, upp_ais_tp_
         params["UPP_AIS_TP_CD"] = upp_ais_tp_cd
     if ais_tp_cd:
         params["AIS_TP_CD"] = ais_tp_cd
-        
-    response = requests.get(url, params=params)
-    response.raise_for_status()
-    return response.json()
+    return _request_api(url, params=params)
 
 """공공임대주택 단지정보(주차수, 난방, 승강기 등 마스터 정보) 조회 API 호출"""
 def get_rental_house_info(brtc_code, signgu_code, page_no=1, num_of_rows=10):
@@ -143,7 +146,4 @@ def get_rental_house_info(brtc_code, signgu_code, page_no=1, num_of_rows=10):
         "pageNo": page_no,
         "numOfRows": num_of_rows
     }
-    
-    response = requests.get(url, params=params)
-    response.raise_for_status()
-    return response.json()
+    return _request_api(url, params=params)

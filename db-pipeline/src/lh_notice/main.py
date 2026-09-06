@@ -13,7 +13,7 @@ PDF_SAVE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__fi
 
 def download_file(url, save_path):
     """주어진 URL의 파일을 로컬 경로에 다운로드"""
-    response = requests.get(url, stream=True)
+    response = requests.get(url, stream=True, timeout=60)
     response.raise_for_status()
     with open(save_path, 'wb') as f:
         for chunk in response.iter_content(chunk_size=8192):
