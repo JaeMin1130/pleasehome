@@ -50,6 +50,7 @@ class AuthService(
         return mapOf("success" to true, "memberId" to id)
     }
 
+    @Transactional(readOnly = true, transactionManager = "memberTransactionManager")
     fun login(body: Map<String, String>, response: HttpServletResponse): Map<String, Any> {
         val id = body["id"]?.trim() ?: throw IllegalArgumentException("아이디와 비밀번호를 입력해주세요.")
         val password = body["password"] ?: throw IllegalArgumentException("아이디와 비밀번호를 입력해주세요.")

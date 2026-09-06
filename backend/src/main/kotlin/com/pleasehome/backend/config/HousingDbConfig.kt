@@ -37,7 +37,7 @@ class HousingDbConfig(
             minimumIdle = 2
             idleTimeout = 600000
             connectionTimeout = 30000
-            connectionInitSql = "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA cache_size=-64000; PRAGMA temp_store=MEMORY;"
+            connectionInitSql = "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA busy_timeout=15000; PRAGMA cache_size=-64000; PRAGMA temp_store=MEMORY;"
             poolName = "HousingHikariPool"
         }
         return HikariDataSource(config)

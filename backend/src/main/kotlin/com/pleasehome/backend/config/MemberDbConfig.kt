@@ -35,7 +35,7 @@ class MemberDbConfig(
             minimumIdle = 1
             idleTimeout = 600000
             connectionTimeout = 30000
-            connectionInitSql = "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA cache_size=-32000; PRAGMA temp_store=MEMORY;"
+            connectionInitSql = "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA busy_timeout=15000; PRAGMA cache_size=-32000; PRAGMA temp_store=MEMORY;"
             poolName = "MemberHikariPool"
         }
         return HikariDataSource(config)

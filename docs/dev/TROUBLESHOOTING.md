@@ -112,3 +112,23 @@
 * **원인 (Cause)**: if-else 분기문으로 인해 nextState의 타입 추론이 1 | 2로 제한되어 0 비교문이 unreachable로 처리됨
 * **해결 (Solution)**: 삼항 연산자를 활용하여 0, 1, 2 순환 삼항식을 구성해 타입 정의를 명확히 일치시킴
 
+### [2026-09-06] LH OpenAPI 공고 수집 시 네트워크 무한 대기(프리징) 오류 해결
+* **분류**: 파이프라인
+* **현상 (Problem)**: `./command.sh notice:fetch` 실행 시 분양주택(05) 수집 후 임대주택(06) 조회 단계에서 아무런 에러 로그 없이 프로세스가 영구히 멈추는 프리징 현상 발생함
+* **원인 (Cause)**: Python `requests.get()`에 `timeout` 인자가 지정되지 않아 기본값 `None`(무한 대기)으로 동작함. LH OpenAPI 서버에서 데이터 건수가 방대한 '임대주택' 유형 쿼리 시 응답 지연이나 커넥션 홀딩이 발생하여 I/O 블로킹 상태에 빠짐
+* **해결 (Solution)**: `db-pipeline/src/lh_notice/api.py`에 공통 요청 헬퍼 `_request_api()`를 구현하여 연결/응답 기본 타임아웃(30초) 및 지연 발생 시 최대 2회 자동 재시도 로직을 적용함. 또한 원천 PDF/Excel 스트림 다운로드(`download_file`)에도 60초 타임아웃을 명시하여 네트워크 정체 시의 안전성을 확보함
+
+### [2026-09-06] 실서버 백엔드 고부하 로그인 지연 및 SQLite 동시성 락/스왑 병목 해결
+* **분류**: 인프라 / 백엔드
+* **현상 (Problem)**: 실서버 사용자 증가 시 로그인이 극도로 지연되거나 먹통이 되며, `[SQLITE_BUSY] The database file is locked` 에러 및 HikariCP의 `Thread starvation or clock leap detected (housekeeper delta=50s ~ 3m)` 경고가 다수 발생함
+* **원인 (Cause)**:
+  1. **트랜잭션 독점**: `AuthService.kt` 클래스 레벨의 `@Transactional`로 인해 단순 조회 및 쿠키 발급을 수행하는 `login()` 호출 시에도 SQLite 독점 쓰기 락이 발생하고, CPU 집약적인 BCrypt 해시 검증 연산 동안 트랜잭션이 불필요하게 유지되어 락 경합이 가중됨
+  2. **SQLite 대기 시간 부재**: `MemberDbConfig.kt` 및 `HousingDbConfig.kt`의 connectionInitSql에 `busy_timeout` 설정이 없어 동시 쓰기 발생 시 즉시 `SQLITE_BUSY` 500 에러를 반환함
+  3. **1GB RAM 서버 스펙 한계 및 스왑 페이징**: 실서버가 1 vCPU / 961MB RAM 환경인데, Spring Boot 힙 메모리가 `-Xmx512m`로 과도하게 설정되어 디스크 스왑이 529MB까지 치솟음. 이로 인해 JVM 가비지 컬렉션(GC) 시 디스크 I/O 병목으로 전체 시스템이 수십 초~수 분간 동결(Stop-The-World)됨
+  4. **디스크 임계치 도달**: 누적 로그 및 과거 배포 잔여물로 디스크 사용률이 92%(여유 774MB)에 달해 SQLite 저널 생성 및 OS 동작에 위험 요인이 됨
+* **해결 (Solution)**:
+  1. `AuthService.login()` 메서드에 `@Transactional(readOnly = true)`를 명시하여 쓰기 락 독점을 차단함
+  2. `MemberDbConfig`와 `HousingDbConfig`에 `PRAGMA busy_timeout = 15000;`을 추가하여 동시성 락 충돌 방어망을 구축함
+  3. 실서버 PM2 시작 스크립트를 `-Xms128m -Xmx320m`로 최적화하고 `backend.jar.new` 원자적 교체 방식을 도입하여, 스왑 메모리를 529MB에서 202MB로 62% 이상 대폭 다이어트하고 배포 시 `NoClassDefFoundError`를 차단함
+  4. PM2 로그 비우기, 과거 `.tar.gz` 배포 파일 삭제, journalctl OS 저널 로그 및 APT 캐시 청소를 통해 디스크 여유 공간을 774MB(92%)에서 1.9GB(80%)로 1.1GB 이상 추가 확보함
+

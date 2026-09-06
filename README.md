@@ -94,6 +94,10 @@ flowchart TB
 * **문제**: 공고 1건마다 일정, 세부조건, 제한사항을 루프 순회하며 조회하여 N+1 쿼리 병목(단일 API 호출 시 300+ 쿼리) 발생.
 * **해결**: 공고 목록 조회 시 연관 테이블들을 In-Memory Map으로 대량 조회(Bulk Fetch)하여 **SQL 쿼리 수를 4개로 대폭 절감(98% 감축)**하고 응답 속도를 극대화함. ([ADR #5](docs/dev/DECISION.md))
 
+### 5. SQLite 동시성 락 방어 및 저사양(1GB RAM) 인스턴스 JVM 메모리 최적화
+* **문제**: 사용자 증가 시 SQLite 파일 락(`SQLITE_BUSY`)으로 인한 로그인 지연과 1GB RAM 서버의 디스크 스왑(500MB+) 페이징으로 인한 시스템 동결(Thread Starvation) 발생.
+* **해결**: `AuthService.login()`을 `@Transactional(readOnly = true)`로 격리해 쓰기 락 독점을 제거하고, DataSource에 `PRAGMA busy_timeout = 15000;`을 적용함. 또한 실서버 JVM 힙을 `-Xms128m -Xmx320m`로 다이어트하고 배포 원자성을 확보하여 **스왑 메모리를 62% 감축(529MB $\rightarrow$ 202MB)**하고 서비스 안정성을 회복함. ([TROUBLESHOOTING](docs/dev/TROUBLESHOOTING.md))
+
 ---
 
 ## 📋 REST API 엔드포인트 규격 (23 Endpoints)

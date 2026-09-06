@@ -36,12 +36,14 @@ function deploy_backend() {
 
   echo "📦 [백엔드 배포 2/3] JAR 파일 실서버 전송 중..."
   ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "mkdir -p $REMOTE_PATH/backend"
-  scp -i "$KEY_PATH" "$BASE_DIR/backend/build/libs/backend-0.0.1-SNAPSHOT.jar" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/backend/backend.jar"
+  scp -i "$KEY_PATH" "$BASE_DIR/backend/build/libs/backend-0.0.1-SNAPSHOT.jar" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/backend/backend.jar.new"
 
   echo "🔄 [백엔드 배포 3/3] 실서버 Spring Boot PM2 재시작..."
   ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "
     cd $REMOTE_PATH/backend
-    pm2 restart pleasehome-backend 2>/dev/null || pm2 start 'java -Xms256m -Xmx512m -jar backend.jar' --name pleasehome-backend --cwd $REMOTE_PATH/backend
+    mv -f backend.jar.new backend.jar
+    pm2 delete pleasehome-backend 2>/dev/null || true
+    pm2 start 'java -Xms128m -Xmx320m -jar backend.jar' --name pleasehome-backend --cwd $REMOTE_PATH/backend
     pm2 save
   "
   echo "✅ 백엔드(Spring Boot) 배포가 완료되었습니다!"
@@ -167,7 +169,7 @@ case "$1" in
     echo "    web:start        : Next.js 프로덕션 서버 실행"
     echo ""
     echo "  [데이터 수집 & 변환]"
-    echo "    notice:fetch <시작일> <종료일> : LH OpenAPI 공고 및 원본 PDF/Excel 다운로드"
+    echo "    notice:fetch <시작일 yyyy-MM-dd> <종료일 yyyy-MM-dd> : LH OpenAPI 공고 및 원본 PDF/Excel 다운로드"
     echo "    pdf:convert [대상폴더/파일]   : PDF 공고문을 마크다운(document.md)으로 변환"
     echo ""
     echo "  [배포 & 데이터 파이프라인]"
