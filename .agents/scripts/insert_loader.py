@@ -217,6 +217,14 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
             cursor.execute("DELETE FROM announcement_schedules WHERE announcement_id = ?", (ann_id,))
             cursor.execute("DELETE FROM announcement_details WHERE announcement_id = ?", (ann_id,))
             
+            # Clean Title 및 최신 공고 URL 우선 추출 (정정공고 노이즈 재오염 방지)
+            clean_title = ann_info.get("title") or api_meta.get("PAN_NM")
+            final_inst = ann_info.get("institution") or api_meta.get("_institution")
+            final_sub_type = ann_info.get("subscription_type") or api_meta.get("AIS_TP_CD_NM")
+            final_region = ann_info.get("region") or api_meta.get("CNP_CD_NM")
+            final_dtl_url = ann_info.get("dtl_url") or api_meta.get("DTL_URL") or api_meta.get("PAN_DTL_URL") or ""
+            final_dtl_url_mob = ann_info.get("dtl_url_mob") or api_meta.get("DTL_URL_MOB") or api_meta.get("PAN_DTL_URL_MOB") or ""
+
             # announcements 테이블 UPDATE
             cursor.execute(
                 """
@@ -225,17 +233,24 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
                 WHERE id = ?;
                 """,
                 (
-                    api_meta.get("PAN_NM") or ann_info["title"],
-                    api_meta.get("_institution") or ann_info["institution"],
-                    api_meta.get("AIS_TP_CD_NM") or ann_info["subscription_type"],
-                    api_meta.get("CNP_CD_NM") or ann_info.get("region"),
+                    clean_title,
+                    final_inst,
+                    final_sub_type,
+                    final_region,
                     relative_doc_path,
-                    ann_info.get("dtl_url") or api_meta.get("DTL_URL") or api_meta.get("PAN_DTL_URL") or "",
-                    ann_info.get("dtl_url_mob") or api_meta.get("DTL_URL_MOB") or api_meta.get("PAN_DTL_URL_MOB") or "",
+                    final_dtl_url,
+                    final_dtl_url_mob,
                     ann_id
                 )
             )
         else:
+            clean_title = ann_info.get("title") or api_meta.get("PAN_NM")
+            final_inst = ann_info.get("institution") or api_meta.get("_institution")
+            final_sub_type = ann_info.get("subscription_type") or api_meta.get("AIS_TP_CD_NM")
+            final_region = ann_info.get("region") or api_meta.get("CNP_CD_NM")
+            final_dtl_url = ann_info.get("dtl_url") or api_meta.get("DTL_URL") or api_meta.get("PAN_DTL_URL") or ""
+            final_dtl_url_mob = ann_info.get("dtl_url_mob") or api_meta.get("DTL_URL_MOB") or api_meta.get("PAN_DTL_URL_MOB") or ""
+
             cursor.execute(
                 """
                 INSERT INTO announcements (
@@ -244,13 +259,13 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
                 VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'));
                 """,
                 (
-                    api_meta.get("PAN_NM") or ann_info["title"],
-                    api_meta.get("_institution") or ann_info["institution"],
-                    api_meta.get("AIS_TP_CD_NM") or ann_info["subscription_type"],
-                    api_meta.get("CNP_CD_NM") or ann_info.get("region"),
+                    clean_title,
+                    final_inst,
+                    final_sub_type,
+                    final_region,
                     relative_doc_path,
-                    ann_info.get("dtl_url") or api_meta.get("DTL_URL") or api_meta.get("PAN_DTL_URL") or "",
-                    ann_info.get("dtl_url_mob") or api_meta.get("DTL_URL_MOB") or api_meta.get("PAN_DTL_URL_MOB") or ""
+                    final_dtl_url,
+                    final_dtl_url_mob
                 )
             )
             ann_id = cursor.lastrowid

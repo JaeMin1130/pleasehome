@@ -20,9 +20,10 @@ description: document.md 원문과 data.json을 6대 테이블 전 컬럼 1:1로
 - [ ] `institution`: `LH`, `SH`, `GH`, `iH`, `HUG`, `민간` 중 1개로 정확히 표준화되었는가?
 - [ ] `subscription_type`: `매입임대`, `행복주택`, `국민임대`, `영구임대`, `공공분양`, `장기전세` 등 표준 유형인가?
 - [ ] `region`: 대한민국 17대 표준 광역지자체명인가? (비표준 지자체명 영구 차단)
-- [ ] `dtl_url`: `api_meta.json`의 원본 PC 공고 URL과 일치하며 깨지지 않았는가?
-- [ ] `dtl_url_mob`: 모바일 공고 URL이 유효하게 들어있는가?
-- [ ] `doc_path`: 실제 `document.md` 상대 경로와 100% 일치하는가?
+- [ ] `dtl_url`: `api_meta.json`의 원본 PC 공고 URL과 일치하며 깨지지 않았는가? **(정정공고의 경우 구버전 링크가 아닌 정정공고 `api_meta.json`의 최신 URL인가?)**
+- [ ] `dtl_url_mob`: 모바일 공고 URL이 최신 정정공고 URL로 유효하게 들어있는가?
+- [ ] `doc_path`: 실제 `document.md` 상대 경로와 100% 일치하는가? (정정공고 폴더 경로 확인)
+- [ ] **[누적 규칙 #8 ID 보존 검증]**: 기적재 정정공고의 경우 기존 공고 식별자(`announcements.id`)와 단지 식별자(`complexes.id`)가 영구 보존되는가? (URL 및 외부 참조 보호)
 
 ### ② `announcement_schedules` (공고 일정)
 - [ ] `schedule_type`: `신청접수`, `서류제출대상자발표`, `서류제출`, `당첨자발표`, `계약체결` 5대 구분이 원문과 매핑되었는가?
@@ -73,6 +74,7 @@ description: document.md 원문과 data.json을 6대 테이블 전 컬럼 1:1로
 4. `complexes.name`에 지번, 건물번호, 동 번호 찌꺼기(`17(병점동)`, `9(동천동)` 등)가 1건이라도 포함된 경우
 5. `announcement_details` 7개 섹션 중 내용 글자 수가 400자 미만이거나, 본문 최상단에 `#`, `###`류 중복 대제목/번호가 삽입되어 있는 경우, 또는 소득/가점/총괄 섹션에 마크다운 표가 누락된 경우
 6. `housing_units.deposit` 또는 `monthly_rent`가 원 단위가 아닌 천원 단위로 기재된 경우
+7. 정정공고임에도 구버전 공고의 만료된 `dtl_url`을 그대로 방치하거나 최신 정정 URL/문서 경로(`doc_path`)로 갱신되지 않은 경우
 
 ---
 
