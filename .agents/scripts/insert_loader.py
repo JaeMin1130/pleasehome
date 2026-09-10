@@ -183,17 +183,24 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
             
         folder_name = os.path.basename(os.path.dirname(raw_doc_path))
 
-        # 3. announcements 및 complexes 기존 ID 보존형 조회 (doc_path 정확 매칭 또는 공고 고유 폴더명 매칭)
-        cursor.execute(
-            """
-            SELECT id FROM announcements 
-            WHERE doc_path = ? 
-               OR doc_path LIKE ?
-            ORDER BY id ASC LIMIT 1;
-            """, 
-            (relative_doc_path, f"%{folder_name}%")
-        )
-        existing = cursor.fetchone()
+        # 3. announcements 및 complexes 기존 ID 보존형 조회 (명시적 ID 우선, 그 다음 doc_path/폴더명 매칭)
+        explicit_id = ann_info.get("id")
+        existing = None
+        if explicit_id:
+            cursor.execute("SELECT id FROM announcements WHERE id = ?", (explicit_id,))
+            existing = cursor.fetchone()
+        
+        if not existing:
+            cursor.execute(
+                """
+                SELECT id FROM announcements 
+                WHERE doc_path = ? 
+                   OR doc_path LIKE ?
+                ORDER BY id ASC LIMIT 1;
+                """, 
+                (relative_doc_path, f"%{folder_name}%")
+            )
+            existing = cursor.fetchone()
         
         existing_complexes = {}
         api_meta = get_meta_from_folder(relative_doc_path, base_dir)
