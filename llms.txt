@@ -32,7 +32,7 @@
 ## AI 에이전트 가이드
 
 - [AGENTS.md](AGENTS.md): AI 에이전트 행동 규칙, 소통 규약, 사용자 교정 누적 규칙이 기록된 최우선 준수 문서.
-- [.agents/skills/](.agents/skills/): 에이전트용 커스텀 스킬 디렉토리 (convert-pdf, extract-data, note 등).
+- [.agents/skills/](.agents/skills/): 에이전트용 커스텀 스킬 디렉토리 (convert-pdf, extract-data, audit-data, note 등).
 - [README.md](README.md): 프로젝트 아키텍처, UI 레이아웃, 빌드 및 배포 가이드 등을 기록하는 통합 문서.
 - [.env.local](web/.env.local): 외부 지도 클라이언트 ID 및 공공 API 인증키가 담긴 환경 변수 설정 파일.
 
@@ -49,5 +49,7 @@
 - **9단계 (완료):** Kotlin + Spring Boot 3.x 기반 백엔드 코어 분리, Nginx 리버스 프록시 연동 및 3-Tier(파이프라인-백엔드-프론트엔드) 아키텍처 전환 완료.
 - **10단계 (완료):** 모바일 뷰 바텀시트 실시간 터치 제스처 고도화, 수평 스크롤 칩 필터, Safe Area 대응 및 길찾기 도착지 좌표 최적화 완료.
 - **11단계 (완료):** LH OpenAPI 공고 수집 네트워크 타임아웃/재시도 보강, SQLite 파일 락(busy_timeout) 및 AuthService readOnly 트랜잭션 분리를 통한 동시성 제어, 1GB RAM 저사양 인스턴스 JVM 힙(-Xmx320m) 다이어트 및 디스크 정리(1.1GB 확보, 스왑 62% 감축) 완료.
-- **12단계 (예정):** 청약 접수 및 당첨 자격 분석 엔진 고도화.
+- **12단계 (완료):** 공고 데이터 3단계 파이프라인(정밀 추출-독립 감사-적재) 분리, 우선/일반 공급 유닛 분리 적재 및 공고 상세(details) 아코디언 UI 최적화(중복헤더 제거 및 컴팩트 다이어트) 완료.
+- **13단계 (예정):** 청약 접수 및 당첨 자격 분석 엔진 고도화.
+
 

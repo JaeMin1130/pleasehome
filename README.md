@@ -70,7 +70,7 @@ flowchart TB
 | 계층 (Layer) | 기술 스택 (Tech Stack) | 주요 역할 및 핵심 책임 |
 | :--- | :--- | :--- |
 | **0. Gateway** | **Nginx, PM2** | SSL/TLS 종단, `/api/*` 스프링부트 다이렉트 라우팅, 프로세스 무중단 관리 |
-| **1. Data Pipeline** | **Python 3.12, BeautifulSoup, OpenDataLoader** | 공공 OpenAPI 수집, 비정형 PDF 공고문 마크다운 변환 및 정합성 검증 |
+| **1. Data Pipeline** | **Python 3.12, BeautifulSoup, OpenDataLoader** | 공공 OpenAPI 수집, 3단계 파이프라인(추출·독립감사·적재), 우선/일반 분리 및 지오코딩 |
 | **2. Core Backend** | **Kotlin, Spring Boot 3.x, Spring Data JPA, SQLite** | 23개 REST API 서빙, 멀티 데이터소스 분리, `@Transactional` 비즈니스 무결성 |
 | **3. Frontend** | **Next.js 16 (App Router), React 19, TailwindCSS v4** | 지도 인터페이스(Naver Maps SDK), SSR/ISR 검색엔진 최적화, 반응형 UI |
 
@@ -227,8 +227,8 @@ pleasehome/
 ## 📑 아키텍처 및 의사결정 문서 (SSOT Documentation)
 
 * 📐 **[서비스 아키텍처 명세서 (ARCHITECTURE.md)](docs/dev/ARCHITECTURE.md)**: 3-Tier 시스템 구성도, 데이터 흐름도 및 23개 REST API 엔드포인트 전체 규격서
-* ⚖️ **[설계 의사결정 기록 (DECISION.md)](docs/dev/DECISION.md)**: Kotlin/Spring Boot 전환(ADR #11), 모바일 UX 개선(ADR #14), Dual DB 분리(ADR #2), 상호 배제 트랜잭션(ADR #1) 등 14건의 ADR
-* 🚨 **[트러블슈팅 및 문제 해결 기록 (TROUBLESHOOTING.md)](docs/dev/TROUBLESHOOTING.md)**: Nginx 리버스 프록시 연동, SSR Hydration, N+1 쿼리 최적화 등 기술적 문제 해결 이력
+* ⚖️ **[설계 의사결정 기록 (DECISION.md)](docs/dev/DECISION.md)**: 데이터 파이프라인 3단계 분리(ADR #15), 우선/일반 분리 및 아코디언 UI 최적화(ADR #16), Kotlin/Spring Boot 전환(ADR #11), Dual DB 분리(ADR #2) 등 16건의 ADR
+* 🚨 **[트러블슈팅 및 문제 해결 기록 (TROUBLESHOOTING.md)](docs/dev/TROUBLESHOOTING.md)**: 대형 공고 토큰 한도 해결, 아코디언 중복헤더 제거, Nginx 리버스 프록시 연동, SSR Hydration 등 기술적 문제 해결 이력
 
 ---
 

@@ -30,9 +30,10 @@ flowchart TB
     %% 2. 데이터 파이프라인 계층
     subgraph Pipeline["1. Data Pipeline (db-pipeline)"]
         Fetch["OpenAPI Fetcher & PDF Downloader<br>(Python)"]
-        Parser["비정형 공고문 마크다운 변환<br>& 시맨틱 정합성 검증 (extract-data)"]
-        Geo["위경도 좌표 복구 & 매핑 (Geocoding)"]
-        Fetch --> Parser --> Geo
+        ExtractAgent["1차 추출 에이전트<br>(extract-data: document.md → data.json)"]
+        AuditAgent["2차 독립 감사 에이전트<br>(audit-data: 6대 테이블 1:1 전수 검수 리포트)"]
+        Loader["3차 적재 로더<br>(insert_loader.py: 100% PASS 시 DB 적재 & Geocoding)"]
+        Fetch --> ExtractAgent --> AuditAgent --> Loader
     end
 
     %% 3. 데이터베이스 계층
