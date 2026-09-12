@@ -182,6 +182,7 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
             relative_doc_path = raw_doc_path
             
         folder_name = os.path.basename(os.path.dirname(raw_doc_path))
+        api_meta = get_meta_from_folder(relative_doc_path, base_dir)
 
         # 3. announcements 및 complexes 기존 ID 보존형 조회 (명시적 ID 우선, 그 다음 doc_path/폴더명 매칭)
         explicit_id = ann_info.get("id")
@@ -189,8 +190,11 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
         if explicit_id:
             cursor.execute("SELECT id FROM announcements WHERE id = ?", (explicit_id,))
             existing = cursor.fetchone()
-        
-        if not existing:
+        else:
+            target_title = ann_info.get("title") or api_meta.get("PAN_NM")
+            target_inst = ann_info.get("institution") or api_meta.get("_institution")
+            
+            # 1차: doc_path 정확 일치 또는 폴더명 매칭
             cursor.execute(
                 """
                 SELECT id FROM announcements 
@@ -201,9 +205,20 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
                 (relative_doc_path, f"%{folder_name}%")
             )
             existing = cursor.fetchone()
+            
+            # 2차: clean_title 및 institution 일치 확인 (정정공고/재공고 실질 중복 감지)
+            if not existing and target_title and target_inst:
+                cursor.execute(
+                    """
+                    SELECT id FROM announcements 
+                    WHERE title = ? AND institution = ?
+                    ORDER BY id ASC LIMIT 1;
+                    """,
+                    (target_title, target_inst)
+                )
+                existing = cursor.fetchone()
         
         existing_complexes = {}
-        api_meta = get_meta_from_folder(relative_doc_path, base_dir)
         
         if existing:
             ann_id = existing[0]
@@ -498,15 +513,20 @@ def main():
         
     source_file = None
     if os.path.exists(source):
-        source_file = source
+        source_file = os.path.abspath(source)
+        # 물리적 게이트: audit-data 전수 감사 통과 토큰 검증
+        target_dir = os.path.dirname(source_file)
+        token_path = os.path.join(target_dir, "audit_passed.token")
+        if not os.path.exists(token_path):
+            print(f"[CRITICAL ERROR] audit-data 미통과: '{token_path}' 파일이 존재하지 않습니다.", file=sys.stderr)
+            print("[CRITICAL ERROR] audit-data 서브에이전트의 1:1 전수 감사를 100% 통과하여 audit_passed.token이 발급된 공고만 적재할 수 있습니다.", file=sys.stderr)
+            sys.exit(1)
+
         with open(source, "r", encoding="utf-8") as f:
             data = json.load(f)
     else:
-        try:
-            data = json.loads(source)
-        except Exception as e:
-            print(f"[에러] 입력 소스가 존재하지 않는 파일이며, 유효한 JSON 문자열도 아닙니다: {e}", file=sys.stderr)
-            sys.exit(1)
+        print(f"[CRITICAL ERROR] audit-data 미통과: 직접 JSON 주입은 허용되지 않습니다. audit_passed.token이 위치한 data.json 파일 경로를 지정해야 합니다.", file=sys.stderr)
+        sys.exit(1)
         
     success, ann_id = load_json_to_db(data, dest_path, source_path=source_file)
     if not success:
