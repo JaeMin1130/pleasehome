@@ -29,8 +29,11 @@ flowchart TB
 
     %% 1. 데이터 파이프라인
     subgraph Pipeline["1. Data Pipeline (db-pipeline)"]
-        LH_API["LH/SH/GH OpenAPI & PDF/Excel"] --> Python_ETL["Python ETL 파이프라인<br>(마크다운 변환 & 시맨틱 정합성 검증)"]
-        Python_ETL --> Geo["Naver Geocoding (위경도 좌표 복구)"]
+        LH_API["LH/SH/GH OpenAPI & PDF/Excel"] --> Python_ETL["Python ETL 파이프라인<br>(마크다운 변환 & 정정공고 판별)"]
+        Python_ETL --> AgentPipeline["3단계 직렬 서브에이전트<br>(extract → audit 1:1전수검수)"]
+        AgentPipeline --> TokenGate{"audit_passed.token<br>물리 게이트"}
+        TokenGate -->|PASS 시 발급| Loader["insert_loader.py (적재)"]
+        Loader --> Geo["Naver Geocoding (위경도 좌표 복구)"]
     end
 
     %% 2. 영속성 계층 (Dual DB)
@@ -96,7 +99,11 @@ flowchart TB
 
 ### 5. SQLite 동시성 락 방어 및 저사양(1GB RAM) 인스턴스 JVM 메모리 최적화
 * **문제**: 사용자 증가 시 SQLite 파일 락(`SQLITE_BUSY`)으로 인한 로그인 지연과 1GB RAM 서버의 디스크 스왑(500MB+) 페이징으로 인한 시스템 동결(Thread Starvation) 발생.
-* **해결**: `AuthService.login()`을 `@Transactional(readOnly = true)`로 격리해 쓰기 락 독점을 제거하고, DataSource에 `PRAGMA busy_timeout = 15000;`을 적용함. 또한 실서버 JVM 힙을 `-Xms128m -Xmx320m`로 다이어트하고 배포 원자성을 확보하여 **스왑 메모리를 62% 감축(529MB $\rightarrow$ 202MB)**하고 서비스 안정성을 회복함. ([TROUBLESHOOTING](docs/dev/TROUBLESHOOTING.md))
+* **해결**: `AuthService.login()`을 `@Transactional(readOnly = true)`로 격리해 쓰기 락 독점을 제거하고, DataSource에 `PRAGMA busy_timeout = 15000;`을 적용함. 또한 실서버 JVM 힙을 `-Xms128m -Xmx320m`로 다이어트하고 배포 원자성을 확보하여 **스왑 메모리를 62% 감축(529MB → 202MB)**하고 서비스 안정성을 회복함. ([TROUBLESHOOTING](docs/dev/TROUBLESHOOTING.md))
+
+### 6. 프론트엔드 캐스케이딩 fetch 폭풍 차단 및 useMemo 연산 최적화
+* **문제**: 로그인 시 북마크 목록 로드 후 의존성 누수로 인한 수십~수백 건의 불필요한 O(N²) 캐스케이딩 fetch 폭풍 발생 및 매 리렌더링마다 공고 정렬/카운트 전수 재연산으로 화면 프리징 발생.
+* **해결**: 미사용 `bookmarkUnits` 상태와 fetch 이펙트를 전면 제거하고, `useMemo`를 적용해 전체 공고 단 1회 순회로 5대 상태 카운트 집계 및 정렬 결과를 캐싱하여 렌더링 부하를 원천 차단함. ([TROUBLESHOOTING](docs/dev/TROUBLESHOOTING.md))
 
 ---
 

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useBottomSheetGesture } from '@/hooks/useBottomSheetGesture';
-import { Announcement, ApplicationStatus, Complex, BookmarkFolder, BookmarkItem, HousingUnit } from '@/types';
+import { Announcement, ApplicationStatus, Complex, BookmarkFolder, BookmarkItem } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import AnnouncementCard from '@/components/features/AnnouncementCard';
 import ComplexCard from '@/components/features/ComplexCard';
@@ -113,7 +113,6 @@ export default function Sidebar({
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
   const listRef = useRef<HTMLDivElement>(null);
   const bookmarkListRef = useRef<HTMLDivElement>(null);
-  const [bookmarkUnits, setBookmarkUnits] = useState<Record<number, HousingUnit[]>>({});
 
   // 필터 상태 변경 추적용 Ref
   const prevSearchTermRef = useRef(searchTerm);
@@ -304,20 +303,6 @@ export default function Sidebar({
   const [newFolderName, setNewFolderName] = useState('');
   const [showNewFolderInput, setShowNewFolderInput] = useState(false);
   const [selectedSidebarColor, setSelectedSidebarColor] = useState<string>(BOOKMARK_PRESET_COLORS[0]);
-
-  // 찜한 단지가 늘어날 때 주택 상세 정보를 동적으로 로드
-  useEffect(() => {
-    bookmarkedIds.forEach((id) => {
-      if (!bookmarkUnits[id]) {
-        fetch(`/api/housing-units?complex_id=${id}`)
-          .then((res) => res.json())
-          .then((data) => {
-            setBookmarkUnits((prev) => ({ ...prev, [id]: data }));
-          })
-          .catch((err) => console.error('Failed to load bookmark unit data', err));
-      }
-    });
-  }, [bookmarkedIds, bookmarkUnits]);
 
   // 외부에서 공고 ID가 활성화되어 전달될 때, 필터 상태(지역 및 접수 상태)를 해당 공고의 데이터에 동기화
   useEffect(() => {
@@ -512,7 +497,8 @@ export default function Sidebar({
   };
 
   // 💡 지역 구분을 반영한 공고 목록 정렬 및 필터링 함수
-  const getSortedAnnouncements = () => {
+  // 💡 지역 구분을 반영한 공고 목록 정렬 및 필터링 (useMemo)
+  const sortedAnnouncements = useMemo(() => {
     const filtered = announcements.filter(ann => {
       // ① 검색어 필터
       const matchesSearch = ann.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -588,36 +574,50 @@ export default function Sidebar({
     }
 
     return filtered;
-  };
+  }, [announcements, searchTerm, activeRegion, activeTabStatus, disabledAnnIds, favoriteAnnIds, disabledAnns, favoriteAnns]);
 
-  // 💡 지역 구분을 연계하여 접수 상태별 개수를 동적으로 집계하는 함수 (숨긴 공고 제외)
-  const getStatusCount = (status: string) => {
-    return announcements.filter(ann => {
-      const matchesStatus = getAnnouncementStatus(ann) === status;
-      const matchesRegion = matchesActiveRegion(ann.region, activeRegion);
-      const isNotHidden = !disabledAnnIds.includes(ann.id);
-      return matchesStatus && matchesRegion && isNotHidden;
-    }).length;
-  };
+  const getSortedAnnouncements = () => sortedAnnouncements;
 
-  // 💡 지역 구분을 연계하여 숨긴 공고 개수를 동적으로 집계하는 함수
-  const getHiddenStatusCount = () => {
-    return announcements.filter(ann => {
+  // 💡 지역 구분을 연계하여 접수 상태별 개수를 단 1회 순회로 집계 (useMemo)
+  const statusCounts = useMemo(() => {
+    let upcoming = 0;
+    let ongoing = 0;
+    let closed = 0;
+    let hidden = 0;
+    let favorite = 0;
+
+    announcements.forEach(ann => {
       const matchesRegion = matchesActiveRegion(ann.region, activeRegion);
+      if (!matchesRegion) return;
+
       const isHidden = disabledAnnIds.includes(ann.id);
-      return matchesRegion && isHidden;
-    }).length;
+      if (isHidden) {
+        hidden++;
+        return;
+      }
+
+      if (favoriteAnnIds.includes(ann.id)) {
+        favorite++;
+      }
+
+      const status = getAnnouncementStatus(ann);
+      if (status === 'UPCOMING') upcoming++;
+      else if (status === 'ONGOING') ongoing++;
+      else if (status === 'CLOSED') closed++;
+    });
+
+    return { upcoming, ongoing, closed, hidden, favorite };
+  }, [announcements, activeRegion, disabledAnnIds, favoriteAnnIds]);
+
+  const getStatusCount = (status: string) => {
+    if (status === 'UPCOMING') return statusCounts.upcoming;
+    if (status === 'ONGOING') return statusCounts.ongoing;
+    if (status === 'CLOSED') return statusCounts.closed;
+    return 0;
   };
 
-  // 💡 지역 구분을 연계하여 찜한 공고 개수를 동적으로 집계하는 함수
-  const getFavoriteStatusCount = () => {
-    return announcements.filter(ann => {
-      const matchesRegion = matchesActiveRegion(ann.region, activeRegion);
-      const isFavorite = favoriteAnnIds.includes(ann.id);
-      const isNotHidden = !disabledAnnIds.includes(ann.id);
-      return matchesRegion && isFavorite && isNotHidden;
-    }).length;
-  };
+  const getHiddenStatusCount = () => statusCounts.hidden;
+  const getFavoriteStatusCount = () => statusCounts.favorite;
 
   const toggleSection = (key: string) => {
     setExpandedSections((prev) => ({
@@ -688,7 +688,7 @@ export default function Sidebar({
           getHiddenStatusCount={getHiddenStatusCount}
           getFavoriteStatusCount={getFavoriteStatusCount}
           listRef={listRef}
-          sortedAnnouncements={getSortedAnnouncements()}
+          sortedAnnouncements={sortedAnnouncements}
           activeAnnId={activeAnnId}
           handleCardClick={handleCardClick}
           expandedSections={expandedSections}
