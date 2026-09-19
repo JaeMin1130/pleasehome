@@ -117,11 +117,10 @@ class Complex(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
 
+    // 최초 발견 공고 참고용 메타 (더 이상 소유 관계 아님 -- Complex는 전역 엔티티,
+    // 신청단위 연관은 HousingUnit.recruitmentGroupId로 표현됨). docs/dev/DOMAIN_MODEL.md 3.3
     @Column(name = "announcement_id", nullable = false)
     var announcementId: Long = 0,
-
-    @Column(name = "recruitment_group_id")
-    var recruitmentGroupId: Long? = null,
 
     @Column(nullable = false)
     var name: String = "",
@@ -170,6 +169,10 @@ class HousingUnit(
     @Column(name = "complex_id")
     var complexId: Long? = null,
 
+    // 신청단위(모집단위) 연관. Complex가 전역화되면서 여기로 이동함 (docs/dev/DOMAIN_MODEL.md 3.4)
+    @Column(name = "recruitment_group_id")
+    var recruitmentGroupId: Long? = null,
+
     @Column(name = "room_number")
     var roomNumber: String? = null,
 
@@ -193,6 +196,29 @@ class HousingUnit(
 
     @Column(name = "income_group")
     var incomeGroup: String? = null,
+
+    // 신규 분해 컬럼 (docs/dev/DOMAIN_MODEL.md 3.4, migrations/004). supply_type/income_group
+    // 원본 컬럼은 표시용으로 계속 사용하며 여기서 지우지 않음.
+    @Column(name = "housing_product_type")
+    var housingProductType: String? = null,
+
+    @Column(name = "allocation_method")
+    var allocationMethod: String? = null,
+
+    @Column(name = "priority_rank")
+    var priorityRank: String? = null,
+
+    @Column(name = "rent_price_tier")
+    var rentPriceTier: Int? = null,
+
+    @Column(name = "income_threshold_pct")
+    var incomeThresholdPct: Int? = null,
+
+    @Column(name = "income_threshold_condition")
+    var incomeThresholdCondition: String? = null,
+
+    @Column(name = "sale_price")
+    var salePrice: Double? = null,
 
     @Column(name = "supply_count")
     var supplyCount: Int? = 0,

@@ -42,12 +42,11 @@ export interface Announcement {
 
 export interface Complex {
   id: number;
-  announcement_id: number;
-  recruitment_group_id?: number | null;
+  announcement_id: number; // 최초 발견 공고 참고용 메타 (단지는 전역 엔티티, 여러 공고에 걸칠 수 있음)
+  // 신청단위는 이제 단지 1개에 고정되지 않을 수 있어 이름/합계를 모아서 내려줌 (docs/dev/DOMAIN_MODEL.md 3.3)
   recruitment_group_name?: string | null;
   recruitment_group_supply_count?: number | null;
   recruitment_group_reserve_count?: number | null;
-  recruitment_group?: RecruitmentGroup | null;
   name: string;
   address: string;
   heating_type?: string;
@@ -71,6 +70,7 @@ export interface HousingUnit {
   id: number;
   announcement_id: number;
   complex_id: number;
+  recruitment_group_id?: number | null;
   room_number: string | null;
   room_count: number | null;
   room_type: string | null;
@@ -78,7 +78,16 @@ export interface HousingUnit {
   exclusive_area: number;
   contract_area: number | null;
   target_group: string | null;
+  target_tags?: string[]; // target_group 압축 문자열을 분해한 자격 태그 (docs/dev/DOMAIN_MODEL.md 3.5)
   income_group: string | null;
+  // 자격진단/향후 기능용 신규 분해 필드 (docs/dev/DOMAIN_MODEL.md 3.4) — 현재 UI는 미사용
+  housing_product_type?: string | null;
+  allocation_method?: string | null;
+  priority_rank?: string | null;
+  rent_price_tier?: number | null;
+  income_threshold_pct?: number | null;
+  income_threshold_condition?: string | null;
+  sale_price?: number | null;
   supply_count: number;
   reserve_count: number;
   deposit: number;

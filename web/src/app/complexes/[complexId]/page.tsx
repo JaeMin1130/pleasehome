@@ -182,7 +182,7 @@ export default async function ComplexDetailPage({ params }: PageProps) {
                     <span className={styles.historyInstitution}>{hist.institution}</span>
                   </div>
                   <h3 className={styles.historyTitle}>{hist.title}</h3>
-                  <Link href={`/complexes/${hist.complex_id}`} className={styles.historyLink}>
+                  <Link href={`/announcements/details/${hist.announcement_id}`} className={styles.historyLink}>
                     당시 임대 조건 확인하기 →
                   </Link>
                 </div>

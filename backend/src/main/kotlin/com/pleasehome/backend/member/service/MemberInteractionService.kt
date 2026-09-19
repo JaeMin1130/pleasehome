@@ -10,60 +10,65 @@ import java.time.format.DateTimeFormatter
 @Service
 @Transactional(transactionManager = "memberTransactionManager")
 class MemberInteractionService(
-    private val favoriteRepository: MemberFavoriteRepository,
-    private val hiddenAnnRepository: MemberHiddenAnnRepository,
+    private val interestRepository: AnnouncementInterestRepository,
     private val folderRepository: MemberBookmarkFolderRepository,
     private val itemRepository: MemberBookmarkItemRepository
 ) {
 
-    // ================= Favorites =================
+    // ================= Favorites / Hidden (통합 announcement_interests, docs/dev/DOMAIN_MODEL.md 2.3) =================
+    // status 컬럼 하나로 찜/숨김을 표현하므로, 등록 시 상태를 덮어쓰는 것만으로 상호배제가 자동 보장됨
+    // (기존처럼 반대쪽 테이블에서 별도 delete를 호출할 필요가 없음).
+
     @Transactional(readOnly = true, transactionManager = "memberTransactionManager")
     fun getFavorites(memberId: String): List<Map<String, Any?>> =
-        favoriteRepository.findAllByIdMemberId(memberId).map {
+        interestRepository.findAllByIdMemberIdAndStatus(memberId, "FAVORITE").map {
             mapOf(
                 "announcement_id" to it.id.announcementId,
-                "favorited_at" to it.favoritedAt
+                "favorited_at" to it.updatedAt
             )
         }
 
     fun addFavorite(memberId: String, announcementId: Long): Map<String, Any> {
-        val now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-        val favId = MemberFavoriteId(memberId = memberId, announcementId = announcementId)
-        favoriteRepository.save(MemberFavorite(id = favId, favoritedAt = now))
-
-        // 상호 배제 로직 (Option A): 찜 등록 시 숨김 자동 해제
-        hiddenAnnRepository.deleteByIdMemberIdAndIdAnnouncementId(memberId, announcementId)
+        upsertInterest(memberId, announcementId, "FAVORITE")
         return mapOf("success" to true)
     }
 
     fun deleteFavorite(memberId: String, announcementId: Long): Map<String, Any> {
-        favoriteRepository.deleteByIdMemberIdAndIdAnnouncementId(memberId, announcementId)
+        interestRepository.deleteByIdMemberIdAndIdAnnouncementIdAndStatus(memberId, announcementId, "FAVORITE")
         return mapOf("success" to true)
     }
 
     // ================= Hidden Announcements =================
     @Transactional(readOnly = true, transactionManager = "memberTransactionManager")
     fun getHiddenAnns(memberId: String): List<Map<String, Any?>> =
-        hiddenAnnRepository.findAllByIdMemberId(memberId).map {
+        interestRepository.findAllByIdMemberIdAndStatus(memberId, "HIDDEN").map {
             mapOf(
                 "announcement_id" to it.id.announcementId,
-                "hidden_at" to it.hiddenAt
+                "hidden_at" to it.updatedAt
             )
         }
 
     fun addHiddenAnn(memberId: String, announcementId: Long): Map<String, Any> {
-        val now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-        val hidId = MemberHiddenAnnId(memberId = memberId, announcementId = announcementId)
-        hiddenAnnRepository.save(MemberHiddenAnn(id = hidId, hiddenAt = now))
-
-        // 상호 배제 로직 (Option A): 숨김 등록 시 찜 자동 해제
-        favoriteRepository.deleteByIdMemberIdAndIdAnnouncementId(memberId, announcementId)
+        upsertInterest(memberId, announcementId, "HIDDEN")
         return mapOf("success" to true)
     }
 
     fun deleteHiddenAnn(memberId: String, announcementId: Long): Map<String, Any> {
-        hiddenAnnRepository.deleteByIdMemberIdAndIdAnnouncementId(memberId, announcementId)
+        interestRepository.deleteByIdMemberIdAndIdAnnouncementIdAndStatus(memberId, announcementId, "HIDDEN")
         return mapOf("success" to true)
+    }
+
+    private fun upsertInterest(memberId: String, announcementId: Long, status: String) {
+        val now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+        val id = AnnouncementInterestId(memberId = memberId, announcementId = announcementId)
+        val existing = interestRepository.findById(id).orElse(null)
+        if (existing != null) {
+            existing.status = status
+            existing.updatedAt = now
+            interestRepository.save(existing)
+        } else {
+            interestRepository.save(AnnouncementInterest(id = id, status = status, updatedAt = now))
+        }
     }
 
     // ================= Bookmark Folders =================

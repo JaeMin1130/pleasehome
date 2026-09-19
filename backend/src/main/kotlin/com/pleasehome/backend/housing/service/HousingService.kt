@@ -74,59 +74,61 @@ class HousingService(
     fun getAnnouncementFullDetails(id: Long): Map<String, Any?> {
         val ann = getAnnouncementById(id)
         val rgs = recruitmentGroupRepository.findAllByAnnouncementId(id)
-        val rgMap = rgs.associateBy { it.id ?: 0L }
+        val complexList = complexRepository.findAllByHousingUnitAnnouncementId(id)
         val summaries = unitRepository.findUnitSummaryByAnnouncementId(id).associateBy { it.getComplexId() ?: 0L }
-        val complexes = complexRepository.findAllByAnnouncementId(id).map { 
-            complexToMap(it, rgMap[it.recruitmentGroupId], summaries[it.id]) 
+        val complexRgMap = fetchComplexRecruitmentGroups(complexList.mapNotNull { it.id })
+        val complexes = complexList.map {
+            complexToMap(it, complexRgMap[it.id] ?: emptyList(), summaries[it.id])
         }
-        val units = unitRepository.findAllByAnnouncementIdOrderByExclusiveAreaAsc(id).map { unitToMap(it) }
+        val units = unitRepository.findAllByAnnouncementIdOrderByExclusiveAreaAsc(id)
+        val tagsMap = fetchTags(units.mapNotNull { it.id })
+        val unitMaps = units.map { unitToMap(it, tagsMap[it.id] ?: emptyList()) }
 
         return ann + mapOf(
             "recruitment_groups" to rgs.map { recruitmentGroupToMap(it) },
             "complexes" to complexes,
-            "units" to units
+            "units" to unitMaps
         )
     }
 
     @Cacheable("complexes", key = "#announcementId ?: 'all'")
     fun getComplexes(announcementId: Long?): List<Map<String, Any?>> {
         val list = if (announcementId != null) {
-            complexRepository.findAllByAnnouncementId(announcementId)
+            complexRepository.findAllByHousingUnitAnnouncementId(announcementId)
         } else {
             complexRepository.findAll()
         }
-        val rgIds = list.mapNotNull { it.recruitmentGroupId }.distinct()
-        val rgMap = if (rgIds.isNotEmpty()) {
-            recruitmentGroupRepository.findAllById(rgIds).associateBy { it.id ?: 0L }
-        } else emptyMap()
 
         val summaries = if (announcementId != null) {
             unitRepository.findUnitSummaryByAnnouncementId(announcementId).associateBy { it.getComplexId() ?: 0L }
         } else {
             unitRepository.findUnitSummaryGroupedByComplex().associateBy { it.getComplexId() ?: 0L }
         }
+        val complexRgMap = fetchComplexRecruitmentGroups(list.mapNotNull { it.id })
 
-        return list.map { complexToMap(it, rgMap[it.recruitmentGroupId], summaries[it.id]) }
+        return list.map { complexToMap(it, complexRgMap[it.id] ?: emptyList(), summaries[it.id]) }
     }
 
     @Cacheable("complex", key = "#id")
     fun getComplexById(id: Long): Map<String, Any?> {
         val complex = complexRepository.findById(id).orElseThrow { NoSuchElementException("단지를 찾을 수 없습니다. (ID: $id)") }
-        val rg = complex.recruitmentGroupId?.let { recruitmentGroupRepository.findById(it).orElse(null) }
+        val rgs = fetchComplexRecruitmentGroups(listOf(id))[id] ?: emptyList()
         val summary = unitRepository.findUnitSummaryByComplexId(id)
-        return complexToMap(complex, rg, summary)
+        return complexToMap(complex, rgs, summary)
     }
 
     @Cacheable("complexDetails", key = "#id")
     fun getComplexFullDetails(id: Long): Map<String, Any?> {
         val complex = complexRepository.findById(id).orElseThrow { NoSuchElementException("단지를 찾을 수 없습니다. (ID: $id)") }
+        // 최초 발견 공고 (전역 단지라 "그 공고"는 참고용 -- 실제 전체 이력은 historyList 참고)
         val ann = announcementRepository.findById(complex.announcementId).orElse(null)
-        val units = unitRepository.findAllByComplexIdOrderByExclusiveAreaAsc(id).map { unitToMap(it) }
-        val rg = complex.recruitmentGroupId?.let { recruitmentGroupRepository.findById(it).orElse(null) }
+        val units = unitRepository.findAllByComplexIdOrderByExclusiveAreaAsc(id)
+        val tagsMap = fetchTags(units.mapNotNull { it.id })
+        val unitMaps = units.map { unitToMap(it, tagsMap[it.id] ?: emptyList()) }
+        val rgs = fetchComplexRecruitmentGroups(listOf(id))[id] ?: emptyList()
         val summary = unitRepository.findUnitSummaryByComplexId(id)
-        val historyList = complexRepository.findHistoryList(complex.name, complex.address, id).map {
+        val historyList = complexRepository.findHistoryList(id).map {
             mapOf(
-                "complex_id" to it.getComplexId(),
                 "announcement_id" to it.getAnnouncementId(),
                 "title" to it.getTitle(),
                 "subscription_type" to it.getSubscriptionType(),
@@ -134,14 +136,12 @@ class HousingService(
             )
         }
 
-        val complexMap = complexToMap(complex, rg, summary) + mapOf(
-            "recruitment_group" to (if (rg != null) recruitmentGroupToMap(rg) else null)
-        )
+        val complexMap = complexToMap(complex, rgs, summary)
 
         return mapOf(
             "complex" to complexMap,
             "announcement" to (if (ann != null) announcementToSimpleMap(ann) else null),
-            "units" to units,
+            "units" to unitMaps,
             "historyList" to historyList
         )
     }
@@ -152,7 +152,25 @@ class HousingService(
             announcementId != null -> unitRepository.findAllByAnnouncementIdOrderByExclusiveAreaAsc(announcementId)
             else -> unitRepository.findAllByOrderByExclusiveAreaAsc()
         }
-        return list.map { unitToMap(it) }
+        val tagsMap = fetchTags(list.mapNotNull { it.id })
+        return list.map { unitToMap(it, tagsMap[it.id] ?: emptyList()) }
+    }
+
+    /** 단지별로 걸쳐있는 신청단위(모집단위) 목록을 일괄 조회 (N+1 방지) */
+    private fun fetchComplexRecruitmentGroups(complexIds: List<Long>): Map<Long, List<AnnouncementRecruitmentGroup>> {
+        if (complexIds.isEmpty()) return emptyMap()
+        val links = unitRepository.findDistinctRecruitmentGroupsByComplexIds(complexIds)
+        if (links.isEmpty()) return emptyMap()
+        val rgMap = recruitmentGroupRepository.findAllById(links.map { it.getRecruitmentGroupId() }.distinct())
+            .associateBy { it.id ?: 0L }
+        return links.groupBy({ it.getComplexId() }, { rgMap[it.getRecruitmentGroupId()] })
+            .mapValues { (_, v) -> v.filterNotNull() }
+    }
+
+    /** 유닛별 자격 태그를 일괄 조회 (N+1 방지) */
+    private fun fetchTags(unitIds: List<Long>): Map<Long, List<String>> {
+        if (unitIds.isEmpty()) return emptyMap()
+        return unitRepository.findTagsByUnitIds(unitIds).groupBy({ it.getHousingUnitId() }, { it.getTag() })
     }
 
     @Cacheable("sitemapPaths")
@@ -202,16 +220,16 @@ class HousingService(
     )
 
     private fun complexToMap(
-        c: Complex, 
-        rg: AnnouncementRecruitmentGroup? = null,
+        c: Complex,
+        rgs: List<AnnouncementRecruitmentGroup> = emptyList(),
         summary: UnitSummaryProjection? = null
     ) = mapOf(
         "id" to c.id,
         "announcement_id" to c.announcementId,
-        "recruitment_group_id" to c.recruitmentGroupId,
-        "recruitment_group_name" to rg?.name,
-        "recruitment_group_supply_count" to rg?.supplyCount,
-        "recruitment_group_reserve_count" to rg?.reserveCount,
+        // 전역 단지가 여러 신청단위에 걸칠 수 있어 이름/합계를 모아서 노출 (docs/dev/DOMAIN_MODEL.md 4장 강일리버파크 사례)
+        "recruitment_group_name" to rgs.joinToString(" / ") { it.name }.ifEmpty { null },
+        "recruitment_group_supply_count" to if (rgs.isEmpty()) null else rgs.sumOf { it.supplyCount },
+        "recruitment_group_reserve_count" to if (rgs.isEmpty()) null else rgs.sumOf { it.reserveCount },
         "min_deposit" to summary?.getMinDeposit(),
         "max_deposit" to summary?.getMaxDeposit(),
         "min_monthly_rent" to summary?.getMinMonthlyRent(),
@@ -242,10 +260,11 @@ class HousingService(
         "region" to a.region
     )
 
-    private fun unitToMap(u: HousingUnit) = mapOf(
+    private fun unitToMap(u: HousingUnit, tags: List<String> = emptyList()) = mapOf(
         "id" to u.id,
         "announcement_id" to u.announcementId,
         "complex_id" to u.complexId,
+        "recruitment_group_id" to u.recruitmentGroupId,
         "room_number" to u.roomNumber,
         "room_count" to u.roomCount,
         "room_type" to u.roomType,
@@ -253,7 +272,16 @@ class HousingService(
         "exclusive_area" to u.exclusiveArea,
         "contract_area" to u.contractArea,
         "target_group" to u.targetGroup,
+        "target_tags" to tags,
         "income_group" to u.incomeGroup,
+        // 신규 분해 필드 (docs/dev/DOMAIN_MODEL.md 3.4) -- 자격진단/향후 기능용, 기존 필드는 표시 하위호환 유지
+        "housing_product_type" to u.housingProductType,
+        "allocation_method" to u.allocationMethod,
+        "priority_rank" to u.priorityRank,
+        "rent_price_tier" to u.rentPriceTier,
+        "income_threshold_pct" to u.incomeThresholdPct,
+        "income_threshold_condition" to u.incomeThresholdCondition,
+        "sale_price" to u.salePrice,
         "supply_count" to u.supplyCount,
         "reserve_count" to u.reserveCount,
         "deposit" to u.deposit,

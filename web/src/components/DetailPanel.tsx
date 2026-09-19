@@ -413,9 +413,9 @@ export default function DetailPanel({
                 <span className={styles['info-label']}>신청 모집단위 (주택군)</span>
                 <span className={styles['info-val']} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1d4ed8', fontWeight: 600, flexWrap: 'wrap' }}>
                   <span>{complex.recruitment_group_name}</span>
-                  {((complex.recruitment_group_supply_count !== undefined && complex.recruitment_group_supply_count !== null) || complex.recruitment_group) && (
+                  {complex.recruitment_group_supply_count != null && (
                     <span style={{ fontSize: '0.825rem', fontWeight: 500, color: '#4b5563' }}>
-                      (주택군 총 공급 {complex.recruitment_group_supply_count ?? complex.recruitment_group?.supply_count}호 / 모집 예비자 {complex.recruitment_group_reserve_count ?? complex.recruitment_group?.reserve_count}명)
+                      (주택군 총 공급 {complex.recruitment_group_supply_count}호 / 모집 예비자 {complex.recruitment_group_reserve_count}명)
                     </span>
                   )}
                 </span>

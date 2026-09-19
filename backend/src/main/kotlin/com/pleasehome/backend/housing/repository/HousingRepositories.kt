@@ -30,27 +30,43 @@ interface AnnouncementRecruitmentGroupRepository : JpaRepository<AnnouncementRec
 
 @Repository
 interface ComplexRepository : JpaRepository<Complex, Long> {
+    // 참고: Complex는 전역 엔티티라 announcement_id로 "소유"되지 않음.
+    // 이 두 메서드는 announcementId 컬럼(최초 발견 공고 메타)만 보는 레거시 조회이며,
+    // "이 공고에 등장하는 단지" 조회는 findAllByHousingUnitAnnouncementId를 쓴다.
     fun findAllByAnnouncementId(announcementId: Long): List<Complex>
     fun findAllByAnnouncementIdIn(announcementIds: List<Long>): List<Complex>
 
     @Query("""
-        SELECT c.id as complexId, c.announcementId as announcementId, a.title as title, a.subscriptionType as subscriptionType, a.institution as institution
-        FROM Complex c, Announcement a
-        WHERE c.announcementId = a.id
-          AND c.name = :name
-          AND c.address = :address
-          AND c.id != :complexId
+        SELECT DISTINCT c FROM Complex c, HousingUnit u
+        WHERE u.complexId = c.id AND u.announcementId = :announcementId
+    """)
+    fun findAllByHousingUnitAnnouncementId(announcementId: Long): List<Complex>
+
+    @Query("""
+        SELECT DISTINCT u.announcementId as announcementId, a.title as title,
+               a.subscriptionType as subscriptionType, a.institution as institution
+        FROM HousingUnit u, Announcement a
+        WHERE u.complexId = :complexId AND u.announcementId = a.id
         ORDER BY a.id DESC
     """)
-    fun findHistoryList(name: String, address: String, complexId: Long): List<ComplexHistoryProjection>
+    fun findHistoryList(complexId: Long): List<ComplexHistoryProjection>
 }
 
 interface ComplexHistoryProjection {
-    fun getComplexId(): Long
     fun getAnnouncementId(): Long
     fun getTitle(): String
     fun getSubscriptionType(): String
     fun getInstitution(): String
+}
+
+interface ComplexRecruitmentGroupProjection {
+    fun getComplexId(): Long
+    fun getRecruitmentGroupId(): Long
+}
+
+interface UnitTagProjection {
+    fun getHousingUnitId(): Long
+    fun getTag(): String
 }
 
 @Repository
@@ -108,6 +124,19 @@ interface HousingUnitRepository : JpaRepository<HousingUnit, Long> {
         GROUP BY u.complexId
     """)
     fun findUnitSummaryByComplexId(complexId: Long): UnitSummaryProjection?
+
+    @Query("""
+        SELECT DISTINCT u.complexId as complexId, u.recruitmentGroupId as recruitmentGroupId
+        FROM HousingUnit u
+        WHERE u.complexId IN :complexIds AND u.recruitmentGroupId IS NOT NULL
+    """)
+    fun findDistinctRecruitmentGroupsByComplexIds(complexIds: List<Long>): List<ComplexRecruitmentGroupProjection>
+
+    @Query(
+        value = "SELECT housing_unit_id as housingUnitId, tag as tag FROM housing_unit_target_tags WHERE housing_unit_id IN :unitIds",
+        nativeQuery = true
+    )
+    fun findTagsByUnitIds(unitIds: List<Long>): List<UnitTagProjection>
 }
 
 interface UnitSummaryProjection {

@@ -24,8 +24,10 @@ class Member(
     var createdAt: String? = null
 )
 
+// 찜/숨김 통합 (docs/dev/DOMAIN_MODEL.md 2.3). 기존 member_favorites/member_hidden_anns
+// 테이블은 DB에 그대로 남아있으나(백업 목적) 앱 코드에서는 더 이상 참조하지 않음.
 @Embeddable
-data class MemberFavoriteId(
+data class AnnouncementInterestId(
     @Column(name = "member_id")
     var memberId: String = "",
 
@@ -34,32 +36,16 @@ data class MemberFavoriteId(
 ) : Serializable
 
 @Entity
-@Table(name = "member_favorites")
-class MemberFavorite(
+@Table(name = "announcement_interests")
+class AnnouncementInterest(
     @EmbeddedId
-    var id: MemberFavoriteId = MemberFavoriteId(),
+    var id: AnnouncementInterestId = AnnouncementInterestId(),
 
-    @Column(name = "favorited_at")
-    var favoritedAt: String? = null
-)
+    @Column(nullable = false)
+    var status: String = "FAVORITE",
 
-@Embeddable
-data class MemberHiddenAnnId(
-    @Column(name = "member_id")
-    var memberId: String = "",
-
-    @Column(name = "announcement_id")
-    var announcementId: Long = 0
-) : Serializable
-
-@Entity
-@Table(name = "member_hidden_anns")
-class MemberHiddenAnn(
-    @EmbeddedId
-    var id: MemberHiddenAnnId = MemberHiddenAnnId(),
-
-    @Column(name = "hidden_at")
-    var hiddenAt: String? = null
+    @Column(name = "updated_at")
+    var updatedAt: String? = null
 )
 
 @Embeddable

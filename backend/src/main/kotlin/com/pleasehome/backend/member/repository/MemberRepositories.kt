@@ -8,15 +8,9 @@ import org.springframework.stereotype.Repository
 interface MemberRepository : JpaRepository<Member, String>
 
 @Repository
-interface MemberFavoriteRepository : JpaRepository<MemberFavorite, MemberFavoriteId> {
-    fun findAllByIdMemberId(memberId: String): List<MemberFavorite>
-    fun deleteByIdMemberIdAndIdAnnouncementId(memberId: String, announcementId: Long)
-}
-
-@Repository
-interface MemberHiddenAnnRepository : JpaRepository<MemberHiddenAnn, MemberHiddenAnnId> {
-    fun findAllByIdMemberId(memberId: String): List<MemberHiddenAnn>
-    fun deleteByIdMemberIdAndIdAnnouncementId(memberId: String, announcementId: Long)
+interface AnnouncementInterestRepository : JpaRepository<AnnouncementInterest, AnnouncementInterestId> {
+    fun findAllByIdMemberIdAndStatus(memberId: String, status: String): List<AnnouncementInterest>
+    fun deleteByIdMemberIdAndIdAnnouncementIdAndStatus(memberId: String, announcementId: Long, status: String)
 }
 
 @Repository
