@@ -17,6 +17,79 @@ def clean_address(address):
     return address.strip()
 
 
+def normalize_address(address, name):
+    """전역 단지 중복 매칭용 정규화 (docs/dev/DOMAIN_MODEL.md 3.3, migrations/003b와 동일 규칙).
+    지오코딩(좌표)은 별도 후처리 단계(migrate_coords.js)에서 일어나 적재 시점엔 없으므로,
+    이 텍스트 정규화가 적재 시점 매칭의 유일한 수단임 -- 완벽하지 않을 수 있음."""
+    if not address:
+        return ""
+    addr = address.strip()
+    if name and addr.endswith(name):
+        addr = addr[: -len(name)].strip()
+    return re.sub(r'\s+', ' ', addr)
+
+
+def extract_source_key(relative_doc_path, institution):
+    """안정 비즈니스 키 "{institution}:{PAN_ID}" (docs/dev/DOMAIN_MODEL.md 3.1)."""
+    if not relative_doc_path:
+        return None
+    m = re.search(r'([A-Za-z]+)_([0-9A-Za-z]+)_\d{8}', relative_doc_path.replace(os.sep, '/'))
+    if not m:
+        return None
+    inst = institution or m.group(1)
+    return f"{inst}:{m.group(2)}"
+
+
+# ── housing_units.supply_type / income_group 분해 (docs/dev/DOMAIN_MODEL.md 3.4, 5장 동의어 사전) ──
+HOUSING_PRODUCT_TYPES = [
+    "통합공공임대", "공공분양", "분양전환", "매입임대", "든든전세",
+    "장기전세", "국민임대", "영구임대", "행복주택", "재개발임대",
+    "집주인임대", "기존주택",
+]
+ALLOCATION_METHODS = ["특별공급", "우선공급", "일반공급", "특별", "우선", "일반"]
+ALLOCATION_NORMALIZE = {"특별": "특별공급", "우선": "우선공급", "일반": "일반공급"}
+_PRIORITY_DIGIT_RE = re.compile(r"(\d(?:\s*[·,~]\s*\d)*)\s*순위")
+_RENT_TIER_RE = re.compile(r"시중\s*시세\s*(\d+)\s*%")
+_THRESHOLD_RE = re.compile(r"(\d{2,3})\s*%\s*(이하|초과)\s*(?:\(([^)]+)\))?")
+_NON_TAG_VALUES = {"상관없음", "일반", "일반공급", "우선공급", "특별공급", "해당없음", "", None}
+_PAREN_RE = re.compile(r"\([^)]*\)")
+_SPLIT_RE = re.compile(r"[,·/、]|\s+및\s+|\s+또는\s+")
+
+
+def parse_supply_type(raw, subscription_type_fallback):
+    if not raw:
+        return None, None
+    product = next((p for p in HOUSING_PRODUCT_TYPES if p in raw), None) or subscription_type_fallback
+    method = next((m for m in ALLOCATION_METHODS if m in raw), None)
+    return product, ALLOCATION_NORMALIZE.get(method, method)
+
+
+def parse_income_group(raw):
+    if not raw:
+        return None, None, None, None
+    if "가군" in raw:
+        priority_rank = "1순위급"
+    elif "나군" in raw:
+        priority_rank = "2순위급"
+    else:
+        m = _PRIORITY_DIGIT_RE.search(raw)
+        priority_rank = (re.sub(r"\s+", "", m.group(1)) + "순위") if m else None
+    m = _RENT_TIER_RE.search(raw)
+    rent_price_tier = int(m.group(1)) if m else None
+    m = _THRESHOLD_RE.search(raw)
+    income_threshold_pct = int(m.group(1)) if m else None
+    income_threshold_condition = m.group(3) if m else None
+    return priority_rank, rent_price_tier, income_threshold_pct, income_threshold_condition
+
+
+def split_target_tags(raw):
+    if not raw:
+        return []
+    stripped = _PAREN_RE.sub("", raw)
+    parts = [p.strip() for p in _SPLIT_RE.split(stripped)]
+    return [p for p in parts if p and p not in _NON_TAG_VALUES]
+
+
 def get_meta_from_folder(relative_doc_path, base_dir):
     """doc_path(LH_{PAN_ID}_{PAN_DT} 패턴)에서 PAN_ID를 추출하여
     해당 공고 폴더의 download_meta.json을 로드하여 반환합니다."""
@@ -183,6 +256,7 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
             
         folder_name = os.path.basename(os.path.dirname(raw_doc_path))
         api_meta = get_meta_from_folder(relative_doc_path, base_dir)
+        source_key = extract_source_key(relative_doc_path, ann_info.get("institution") or api_meta.get("_institution"))
 
         # 3. announcements 및 complexes 기존 ID 보존형 조회 (명시적 ID 우선, 그 다음 doc_path/폴더명 매칭)
         explicit_id = ann_info.get("id")
@@ -218,23 +292,35 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
                 )
                 existing = cursor.fetchone()
         
+        # 단지는 전역 엔티티라(docs/dev/DOMAIN_MODEL.md 3.3) 이 공고 소속만이 아니라 DB 전체에서
+        # (name, normalized_address) 기준으로 매칭한다. 좌표는 적재 시점엔 아직 없어(지오코딩은
+        # 후처리 단계) 텍스트 매칭만 가능 -- 마이그레이션 003의 좌표 매칭보다는 덜 정확할 수 있음.
         existing_complexes = {}
-        
+        existing_complexes_by_norm = {}
+        cursor.execute("SELECT id, name, address, normalized_address FROM complexes")
+        for c_id, c_name, c_addr, c_norm in cursor.fetchall():
+            if c_name and c_addr:
+                existing_complexes[(c_name, c_addr)] = c_id
+            if c_name and c_name not in existing_complexes:
+                existing_complexes[c_name] = c_id
+            if c_name and c_norm:
+                existing_complexes_by_norm[(c_name, c_norm)] = c_id
+
         if existing:
             ann_id = existing[0]
-            print(f"[기존 데이터 발견] 이전 공고 ID {ann_id}의 ID 및 소속 단지 ID를 영구 보존하며 갱신합니다.")
-            
-            # 기존 단지들의 (name, address) -> id 및 name -> id 매핑 수집
-            cursor.execute("SELECT id, name, address FROM complexes WHERE announcement_id = ?", (ann_id,))
-            for c_id, c_name, c_addr in cursor.fetchall():
-                if c_name and c_addr:
-                    existing_complexes[(c_name, c_addr)] = c_id
-                if c_name and c_name not in existing_complexes:
-                    existing_complexes[c_name] = c_id
-            
-            # 자식 테이블 정리 (외래키 제약조건 순서: housing_units -> complexes -> recruitment_groups -> others)
+            print(f"[기존 데이터 발견] 이전 공고 ID {ann_id}의 ID를 영구 보존하며 갱신합니다.")
+
+            if source_key:
+                cursor.execute("SELECT id FROM announcements WHERE source_key = ? AND id != ?", (source_key, ann_id))
+                collision = cursor.fetchone()
+                if collision:
+                    print(f"[경고] source_key '{source_key}'가 이미 공고 ID {collision[0]}에서 사용 중 -- 이번 공고는 NULL로 둡니다.")
+                    source_key = None
+
+            # 자식 테이블 정리 (외래키 제약조건 순서: housing_units -> recruitment_groups -> others)
+            # complexes는 전역 엔티티라 여기서 지우지 않는다 -- 다른 공고의 housing_units가
+            # 같은 단지를 참조하고 있을 수 있어, 삭제하면 그쪽 참조가 끊어짐.
             cursor.execute("DELETE FROM housing_units WHERE announcement_id = ?", (ann_id,))
-            cursor.execute("DELETE FROM complexes WHERE announcement_id = ?", (ann_id,))
             cursor.execute("DELETE FROM announcement_recruitment_groups WHERE announcement_id = ?", (ann_id,))
             cursor.execute("DELETE FROM announcement_schedules WHERE announcement_id = ?", (ann_id,))
             cursor.execute("DELETE FROM announcement_details WHERE announcement_id = ?", (ann_id,))
@@ -250,8 +336,8 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
             # announcements 테이블 UPDATE
             cursor.execute(
                 """
-                UPDATE announcements 
-                SET title = ?, institution = ?, subscription_type = ?, region = ?, doc_path = ?, dtl_url = ?, dtl_url_mob = ?, updated_at = datetime('now')
+                UPDATE announcements
+                SET title = ?, institution = ?, subscription_type = ?, region = ?, doc_path = ?, dtl_url = ?, dtl_url_mob = ?, source_key = ?, updated_at = datetime('now')
                 WHERE id = ?;
                 """,
                 (
@@ -262,6 +348,7 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
                     relative_doc_path,
                     final_dtl_url,
                     final_dtl_url_mob,
+                    source_key,
                     ann_id
                 )
             )
@@ -273,12 +360,19 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
             final_dtl_url = ann_info.get("dtl_url") or api_meta.get("DTL_URL") or api_meta.get("PAN_DTL_URL") or ""
             final_dtl_url_mob = ann_info.get("dtl_url_mob") or api_meta.get("DTL_URL_MOB") or api_meta.get("PAN_DTL_URL_MOB") or ""
 
+            if source_key:
+                cursor.execute("SELECT id FROM announcements WHERE source_key = ?", (source_key,))
+                collision = cursor.fetchone()
+                if collision:
+                    print(f"[경고] source_key '{source_key}'가 이미 공고 ID {collision[0]}에서 사용 중 -- 이번 공고는 NULL로 둡니다.")
+                    source_key = None
+
             cursor.execute(
                 """
                 INSERT INTO announcements (
-                    title, institution, subscription_type, region, doc_path, dtl_url, dtl_url_mob, created_at
+                    title, institution, subscription_type, region, doc_path, dtl_url, dtl_url_mob, source_key, created_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'));
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'));
                 """,
                 (
                     clean_title,
@@ -287,7 +381,8 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
                     final_region,
                     relative_doc_path,
                     final_dtl_url,
-                    final_dtl_url_mob
+                    final_dtl_url_mob,
+                    source_key
                 )
             )
             ann_id = cursor.lastrowid
@@ -352,49 +447,64 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
             )
             recruitment_group_name_to_id[rg["name"]] = cursor.lastrowid
 
-        # 7. complexes 및 housing_units 테이블 적재 (단지명 + 주소 복합 키 매핑 및 기존 ID 보존, FK 연결)
+        # 7. complexes 테이블 적재 (전역 엔티티 -- (name, normalized_address) 기준 전역 매칭 후 UPDATE,
+        #    없으면 신규 INSERT. recruitment_group_id는 더 이상 여기 없음, housing_units로 이동함
+        #    (docs/dev/DOMAIN_MODEL.md 3.3~3.4, 강일리버파크 사례).
         complex_name_to_id = {}
         complex_key_to_id = {}
+        complex_id_to_default_rg_name = {}
         for comp in json_data.get("complexes", []):
             cleaned_addr = clean_address(comp["address"])
-            existing_comp_id = existing_complexes.get((comp["name"], cleaned_addr)) or existing_complexes.get(comp["name"])
-            rg_name = comp.get("recruitment_group")
-            rg_id = recruitment_group_name_to_id.get(rg_name) if rg_name else None
-            
+            norm_addr = normalize_address(cleaned_addr, comp["name"])
+            existing_comp_id = (
+                existing_complexes.get((comp["name"], cleaned_addr))
+                or existing_complexes_by_norm.get((comp["name"], norm_addr))
+                or existing_complexes.get(comp["name"])
+            )
+
             if existing_comp_id:
                 cursor.execute(
                     """
-                    INSERT INTO complexes (id, announcement_id, name, address, heating_type, has_elevator, parking_info, complex_type, recruitment_group_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+                    UPDATE complexes
+                    SET address = ?, normalized_address = ?, heating_type = ?, has_elevator = ?,
+                        parking_info = ?, complex_type = ?, updated_at = datetime('now')
+                    WHERE id = ?;
                     """,
-                    (existing_comp_id, ann_id, comp["name"], cleaned_addr, comp.get("heating_type"), comp.get("has_elevator"), comp.get("parking_info"), comp.get("complex_type"), rg_id)
+                    (cleaned_addr, norm_addr, comp.get("heating_type"), comp.get("has_elevator"),
+                     comp.get("parking_info"), comp.get("complex_type"), existing_comp_id)
                 )
                 inserted_id = existing_comp_id
             else:
                 cursor.execute(
                     """
-                    INSERT INTO complexes (announcement_id, name, address, heating_type, has_elevator, parking_info, complex_type, recruitment_group_id)
+                    INSERT INTO complexes (announcement_id, name, address, normalized_address, heating_type, has_elevator, parking_info, complex_type)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?);
                     """,
-                    (ann_id, comp["name"], cleaned_addr, comp.get("heating_type"), comp.get("has_elevator"), comp.get("parking_info"), comp.get("complex_type"), rg_id)
+                    (ann_id, comp["name"], cleaned_addr, norm_addr, comp.get("heating_type"), comp.get("has_elevator"), comp.get("parking_info"), comp.get("complex_type"))
                 )
                 inserted_id = cursor.lastrowid
             complex_name_to_id[comp["name"]] = inserted_id
             if comp["name"] and cleaned_addr:
                 complex_key_to_id[(comp["name"], cleaned_addr)] = inserted_id
-            
+            complex_id_to_default_rg_name[inserted_id] = comp.get("recruitment_group")
+
+        # 8. housing_units 테이블 적재 (recruitment_group_id는 유닛별 지정 우선, 없으면 소속 단지의
+        #    기본 신청단위로 폴백 -- 한 단지가 여러 신청단위에 걸치는 경우 유닛별 지정이 필요함)
         units_count = 0
         for unit in json_data.get("units", []):
             comp_name = unit.get("complex_name")
             comp_addr = clean_address(unit.get("complex_address")) if unit.get("complex_address") else None
-            
+
             comp_id = None
             if comp_name and comp_addr:
                 comp_id = complex_key_to_id.get((comp_name, comp_addr))
-            
+
             # 주소 매핑이 없거나 실패한 경우, 단지명 단독으로 Fallback 매핑
             if not comp_id and comp_name:
                 comp_id = complex_name_to_id.get(comp_name)
+
+            rg_name = unit.get("recruitment_group") or complex_id_to_default_rg_name.get(comp_id)
+            rg_id = recruitment_group_name_to_id.get(rg_name) if rg_name else None
 
             # 매입임대 등 낱개 호실(room_number 존재)의 경우 supply=0, reserve=1 왜곡 자동 정규화
             sup_cnt = to_int(unit.get("supply_count"), 0)
@@ -403,28 +513,49 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
                 sup_cnt = 1
                 res_cnt = 0
 
+            raw_supply_type = unit.get("supply_type")
+            raw_income_group = unit.get("income_group")
+            raw_target_group = unit.get("target_group")
+            housing_product_type, allocation_method = parse_supply_type(raw_supply_type, final_sub_type)
+            priority_rank, rent_price_tier, income_threshold_pct, income_threshold_condition = parse_income_group(raw_income_group)
+            if allocation_method is None and raw_target_group:
+                for m in ("특별공급", "우선공급", "일반공급"):
+                    if m in raw_target_group:
+                        allocation_method = m
+                        break
+
             cursor.execute(
                 """
                 INSERT INTO housing_units (
-                    announcement_id, complex_id, room_number, room_count, room_type, supply_type, 
-                    exclusive_area, contract_area, target_group, income_group, 
+                    announcement_id, complex_id, recruitment_group_id, room_number, room_count, room_type, supply_type,
+                    exclusive_area, contract_area, target_group, income_group,
+                    housing_product_type, allocation_method, priority_rank, rent_price_tier,
+                    income_threshold_pct, income_threshold_condition, sale_price,
                     supply_count, reserve_count, deposit, monthly_rent,
                     max_deposit, min_deposit, max_monthly_rent, min_monthly_rent, attributes
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                 """,
                 (
-                    ann_id, comp_id, unit.get("room_number"), to_int(unit.get("room_count"), None), 
-                    unit.get("room_type"), unit.get("supply_type"),
-                    to_float(unit.get("exclusive_area")), to_float(unit.get("contract_area")), 
-                    unit.get("target_group"), unit.get("income_group"),
-                    sup_cnt, res_cnt, 
+                    ann_id, comp_id, rg_id, unit.get("room_number"), to_int(unit.get("room_count"), None),
+                    unit.get("room_type"), raw_supply_type,
+                    to_float(unit.get("exclusive_area")), to_float(unit.get("contract_area")),
+                    raw_target_group, raw_income_group,
+                    housing_product_type, allocation_method, priority_rank, rent_price_tier,
+                    income_threshold_pct, income_threshold_condition, to_float(unit.get("sale_price")),
+                    sup_cnt, res_cnt,
                     to_int(unit.get("deposit")), to_int(unit.get("monthly_rent"), 0),
-                    to_int(unit.get("max_deposit"), None), to_int(unit.get("min_deposit"), None), 
+                    to_int(unit.get("max_deposit"), None), to_int(unit.get("min_deposit"), None),
                     to_int(unit.get("max_monthly_rent"), None), to_int(unit.get("min_monthly_rent"), None),
                     str(unit.get("attributes", ""))
                 )
             )
+            unit_id = cursor.lastrowid
+            for tag in split_target_tags(raw_target_group):
+                cursor.execute(
+                    "INSERT OR IGNORE INTO housing_unit_target_tags (housing_unit_id, tag) VALUES (?, ?)",
+                    (unit_id, tag)
+                )
             units_count += 1
             
         # 8. data_load_logs 성공 로그 기록

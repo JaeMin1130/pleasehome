@@ -37,6 +37,7 @@ def init_db():
             attributes TEXT,                      -- 비정형 추가 공고 공통 속성
             dtl_url TEXT,                         -- PC 버전 공고상세 URL
             dtl_url_mob TEXT,                     -- 모바일 버전 공고상세 URL
+            source_key VARCHAR(100),               -- 안정 비즈니스 키 "{institution}:{PAN_ID}" (docs/dev/DOMAIN_MODEL.md 3.1, 기관별 채번 방식이 전역 유일을 보장 못해 NULL 허용)
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 레코드 생성 일시
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 레코드 최종 수정 일시
         );
@@ -66,12 +67,30 @@ def init_db():
         );
         """,
         """
-        -- [4] complexes: 모집 주택 단지 정보 테이블
+        -- [3-1] announcement_recruitment_groups: 신청단위(모집단위) 테이블
+        -- 주의: 이 테이블은 이전까지 db_init.py에서 누락되어 있었음(스키마 드리프트) --
+        -- insert_loader.py는 처음부터 이 테이블에 의존해왔고, 실제 운영 DB엔 존재했으나
+        -- db_init.py로 새 환경을 만들면 여기서 즉시 깨졌음. 실제 운영 스키마 기준으로 반영함.
+        CREATE TABLE IF NOT EXISTS announcement_recruitment_groups (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, -- 신청단위 ID (고유 식별자)
+            announcement_id INTEGER NOT NULL,     -- 소속 공고 ID (announcements.id 외래키)
+            name TEXT NOT NULL,                   -- 신청단위(모집단위) 명칭
+            region TEXT,                          -- 신청단위 소속 지역
+            supply_count INTEGER NOT NULL DEFAULT 0, -- 이 신청단위의 총 공급호수
+            reserve_count INTEGER NOT NULL DEFAULT 0, -- 이 신청단위의 총 예비자 모집인원
+            notes TEXT,                           -- 비고
+            FOREIGN KEY (announcement_id) REFERENCES announcements (id) ON DELETE CASCADE
+        );
+        """,
+        """
+        -- [4] complexes: 단지(건물) 정보 테이블 -- 전역 엔티티 (docs/dev/DOMAIN_MODEL.md 3.3).
+        -- 여러 공고/신청단위에 걸쳐 재사용되며, 어느 공고에도 "소유"되지 않음.
         CREATE TABLE IF NOT EXISTS complexes (
             id INTEGER PRIMARY KEY AUTOINCREMENT, -- 단지 ID (고유 식별자)
-            announcement_id INTEGER NOT NULL,     -- 소속 공고 ID (announcements.id 외래키)
+            announcement_id INTEGER,              -- 최초 발견 공고 참고용 메타 (소유 관계 아님, announcements.id)
             name VARCHAR(150) NOT NULL,           -- 단지/건물명 (예: '정릉 하늘마루', '개포라프레앙')
             address VARCHAR(255) NOT NULL,        -- 주택 지번/도로명 주소 (클라이언트 단에서 Geocoding에 사용)
+            normalized_address VARCHAR(255),      -- 전역 중복 매칭용 정규화 주소 (단지명 접미사/공백 제거)
             heating_type VARCHAR(50),             -- 난방 방식 (예: '개별난방', '지역난방', '중앙난방')
             has_elevator BOOLEAN,                 -- 승강기(엘리베이터) 설치 여부 (1: 설치, 0: 미설치)
             parking_info VARCHAR(100),            -- 주차 구획 수 및 가능 여부 정보
@@ -82,7 +101,8 @@ def init_db():
             latitude REAL,                                  -- 단지의 위도 좌표
             longitude REAL,                                 -- 단지의 경도 좌표
             is_imprecise INTEGER DEFAULT 0,                 -- 위치 좌표 부정확성 여부 플래그 (1: 부정확, 0: 정확)
-            FOREIGN KEY (announcement_id) REFERENCES announcements (id) ON DELETE CASCADE
+            -- CASCADE 아님: 단지는 전역이라 다른 공고의 housing_units가 계속 참조할 수 있음
+            FOREIGN KEY (announcement_id) REFERENCES announcements (id) ON DELETE SET NULL
         );
         """,
         """
@@ -91,14 +111,22 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT, -- 모집 조건 ID (고유 식별자)
             announcement_id INTEGER NOT NULL,     -- 소속 공고 ID (announcements.id 외래키)
             complex_id INTEGER,                   -- 소속 단지 ID (complexes.id 외래키, 단지가 없을 시 NULL)
+            recruitment_group_id INTEGER,         -- 소속 신청단위 ID (announcement_recruitment_groups.id, docs/dev/DOMAIN_MODEL.md 3.4 -- 단지가 아니라 여기서 관리, 한 단지가 여러 신청단위에 걸칠 수 있음)
             room_number VARCHAR(50),              -- 동/호수 정보 (특정 호실 공급 시 기록)
             room_count INTEGER,                   -- 방 개수
             room_type VARCHAR(100),               -- 주택형 (예: '39형', '59형')
-            supply_type VARCHAR(100),             -- 공급 구분 (예: '우선공급', '일반공급', '특별공급')
+            supply_type VARCHAR(100),             -- 공급 구분 원문 (예: '우선공급', '일반공급', '특별공급') -- 하위호환 표시용, 아래 분해 컬럼이 정규화된 값
             exclusive_area REAL NOT NULL,         -- 전용면적 (제곱미터 단위, REAL)
             contract_area REAL,                   -- 계약면적 (제곱미터 단위, REAL)
-            target_group VARCHAR(100),            -- 세부 공급 대상군 (예: '대학생', '청년', '신혼부부', '고령자')
-            income_group VARCHAR(50),             -- 소득 순위 조건 (예: '50% 이하', '70% 이하', '100% 이하')
+            target_group VARCHAR(100),            -- 세부 공급 대상군 원문 (예: '대학생', '청년', '신혼부부', '고령자') -- 압축형 문자열일 수 있음, housing_unit_target_tags 참고
+            income_group VARCHAR(50),             -- 소득/순위/임대조건 원문 (예: '50% 이하', '1순위 (시중시세 30%)') -- 아래 분해 컬럼이 정규화된 값
+            housing_product_type VARCHAR(50),     -- 주택상품유형 (행복주택/국민임대/매입임대/든든전세/장기전세/영구임대/공공분양 등, supply_type에서 분해)
+            allocation_method VARCHAR(20),        -- 배정방식 (일반공급/우선공급/특별공급, supply_type에서 분해)
+            priority_rank VARCHAR(20),            -- 입주순위 (1순위~4순위, 가군/나군 매핑 포함, income_group에서 분해)
+            rent_price_tier INTEGER,              -- 임대조건 시중시세 대비 % (예: 30, 40, income_group에서 분해)
+            income_threshold_pct INTEGER,         -- 실제 소득기준 % (income_group에서 분해)
+            income_threshold_condition VARCHAR(100), -- 소득기준의 조건축 (예: 건설형/매입형, 홑벌이/맞벌이 -- 공고마다 축이 다름)
+            sale_price REAL,                      -- 분양가 (nullable, 공공분양/분양전환 전용, 그 외엔 NULL)
             supply_count INTEGER DEFAULT 0,       -- 공급 예정 모집 호수
             reserve_count INTEGER DEFAULT 0,      -- 예비 입주자 모집 호수
             deposit BIGINT NOT NULL,              -- 기본 임대 보증금 (원 단위)
@@ -111,7 +139,18 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 레코드 생성 일시
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 레코드 최종 수정 일시
             FOREIGN KEY (announcement_id) REFERENCES announcements (id) ON DELETE CASCADE,
-            FOREIGN KEY (complex_id) REFERENCES complexes (id) ON DELETE CASCADE
+            FOREIGN KEY (complex_id) REFERENCES complexes (id) ON DELETE CASCADE,
+            FOREIGN KEY (recruitment_group_id) REFERENCES announcement_recruitment_groups (id) ON DELETE SET NULL
+        );
+        """,
+        """
+        -- [5-1] housing_unit_target_tags: 자격 태그 다대다 테이블 (docs/dev/DOMAIN_MODEL.md 3.5)
+        -- target_group의 압축 문자열("신혼부부, 예비신혼부부, 한부모가족" 등)을 분해한 개별 태그
+        CREATE TABLE IF NOT EXISTS housing_unit_target_tags (
+            housing_unit_id INTEGER NOT NULL, -- housing_units.id 외래키
+            tag VARCHAR(50) NOT NULL,         -- 자격 태그 (예: 청년/신혼부부/신생아가구/한부모가족/다자녀/고령자/주거약자)
+            PRIMARY KEY (housing_unit_id, tag),
+            FOREIGN KEY (housing_unit_id) REFERENCES housing_units (id) ON DELETE CASCADE
         );
         """,
         """
@@ -128,7 +167,14 @@ def init_db():
         "CREATE INDEX IF NOT EXISTS idx_schedules_announcement ON announcement_schedules (announcement_id);",
         "CREATE INDEX IF NOT EXISTS idx_details_announcement ON announcement_details (announcement_id);",
         "CREATE INDEX IF NOT EXISTS idx_complexes_announcement ON complexes (announcement_id);",
-        "CREATE INDEX IF NOT EXISTS idx_units_lookup ON housing_units (complex_id, announcement_id);"
+        "CREATE INDEX IF NOT EXISTS idx_recruitment_groups_ann_id ON announcement_recruitment_groups (announcement_id);",
+        "CREATE INDEX IF NOT EXISTS idx_units_lookup ON housing_units (complex_id, announcement_id);",
+        "CREATE INDEX IF NOT EXISTS idx_units_recruitment_group ON housing_units (recruitment_group_id);",
+        "CREATE INDEX IF NOT EXISTS idx_target_tags_tag ON housing_unit_target_tags (tag);",
+        # 전역 단지 중복 방지 (docs/dev/DOMAIN_MODEL.md 3.3) -- 새 환경에서도 처음부터 강제됨
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_complexes_name_normaddr ON complexes (name, normalized_address);",
+        # source_key는 기관 채번 방식이 전역 유일을 보장 못하는 사례가 있어(예: SH) NULL은 허용, 값이 있을 때만 유일성 강제
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_announcements_source_key ON announcements (source_key) WHERE source_key IS NOT NULL;"
     ]
     
     print("테이블 및 인덱스 생성을 시작합니다...")

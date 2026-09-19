@@ -269,28 +269,58 @@ housing_unit_id, tag   -- 청년/신혼부부/신생아가구/한부모가족/�
 | 항목 | 결과 |
 |---|---|
 | `complexes` 전역 중복제거 | 3,381개 → 3,146개 (235개 병합), `UNIQUE(name, normalized_address)` 인덱스 적용 |
-| 속성 충돌 해소 | 113건 중 32건 원문 검증 교정(매입다가구→다가구주택), 나머지 자동 정규화/다수결, 12건은 "원문 재대조 필요"로 별도 표시 (`003_resolution_report.json`) |
+| 속성 충돌 해소 | ~~113건 중 32건 원문 검증 교정~~ → **정정됨(11장 참고)**: "매입다가구→다가구주택" 교정은 잘못된 추론이었음이 이후 확인되어 되돌림. 최종적으로 65건 자동 정규화, 44건(32+12) 다수결/재대조 필요로 표시 (`003_resolution_report.json`, `003_resolution_correction.json`) |
 | `housing_units` 컬럼 분해 | `housing_product_type`/`allocation_method`/`priority_rank`/`rent_price_tier`/`income_threshold_pct`/`income_threshold_condition` 등 신규 컬럼 채움 |
 | `housing_unit_target_tags` | 12,184건 태그 생성 (45종) |
 | `announcements.source_key` | 295/295건 백필 성공. 단, `SH:0000000001`가 서로 다른 공고 2건에 중복 사용됨을 발견 — SH의 PAN_ID 채번 방식이 LH만큼 전역 유일하지 않을 가능성 있음 (UNIQUE 인덱스는 보류) |
 | `announcement_interests` 통합 | `member_favorites` 16건 + `member_hidden_anns` 203건 → 219건, 충돌 0건 |
 | 참조 무결성 최종 검증 | `housing_units.complex_id`, `member_bookmark_items.complex_id` 고아 참조 0건 (크로스 DB 검증) |
 
-**중요: 기존 컬럼/테이블은 삭제하지 않았습니다.** `supply_type`/`income_group`/`target_group`/`complexes.recruitment_group_id`/`member_favorites`/`member_hidden_anns`는 Kotlin 백엔드가 아직 그대로 참조하고 있어 지금 지우면 서비스가 깨집니다. 새 컬럼/테이블을 나란히 추가만 한 상태이며, **백엔드 코드가 새 스키마를 쓰도록 전환된 뒤에 구 컬럼 제거를 별도 마이그레이션으로 진행**해야 합니다.
+**당시엔 기존 컬럼/테이블을 삭제하지 않았음** — 이후 11장에서 Kotlin 백엔드 전환, `insert_loader.py`/스킬 개정까지 완료됨. 최신 상태는 11장 참고.
 
 ### 마이그레이션 진행 중 발견한 버그 2건
 1. `003_merge_complexes.py`가 `UNIQUE INDEX` 생성 실패로 죽으면서 뒤에 있던 `user_data.db` 리매핑 섹션 전체가 스킵됨 → 크로스 DB 참조 무결성 검증(`orphan` 카운트)으로 발견, `003c_remap_bookmarks.py`로 보정. **앞으로도 다단계 마이그레이션 후에는 반드시 크로스 DB 고아 참조 검증을 해야 함.**
 2. 리포트 파일 저장 코드가 실패 가능한 단계보다 뒤에 있어 첫 실행 시 통째로 유실됨 → 백업 DB에서 재구성, 스크립트 순서 수정.
 
-### 후속 작업 (아직 안 한 것)
-* Kotlin 백엔드가 신규 컬럼/테이블을 사용하도록 전환 (`HousingService`, `MemberInteractionService`, JPA 엔티티)
-* 전환 완료 후 구 컬럼/테이블 제거하는 정리 마이그레이션
-* 삭제된 옛 `complex_id`의 sitemap URL 301 리다이렉트 (SEO)
-* `insert_loader.py`/`extract-data`/`audit-data`를 5장 동의어 사전 + 이번에 확정된 스키마 기준으로 개정
-* "원문 재대조 필요" 12건 실제 확인
-* Eligibility/Community 테이블은 아직 미생성 (8장 열린 질문 해결 후 진행)
+## 11. 백엔드/프론트엔드 전환 및 파이프라인 개정 결과 (2026-09-19 후속)
 
-## 10. 관련 문서
+### 11.1 Kotlin 백엔드 전환 — 완료
+`HousingService`/`MemberInteractionService`/JPA 엔티티를 신규 스키마 기준으로 전환. **기존 API 응답 계약은 유지**(`supply_type`/`income_group`/`target_group` 등 원문 필드를 그대로 계속 반환)하여 프론트엔드 변경을 최소화함. 실서버 기동 후 실데이터로 검증:
+* 강일리버파크 2(복수 신청단위 걸침), 코아루 센트럴시티(3개 공고 이력) 등 정상 응답 확인
+* `npm run build` 전체 성공(3143+ 단지 페이지, 292+ 공고 페이지 정적 생성)
+
+전환 과정에서 회귀 버그 1건 발견·수정: `HomeClientLayout.tsx`의 `displayComplexes`가 `complex.announcement_id`(이제 "최초 발견 공고" 참고용 메타일 뿐)로 필터링해 특정 공고에서 단지 목록이 0개로 잡히던 문제. `announcementUnits`의 `complex_id` 기준 교집합으로 수정. 같은 패턴(`BookmarkTab.tsx`, `DetailPanel.tsx` 비교표)도 함께 정리.
+
+### 11.2 `insert_loader.py` 개정 — 완료 (가장 시급했던 항목)
+UNIQUE 제약(`complexes.name, normalized_address`)을 건 뒤에도 파이프라인이 옛 로직(공고 범위 스코프 매칭 + `normalized_address` 미기입)을 그대로 쓰고 있어서, 다음 적재부터 다시 조용히 중복이 쌓이거나 제약 위반이 날 상황이었음. 개정 내용:
+* 단지 매칭을 공고 범위(`WHERE announcement_id = ?`) → **전역**(`name`, `normalized_address` 기준)으로 변경
+* 정정공고 재적재 시 `complexes`를 더 이상 삭제하지 않음 (전역 엔티티라 다른 공고의 참조가 끊길 수 있어서) — 매칭되면 UPDATE, 새 단지면 INSERT
+* `recruitment_group_id`를 유닛별로 지정 가능하도록 지원(유닛 오버라이드 > 단지 기본값 폴백)
+* `supply_type`/`income_group` 분해(`housing_product_type`/`allocation_method`/`priority_rank`/`rent_price_tier`/`income_threshold_pct`/`income_threshold_condition`), `target_group` 태그 분해, `source_key` 계산(충돌 시 자동 NULL 폴백)을 적재 시점에 즉시 수행 — 더 이상 별도 백필 마이그레이션이 필요 없음
+* 완전히 새로운 DB(`db_init.py`로 생성)에 실제 공고 데이터를 처음부터 끝까지 적재하는 엔드투엔드 테스트로 검증
+
+### 11.3 `db_init.py` 스키마 드리프트 정리 — 완료
+새 컬럼/테이블 추가 도중, **`announcement_recruitment_groups` 테이블 자체가 애초부터 `db_init.py`에 없었다는 걸 발견** — `insert_loader.py`는 처음부터 이 테이블에 의존해왔는데, 신선한 환경에서 `db_init.py`로 DB를 만들면 항상 깨져있었음(이번 재설계의 발단이 된 `recruitment_group_id` 컬럼 드리프트보다 더 근본적인 동일 패턴의 사전 존재 버그). 지금은 실제 운영 스키마와 완전히 일치하도록 반영, 엔드투엔드 테스트로 확인함.
+
+### 11.4 `extract-data`/`audit-data` 스킬 개정 — 완료
+5장 동의어 사전을 규약/체크리스트로 반영. 추가로 이번 테스트 과정에서 발견한 원칙 2가지도 새로 추가:
+* `complex_type`을 임의로 "아파트/연립주택/다세대주택" 등으로 의역하지 말고 원문 표기 그대로 적재 (아래 11.6 참고)
+* `room_type`과 `순번` 컬럼 혼동 방지 규칙을 감사 Hard FAIL 목록에 추가
+
+### 11.5 중복 컬럼 정리 — 부분 완료
+`housing_units.supply_type_raw`/`income_group_raw`/`priority_rank_raw`/`rent_price_tier_raw` 4개 컬럼 삭제(`008_drop_redundant_raw_columns.py`) — 검증 결과 기존 컬럼과 100% 동일값이라 순수 중복이었음. **`supply_type`/`income_group`/`target_group`/`member_favorites`/`member_hidden_anns`는 삭제하지 않음** — 백엔드가 여전히 표시용으로 읽고 있어(의도적 하위호환 설계), 지금 지우면 서비스가 깨짐. 이 판단을 재확인한 뒤 그대로 유지하기로 함.
+
+### 11.6 실수 발견 및 정정: "매입다가구→다가구주택" 교정은 틀렸음
+`insert_loader.py`를 실제 데이터로 테스트하던 중, 244번 공고의 `data.json`이 `complex_type: "다세대주택"`을 **원본 필드로 이미 직접 갖고 있었다는 걸 확인**. 즉 4장에서 "원문 대조로 검증했다"고 판단한 근거(표의 "지자체명" 컬럼에 적힌 "매입다가구")는 건물 유형이 아니라 사업/매입 카테고리였을 가능성이 높고, `연립주택`/`다세대주택` 두 값이 애초에 정당한 독립 판단이었을 수 있음. 32건 전부 `다가구주택`으로 되돌리고 다수결로 재처리(`003_resolution_correction.json`) — 전부 `연립주택`으로 귀결(157번 공고 쪽 표본이 더 많았음). **이 32건도 여전히 "원문 재대조 필요" 상태**이며, 8장의 12건과 합쳐 총 44건이 미해결 상태임.
+
+### 11.7 sitemap 301 리다이렉트 — 완료
+`web/next.config.ts`에 `redirects()` 추가, 병합으로 삭제된 235개 옛 `complex_id` → 대표 id 매핑(`db-pipeline/migrations/complex_redirect_map.json`)을 빌드 시점에 읽어 정적 리다이렉트 테이블 생성. `next build` 시점에 평가되어 결과물에 포함되므로 배포 서버에 마이그레이션 파일이 별도로 필요하지 않음.
+
+### 11.8 시도하지 않음 (의도적 보류)
+* **Eligibility/Community 신규 테이블**: 8장의 열린 질문(소득 모델링 정교도, 후기 단위)이 아직 사용자 결정이 필요한 제품 설계 사안이라, 임의로 답을 정하고 구현하지 않음
+* **"원문 재대조 필요" 44건**: 로컬에 원문이 남아있는 경우(244, 315)만 대조 가능했고, 나머지는 원문 자체가 이미 정리되어 확인 불가 — 다수결/보류 상태로 남김
+
+## 12. 관련 문서
 
 * [[ARCHITECTURE.md]] — 현재 3-Tier 시스템 아키텍처
 * [[DECISION.md]] — ADR #1(찜/숨김 배타), #2(Dual DB) 등 기존 결정 배경
