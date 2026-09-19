@@ -353,8 +353,12 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
   }, [announcementUnits]);
 
   const displayComplexes = useMemo(() => {
-    return activeAnnId ? allComplexes.filter(c => c.announcement_id === activeAnnId) : [];
-  }, [activeAnnId, allComplexes]);
+    // 단지는 전역 엔티티라 announcement_id는 "최초 발견 공고"일 뿐, 이 공고 소속 여부와 무관함
+    // (docs/dev/DOMAIN_MODEL.md 3.3). 실제 소속은 이 공고의 housing_units가 가리키는 complex_id로 판단.
+    if (!activeAnnId) return [];
+    const complexIds = new Set(announcementUnits.map(u => u.complex_id));
+    return allComplexes.filter(c => complexIds.has(c.id));
+  }, [activeAnnId, allComplexes, announcementUnits]);
 
   const filteredComplexes = useMemo(() => {
     return displayComplexes.filter(complex => {

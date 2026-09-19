@@ -351,8 +351,21 @@ export default function BookmarkTab({
                               <ComplexCard
                                 complex={complex}
                                 isActive={false}
-                                onClick={() => {
-                                  onSelectAnnouncement(complex.announcement_id);
+                                onClick={async () => {
+                                  // complex.announcement_id는 "최초 발견 공고" 참고용 메타일 뿐이라(단지는
+                                  // 전역 엔티티, docs/dev/DOMAIN_MODEL.md 3.3), 실제로 걸쳐있는 공고 중
+                                  // 가장 최근 것으로 이동한다 (historyList는 최신순 정렬됨).
+                                  let targetAnnId = complex.announcement_id;
+                                  try {
+                                    const res = await fetch(`/api/complexes/${complex.id}/details`);
+                                    if (res.ok) {
+                                      const data = await res.json();
+                                      targetAnnId = data?.historyList?.[0]?.announcement_id ?? targetAnnId;
+                                    }
+                                  } catch {
+                                    // 조회 실패 시 최초 발견 공고로 폴백
+                                  }
+                                  onSelectAnnouncement(targetAnnId);
                                   setTimeout(() => {
                                     onSelectComplex(complex);
                                   }, 100);

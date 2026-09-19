@@ -193,7 +193,9 @@ export default function DetailPanel({
                     ))}
                   </tr>
                   <tr>
-                    <td className={styles['comp-label']}>소속 공고</td>
+                    {/* 단지는 전역 엔티티라 여러 공고에 걸칠 수 있음(docs/dev/DOMAIN_MODEL.md 3.3).
+                        announcement_id는 그중 최초 발견 공고 하나일 뿐이라 "소속"이 아니라 이렇게 라벨링 */}
+                    <td className={styles['comp-label']}>최초 등록 공고</td>
                     {comparisonComplexes.map((c) => {
                       const ann = announcements.find(a => a.id === c.announcement_id);
                       return <td key={c.id} className={styles['comp-val-text']} title={ann?.title}>{ann?.title || '-'}</td>;
