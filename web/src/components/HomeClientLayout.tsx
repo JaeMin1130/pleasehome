@@ -37,6 +37,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
   const [announcements, setAnnouncements] = useState<Announcement[]>(initialAnnouncements);
   const [allComplexes, setAllComplexes] = useState<Complex[]>(initialComplexes);
   const [announcementUnits, setAnnouncementUnits] = useState<any[]>([]);
+  const [isAnnouncementUnitsLoading, setIsAnnouncementUnitsLoading] = useState(false);
   
   const [activeAnnId, setActiveAnnId] = useState<number | null>(null);
   const [activeComplexId, setActiveComplexId] = useState<number | null>(null);
@@ -309,11 +310,13 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
   }, [allComplexes]);
 
   useEffect(() => {
-    if (activeAnnId === null) { setAnnouncementUnits([]); return; }
+    if (activeAnnId === null) { setAnnouncementUnits([]); setIsAnnouncementUnitsLoading(false); return; }
+    setIsAnnouncementUnitsLoading(true);
     fetch(`/api/housing-units?announcement_id=${activeAnnId}`)
       .then(res => res.json())
       .then(data => {
         setAnnouncementUnits(data);
+        setIsAnnouncementUnitsLoading(false);
         if (data && data.length > 0) {
           setFilterState({
             targetGroup: 'ALL',
@@ -392,7 +395,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
   }
 
   const activeAnn = announcements.find(a => a.id === activeAnnId);
-  const isPolicyOnly = activeAnnId !== null && displayComplexes.length === 0;
+  const isPolicyOnly = activeAnnId !== null && !isAnnouncementUnitsLoading && displayComplexes.length === 0;
 
   const handleSelectAnnouncement = (id: number | null) => {
     if (activeAnnId === id) {
