@@ -118,8 +118,20 @@ def main():
                 "region": row[4],
                 "doc_path": row[5]
             }
-            # 기존 단지 ID 목록 조회
-            cur.execute("SELECT id, name, address FROM complexes WHERE announcement_id = ?", (row[0],))
+            # 기존 단지 목록 조회. complexes.announcement_id("최초 발견 공고" 메타)뿐 아니라
+            # housing_units 경유 실제 참조도 같이 봐야 함 -- 단지는 전역 엔티티라 이 공고가
+            # 실제로 쓰는 단지의 "최초 발견"이 다른 공고일 수 있음(docs/dev/DOMAIN_MODEL.md 3.3).
+            cur.execute(
+                """
+                SELECT DISTINCT c.id, c.name, c.address FROM complexes c
+                WHERE c.announcement_id = ?
+                UNION
+                SELECT DISTINCT c.id, c.name, c.address FROM complexes c
+                JOIN housing_units u ON u.complex_id = c.id
+                WHERE u.announcement_id = ?
+                """,
+                (row[0], row[0]),
+            )
             for c_row in cur.fetchall():
                 existing_complexes.append({
                     "id": c_row[0],
@@ -130,16 +142,34 @@ def main():
         conn.close()
 
     # 5. 최종 작업 유형(Action Type) 결정
+    #
+    # 주의: 아래 title_match_warning은 "이 title 검색이 진짜 동일 공고 계보를 찾았다"는
+    # 보장이 전혀 아니다. LH는 "OO지역 국민임대주택 예비입주자 모집"류 제목을 매달
+    # 재사용하는 정례모집이 있어(그때그때 공가 있는 단지 풀이 완전히 다름), 이 경우
+    # title만 같을 뿐 실제로는 무관한 별개 회차인데도 여기서 "찾아진다". (실측 사례:
+    # 2026-09-20, "원주시지역 국민임대주택 예비입주자 모집" — 기존 id=120은 이미
+    # 서류제출까지 끝난 지난 회차였고, 이번 정정공고 폴더의 단지 3개 중 2개는 기존
+    # DB의 단지 4개와 전혀 무관했음. id=120 재사용 시 무관한 데이터가 덮어써질 뻔함.)
     if existing_record:
         action_type = "TYPE_B_UPDATE_EXISTING"
+        title_match_warning = (
+            "이 판정은 title 완전/공백무시 일치만으로 나온 것이며, 진짜 동일 공고 계보라는 "
+            "보장이 아님. api_meta.json에 정정사유(CRC 계열 필드)가 있는지, 그리고 무엇보다 "
+            "existing_complexes의 address와 이번 공고문에 실제로 나열된 단지 주소를 반드시 "
+            "직접 대조할 것. 겹치는 단지가 하나도 없거나 기존 공고의 신청접수~당첨자발표 "
+            "일정이 이번 문서의 일정과 완전히 동떨어져 있으면, id를 재사용하지 말고 감사로 "
+            "넘기기 전에 메인 에이전트에게 먼저 보고하여 사람 판단을 받을 것."
+        )
     else:
         action_type = "TYPE_A_NEW_ANNOUNCEMENT"
+        title_match_warning = None
 
     result = {
         "raw_title": raw_title,
         "clean_title": clean_title,
         "is_amendment": is_amendment,
         "action_type": action_type,
+        "title_match_warning": title_match_warning,
         "existing_announcement": existing_record,
         "existing_complexes": existing_complexes
     }

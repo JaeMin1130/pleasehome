@@ -265,32 +265,24 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
             cursor.execute("SELECT id FROM announcements WHERE id = ?", (explicit_id,))
             existing = cursor.fetchone()
         else:
-            target_title = ann_info.get("title") or api_meta.get("PAN_NM")
-            target_inst = ann_info.get("institution") or api_meta.get("_institution")
-            
-            # 1차: doc_path 정확 일치 또는 폴더명 매칭
+            # doc_path 정확 일치 또는 폴더명 매칭만 신뢰한다 (2026-09-20 사고 이후 policy).
+            # 과거엔 여기서 title+institution 완전일치로도 폴백했으나, LH가 "OO지역
+            # 국민임대주택 예비입주자 모집" 같은 제목을 매달 재사용하는 정례모집이 있어
+            # 완전히 무관한 별개 회차를 같은 announcement로 오판·덮어쓰는 사고가 실제로
+            # 발생함(원주시지역 국민임대, id=120 — 7월 회차 데이터가 9월 회차로 통째로
+            # 덮어써짐, 017 마이그레이션으로 복구). title 기반 매칭은 extract-data
+            # 0단계(detect_announcement_type.py)에서 사람/서브에이전트가 단지 주소 등을
+            # 대조해 검증한 뒤 명시적 id로만 전달하도록 하고, 여기서는 재시도하지 않는다.
             cursor.execute(
                 """
-                SELECT id FROM announcements 
-                WHERE doc_path = ? 
+                SELECT id FROM announcements
+                WHERE doc_path = ?
                    OR doc_path LIKE ?
                 ORDER BY id ASC LIMIT 1;
-                """, 
+                """,
                 (relative_doc_path, f"%{folder_name}%")
             )
             existing = cursor.fetchone()
-            
-            # 2차: clean_title 및 institution 일치 확인 (정정공고/재공고 실질 중복 감지)
-            if not existing and target_title and target_inst:
-                cursor.execute(
-                    """
-                    SELECT id FROM announcements 
-                    WHERE title = ? AND institution = ?
-                    ORDER BY id ASC LIMIT 1;
-                    """,
-                    (target_title, target_inst)
-                )
-                existing = cursor.fetchone()
         
         # 단지는 전역 엔티티라(docs/dev/DOMAIN_MODEL.md 3.3) 이 공고 소속만이 아니라 DB 전체에서
         # (name, normalized_address) 기준으로 매칭한다. 좌표는 적재 시점엔 아직 없어(지오코딩은
@@ -394,7 +386,7 @@ def load_json_to_db(json_data, dest_json_path=None, source_path=None):
                 INSERT INTO announcement_schedules (announcement_id, schedule_type, start_date, end_date, raw_text, notes)
                 VALUES (?, ?, ?, ?, ?, ?);
                 """,
-                (ann_id, sched["schedule_type"], sched.get("start_date"), sched.get("end_date"), sched["raw_text"], sched.get("notes"))
+                (ann_id, sched["schedule_type"], sched.get("start_date"), sched.get("end_date"), sched.get("raw_text"), sched.get("notes"))
             )
             
         # 5. announcement_details 테이블 적재
