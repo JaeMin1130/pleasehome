@@ -25,6 +25,7 @@ description: document.md 원문과 data.json을 6대 테이블 전 컬럼 1:1로
 - [ ] `dtl_url_mob`: 모바일 공고 URL이 최신 정정공고 URL로 유효하게 들어있는가?
 - [ ] `doc_path`: 실제 `document.md` 상대 경로와 100% 일치하는가? (정정공고 폴더 경로 확인)
 - [ ] **[누적 규칙 #8 ID 보존 검증]**: 기적재 정정공고의 경우 기존 공고 식별자(`announcements.id`)와 단지 식별자(`complexes.id`)가 영구 보존되는가? (URL 및 외부 참조 보호)
+- [ ] ⚠️ **[동일 계보 오판 Hard FAIL 검증 — TYPE_B 전용]**: `announcement.id`가 기존 값을 재사용하고 있다면, 그 id가 정말 "같은 공고의 정정"이 맞는지 독립적으로 재검증한다. DB에서 해당 id의 `announcement_schedules`(기존 일정)를 직접 조회하고, 이번 공고문(`document.md`)에 나열된 단지 주소들과 DB의 기존 단지(`complexes.address`, 해당 announcement_id로 조회) 주소를 하나씩 대조한다. 겹치는 단지가 하나도 없거나 일정이 완전히 동떨어져 있으면(제목만 같은 별개의 정례모집 회차로 의심됨) **즉시 FAIL** — extract-data가 무관한 공고 id를 잘못 재사용한 것이므로 audit_passed.token을 발급하지 말고 이 사실을 구체적으로 지적한다(실측 사례: 2026-09-20 "원주시지역 국민임대주택 예비입주자 모집" — 기존 id=120은 무관한 지난 회차였음).
 
 ### ② `announcement_schedules` (공고 일정)
 - [ ] `schedule_type`: `신청접수`, `서류제출대상자발표`, `서류제출`, `당첨자발표`, `계약체결` 5대 구분이 원문과 매핑되었는가?
