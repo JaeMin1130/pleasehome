@@ -22,6 +22,7 @@
 /db-pipeline/docs/pdf/!old
 /db-pipeline/docs/md/
 /db-pipeline/scratch/
+/db-pipeline/migrations/
 /web/.next/
 /web/node_modules/
 /backend/.gradle/
