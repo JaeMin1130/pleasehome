@@ -121,7 +121,8 @@ class HousingService(
     fun getComplexFullDetails(id: Long): Map<String, Any?> {
         val complex = complexRepository.findById(id).orElseThrow { NoSuchElementException("단지를 찾을 수 없습니다. (ID: $id)") }
         // 최초 발견 공고 (전역 단지라 "그 공고"는 참고용 -- 실제 전체 이력은 historyList 참고)
-        val ann = announcementRepository.findById(complex.announcementId).orElse(null)
+        // announcementId는 그 공고가 삭제되면 null이 될 수 있음 (ON DELETE SET NULL)
+        val ann = complex.announcementId?.let { announcementRepository.findById(it).orElse(null) }
         val units = unitRepository.findAllByComplexIdOrderByExclusiveAreaAsc(id)
         val tagsMap = fetchTags(units.mapNotNull { it.id })
         val unitMaps = units.map { unitToMap(it, tagsMap[it.id] ?: emptyList()) }
@@ -244,7 +245,6 @@ class HousingService(
         "has_elevator" to c.hasElevator,
         "parking_info" to c.parkingInfo,
         "complex_type" to c.complexType,
-        "attributes" to c.attributes,
         "latitude" to c.latitude,
         "longitude" to c.longitude,
         "is_imprecise" to c.isImprecise,

@@ -119,8 +119,9 @@ class Complex(
 
     // 최초 발견 공고 참고용 메타 (더 이상 소유 관계 아님 -- Complex는 전역 엔티티,
     // 신청단위 연관은 HousingUnit.recruitmentGroupId로 표현됨). docs/dev/DOMAIN_MODEL.md 3.3
-    @Column(name = "announcement_id", nullable = false)
-    var announcementId: Long = 0,
+    // nullable: 최초 발견 공고가 삭제되면 ON DELETE SET NULL로 null이 될 수 있음 (013 마이그레이션)
+    @Column(name = "announcement_id")
+    var announcementId: Long? = null,
 
     @Column(nullable = false)
     var name: String = "",
@@ -139,9 +140,6 @@ class Complex(
 
     @Column(name = "complex_type")
     var complexType: String? = null,
-
-    @Column(columnDefinition = "TEXT")
-    var attributes: String? = null,
 
     var latitude: Double? = null,
     var longitude: Double? = null,
