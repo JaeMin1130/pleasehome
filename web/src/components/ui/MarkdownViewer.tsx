@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import styles from './MarkdownViewer.module.css';
 
 // ==========================================
@@ -77,10 +78,17 @@ interface MarkdownViewerProps {
 export default function MarkdownViewer({ content }: MarkdownViewerProps) {
   if (!content) return null;
 
+  // extract-data가 감사용으로 남기는 <!-- Source: document.md#L... --> 같은 HTML 주석은
+  // react-markdown이 인라인 HTML을 해석하지 않아(rehype-raw 미사용) 그대로 텍스트로
+  // 노출됨. 사용자에게 보일 이유가 없는 내부 주석이므로 렌더링 전에 제거한다.
+  const displayContent = content.replace(/<!--[\s\S]*?-->/g, '').trim();
+  if (!displayContent) return null;
+
   return (
     <div className={styles['md-container']}>
       <ReactMarkdown
         remarkPlugins={[[remarkGfm, { singleTilde: false }]]}
+        rehypePlugins={[rehypeRaw]}
         components={{
           h1: ({ children }) => <h2 className={styles['md-h4']}>{children}</h2>, // 크기 밸런스를 위해 h1~h3은 h4 스타일 매핑
           h2: ({ children }) => <h2 className={styles['md-h4']}>{children}</h2>,
@@ -125,7 +133,7 @@ export default function MarkdownViewer({ content }: MarkdownViewerProps) {
           blockquote: ({ children }) => <CustomBlockquote>{children}</CustomBlockquote>
         }}
       >
-        {content}
+        {displayContent}
       </ReactMarkdown>
     </div>
   );
