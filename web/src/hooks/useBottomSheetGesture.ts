@@ -19,10 +19,19 @@ export function useBottomSheetGesture({
   onMidHeightReached,
   onMaxHeightReached
 }: UseBottomSheetGestureProps) {
-  const getDvh = useCallback((percent: number) => {
-    if (typeof window === 'undefined') return 0;
-    return (window.innerHeight * percent) / 100;
+  // SSR에서는 window가 없어 0을 반환하고, 클라이언트 첫 렌더(하이드레이션)에서는
+  // window.innerHeight를 바로 읽어 다른 값을 반환하면 React 하이드레이션 불일치가
+  // 발생한다. mounted 상태로 첫 클라이언트 렌더도 서버와 동일하게 0을 반환시키고,
+  // 마운트 후 effect에서 실제 값으로 갱신한다.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
   }, []);
+
+  const getDvh = useCallback((percent: number) => {
+    if (!mounted) return 0;
+    return (window.innerHeight * percent) / 100;
+  }, [mounted]);
 
   const finalMinHeight = minHeight ?? getDvh(25);
   const finalMidHeight = midHeight ?? getDvh(50);
