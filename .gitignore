@@ -31,6 +31,8 @@
 !/db-pipeline/.venv/
 *.db
 *.db-*
+*.sqlite
+*.sqlite-*
 *.pem
 *.pub
 *.gz
