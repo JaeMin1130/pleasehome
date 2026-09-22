@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { SECURITY_QUESTIONS } from '@/constants';
 import styles from './AuthModal.module.css';
@@ -38,8 +38,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [findNewPwdConfirm, setFindNewPwdConfirm] = useState('');
   const [findStep, setFindStep] = useState<FindStep>('input-id');
 
-  if (!isOpen) return null;
-
   const resetAll = () => {
     setError('');
     setView('login');
@@ -50,6 +48,17 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   };
 
   const handleClose = () => { resetAll(); onClose(); };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, handleClose]);
+
+  if (!isOpen) return null;
 
   // ── 로그인 ──────────────────────────────────────────────────
   const handleLogin = async (e: React.FormEvent) => {
