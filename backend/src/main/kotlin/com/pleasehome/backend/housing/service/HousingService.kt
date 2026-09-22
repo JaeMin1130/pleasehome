@@ -151,7 +151,7 @@ class HousingService(
         val list = when {
             complexId != null -> unitRepository.findAllByComplexIdOrderByExclusiveAreaAsc(complexId)
             announcementId != null -> unitRepository.findAllByAnnouncementIdOrderByExclusiveAreaAsc(announcementId)
-            else -> unitRepository.findAllByOrderByExclusiveAreaAsc()
+            else -> throw IllegalArgumentException("complex_id 또는 announcement_id 중 하나는 필수입니다.")
         }
         val tagsMap = fetchTags(list.mapNotNull { it.id })
         return list.map { unitToMap(it, tagsMap[it.id] ?: emptyList()) }

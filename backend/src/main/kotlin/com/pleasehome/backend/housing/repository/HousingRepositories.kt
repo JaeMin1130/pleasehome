@@ -73,7 +73,6 @@ interface UnitTagProjection {
 interface HousingUnitRepository : JpaRepository<HousingUnit, Long> {
     fun findAllByComplexIdOrderByExclusiveAreaAsc(complexId: Long): List<HousingUnit>
     fun findAllByAnnouncementIdOrderByExclusiveAreaAsc(announcementId: Long): List<HousingUnit>
-    fun findAllByOrderByExclusiveAreaAsc(): List<HousingUnit>
 
     @Query("""
         SELECT u.complexId as complexId, 

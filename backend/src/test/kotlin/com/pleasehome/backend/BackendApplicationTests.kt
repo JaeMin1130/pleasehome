@@ -3,6 +3,7 @@ package com.pleasehome.backend
 import com.pleasehome.backend.housing.service.HousingService
 import com.pleasehome.backend.member.service.MemberInteractionService
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -68,5 +69,19 @@ class BackendApplicationTests {
 
         // 4. 정리
         interactionService.deleteHiddenAnn(testMember, testAnnId)
+    }
+
+    // Regression: GET /api/housing-units with neither complex_id nor
+    // announcement_id fetched every housing unit row unbounded (11.7MB,
+    // ~1-1.7s, no auth required) — found by 백엔드 성능 QA on 2026-09-22.
+    @Test
+    fun testGetHousingUnitsRequiresAFilter() {
+        assertThrows(IllegalArgumentException::class.java) {
+            housingService.getHousingUnits(null, null)
+        }
+
+        val firstAnnId = housingService.getAllAnnouncements().first()["id"] as Long
+        val byAnnouncement = housingService.getHousingUnits(null, firstAnnId)
+        assertNotNull(byAnnouncement)
     }
 }
