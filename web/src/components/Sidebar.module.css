@@ -161,6 +161,7 @@
   position: relative;
   flex: var(--layout-flex-1);
   overflow-y: auto;
+  overflow-x: hidden;
   padding: var(--spacing-sm);
   display: flex;
   flex-direction: column;
@@ -282,6 +283,7 @@
   flex: var(--layout-flex-1);
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   background-color: var(--bg-body);
   display: flex;
   flex-direction: column;
@@ -621,6 +623,7 @@
   padding: var(--spacing-md);
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 
@@ -1109,6 +1112,7 @@
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     background-color: transparent;
     display: flex;
     flex-direction: column;
@@ -1117,6 +1121,7 @@
   .folders-list-container {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: var(--spacing-sm);
   }
 
