@@ -6,9 +6,11 @@
 !/.gitattributes
 !/README.md
 !/AGENTS.md
+!/TESTING.md
 !/llms.txt
 !/command.sh
 !/.agents/
+!/.github/
 !/docs/
 !/web/
 !/db-pipeline/

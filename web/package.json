@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
     "build:pack": "rm -rf deploy .next && next build && mkdir -p deploy && cp -r .next/standalone/. deploy/ && cp -r public deploy/ && cp -r .next/static deploy/.next/ && rm -f deploy/public_housing.db deploy/user_data.db && cd deploy && tar -czf ../announce_deploy.tar.gz . && cd .. && rm -rf deploy"
   },
   "dependencies": {
@@ -19,11 +20,18 @@
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.1.1",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
-    "typescript": "^5"
+    "jsdom": "^30.1.1",
+    "typescript": "^5",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.1"
   }
 }
