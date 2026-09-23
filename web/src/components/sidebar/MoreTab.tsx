@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Link from 'next/link';
 import styles from '../Sidebar.module.css';
 import { UI_SIZES, UI_STROKE_WIDTHS, SECURITY_QUESTIONS } from '@/constants';
 
@@ -201,6 +202,14 @@ export default function MoreTab({
         )}
 
         <div className={styles['more-menu-group']}>
+          <Link href="/about" className={styles['more-menu-item']}>
+            <span className={styles['more-menu-label']}>서비스 소개</span>
+            <span className={styles['more-menu-chevron']}>
+              <svg width={UI_SIZES.ICON_XS} height={UI_SIZES.ICON_XS} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.BOLD} strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </span>
+          </Link>
           <div className={styles['more-menu-item']} onClick={toggleTheme}>
             <span className={styles['more-menu-label']}>지도 모드</span>
             <div className={styles['more-menu-value-wrapper']}>
