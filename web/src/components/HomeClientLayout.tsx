@@ -7,6 +7,7 @@ import DetailPanel from '@/components/DetailPanel';
 import NavigationBar, { NavigationTabType } from '@/components/NavigationBar';
 import BookmarkModal from '@/components/ui/BookmarkModal';
 import AuthModal from '@/components/ui/AuthModal';
+import CatRunLoader from '@/components/ui/CatRunLoader';
 import { formatMoney, formatRent, formatTargetGroup } from '@/utils/formatters';
 import { Announcement, Complex, FilterState, BookmarkFolder, BookmarkItem } from '@/types';
 import styles from '@/app/page.module.css';
@@ -23,7 +24,7 @@ const Map = dynamic(() => import('@/components/Map'), {
   ssr: false,
   loading: () => (
     <div className={styles['loading-container']}>
-      데이터를 불러오는 중입니다...
+      <CatRunLoader label="데이터를 불러오는 중입니다..." />
     </div>
   )
 });
@@ -750,7 +751,7 @@ export default function HomeClientLayout(props: HomeClientLayoutProps) {
   return (
     <Suspense fallback={
       <div className={styles['loading-container']}>
-        공공청약 지도를 불러오는 중입니다...
+        <CatRunLoader label="공공청약 지도를 불러오는 중입니다..." />
       </div>
     }>
       <HomeContent {...props} />
