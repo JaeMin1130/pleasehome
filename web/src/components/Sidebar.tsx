@@ -59,7 +59,7 @@ export default function Sidebar({
   activeComparisonFolderId, onToggleComparison,
   onHoverComplex
 }: SidebarProps) {
-  const { member } = useAuth();
+  const { member, favoriteAnns: memberFavoriteAnns, hiddenAnns: memberHiddenAnns } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [complexSearchTerm, setComplexSearchTerm] = useState('');
   const [isMounted, setIsMounted] = useState(false);
@@ -164,26 +164,11 @@ export default function Sidebar({
   const [favoriteAnns, setFavoriteAnns] = useState<{ id: number; favoritedAt: string }[]>([]);
   const favoriteAnnIds = favoriteAnns.map((x) => x.id);
 
-  // 마운트 및 로그인 상태 변경 시 숨긴 공고 목록 로드 (API)
+  // 💡 로그인 상태 확인(/api/auth/me)에 번들링되어 온 숨김 공고 스냅샷을 그대로 동기화
+  // (과거엔 여기서 별도 fetch('/api/member/hidden-anns')를 호출해 2-hop 대기가 있었음)
   useEffect(() => {
-    const loadHiddenAnns = async () => {
-      if (member) {
-        try {
-          const res = await fetch('/api/member/hidden-anns');
-          const data = await res.json();
-          if (Array.isArray(data)) {
-            setDisabledAnns(data.map((item: any) => ({ id: item.announcement_id, disabledAt: item.hidden_at })));
-          }
-        } catch (e) {
-          console.error('Failed to load hidden announcements', e);
-        }
-      } else {
-        setDisabledAnns([]);
-      }
-    };
-    loadHiddenAnns();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [member]);
+    setDisabledAnns(member ? memberHiddenAnns : []);
+  }, [member, memberHiddenAnns]);
 
   const handleToggleDisableAnn = (id: number) => {
     if (!member) {
@@ -234,26 +219,10 @@ export default function Sidebar({
     setDisabledAnns(next);
   };
 
-  // 마운트 및 로그인 상태 변경 시 찜한 공고 목록 로드 (API)
+  // 💡 로그인 상태 확인(/api/auth/me)에 번들링되어 온 찜 공고 스냅샷을 그대로 동기화
   useEffect(() => {
-    const loadFavoriteAnns = async () => {
-      if (member) {
-        try {
-          const res = await fetch('/api/member/favorites');
-          const data = await res.json();
-          if (Array.isArray(data)) {
-            setFavoriteAnns(data.map((item: any) => ({ id: item.announcement_id, favoritedAt: item.favorited_at })));
-          }
-        } catch (e) {
-          console.error('Failed to load favorite announcements', e);
-        }
-      } else {
-        setFavoriteAnns([]);
-      }
-    };
-    loadFavoriteAnns();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [member]);
+    setFavoriteAnns(member ? memberFavoriteAnns : []);
+  }, [member, memberFavoriteAnns]);
 
   const handleToggleFavoriteAnn = (id: number) => {
     if (!member) {

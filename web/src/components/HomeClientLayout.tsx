@@ -64,7 +64,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
     complexName: ''
   });
 
-  const { member } = useAuth();
+  const { member, bookmarkFolders: memberBookmarkFolders, bookmarkItems: memberBookmarkItems } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
   // 로컬스토리지 기반 다크모드/라이트모드 전역 테마 초기화 동기화
@@ -81,44 +81,18 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
 
   const DEFAULT_FOLDERS: BookmarkFolder[] = [];
 
-  // 회원 로그인 상태 변경 시 서버 데이터 동기화
+  // 💡 로그인 상태 확인(/api/auth/me)에 번들링되어 온 북마크 폴더/아이템 스냅샷을 그대로 동기화
+  // (과거엔 여기서 별도로 bookmark-folders/bookmark-items를 fetch해 2-hop 대기가 있었음)
   useEffect(() => {
-    const loadMemberData = async () => {
-      if (member) {
-        try {
-          const [foldersRes, itemsRes] = await Promise.all([
-            fetch('/api/member/bookmark-folders'),
-            fetch('/api/member/bookmark-items'),
-          ]);
-          const foldersData = await foldersRes.json();
-          const itemsData = await itemsRes.json();
-
-          if (Array.isArray(foldersData)) {
-            setBookmarkFolders(
-              foldersData.map((f: any) => ({
-                id: f.id, name: f.name, color: f.color, createdAt: f.created_at,
-              }))
-            );
-          }
-          if (Array.isArray(itemsData)) {
-            setBookmarkItems(
-              itemsData.map((i: any) => ({
-                complexId: i.complex_id, folderId: i.folder_id,
-                memo: i.memo ?? undefined, createdAt: i.created_at,
-              }))
-            );
-          }
-        } catch (e) {
-          console.error('Failed to load member bookmark data', e);
-        }
-      } else {
-        setBookmarkFolders(DEFAULT_FOLDERS);
-        setBookmarkItems([]);
-      }
-    };
-    loadMemberData();
+    if (member) {
+      setBookmarkFolders(memberBookmarkFolders);
+      setBookmarkItems(memberBookmarkItems);
+    } else {
+      setBookmarkFolders(DEFAULT_FOLDERS);
+      setBookmarkItems([]);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [member]);
+  }, [member, memberBookmarkFolders, memberBookmarkItems]);
 
   const bookmarkedIds = bookmarkItems.map(item => item.complexId);
 

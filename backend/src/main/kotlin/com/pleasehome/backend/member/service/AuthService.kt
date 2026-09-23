@@ -16,7 +16,8 @@ import java.time.format.DateTimeFormatter
 @Service
 @Transactional(transactionManager = "memberTransactionManager")
 class AuthService(
-    private val memberRepository: MemberRepository
+    private val memberRepository: MemberRepository,
+    private val interactionService: MemberInteractionService
 ) {
     private val passwordEncoder = BCryptPasswordEncoder()
     private val cookieName = "pleasehome_session"
@@ -82,12 +83,18 @@ class AuthService(
         val memberId = getMemberIdFromCookie(request) ?: return mapOf("member" to null)
         val member = memberRepository.findById(memberId).orElse(null) ?: return mapOf("member" to null)
 
+        // 로그인 상태 확인과 개인화 데이터(찜/숨김/북마크)를 한 번의 요청으로 묶어
+        // 클라이언트의 "인증 확인 → 개인화 데이터 조회" 2-hop 대기를 없앤다.
         return mapOf(
             "member" to mapOf(
                 "id" to member.id,
                 "security_q" to member.securityQ,
                 "created_at" to member.createdAt
-            )
+            ),
+            "favorites" to interactionService.getFavorites(memberId),
+            "hidden_anns" to interactionService.getHiddenAnns(memberId),
+            "bookmark_folders" to interactionService.getBookmarkFolders(memberId),
+            "bookmark_items" to interactionService.getBookmarkItems(memberId)
         )
     }
 
