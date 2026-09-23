@@ -156,4 +156,17 @@
 * **원인 (Cause)**: Sidebar.tsx 내 미사용 bookmarkUnits의 의존성 누수로 O(N²) 캐스케이딩 fetch 폭풍 발생 및 useMemo 부재로 리렌더링마다 공고 정렬/카운트가 전수 반복 실행됨
 * **해결 (Solution)**: 미사용 bookmarkUnits 상태와 fetch 이펙트를 전면 제거하고, 공고 정렬 및 5대 상태 카운트를 useMemo로 단일 순회 캐싱하여 연산 부하를 차단함
 
+### [2026-09-23] 구글 색인 대량 누락 및 404 유입 이탈 해결
+* **분류**: 웹 프론트엔드 / SEO
+* **현상 (Problem)**: Search Console 기준 3,181개 페이지 미색인(449개만 색인). 네이버는 정상 색인되는데 구글만 실패함. 동시에 GA4에서 "404: This page could not be found"가 인기 페이지 6위(조회수 410, 이탈률 68.8%)로 잡힘
+* **원인 (Cause)**:
+  1. **고정 canonical**: `layout.tsx`에 `<link rel="canonical" href="https://pleasehome.com/">`가 고정값으로 박혀 있어, 공고/단지 상세 등 모든 하위 페이지가 홈페이지를 canonical로 선언한 셈이 되어 구글이 전부 홈페이지의 중복으로 취급해 색인 제외함. 네이버는 canonical 반영이 상대적으로 약해 영향을 덜 받음
+  2. **404 유입/이탈**: 루트(`app/`)와 `complexes/[complexId]/`에 커스텀 `not-found.tsx`가 없어 Next.js 기본 흰 화면 404로 떨어짐 (홈으로 돌아가는 링크 없음)
+  3. **리다이렉트 맵 누락**: 단지 병합 마이그레이션 `011_merge_residual_complex_duplicates.py`가 병합한 단지 2건(`1315→3671`, `1217→2463`)이 `complex_redirect_map.json`에 반영 안 됨 — 이미 색인됐던 옛 단지 URL이 리다이렉트 없이 그대로 404가 됨
+* **해결 (Solution)**:
+  1. 루트 레이아웃의 고정 canonical 태그 제거, 홈(`page.tsx`)과 공고/단지 상세 `generateMetadata`에 각자 자기 URL을 가리키는 `alternates.canonical`을 페이지별로 명시
+  2. `web/src/app/not-found.tsx` + `not-found.module.css` 신설(홈 복귀 링크 포함) — 루트에 두어 하위 라우트 전부가 상속받도록 함
+  3. `complex_redirect_map.json`에 누락된 011번 병합분 2건 추가
+  4. 재발 방지를 위해 [AGENTS.md 누적 규칙 #11](../../AGENTS.md)에 "단지 병합 마이그레이션 작성 시 redirect map 동시 갱신 의무"를 명문화함
+
 

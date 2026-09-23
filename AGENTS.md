@@ -47,4 +47,5 @@
        - **100% PASS 판정 시:** 감사 서브에이전트가 해당 공고 폴더에 `audit_passed.token`을 발급한다.
     4. **3단계 (게이트 검증 후 적재):** 메인 에이전트는 물리적으로 `audit_passed.token`이 발급되었음을 확인한 후, 비로소 `python3 .agents/scripts/insert_loader.py db-pipeline/docs/md/{공고_폴더}/data.json`을 단 1회 실행하여 적재를 완료한다.
 
-
+* **[누적 규칙 #11]**
+  - **내용:** 에이전트는 `db-pipeline/migrations/`에 단지(complex) ID 병합 마이그레이션(기존 행을 canonical 행으로 흡수·삭제하는 스크립트)을 작성·실행할 때, 소멸되는 `old_id → 생존하는 canonical_id` 매핑을 해당 마이그레이션 실행 직후 반드시 `db-pipeline/migrations/complex_redirect_map.json`에도 함께 반영해야 한다(기존 매핑 로드 → 신규 항목 병합 → 재저장). 이 파일은 `web/next.config.ts`의 301 리다이렉트 규칙이 참조하는 유일한 소스이며 자동 갱신 로직이 없어서, 누락 시 이미 검색엔진에 색인된 옛 단지 URL이 그대로 404가 되어 SEO 점수 하락 및 사용자 이탈로 직결된다. (2026-09-23 실제 발생: `011_merge_residual_complex_duplicates.py` 병합분 2건이 누락되어 있다가 뒤늦게 발견 및 보정됨. 상세는 [TROUBLESHOOTING.md](docs/dev/TROUBLESHOOTING.md) 참고.)
