@@ -24,17 +24,19 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const annId = parseInt(id, 10);
-  if (isNaN(annId)) return { title: '공고 상세 정보 | PleaseHome' };
+  const canonical = `https://pleasehome.com/announcements/details/${id}`;
+  if (isNaN(annId)) return { title: '공고 상세 정보 | PleaseHome', alternates: { canonical } };
 
   try {
     const data = await fetchAnnouncementDetails(annId);
-    if (!data) return { title: '공고를 찾을 수 없습니다 | PleaseHome' };
+    if (!data) return { title: '공고를 찾을 수 없습니다 | PleaseHome', alternates: { canonical } };
     return {
       title: `${data.title} - ${data.institution} | PleaseHome`,
       description: `${data.institution}에서 공급하는 ${data.subscription_type} 청약 공고의 상세 입주 기준 및 신청 정보 가이드입니다.`,
+      alternates: { canonical },
     };
   } catch {
-    return { title: '공고 상세 정보 | PleaseHome' };
+    return { title: '공고 상세 정보 | PleaseHome', alternates: { canonical } };
   }
 }
 

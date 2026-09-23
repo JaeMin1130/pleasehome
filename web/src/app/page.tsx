@@ -1,9 +1,17 @@
 import Link from 'next/link';
+import { Metadata } from 'next';
 import HomeClientLayout from '@/components/HomeClientLayout';
 import { fetchAnnouncements, fetchComplexes } from '@/lib/api';
 import { Announcement, Complex } from '@/types';
 
 export const revalidate = 3600; // 1시간 주기 점진적 정적 재생성(ISR)
+
+// 💡 루트 레이아웃에 고정 canonical이 박혀 있어서 모든 하위 페이지(공고/단지 상세 등)가
+// 홈페이지를 canonical로 지정한 것처럼 구글에 잡혀 색인에서 제외되던 버그가 있었음.
+// 그 고정 태그는 제거하고, 각 라우트가 자기 자신을 canonical로 명시하게 함.
+export const metadata: Metadata = {
+  alternates: { canonical: 'https://pleasehome.com/' },
+};
 
 export default async function HomePage() {
   let announcements: Announcement[] = [];
