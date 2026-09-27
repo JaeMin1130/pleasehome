@@ -4,6 +4,8 @@ import com.pleasehome.backend.member.entity.Member
 import com.pleasehome.backend.member.repository.MemberRepository
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseCookie
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -12,15 +14,27 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.security.MessageDigest
+import java.util.Base64
+import java.util.UUID
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 
 @Service
 @Transactional(transactionManager = "memberTransactionManager")
 class AuthService(
     private val memberRepository: MemberRepository,
-    private val interactionService: MemberInteractionService
+    private val interactionService: MemberInteractionService,
+    @Value("\${session.secret:}") secret: String
 ) {
     private val passwordEncoder = BCryptPasswordEncoder()
     private val cookieName = "pleasehome_session"
+
+    // ponytail: 비밀키 미설정 시 프로세스별 랜덤 키 사용(재시작마다 전원 로그아웃). 운영은 SESSION_SECRET 필수.
+    private val sessionSecret: ByteArray = secret.ifBlank {
+        LoggerFactory.getLogger(AuthService::class.java).warn("SESSION_SECRET 미설정: 재시작 시 모든 세션이 만료됩니다.")
+        UUID.randomUUID().toString() + UUID.randomUUID()
+    }.toByteArray()
 
     fun register(body: Map<String, String>, response: HttpServletResponse): Map<String, Any> {
         val id = body["id"]?.trim() ?: throw IllegalArgumentException("모든 항목을 입력해주세요.")
@@ -160,16 +174,24 @@ class AuthService(
         return mapOf("success" to true)
     }
 
+    // 쿠키 값은 "아이디.HMAC서명" 형식이며, 서명이 맞지 않으면 비로그인으로 취급한다.
     fun getMemberIdFromCookie(request: HttpServletRequest): String? {
-        val authHeader = request.getHeader("Authorization")
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7).trim()
-        }
-        return request.cookies?.firstOrNull { it.name == cookieName }?.value?.takeIf { it.isNotBlank() }
+        val value = request.cookies?.firstOrNull { it.name == cookieName }?.value ?: return null
+        val dot = value.lastIndexOf('.')
+        if (dot <= 0) return null
+        val memberId = value.substring(0, dot)
+        val expected = sign(memberId).toByteArray()
+        return memberId.takeIf { MessageDigest.isEqual(expected, value.substring(dot + 1).toByteArray()) }
+    }
+
+    private fun sign(memberId: String): String {
+        val mac = Mac.getInstance("HmacSHA256")
+        mac.init(SecretKeySpec(sessionSecret, "HmacSHA256"))
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(mac.doFinal(memberId.toByteArray()))
     }
 
     private fun setSessionCookie(response: HttpServletResponse, memberId: String) {
-        val cookie = ResponseCookie.from(cookieName, memberId)
+        val cookie = ResponseCookie.from(cookieName, "$memberId.${sign(memberId)}")
             .path("/")
             .httpOnly(true)
             .sameSite("Lax")

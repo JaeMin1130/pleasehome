@@ -43,7 +43,8 @@ function deploy_backend() {
     cd $REMOTE_PATH/backend
     mv -f backend.jar.new backend.jar
     pm2 delete pleasehome-backend 2>/dev/null || true
-    pm2 start 'java -Xms128m -Xmx256m -XX:+UseSerialGC -XX:ReservedCodeCacheSize=48m -XX:MaxMetaspaceSize=128m -Xss512k -jar backend.jar' --name pleasehome-backend --cwd $REMOTE_PATH/backend
+    [ -s .session_secret ] || (umask 077 && openssl rand -hex 32 > .session_secret)
+    SESSION_SECRET=\$(cat .session_secret) pm2 start 'java -Xms128m -Xmx256m -XX:+UseSerialGC -XX:ReservedCodeCacheSize=48m -XX:MaxMetaspaceSize=128m -Xss512k -jar backend.jar' --name pleasehome-backend --cwd $REMOTE_PATH/backend
     pm2 save
   "
   echo "✅ 백엔드(Spring Boot) 배포가 완료되었습니다!"
