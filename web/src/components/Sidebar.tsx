@@ -171,45 +171,52 @@ export default function Sidebar({
     setDisabledAnns(member ? memberHiddenAnns : []);
   }, [member, memberHiddenAnns]);
 
+  // 찜/숨김은 화면을 먼저 바꾸고(낙관적 업데이트) 서버 저장이 실패하면 두 목록을 클릭 전 상태로 되돌린다.
+  // 한 번의 클릭이 요청 2건을 보낼 수 있어, 롤백과 알림은 클릭당 1회만 실행한다.
+  const makeInterestRollback = () => {
+    const prevDisabled = disabledAnns;
+    const prevFavorite = favoriteAnns;
+    let rolledBack = false;
+    return () => {
+      if (rolledBack) return;
+      rolledBack = true;
+      setDisabledAnns(prevDisabled);
+      setFavoriteAnns(prevFavorite);
+      alert('저장에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+    };
+  };
+
+  const persistInterest = (method: 'POST' | 'DELETE', path: 'favorites' | 'hidden-anns', id: number, onFail: () => void) => {
+    fetch(`/api/member/${path}`, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ announcement_id: id }),
+    })
+      .then((res) => { if (!res.ok) onFail(); })
+      .catch(onFail);
+  };
+
   const handleToggleDisableAnn = (id: number) => {
     if (!member) {
       setAuthModalOpen(true);
       return;
     }
 
+    const onFail = makeInterestRollback();
     const exists = disabledAnns.some((x) => x.id === id);
     let next: { id: number; disabledAt: string }[];
     if (exists) {
       next = disabledAnns.filter((x) => x.id !== id);
-      if (member) {
-        fetch('/api/member/hidden-anns', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ announcement_id: id }),
-        });
-      }
+      persistInterest('DELETE', 'hidden-anns', id, onFail);
     } else {
       next = [...disabledAnns, { id, disabledAt: new Date().toISOString() }];
-      if (member) {
-        fetch('/api/member/hidden-anns', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ announcement_id: id }),
-        });
-      }
+      persistInterest('POST', 'hidden-anns', id, onFail);
 
       // [방안 A] 숨길 때 기존 찜 목록에 있다면 찜 해제 처리
       const isFav = favoriteAnns.some((x) => x.id === id);
       if (isFav) {
-        const nextFav = favoriteAnns.filter((x) => x.id !== id);
-        setFavoriteAnns(nextFav);
-        if (member) {
-          fetch('/api/member/favorites', {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ announcement_id: id }),
-          });
-        }
+        setFavoriteAnns(favoriteAnns.filter((x) => x.id !== id));
+        persistInterest('DELETE', 'favorites', id, onFail);
       }
 
       // 현재 보던 공고가 숨겨진다면 공고 선택 상태 해제
@@ -231,39 +238,21 @@ export default function Sidebar({
       return;
     }
 
+    const onFail = makeInterestRollback();
     const exists = favoriteAnns.some((x) => x.id === id);
     let next: { id: number; favoritedAt: string }[];
     if (exists) {
       next = favoriteAnns.filter((x) => x.id !== id);
-      if (member) {
-        fetch('/api/member/favorites', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ announcement_id: id }),
-        });
-      }
+      persistInterest('DELETE', 'favorites', id, onFail);
     } else {
       next = [...favoriteAnns, { id, favoritedAt: new Date().toISOString() }];
-      if (member) {
-        fetch('/api/member/favorites', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ announcement_id: id }),
-        });
-      }
+      persistInterest('POST', 'favorites', id, onFail);
 
       // [방안 A] 찜할 때 기존 숨김 목록에 있다면 숨김 해제 처리
       const isHidden = disabledAnns.some((x) => x.id === id);
       if (isHidden) {
-        const nextDisabled = disabledAnns.filter((x) => x.id !== id);
-        setDisabledAnns(nextDisabled);
-        if (member) {
-          fetch('/api/member/hidden-anns', {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ announcement_id: id }),
-          });
-        }
+        setDisabledAnns(disabledAnns.filter((x) => x.id !== id));
+        persistInterest('DELETE', 'hidden-anns', id, onFail);
       }
     }
     setFavoriteAnns(next);

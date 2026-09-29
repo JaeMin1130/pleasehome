@@ -36,6 +36,9 @@ class MemberDbConfig(
             idleTimeout = 600000
             connectionTimeout = 30000
             connectionInitSql = "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA busy_timeout=15000; PRAGMA cache_size=-32000; PRAGMA temp_store=MEMORY;"
+            // 읽고-쓰기(findById→save) 트랜잭션이 동시 쓰기와 겹치면 DEFERRED에선 SQLITE_BUSY_SNAPSHOT으로 즉시 실패한다.
+            // IMMEDIATE로 시작하면 쓰기 잠금을 먼저 잡고 나머지는 busy_timeout만큼 대기 후 순차 처리된다.
+            addDataSourceProperty("transaction_mode", "IMMEDIATE")
             poolName = "MemberHikariPool"
         }
         return HikariDataSource(config)
