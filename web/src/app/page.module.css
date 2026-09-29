@@ -279,6 +279,11 @@
 }
 
 @media (max-width: 768px) {
+  /* 지도 로딩 중에도 바텀시트(중간 높이 50dvh)가 먼저 떠 있으므로, 고양이를 시트 위쪽 절반의 가운데로 올린다 */
+  .loading-container-map {
+    padding-bottom: 50dvh;
+  }
+
   /* 상세 필터 컨테이너 - 우측 상단 단독 고정 */
   .floating-filter-container {
     top: var(--spacing-md);

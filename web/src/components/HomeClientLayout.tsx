@@ -23,7 +23,7 @@ import {
 const Map = dynamic(() => import('@/components/Map'), {
   ssr: false,
   loading: () => (
-    <div className={styles['loading-container']}>
+    <div className={`${styles['loading-container']} ${styles['loading-container-map']}`}>
       <CatRunLoader label="데이터를 불러오는 중입니다..." />
     </div>
   )
