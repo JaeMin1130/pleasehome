@@ -82,9 +82,13 @@ export default function SearchTab({
   onToggleBookmark,
   onHoverComplex,
 }: SearchTabProps) {
-  // 공급 주택 목록 정렬: 면적순은 단지 최대 전용면적 큰 순, 공급순은 카드에 보이는 공급호수 → 예비자수 큰 순
+  // 공급 주택 목록 정렬: 기본순은 주소(시→구→동 묶음) → 단지명, 면적순은 단지 최대 전용면적 큰 순, 공급순은 카드에 보이는 공급호수 → 예비자수 큰 순
   const [complexSort, setComplexSort] = React.useState<'DEFAULT' | 'AREA' | 'SUPPLY'>('DEFAULT');
-  const sortedComplexes = complexSort === 'DEFAULT' ? filteredComplexes : [...filteredComplexes].sort((a, b) => {
+  const sortedComplexes = [...filteredComplexes].sort((a, b) => {
+    if (complexSort === 'DEFAULT') {
+      return (a.address || '').localeCompare(b.address || '', 'ko', { numeric: true })
+        || a.name.localeCompare(b.name, 'ko', { numeric: true });
+    }
     if (complexSort === 'AREA') {
       return (b.max_exclusive_area ?? b.min_exclusive_area ?? 0) - (a.max_exclusive_area ?? a.min_exclusive_area ?? 0);
     }

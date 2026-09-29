@@ -6,6 +6,35 @@ import sqlite3
 import re
 import argparse
 
+# 시·도 약칭/구명칭 → 정식 명칭 (주소 정렬·중복 매칭이 표기 차이로 갈라지지 않도록 적재 시점에 통일)
+PROVINCE_ALIASES = {
+    "서울": "서울특별시", "부산": "부산광역시", "대구": "대구광역시", "인천": "인천광역시",
+    "광주": "광주광역시", "대전": "대전광역시", "울산": "울산광역시", "세종": "세종특별자치시",
+    "경기": "경기도", "강원": "강원특별자치도", "강원도": "강원특별자치도",
+    "충북": "충청북도", "충남": "충청남도", "전북": "전북특별자치도", "전라북도": "전북특별자치도",
+    "전남": "전라남도", "경북": "경상북도", "경남": "경상남도",
+    "제주": "제주특별자치도", "제주도": "제주특별자치도",
+}
+# 시·도 없이 시부터 시작하는 주소 (실제 DB에서 발견된 것만 등록, 새로 나오면 추가)
+CITY_TO_PROVINCE = {"의정부시": "경기도", "서귀포시": "제주특별자치도", "제주시": "제주특별자치도"}
+
+
+def normalize_province(address):
+    """주소 첫 토큰의 시·도 표기를 정식 명칭으로 통일한다.
+    '전남광주통합특별시'는 뒤 토큰이 자치구(~구)면 광주광역시, 시·군이면 전라남도로 되돌린다."""
+    if not address:
+        return address
+    parts = address.split(" ", 2)
+    head = parts[0]
+    if head == "전남광주통합특별시" and len(parts) > 1:
+        parts[0] = "광주광역시" if parts[1].endswith("구") else "전라남도"
+    elif head in PROVINCE_ALIASES:
+        parts[0] = PROVINCE_ALIASES[head]
+    elif head in CITY_TO_PROVINCE:
+        parts.insert(0, CITY_TO_PROVINCE[head])
+    return " ".join(parts)
+
+
 def clean_address(address):
     if not address:
         return address
@@ -14,7 +43,7 @@ def clean_address(address):
     address = re.sub(r'\s+외(?:\b|\s).*$', '', address.strip())
     # 끝에 남는 '일원' 이나 '일대' 정리
     address = re.sub(r'\s+(?:일원|일대)$', '', address)
-    return address.strip()
+    return normalize_province(address.strip())
 
 
 def normalize_address(address, name):
