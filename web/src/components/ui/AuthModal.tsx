@@ -115,7 +115,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (findNewPwd.length < 6) { setError('비밀번호는 6자 이상이어야 합니다.'); return; }
+    if (findNewPwd.length < 3) { setError('비밀번호는 3자 이상이어야 합니다.'); return; }
     if (findNewPwd !== findNewPwdConfirm) { setError('비밀번호가 일치하지 않습니다.'); return; }
     setIsSubmitting(true);
     const res = await fetch('/api/auth/find-account', {
@@ -233,9 +233,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
               {findStep === 'reset-password' && (
                 <form className={styles.form} onSubmit={handleResetPassword}>
-                  <label className={styles.label}>새 비밀번호 <span className={styles.hint}>(6자 이상)</span></label>
+                  <label className={styles.label}>새 비밀번호 <span className={styles.hint}>(3자 이상)</span></label>
                   <input id="find-new-pwd" className={styles.input} type="password" value={findNewPwd}
-                    onChange={e => setFindNewPwd(e.target.value)} placeholder="새 비밀번호" required minLength={6} autoFocus />
+                    onChange={e => setFindNewPwd(e.target.value)} placeholder="새 비밀번호" required minLength={3} autoFocus />
                   <label className={styles.label}>새 비밀번호 확인</label>
                   <input id="find-new-pwd-confirm" className={styles.input} type="password" value={findNewPwdConfirm}
                     onChange={e => setFindNewPwdConfirm(e.target.value)} placeholder="새 비밀번호 재입력" required />

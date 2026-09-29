@@ -45,6 +45,9 @@ class AuthService(
         if (id.isEmpty() || password.isEmpty() || securityQ.isEmpty() || securityA.isEmpty()) {
             throw IllegalArgumentException("모든 항목을 입력해주세요.")
         }
+        if (password.length < 3) {
+            throw IllegalArgumentException("비밀번호는 3자 이상이어야 합니다.")
+        }
 
         if (memberRepository.existsById(id)) {
             throw IllegalStateException("이미 사용 중인 아이디입니다.")
@@ -93,9 +96,12 @@ class AuthService(
     }
 
     @Transactional(readOnly = true, transactionManager = "memberTransactionManager")
-    fun getMe(request: HttpServletRequest): Map<String, Any?> {
+    fun getMe(request: HttpServletRequest, response: HttpServletResponse): Map<String, Any?> {
         val memberId = getMemberIdFromCookie(request) ?: return mapOf("member" to null)
         val member = memberRepository.findById(memberId).orElse(null) ?: return mapOf("member" to null)
+
+        // 접속(=/me 호출)할 때마다 쿠키를 재발급해 만료를 마지막 접속 기준 30일로 연장한다.
+        setSessionCookie(response, memberId)
 
         // 로그인 상태 확인과 개인화 데이터(찜/숨김/북마크)를 한 번의 요청으로 묶어
         // 클라이언트의 "인증 확인 → 개인화 데이터 조회" 2-hop 대기를 없앤다.
@@ -125,8 +131,8 @@ class AuthService(
             if (currentPassword == null || !passwordEncoder.matches(currentPassword, member.pwdHash)) {
                 throw IllegalArgumentException("현재 비밀번호가 올바르지 않습니다.")
             }
-            if (newPassword.length < 6) {
-                throw IllegalArgumentException("새 비밀번호는 6자 이상이어야 합니다.")
+            if (newPassword.length < 3) {
+                throw IllegalArgumentException("새 비밀번호는 3자 이상이어야 합니다.")
             }
             member.pwdHash = passwordEncoder.encode(newPassword) ?: member.pwdHash
         }
@@ -165,8 +171,8 @@ class AuthService(
             return mapOf("verified" to true, "security_q" to member.securityQ)
         }
 
-        if (newPassword.length < 6) {
-            throw IllegalArgumentException("비밀번호는 6자 이상이어야 합니다.")
+        if (newPassword.length < 3) {
+            throw IllegalArgumentException("비밀번호는 3자 이상이어야 합니다.")
         }
 
         member.pwdHash = passwordEncoder.encode(newPassword) ?: member.pwdHash

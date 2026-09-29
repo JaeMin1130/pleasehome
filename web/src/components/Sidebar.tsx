@@ -367,7 +367,7 @@ export default function Sidebar({
     setProfileSuccess('');
     if (type === 'password') {
       if (!profileCurPwd) { setProfileError('현재 비밀번호를 입력해주세요.'); return; }
-      if (profileNewPwd.length < 6) { setProfileError('새 비밀번호는 6자 이상이어야 합니다.'); return; }
+      if (profileNewPwd.length < 3) { setProfileError('새 비밀번호는 3자 이상이어야 합니다.'); return; }
       if (profileNewPwd !== profileNewPwdConfirm) { setProfileError('비밀번호가 일치하지 않습니다.'); return; }
     } else {
       if (!profileSecA.trim()) { setProfileError('답변을 입력해주세요.'); return; }

@@ -130,7 +130,7 @@ export default function MoreTab({
                     value={profileCurPwd}
                     onChange={e => setProfileCurPwd(e.target.value)}
                   />
-                  <label className={styles['profile-label']}>새 비밀번호 <span className={styles['profile-hint']}>(6자 이상)</span></label>
+                  <label className={styles['profile-label']}>새 비밀번호 <span className={styles['profile-hint']}>(3자 이상)</span></label>
                   <input
                     type="password"
                     className={styles['profile-input']}

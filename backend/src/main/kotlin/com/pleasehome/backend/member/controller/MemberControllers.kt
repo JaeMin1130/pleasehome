@@ -27,8 +27,8 @@ class AuthController(
         authService.logout(response)
 
     @GetMapping("/me")
-    fun getMe(request: HttpServletRequest): Map<String, Any?> =
-        authService.getMe(request)
+    fun getMe(request: HttpServletRequest, response: HttpServletResponse): Map<String, Any?> =
+        authService.getMe(request, response)
 
     @PatchMapping("/update")
     fun updateAccount(@RequestBody body: Map<String, Any?>, request: HttpServletRequest): Map<String, Any> =
