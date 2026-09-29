@@ -286,10 +286,12 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
 
   useEffect(() => {
     if (activeAnnId === null) { setAnnouncementUnits([]); setIsAnnouncementUnitsLoading(false); return; }
+    let cancelled = false;
     setIsAnnouncementUnitsLoading(true);
     fetch(`/api/housing-units?announcement_id=${activeAnnId}`)
       .then(res => res.json())
       .then(data => {
+        if (cancelled) return;
         setAnnouncementUnits(data);
         setIsAnnouncementUnitsLoading(false);
         if (data && data.length > 0) {
@@ -303,7 +305,9 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
             maxMonthlyRent: Math.max(...data.map((u: any) => u.monthly_rent || 0))
           });
         }
-      });
+      })
+      .catch(() => { if (!cancelled) { setAnnouncementUnits([]); setIsAnnouncementUnitsLoading(false); } });
+    return () => { cancelled = true; };
   }, [activeAnnId]);
 
   const { dynamicMinArea, dynamicMaxArea, dynamicMinDeposit, dynamicMaxDeposit, dynamicMinRent, dynamicMaxRent } = useMemo(() => {
@@ -577,7 +581,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
         <Sidebar 
           announcements={announcements} activeAnnId={activeAnnId} onSelectAnnouncement={handleSelectAnnouncement} 
           width={SIDEBAR_DEFAULT_WIDTH} isCollapsed={isSidebarCollapsed} onCollapseChange={setIsSidebarCollapsed}
-          displayComplexes={activeTab === 'BOOKMARK' ? mapComplexes : filteredComplexes} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex}
+          displayComplexes={activeTab === 'BOOKMARK' ? mapComplexes : filteredComplexes} isComplexesLoading={isAnnouncementUnitsLoading} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex}
           activeTab={activeTab} onTabSelect={handleTabSelect} allComplexes={allComplexes}
           bookmarkedIds={bookmarkedIds} onToggleBookmark={toggleBookmark}
           bookmarkFolders={bookmarkFolders}

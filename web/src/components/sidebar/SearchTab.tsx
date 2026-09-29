@@ -4,6 +4,7 @@ import React from 'react';
 import { Announcement, ApplicationStatus, Complex } from '@/types';
 import AnnouncementCard from '@/components/features/AnnouncementCard';
 import ComplexCard from '@/components/features/ComplexCard';
+import CatRunLoader from '@/components/ui/CatRunLoader';
 import styles from '../Sidebar.module.css';
 
 interface SearchTabProps {
@@ -36,6 +37,7 @@ interface SearchTabProps {
   complexSearchTerm: string;
   setComplexSearchTerm: (term: string) => void;
   filteredComplexes: Complex[];
+  isComplexesLoading?: boolean;
   activeComplexId: number | null;
   onSelectComplex: (complex: Complex) => void;
   bookmarkedIds: number[];
@@ -73,6 +75,7 @@ export default function SearchTab({
   complexSearchTerm,
   setComplexSearchTerm,
   filteredComplexes,
+  isComplexesLoading,
   activeComplexId,
   onSelectComplex,
   bookmarkedIds,
@@ -267,7 +270,11 @@ export default function SearchTab({
                       )}
                     </div>
                     <div className={styles['complexes-list-container']}>
-                      {filteredComplexes.length === 0 ? (
+                      {isComplexesLoading ? (
+                        <div className={styles['complex-loading']}>
+                          <CatRunLoader label="단지 목록을 불러오는 중..." scale={0.4} />
+                        </div>
+                      ) : filteredComplexes.length === 0 ? (
                         <div className={styles['complex-empty-msg']}>
                           {complexSearchTerm ? '검색 결과가 없습니다.' : '이 공고는 특정 단지 없이 개별적으로 지원되는 전세임대형 정책이거나, 필터 조건에 맞는 주택이 없습니다.'}
                         </div>

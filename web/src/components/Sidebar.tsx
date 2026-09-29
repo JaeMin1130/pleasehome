@@ -27,6 +27,7 @@ interface SidebarProps {
   isCollapsed?: boolean;
   onCollapseChange?: (isCollapsed: boolean) => void;
   displayComplexes: Complex[];
+  isComplexesLoading?: boolean;
   activeComplexId: number | null;
   onSelectComplex: (complex: Complex) => void;
   activeTab: 'SEARCH' | 'BOOKMARK' | 'MORE' | null;
@@ -51,7 +52,7 @@ interface SidebarProps {
 export default function Sidebar({ 
   announcements, activeAnnId, onSelectAnnouncement, 
   width, isCollapsed, onCollapseChange,
-  displayComplexes, activeComplexId, onSelectComplex,
+  displayComplexes, isComplexesLoading, activeComplexId, onSelectComplex,
   activeTab, onTabSelect, allComplexes, style,
   bookmarkedIds, onToggleBookmark,
   bookmarkFolders, bookmarkItems, activeFolderIds, setActiveFolderIds,
@@ -671,6 +672,7 @@ export default function Sidebar({
           complexSearchTerm={complexSearchTerm}
           setComplexSearchTerm={setComplexSearchTerm}
           filteredComplexes={filteredComplexes}
+          isComplexesLoading={isComplexesLoading}
           activeComplexId={activeComplexId}
           onSelectComplex={onSelectComplex}
           bookmarkedIds={bookmarkedIds}

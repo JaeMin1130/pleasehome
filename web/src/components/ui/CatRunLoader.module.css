@@ -10,11 +10,12 @@
    프레임 경계에 정확히 맞지 않고 두 프레임이 섞여 보이는 문제가 있었음.
    px로 "프레임수 × 프레임폭"만큼 이동시키면 steps(n)이 각 프레임 경계에 정확히 멈춘다. */
 .sprite {
-    width: 215px;
-    height: 120px;
+    --cat-scale: 1;
+    width: calc(215px * var(--cat-scale));
+    height: calc(120px * var(--cat-scale));
     background-image: url('/images/cat-run-sheet.webp');
     background-repeat: no-repeat;
-    background-size: 860px 120px;
+    background-size: calc(860px * var(--cat-scale)) calc(120px * var(--cat-scale));
     animation: run 0.6s steps(4) infinite;
 }
 
@@ -25,7 +26,7 @@
 
 @keyframes run {
     from { background-position: 0 0; }
-    to { background-position: -860px 0; }
+    to { background-position: calc(-860px * var(--cat-scale)) 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

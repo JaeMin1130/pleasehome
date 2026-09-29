@@ -441,6 +441,13 @@
   border: var(--spacing-3xs) solid var(--border-light);
 }
 
+/* 단지 목록 로딩 (고양이 로더) */
+.complex-loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-lg);
+}
+
 .more-menu-value-wrapper {
   display: flex;
   align-items: center;
