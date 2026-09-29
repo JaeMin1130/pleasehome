@@ -441,11 +441,25 @@
   border: var(--spacing-3xs) solid var(--border-light);
 }
 
+/* 공급 주택 목록 정렬 버튼 */
+.complex-sort-tags {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-sm);
+}
+
 /* 단지 목록 로딩 (고양이 로더) */
 .complex-loading {
   display: flex;
   justify-content: center;
   padding: var(--spacing-lg);
+  /* 응답이 0.2초 안에 오면 고양이가 번쩍이지 않도록, 0.2초 뒤부터 나타나게 한다 */
+  animation: complex-loading-in 0.15s ease 0.2s both;
+}
+
+@keyframes complex-loading-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .more-menu-value-wrapper {

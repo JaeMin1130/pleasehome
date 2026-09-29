@@ -134,7 +134,18 @@ export default function BookmarkTab({
 
       {showNewFolderInput && (
         <div className={styles['sidebar-folder-add-container']}>
-          <div className={styles['sidebar-folder-form-wrap']}>
+          {/* form으로 감싸 Enter 키로도 폴더가 생성되도록 함 */}
+          <form
+            className={styles['sidebar-folder-form-wrap']}
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (newFolderName.trim()) {
+                onAddFolder(newFolderName.trim(), selectedSidebarColor);
+                setNewFolderName('');
+                setShowNewFolderInput(false);
+              }
+            }}
+          >
             <input
               type="text"
               placeholder="새 폴더 이름..."
@@ -143,19 +154,10 @@ export default function BookmarkTab({
               maxLength={15}
               className={styles['sidebar-folder-input']}
             />
-            <button 
-              className={styles['sidebar-folder-submit']}
-              onClick={() => {
-                if (newFolderName.trim()) {
-                  onAddFolder(newFolderName.trim(), selectedSidebarColor);
-                  setNewFolderName('');
-                  setShowNewFolderInput(false);
-                }
-              }}
-            >
+            <button type="submit" className={styles['sidebar-folder-submit']}>
               추가
             </button>
-          </div>
+          </form>
           <div className={`color-picker-list ${styles['sidebar-color-picker']}`}>
             {BOOKMARK_PRESET_COLORS.map((color) => (
               <span

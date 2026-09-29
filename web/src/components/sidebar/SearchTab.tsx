@@ -3,7 +3,7 @@
 import React from 'react';
 import { Announcement, ApplicationStatus, Complex } from '@/types';
 import AnnouncementCard from '@/components/features/AnnouncementCard';
-import ComplexCard from '@/components/features/ComplexCard';
+import ComplexCard, { displayedCounts } from '@/components/features/ComplexCard';
 import CatRunLoader from '@/components/ui/CatRunLoader';
 import styles from '../Sidebar.module.css';
 
@@ -82,6 +82,16 @@ export default function SearchTab({
   onToggleBookmark,
   onHoverComplex,
 }: SearchTabProps) {
+  // 공급 주택 목록 정렬: 면적순은 단지 최대 전용면적 큰 순, 공급순은 카드에 보이는 공급호수 → 예비자수 큰 순
+  const [complexSort, setComplexSort] = React.useState<'DEFAULT' | 'AREA' | 'SUPPLY'>('DEFAULT');
+  const sortedComplexes = complexSort === 'DEFAULT' ? filteredComplexes : [...filteredComplexes].sort((a, b) => {
+    if (complexSort === 'AREA') {
+      return (b.max_exclusive_area ?? b.min_exclusive_area ?? 0) - (a.max_exclusive_area ?? a.min_exclusive_area ?? 0);
+    }
+    const ca = displayedCounts(a), cb = displayedCounts(b);
+    return ((cb.supply ?? 0) - (ca.supply ?? 0)) || ((cb.reserve ?? 0) - (ca.reserve ?? 0));
+  });
+
   return (
     <div 
       className={styles['search-panel-container']}
@@ -269,6 +279,18 @@ export default function SearchTab({
                         </button>
                       )}
                     </div>
+                    <div className={styles['complex-sort-tags']}>
+                      {([['DEFAULT', '기본순'], ['AREA', '면적순'], ['SUPPLY', '공급순']] as const).map(([key, label]) => (
+                        <button
+                          key={key}
+                          type="button"
+                          className={`${styles['region-tag']} ${complexSort === key ? styles.active : ''}`}
+                          onClick={() => setComplexSort(key)}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
                     <div className={styles['complexes-list-container']}>
                       {isComplexesLoading ? (
                         <div className={styles['complex-loading']}>
@@ -279,7 +301,7 @@ export default function SearchTab({
                           {complexSearchTerm ? '검색 결과가 없습니다.' : '이 공고는 특정 단지 없이 개별적으로 지원되는 전세임대형 정책이거나, 필터 조건에 맞는 주택이 없습니다.'}
                         </div>
                       ) : (
-                        filteredComplexes.map((complex) => (
+                        sortedComplexes.map((complex) => (
                           <ComplexCard
                             key={complex.id}
                             complex={complex}

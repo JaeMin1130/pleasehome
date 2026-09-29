@@ -83,6 +83,12 @@
   cursor: pointer;
 }
 
+/* 저장 버튼(<button>)도 링크 버튼과 같은 모양이 되도록 기본 버튼 스타일 상속 */
+button.docBtn {
+  font-family: inherit;
+  cursor: pointer;
+}
+
 .docBtn:hover {
   background-color: var(--primary-bg);
   color: var(--primary);

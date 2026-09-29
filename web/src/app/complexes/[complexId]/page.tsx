@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import Script from 'next/script';
 import { fetchComplexDetails, fetchSitemapPaths } from '@/lib/api';
 import { formatMoney, formatTargetGroup } from '@/utils/formatters';
+import ComplexBookmarkButton from '@/components/features/ComplexBookmarkButton';
 import styles from './complex.module.css';
 
 export const revalidate = 3600; // 1시간 주기로 점진적 정적 재생성(ISR) 활성화
@@ -115,6 +116,7 @@ export default async function ComplexDetailPage({ params }: PageProps) {
                 공고 상세 열기
               </Link>
             )}
+            <ComplexBookmarkButton complexId={complex.id} complexName={complex.name} className={styles.docBtn} />
           </div>
         </div>
       </header>
@@ -149,7 +151,7 @@ export default async function ComplexDetailPage({ params }: PageProps) {
                     return (
                       <tr key={unit.id}>
                         <td>
-                          <strong>{unit.exclusive_area ? `${unit.exclusive_area} ㎡` : '-'}</strong>
+                          <strong>{unit.exclusive_area ? `${unit.exclusive_area} ㎡ (${Math.round(unit.exclusive_area * 0.3025)}평)` : '-'}</strong>
                         </td>
                         <td>{formatTargetGroup(unit.target_group)}</td>
                         <td>{hasCount ? countText : '-'}</td>

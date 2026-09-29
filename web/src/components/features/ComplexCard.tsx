@@ -38,12 +38,26 @@ function formatMoneyRange(min?: number | null, max?: number | null): string | nu
   return `${formatMoney(min)} ~ ${formatMoney(max)}`;
 }
 
+// 전용면적 ㎡ → 평 (1㎡ = 0.3025평). 공급면적 기준 "OO평형"과 혼동되지 않도록 호출부에서 "전용" 접두어와 함께 노출한다.
+const toPyeong = (m2: number) => Math.round(m2 * 0.3025);
+
 function formatAreaRange(min?: number | null, max?: number | null): string | null {
   if (min === undefined || min === null) return null;
   const minFixed = Math.round(min * 10) / 10;
-  if (max === undefined || max === null || min === max) return `${minFixed}㎡`;
+  if (max === undefined || max === null || min === max) return `${minFixed}㎡ (${toPyeong(min)}평)`;
   const maxFixed = Math.round(max * 10) / 10;
-  return `${minFixed}~${maxFixed}㎡`;
+  return `${minFixed}~${maxFixed}㎡ (${toPyeong(min)}~${toPyeong(max)}평)`;
+}
+
+// 카드에 노출되는 공급/예비 수. 복수 단지가 묶인 주택군은 모집단위 합계, 단독 단지는 단지 실물 수치.
+export function isMultiComplexGroup(complex: Complex): boolean {
+  return Boolean(complex.recruitment_group_name && complex.recruitment_group_name !== complex.name);
+}
+
+export function displayedCounts(complex: Complex): { supply: number | null | undefined; reserve: number | null | undefined } {
+  return isMultiComplexGroup(complex)
+    ? { supply: complex.recruitment_group_supply_count, reserve: complex.recruitment_group_reserve_count }
+    : { supply: complex.total_supply_count, reserve: complex.total_reserve_count };
 }
 
 function extractShortRegion(address: string): string {
@@ -226,41 +240,21 @@ export default function ComplexCard({
         const areaDisplay = formatAreaRange(complex.min_exclusive_area, complex.max_exclusive_area);
 
         const metaItems: string[] = [];
-        const isMultiComplexGroup = Boolean(
-          complex.recruitment_group_name && 
-          complex.recruitment_group_name !== complex.name
-        );
 
-        if (isMultiComplexGroup) {
-          // 복수 단지가 묶인 주택군: 모집단위 라벨과 모집단위 총 공급/예비수 노출
+        // 복수 단지가 묶인 주택군이면 모집단위 라벨을 먼저 노출 (수치는 displayedCounts가 모집단위 합계로 선택)
+        if (isMultiComplexGroup(complex)) {
           metaItems.push(`모집단위: ${complex.recruitment_group_name}`);
+        }
 
-          const groupSupply = complex.recruitment_group_supply_count;
-          const groupReserve = complex.recruitment_group_reserve_count;
-
-          if (groupSupply != null && groupSupply > 0) {
-            if (groupReserve != null && groupReserve > 0) {
-              metaItems.push(`공급 ${groupSupply}호 (예비 ${groupReserve}명)`);
-            } else {
-              metaItems.push(`공급 ${groupSupply}호`);
-            }
-          } else if (groupReserve != null && groupReserve > 0) {
-            metaItems.push(`예비 ${groupReserve}명`);
+        const { supply: supplyNum, reserve: reserveNum } = displayedCounts(complex);
+        if (supplyNum != null && supplyNum > 0) {
+          if (reserveNum != null && reserveNum > 0) {
+            metaItems.push(`공급 ${supplyNum}호 (예비 ${reserveNum}명)`);
+          } else {
+            metaItems.push(`공급 ${supplyNum}호`);
           }
-        } else {
-          // 단독 단지 (아파트 등 1:1 매핑): 모집단위명 생략, 해당 단지 실물 공급/예비수 노출
-          const supplyNum = complex.total_supply_count;
-          const reserveNum = complex.total_reserve_count;
-
-          if (supplyNum != null && supplyNum > 0) {
-            if (reserveNum != null && reserveNum > 0) {
-              metaItems.push(`공급 ${supplyNum}호 (예비 ${reserveNum}명)`);
-            } else {
-              metaItems.push(`공급 ${supplyNum}호`);
-            }
-          } else if (reserveNum != null && reserveNum > 0) {
-            metaItems.push(`예비 ${reserveNum}명`);
-          }
+        } else if (reserveNum != null && reserveNum > 0) {
+          metaItems.push(`예비 ${reserveNum}명`);
         }
 
         if (areaDisplay) {
