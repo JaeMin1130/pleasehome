@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { Announcement, BookmarkFolder, BookmarkItem, Complex } from '@/types';
 import ComplexCard from '@/components/features/ComplexCard';
 import styles from '../Sidebar.module.css';
@@ -87,6 +87,90 @@ export default function BookmarkTab({
   getAnnouncementStatus,
   onHoverComplex,
 }: BookmarkTabProps) {
+  // 💡 드래그 중 화면 상/하단 가장자리 도달 시 자동 스크롤(Edge Auto-Scroll) 제어
+  const scrollAnimRef = useRef<number | null>(null);
+  const scrollSpeedRef = useRef<number>(0);
+
+  const stopAutoScroll = useCallback(() => {
+    if (scrollAnimRef.current !== null) {
+      cancelAnimationFrame(scrollAnimRef.current);
+      scrollAnimRef.current = null;
+    }
+    scrollSpeedRef.current = 0;
+  }, []);
+
+  const startAutoScroll = useCallback(() => {
+    if (scrollAnimRef.current !== null) return;
+    const scrollLoop = () => {
+      const container = bookmarkListRef.current;
+      if (container && scrollSpeedRef.current !== 0) {
+        container.scrollTop += scrollSpeedRef.current;
+        scrollAnimRef.current = requestAnimationFrame(scrollLoop);
+      } else {
+        stopAutoScroll();
+      }
+    };
+    scrollAnimRef.current = requestAnimationFrame(scrollLoop);
+  }, [bookmarkListRef, stopAutoScroll]);
+
+  useEffect(() => {
+    if (!draggingComplexId) {
+      stopAutoScroll();
+      return;
+    }
+
+    const handleWindowDragOver = (e: DragEvent) => {
+      const container = bookmarkListRef.current;
+      if (!container) return;
+
+      const rect = container.getBoundingClientRect();
+      const edgeThreshold = 60; // 상·하단 감지 임계 영역 (60px)
+
+      // 컨테이너 가로 영역 내(여유 50px 포함)에 있는지 확인
+      const withinX = e.clientX >= rect.left - 50 && e.clientX <= rect.right + 50;
+      if (!withinX) {
+        scrollSpeedRef.current = 0;
+        stopAutoScroll();
+        return;
+      }
+
+      // 상단 가장자리 감지 (위로 스크롤)
+      if (e.clientY >= rect.top - 30 && e.clientY <= rect.top + edgeThreshold) {
+        const distance = Math.max(0, rect.top + edgeThreshold - e.clientY);
+        const ratio = Math.min(1, distance / (edgeThreshold + 30));
+        scrollSpeedRef.current = -Math.round(ratio * 15 + 3);
+        startAutoScroll();
+      }
+      // 하단 가장자리 감지 (아래로 스크롤)
+      else if (e.clientY >= rect.bottom - edgeThreshold && e.clientY <= rect.bottom + 30) {
+        const distance = Math.max(0, e.clientY - (rect.bottom - edgeThreshold));
+        const ratio = Math.min(1, distance / (edgeThreshold + 30));
+        scrollSpeedRef.current = Math.round(ratio * 15 + 3);
+        startAutoScroll();
+      } else {
+        scrollSpeedRef.current = 0;
+        stopAutoScroll();
+      }
+    };
+
+    const handleWindowDragEnd = () => {
+      stopAutoScroll();
+      setDraggingComplexId(null);
+      setDragOverFolderId(null);
+    };
+
+    window.addEventListener('dragover', handleWindowDragOver);
+    window.addEventListener('dragend', handleWindowDragEnd);
+    window.addEventListener('drop', handleWindowDragEnd);
+
+    return () => {
+      window.removeEventListener('dragover', handleWindowDragOver);
+      window.removeEventListener('dragend', handleWindowDragEnd);
+      window.removeEventListener('drop', handleWindowDragEnd);
+      stopAutoScroll();
+    };
+  }, [draggingComplexId, bookmarkListRef, startAutoScroll, stopAutoScroll, setDraggingComplexId, setDragOverFolderId]);
+
   return (
     <div 
       className={styles['bookmark-panel-container']}
@@ -176,6 +260,11 @@ export default function BookmarkTab({
         <div 
           ref={bookmarkListRef} 
           className={styles['folders-list-container']}
+          onDragOver={(e) => {
+            if (draggingComplexId) {
+              e.preventDefault();
+            }
+          }}
         >
         {bookmarkFolders.map((folder) => {
           const isExpanded = activeFolderIds.includes(folder.id);

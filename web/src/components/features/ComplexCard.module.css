@@ -115,14 +115,25 @@
 .timeline-bar-wrapper {
     position: relative;
     width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox 스크롤바 숨김 */
+    -ms-overflow-style: none; /* IE, Edge 스크롤바 숨김 */
     margin-bottom: var(--spacing-sm);
     padding-top: var(--spacing-md);
     --dot-size: var(--spacing-md);
 }
 
+.timeline-bar-wrapper::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera 스크롤바 숨김 */
+}
+
 .timeline-flex-container {
     display: flex;
     align-items: flex-start; /* 💡 상단 정렬로 닷 센터 라인을 완벽히 일치시킴 */
+    min-width: max-content;
     width: 100%;
     position: relative;
     padding: 0;
@@ -242,6 +253,7 @@
 /* 💡 가변 거리 연결선 (Connector Line) 스타일 */
 .connector-line {
     flex-grow: 1; /* 💡 텍스트 길이에 따라 남는 가로폭 공간을 자동으로 가득 채움 */
+    min-width: 24px;
     height: var(--spacing-2xs);
     background-color: var(--border-light);
     margin: 0; /* 💡 노드 내부 가상선과 접합하므로 음수 마진 제거 */
