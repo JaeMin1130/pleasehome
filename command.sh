@@ -6,8 +6,8 @@ KEY_PATH="$BASE_DIR/db-pipeline/public-housing-key.pem"
 SERVER_HOST="101.79.19.118"
 SERVER_USER="iru"
 REMOTE_PATH="/home/iru/app/pleasehome"
-# 배포 중 ssh/scp 연결(10여 회)이 첫 인증 1회를 공유하도록 연결 재사용, 120초 유휴 시 자동 종료
-SSH_OPTS=(-i "$KEY_PATH" -o ControlMaster=auto -o ControlPath="$HOME/.ssh/cm-%r@%h:%p" -o ControlPersist=120)
+# 배포 중 ssh/scp 연결(10여 회)이 첫 인증 1회를 공유하도록 연결 재사용, 웹 빌드(수 분) 중에도 유지되도록 15분 유휴 시 자동 종료
+SSH_OPTS=(-i "$KEY_PATH" -o ControlMaster=auto -o ControlPath="$HOME/.ssh/cm-%r@%h:%p" -o ControlPersist=15m)
 
 PYTHON_BIN="$BASE_DIR/db-pipeline/.venv/bin/python3"
 if [ ! -f "$PYTHON_BIN" ]; then
