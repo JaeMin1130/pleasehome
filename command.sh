@@ -98,7 +98,7 @@ function fetch_notices() {
     return 1
   fi
 
-  echo "📥 [공고 수집] LH OpenAPI 공고 및 첨부파일 다운로드 ($start_date ~ $end_date)..."
+  echo "📥 [공고 수집] LH OpenAPI 공고 및 첨부파일 다운로드 ($start_date ~ $end_date, 수도권: 서울/경기/인천)..."
   "$PYTHON_BIN" "$BASE_DIR/db-pipeline/src/lh_notice/main.py" --start-date "$start_date" --end-date "$end_date" "$@"
 }
 
@@ -172,7 +172,7 @@ case "$1" in
     echo "    web:start        : Next.js 프로덕션 서버 실행"
     echo ""
     echo "  [데이터 수집 & 변환]"
-    echo "    notice:fetch <시작일 yyyy-MM-dd> <종료일 yyyy-MM-dd> : LH OpenAPI 공고 및 원본 PDF/Excel 다운로드"
+    echo "    notice:fetch <시작일 yyyy-MM-dd> <종료일 yyyy-MM-dd> [추가옵션...] : LH OpenAPI 공고 및 원본 PDF/Excel 다운로드 (기본: 서울/경기/인천)"
     echo "    pdf:convert [대상폴더/파일]   : PDF 공고문을 마크다운(document.md)으로 변환"
     echo ""
     echo "  [배포 & 데이터 파이프라인]"

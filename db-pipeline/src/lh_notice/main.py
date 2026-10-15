@@ -45,7 +45,7 @@ def main():
     parser = argparse.ArgumentParser(description="LH 분양임대공고 및 첨부파일(PDF, 엑셀) 자동 다운로드 스크립트")
     parser.add_argument("--start-date", required=True, help="조회 시작일 (YYYY-MM-DD)")
     parser.add_argument("--end-date", required=True, help="조회 종료일 (YYYY-MM-DD)")
-    parser.add_argument("--regions", nargs="*", default=[], help="필터링할 지역 키워드 목록 (예: 서울 경기 인천)")
+    parser.add_argument("--regions", nargs="*", default=["서울", "경기", "인천"], help="필터링할 지역 키워드 목록 (기본값: 서울 경기 인천, 전체 조회 시 --regions 전체)")
     parser.add_argument("--pan-nm", help="검색할 공고명 키워드 (예: 양주회천)")
     parser.add_argument("--pan-ss", help="공고상태 필터 (예: 공고중, 접수중, 접수마감, 정정공고중)")
     
@@ -61,17 +61,19 @@ def main():
     # 입력된 지역명을 지역코드로 변환
     target_cnp_codes = []
     if args.regions:
-        for reg in args.regions:
-            found = False
-            for name, code in REGION_CODE_MAP.items():
-                if name in reg or reg in name:
-                    target_cnp_codes.append(code)
-                    found = True
-                    break
-            if not found:
-                print(f"[경고] 매핑 테이블에 존재하지 않는 지역명입니다: {reg}")
+        is_all = any(r.lower() == "all" or r == "전체" for r in args.regions)
+        if not is_all:
+            for reg in args.regions:
+                found = False
+                for name, code in REGION_CODE_MAP.items():
+                    if name in reg or reg in name:
+                        target_cnp_codes.append(code)
+                        found = True
+                        break
+                if not found:
+                    print(f"[경고] 매핑 테이블에 존재하지 않는 지역명입니다: {reg}")
                 
-    # 조회할 지역코드 목록 설정 (지정되지 않았거나 매핑 실패 시 전체 조회)
+    # 조회할 지역코드 목록 설정 (지정되지 않았거나 매핑 실패/전체 조회 시 전체 조회)
     query_cnp_codes = target_cnp_codes if target_cnp_codes else [None]
     
     # 수집 대상 주거용 상위매물유형코드 (05: 분양주택, 06: 임대주택, 13: 주거복지, 39: 신혼희망타운)
