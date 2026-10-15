@@ -5,6 +5,7 @@ import { Announcement, BookmarkFolder, BookmarkItem, Complex } from '@/types';
 import ComplexCard from '@/components/features/ComplexCard';
 import styles from '../Sidebar.module.css';
 import { BOOKMARK_PRESET_COLORS } from '@/constants';
+import { useFeedback } from '@/components/ui/Feedback';
 
 interface BookmarkTabProps {
   sheetHeight: number | null;
@@ -87,6 +88,7 @@ export default function BookmarkTab({
   getAnnouncementStatus,
   onHoverComplex,
 }: BookmarkTabProps) {
+  const { confirm } = useFeedback();
   // 💡 드래그 중 화면 상/하단 가장자리 도달 시 자동 스크롤(Edge Auto-Scroll) 제어
   const scrollAnimRef = useRef<number | null>(null);
   const scrollSpeedRef = useRef<number>(0);
@@ -397,12 +399,17 @@ export default function BookmarkTab({
                   {folder.id !== 'default' && (
                     <button 
                       className={styles['folder-delete-btn']}
-                      onClick={() => {
-                        if (confirm(`'${folder.name}' 폴더를 삭제하시겠습니까? 안의 저장 단지들도 함께 해제됩니다.`)) {
-                          onRemoveFolder(folder.id);
-                          if (isExpanded) {
-                            setActiveFolderIds(activeFolderIds.filter(id => id !== folder.id));
-                          }
+                      onClick={async () => {
+                        const ok = await confirm({
+                          title: `'${folder.name}' 폴더를 삭제할까요?`,
+                          message: '안에 저장한 단지들도 함께 저장 해제됩니다.',
+                          confirmLabel: '삭제',
+                          danger: true,
+                        });
+                        if (!ok) return;
+                        onRemoveFolder(folder.id);
+                        if (isExpanded) {
+                          setActiveFolderIds(activeFolderIds.filter(id => id !== folder.id));
                         }
                       }}
                       title="폴더 삭제"

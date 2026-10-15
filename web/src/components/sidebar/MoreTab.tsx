@@ -4,6 +4,7 @@ import { clickable } from '@/utils/a11y';
 import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import { useFeedback } from '@/components/ui/Feedback';
 import styles from '../Sidebar.module.css';
 import { UI_SIZES, UI_STROKE_WIDTHS, SECURITY_QUESTIONS } from '@/constants';
 
@@ -204,7 +205,8 @@ export default function MoreTab({
         )}
 
         <div className={styles['more-menu-group']}>
-          <Link href="/about" className={styles['more-menu-item']}>
+          {/* 소개·약관은 새 탭으로 열어, 돌아왔을 때 보던 지도·필터 상태가 초기화되지 않게 한다 */}
+          <Link href="/about" className={styles['more-menu-item']} target="_blank" rel="noopener">
             <span className={styles['more-menu-label']}>서비스 소개</span>
             <span className={styles['more-menu-chevron']}>
               <svg width={UI_SIZES.ICON_XS} height={UI_SIZES.ICON_XS} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.BOLD} strokeLinecap="round" strokeLinejoin="round">
@@ -213,7 +215,7 @@ export default function MoreTab({
             </span>
           </Link>
           <div className={styles['more-menu-item']} {...clickable(toggleTheme)} role="switch" aria-checked={isDarkMode} aria-label="다크 모드">
-            <span className={styles['more-menu-label']}>지도 모드</span>
+            <span className={styles['more-menu-label']}>화면 테마</span>
             <div className={styles['more-menu-value-wrapper']}>
               <span className={styles['more-menu-value']}>{isDarkMode ? "다크 모드" : "라이트 모드"}</span>
               <div
@@ -243,7 +245,7 @@ export default function MoreTab({
             </div>
           </div>
 
-          <Link href="/terms" className={styles['more-menu-item']}>
+          <Link href="/terms" className={styles['more-menu-item']} target="_blank" rel="noopener">
             <span className={styles['more-menu-label']}>이용약관 및 정책</span>
             <span className={styles['more-menu-chevron']}>
               <svg width={UI_SIZES.ICON_XS} height={UI_SIZES.ICON_XS} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.BOLD} strokeLinecap="round" strokeLinejoin="round">
@@ -251,7 +253,7 @@ export default function MoreTab({
               </svg>
             </span>
           </Link>
-          <Link href="/privacy" className={styles['more-menu-item']}>
+          <Link href="/privacy" className={styles['more-menu-item']} target="_blank" rel="noopener">
             <span className={styles['more-menu-label']}>개인정보처리방침</span>
             <span className={styles['more-menu-chevron']}>
               <svg width={UI_SIZES.ICON_XS} height={UI_SIZES.ICON_XS} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.BOLD} strokeLinecap="round" strokeLinejoin="round">
@@ -291,6 +293,7 @@ export default function MoreTab({
 // 회원 탈퇴: 비밀번호 재확인 + 브라우저 확인창을 거쳐 회원 정보와 찜·숨김·저장 데이터를 모두 삭제
 function WithdrawForm() {
   const { withdraw } = useAuth();
+  const { confirm, showToast } = useFeedback();
   const [password, setPassword] = React.useState('');
   const [error, setError] = React.useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -298,12 +301,18 @@ function WithdrawForm() {
   const handleWithdraw = async () => {
     setError('');
     if (!password) { setError('비밀번호를 입력해주세요.'); return; }
-    if (!window.confirm('탈퇴하면 회원 정보와 찜·숨김·저장한 데이터가 모두 삭제되며 복구할 수 없습니다. 탈퇴하시겠습니까?')) return;
+    const ok = await confirm({
+      title: '정말 탈퇴할까요?',
+      message: '회원 정보와 찜·숨김·저장한 데이터가 모두 삭제되며 복구할 수 없습니다.',
+      confirmLabel: '탈퇴',
+      danger: true,
+    });
+    if (!ok) return;
     setIsSubmitting(true);
     const result = await withdraw(password);
     setIsSubmitting(false);
     if (result.error) { setError(result.error); return; }
-    window.alert('탈퇴가 완료되었습니다.');
+    showToast('탈퇴가 완료되었습니다. 그동안 이용해 주셔서 감사합니다.');
   };
 
   return (

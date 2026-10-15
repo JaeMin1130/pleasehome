@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import BookmarkModal from '@/components/ui/BookmarkModal';
 import AuthModal from '@/components/ui/AuthModal';
 import { BOOKMARK_PRESET_COLORS } from '@/constants';
+import { useFeedback } from '@/components/ui/Feedback';
 
 interface ComplexBookmarkButtonProps {
   complexId: number;
@@ -16,6 +17,7 @@ interface ComplexBookmarkButtonProps {
 // 단지 상세 페이지(서버 컴포넌트)용 저장 버튼. 지도 화면과 같은 BookmarkModal을 쓰고, 저장 후 AuthContext를 새로고침해 상태를 맞춘다.
 export default function ComplexBookmarkButton({ complexId, complexName, className }: ComplexBookmarkButtonProps) {
   const { member, bookmarkFolders, bookmarkItems, refresh } = useAuth();
+  const { showToast } = useFeedback();
   const [authOpen, setAuthOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [addedFolders, setAddedFolders] = useState<BookmarkFolder[]>([]);
@@ -30,7 +32,7 @@ export default function ComplexBookmarkButton({ complexId, complexName, classNam
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     }).catch(() => null);
-    if (!res?.ok) alert('저장에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+    if (!res?.ok) showToast('저장에 실패했습니다. 잠시 후 다시 시도해 주세요.');
     await refresh();
   };
 

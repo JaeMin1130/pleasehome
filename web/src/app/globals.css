@@ -379,6 +379,19 @@ body {
   color: var(--color-warning-text);
 }
 
+/* 아이콘(16px)은 그대로 두고 누를 수 있는 영역만 넓힌다: PC 32px, 터치 44px */
+.bookmark-btn {
+  min-width: 32px;
+  min-height: 32px;
+}
+
+@media (max-width: 768px) {
+  .bookmark-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
 /* =========================================
    [ 전역 공통 UI: 컬러 피커 ]
    ========================================= */

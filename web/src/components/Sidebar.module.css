@@ -989,6 +989,10 @@
   display: none;
 }
 
+.mobile-only-chips {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .desktop-only {
     display: none !important;
@@ -1001,8 +1005,15 @@
     margin-bottom: var(--spacing-sm);
   }
 
-  .mobile-only-filters .region-tags,
-  .mobile-only-filters .filter-tags {
+  .mobile-only-chips {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .mobile-only-chips .region-tags,
+  .mobile-only-chips .filter-tags {
     display: flex;
     gap: var(--spacing-xs);
     width: 100%;
@@ -1010,15 +1021,19 @@
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     padding-bottom: var(--spacing-3xs);
+    /* 오른쪽이 흐려져 칩이 더 있다는 걸 알리고, 끝까지 스크롤하면 마지막 칩이 여백 덕에 온전히 보인다 */
+    padding-right: var(--spacing-lg);
+    -webkit-mask-image: linear-gradient(to right, #000 85%, transparent);
+    mask-image: linear-gradient(to right, #000 85%, transparent);
   }
 
-  .mobile-only-filters .region-tags::-webkit-scrollbar,
-  .mobile-only-filters .filter-tags::-webkit-scrollbar {
+  .mobile-only-chips .region-tags::-webkit-scrollbar,
+  .mobile-only-chips .filter-tags::-webkit-scrollbar {
     display: none;
   }
 
-  .mobile-only-filters .region-tag,
-  .mobile-only-filters .filter-tag {
+  .mobile-only-chips .region-tag,
+  .mobile-only-chips .filter-tag {
     flex-shrink: 0;
     padding: var(--spacing-6px) var(--spacing-12px);
     font-size: var(--font-size-xs);

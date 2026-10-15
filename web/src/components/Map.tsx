@@ -46,7 +46,6 @@ export default function Map({ complexes, activeComplexId, hoveredComplexId, onSe
   const mapInstanceRef = useRef<any>(null);
 
   // 사용자가 지도의 마커를 직접 클릭했는지 여부를 판별하기 위한 Ref 플래그
-  const isMarkerClickedRef = useRef(false);
 
   // 1. 네이버 지도 SDK 초기화
   const initMap = () => {
@@ -151,7 +150,6 @@ export default function Map({ complexes, activeComplexId, hoveredComplexId, onSe
         });
 
         window.naver.maps.Event.addListener(marker, 'click', () => {
-          isMarkerClickedRef.current = true;
           onSelectComplex(mapped);
         });
       }
@@ -195,24 +193,9 @@ export default function Map({ complexes, activeComplexId, hoveredComplexId, onSe
   useEffect(() => {
     if (!naverMap || markers.length === 0 || !activeComplexId) return;
 
-    // [경우 B-1, B-2] 사용자가 지도의 마커를 직접 조준 클릭하여 활성화한 경우
-    if (isMarkerClickedRef.current) {
-      isMarkerClickedRef.current = false; // 플래그 초기화
-      
-      // 마커의 active 클래스 상태 강제 동기화만 수행하고 지도 스크롤(panTo)은 전면 차단
-      markers.forEach(m => {
-        const el = m.marker.getElement();
-        if (el) {
-          const innerMarker = el.querySelector('.custom-marker');
-          if (m.id === activeComplexId) {
-            innerMarker?.classList.add('active');
-          } else {
-            innerMarker?.classList.remove('active');
-          }
-        }
-      });
-      return;
-    }
+    // 마커를 직접 클릭한 경우도 아래 가시성 검사를 그대로 거친다: 이미 보이는 위치면 지도를 움직이지 않고,
+    // 새로 열리는 상세 패널 밑에 깔리는 위치일 때만 패널 오른쪽으로 옮긴다.
+    // (예전엔 마커 클릭 시 이동을 전면 차단해, 패널 쪽 마커를 누르면 그 마커가 패널에 가려졌다)
 
     const target = markers.find(m => m.id === activeComplexId);
     let timerId: NodeJS.Timeout; // 비동기 타이머 참조 보관

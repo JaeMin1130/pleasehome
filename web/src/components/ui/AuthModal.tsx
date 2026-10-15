@@ -64,6 +64,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (!loginId.trim() || !loginPwd) { setError('아이디와 비밀번호를 입력해주세요.'); return; }
     setIsSubmitting(true);
     const result = await login(loginId.trim(), loginPwd);
     setIsSubmitting(false);
@@ -75,6 +76,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    const idLen = regId.trim().length;
+    if (idLen < 3 || idLen > 20) { setError('아이디는 3~20자로 입력해주세요.'); return; }
+    if (regPwd.length < 3) { setError('비밀번호는 3자 이상이어야 합니다.'); return; }
     if (regPwd !== regPwdConfirm) { setError('비밀번호가 일치하지 않습니다.'); return; }
     if (!regA.trim()) { setError('보안 답변을 입력해주세요.'); return; }
     setIsSubmitting(true);
@@ -88,6 +92,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const handleFindId = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (!findId.trim()) { setError('아이디를 입력해주세요.'); return; }
     setIsSubmitting(true);
     const res = await fetch(`/api/auth/find-account?id=${encodeURIComponent(findId.trim())}`);
     const data = await res.json();
@@ -100,6 +105,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const handleVerifyAnswer = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (!findA.trim()) { setError('보안 답변을 입력해주세요.'); return; }
     setIsSubmitting(true);
     const res = await fetch('/api/auth/find-account', {
       method: 'POST',
@@ -158,7 +164,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
           {/* ── 로그인 폼 ── */}
           {view === 'login' && (
-            <form className={styles.form} onSubmit={handleLogin}>
+            <form className={styles.form} noValidate onSubmit={handleLogin}>
               <label className={styles.label}>아이디</label>
               <input id="login-id" className={styles.input} type="text" value={loginId}
                 onChange={e => setLoginId(e.target.value)} placeholder="아이디를 입력하세요" required autoFocus />
@@ -177,7 +183,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
           {/* ── 회원가입 폼 ── */}
           {view === 'register' && (
-            <form className={styles.form} onSubmit={handleRegister}>
+            <form className={styles.form} noValidate onSubmit={handleRegister}>
               <label className={styles.label}>아이디 <span className={styles.hint}>(3~20자)</span></label>
               <input id="reg-id" className={styles.input} type="text" value={regId}
                 onChange={e => setRegId(e.target.value)} placeholder="사용할 아이디" required autoFocus minLength={3} maxLength={20} />
@@ -187,7 +193,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               <label className={styles.label}>비밀번호 확인</label>
               <input id="reg-pwd-confirm" className={styles.input} type="password" value={regPwdConfirm}
                 onChange={e => setRegPwdConfirm(e.target.value)} placeholder="비밀번호 재입력" required />
-              <label className={styles.label}>비밀번호 찾기 질문</label>
+              <label className={styles.label} htmlFor="reg-security-q">비밀번호 찾기 질문</label>
               <select id="reg-security-q" className={styles.select} value={regQ} onChange={e => setRegQ(e.target.value)}>
                 {SECURITY_QUESTIONS.map(q => <option key={q} value={q}>{q}</option>)}
               </select>
@@ -209,7 +215,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               <h3 className={styles.findTitle}>비밀번호 찾기</h3>
 
               {findStep === 'input-id' && (
-                <form className={styles.form} onSubmit={handleFindId}>
+                <form className={styles.form} noValidate onSubmit={handleFindId}>
                   <label className={styles.label}>아이디</label>
                   <input id="find-id" className={styles.input} type="text" value={findId}
                     onChange={e => setFindId(e.target.value)} placeholder="가입한 아이디" required autoFocus />
@@ -220,7 +226,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               )}
 
               {findStep === 'verify-answer' && (
-                <form className={styles.form} onSubmit={handleVerifyAnswer}>
+                <form className={styles.form} noValidate onSubmit={handleVerifyAnswer}>
                   <div className={styles.questionBox}>{findQ}</div>
                   <label className={styles.label}>답변</label>
                   <input id="find-answer" className={styles.input} type="text" value={findA}
@@ -232,7 +238,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               )}
 
               {findStep === 'reset-password' && (
-                <form className={styles.form} onSubmit={handleResetPassword}>
+                <form className={styles.form} noValidate onSubmit={handleResetPassword}>
                   <label className={styles.label}>새 비밀번호 <span className={styles.hint}>(3자 이상)</span></label>
                   <input id="find-new-pwd" className={styles.input} type="password" value={findNewPwd}
                     onChange={e => setFindNewPwd(e.target.value)} placeholder="새 비밀번호" required minLength={3} autoFocus />

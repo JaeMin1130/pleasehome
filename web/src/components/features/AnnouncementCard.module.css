@@ -510,6 +510,17 @@
 }
 
 @media (max-width: 768px) {
+    /* 터치: 찜·숨김 버튼을 권장 크기(44px)로 키우고 간격을 벌려 잘못 누르기 어렵게 한다 */
+    .favorite-btn,
+    .disable-btn {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .header-right-actions {
+        gap: var(--spacing-md);
+    }
+
     .timeline-bar-wrapper {
         padding-top: 0;
         margin-bottom: var(--spacing-xs);

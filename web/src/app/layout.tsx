@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Script from 'next/script';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { FeedbackProvider } from '@/components/ui/Feedback';
 
 export const viewport: Viewport = {
   themeColor: "#2563eb",
@@ -109,7 +110,9 @@ export default function RootLayout({
           `}
         </Script>
         <AuthProvider>
-          {children}
+          <FeedbackProvider>
+            {children}
+          </FeedbackProvider>
         </AuthProvider>
       </body>
     </html>

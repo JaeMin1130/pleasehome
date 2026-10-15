@@ -34,8 +34,10 @@ export default function BookmarkModal({
     existingItem ? existingItem.folderId : (folders.length > 0 ? folders[0].id : '')
   );
   const [memo, setMemo] = useState<string>(existingItem?.memo || '');
-  const [newFolderName, setNewFolderName] = useState<string>('');
-  const [showAddFolderInput, setShowAddFolderInput] = useState<boolean>(false);
+  // 폴더가 하나도 없으면 이름이 채워진 입력창을 바로 열어, '완료' 한 번으로 폴더 생성과 저장이 끝나게 한다
+  const [newFolderName, setNewFolderName] = useState<string>(folders.length === 0 ? '내 저장 단지' : '');
+  const [showAddFolderInput, setShowAddFolderInput] = useState<boolean>(folders.length === 0);
+  const [error, setError] = useState<string>('');
 
   // 💡 새 폴더 추가 시 색상 선택을 위한 6가지 프리셋 지정
   const [selectedNewFolderColor, setSelectedNewFolderColor] = useState<string>(BOOKMARK_PRESET_COLORS[0]);
@@ -53,11 +55,15 @@ export default function BookmarkModal({
   };
 
   const handleSaveSubmit = () => {
-    if (!selectedFolderId) {
-      alert('저장할 폴더를 선택하거나 생성해 주세요.');
+    if (selectedFolderId) {
+      onSave(selectedFolderId, memo);
       return;
     }
-    onSave(selectedFolderId, memo);
+    if (newFolderName.trim()) {
+      onSave(onAddFolder(newFolderName.trim(), selectedNewFolderColor), memo);
+      return;
+    }
+    setError('저장할 폴더 이름을 입력해 주세요.');
   };
 
   return (
@@ -116,6 +122,7 @@ export default function BookmarkModal({
               </div>
             )}
 
+            {error && <p role="alert" style={{ color: 'var(--color-dday)', fontSize: 'var(--font-size-sm)', margin: 'var(--spacing-xs) 0' }}>{error}</p>}
             <div className={styles['folders-list']}>
               {folders.length === 0 ? (
                 <div style={{
@@ -125,7 +132,7 @@ export default function BookmarkModal({
                   textAlign: 'center',
                   lineHeight: '1.5'
                 }}>
-                  생성된 폴더가 없습니다. 우측 상단의 <strong>'+ 새 폴더'</strong>를 눌러 저장용 폴더를 먼저 생성해 주세요.
+                  첫 저장 폴더의 이름을 정하고 <strong>완료</strong>를 누르면 폴더를 만들고 바로 저장합니다.
                 </div>
               ) : (
                 folders.map((folder) => (

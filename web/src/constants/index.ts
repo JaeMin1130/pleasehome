@@ -88,3 +88,17 @@ export const SECURITY_QUESTIONS = [
   '나의 첫 번째 차 종류는?',
   '태어난 병원 이름은?',
 ];
+
+// 공고 지역 필터 칩. 공고 region 값(예: '충청남도', '대전광역시')의 접두어로 묶는다.
+// 예전엔 서울·인천·경기 외 전부가 '기타'여서 전체 공고의 절반 이상이 한 칩에 몰렸다.
+export const REGION_FILTERS: { key: string; label: string; prefixes: string[] }[] = [
+  { key: 'ALL', label: '전체 지역', prefixes: [] },
+  { key: '서울', label: '서울', prefixes: ['서울'] },
+  { key: '인천', label: '인천', prefixes: ['인천'] },
+  { key: '경기', label: '경기', prefixes: ['경기'] },
+  { key: '강원', label: '강원', prefixes: ['강원'] },
+  { key: '충청', label: '충청', prefixes: ['충청', '충북', '충남', '대전', '세종'] },
+  { key: '전라', label: '전라', prefixes: ['전라', '전북', '전남', '광주'] },
+  { key: '경상', label: '경상', prefixes: ['경상', '경북', '경남', '부산', '대구', '울산'] },
+  { key: '제주', label: '제주', prefixes: ['제주'] },
+];

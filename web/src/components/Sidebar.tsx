@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useBottomSheetGesture } from '@/hooks/useBottomSheetGesture';
 import { Announcement, ApplicationStatus, Complex, BookmarkFolder, BookmarkItem } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { useFeedback } from '@/components/ui/Feedback';
 import AnnouncementCard from '@/components/features/AnnouncementCard';
 import ComplexCard from '@/components/features/ComplexCard';
 import styles from './Sidebar.module.css';
@@ -13,6 +14,7 @@ import {
   UI_STROKE_WIDTHS,
   BOOKMARK_PRESET_COLORS,
   SECURITY_QUESTIONS,
+  REGION_FILTERS,
 } from '@/constants';
 import AuthModal from '@/components/ui/AuthModal';
 import SearchTab from '@/components/sidebar/SearchTab';
@@ -61,6 +63,7 @@ export default function Sidebar({
   onHoverComplex
 }: SidebarProps) {
   const { member, favoriteAnns: memberFavoriteAnns, hiddenAnns: memberHiddenAnns } = useAuth();
+  const { showToast } = useFeedback();
   const [searchTerm, setSearchTerm] = useState('');
   const [complexSearchTerm, setComplexSearchTerm] = useState('');
   const [isMounted, setIsMounted] = useState(false);
@@ -182,7 +185,7 @@ export default function Sidebar({
       rolledBack = true;
       setDisabledAnns(prevDisabled);
       setFavoriteAnns(prevFavorite);
-      alert('저장에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+      showToast('저장에 실패했습니다. 잠시 후 다시 시도해 주세요.');
     };
   };
 
@@ -223,6 +226,13 @@ export default function Sidebar({
       if (activeAnnId === id) {
         onSelectAnnouncement(null);
       }
+
+      // 숨긴 카드는 목록에서 바로 사라지므로 무엇이 일어났는지 알리고 되돌릴 수 있게 한다.
+      // 토스트 클릭 시점의 최신 상태로 처리하도록 ref의 핸들러를 호출한다(렌더 시점 클로저는 이미 낡음).
+      showToast('공고를 숨겼습니다. 숨김 탭에서 다시 볼 수 있어요.', {
+        label: '실행 취소',
+        onClick: () => (isFav ? toggleFavoriteRef.current(id) : toggleHideRef.current(id)),
+      });
     }
     setDisabledAnns(next);
   };
@@ -257,6 +267,12 @@ export default function Sidebar({
     }
     setFavoriteAnns(next);
   };
+
+  // 숨김 토스트의 실행 취소가 클릭 시점의 최신 상태로 동작하도록 매 렌더 최신 핸들러를 보관
+  const toggleHideRef = useRef(handleToggleDisableAnn);
+  toggleHideRef.current = handleToggleDisableAnn;
+  const toggleFavoriteRef = useRef(handleToggleFavoriteAnn);
+  toggleFavoriteRef.current = handleToggleFavoriteAnn;
 
   // 사이드바 폴더 폼 상태
   const [newFolderName, setNewFolderName] = useState('');
@@ -440,18 +456,16 @@ export default function Sidebar({
     if (active === 'ALL') return true;
     if (!annRegion) return false;
     
-    if (active === '서울') return annRegion.startsWith('서울');
-    if (active === '경기') return annRegion.startsWith('경기');
-    if (active === '인천') return annRegion.startsWith('인천');
-    
-    if (active === '기타') {
-      // 서울, 경기, 인천으로 시작하지 않는 모든 나머지 행정구역들을 기타로 분류
-      return !annRegion.startsWith('서울') && 
-             !annRegion.startsWith('경기') && 
-             !annRegion.startsWith('인천');
-    }
-    
-    return annRegion === active;
+    // 전국 대상 공고는 어느 지역을 골라도 보여준다
+    if (annRegion.startsWith('전국')) return true;
+    const group = REGION_FILTERS.find((r) => r.key === active);
+    return group ? group.prefixes.some((p) => annRegion.startsWith(p)) : annRegion === active;
+  };
+
+  // 목록 필터와 상태 칩 개수가 같은 기준을 쓰도록 검색어 판정을 한 곳에 둔다
+  const matchesSearchTerm = (ann: Announcement) => {
+    const term = searchTerm.toLowerCase();
+    return ann.title.toLowerCase().includes(term) || ann.institution.toLowerCase().includes(term);
   };
 
   // 💡 지역 구분을 반영한 공고 목록 정렬 및 필터링 함수
@@ -459,8 +473,7 @@ export default function Sidebar({
   const sortedAnnouncements = useMemo(() => {
     const filtered = announcements.filter(ann => {
       // ① 검색어 필터
-      const matchesSearch = ann.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                            ann.institution.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = matchesSearchTerm(ann);
       
       // ② 지역 구분 필터 (정밀 매퍼 연동)
       const matchesRegion = matchesActiveRegion(ann.region, activeRegion);
@@ -556,6 +569,7 @@ export default function Sidebar({
     announcements.forEach(ann => {
       const matchesRegion = matchesActiveRegion(ann.region, activeRegion);
       if (!matchesRegion) return;
+      if (!matchesSearchTerm(ann)) return;
 
       const isHidden = disabledAnnIds.includes(ann.id);
       if (isHidden) {
@@ -574,7 +588,7 @@ export default function Sidebar({
     });
 
     return { upcoming, ongoing, closed, hidden, favorite };
-  }, [announcements, activeRegion, disabledAnnIds, favoriteAnnIds]);
+  }, [announcements, activeRegion, searchTerm, disabledAnnIds, favoriteAnnIds]);
 
   const getStatusCount = (status: string) => {
     if (status === 'UPCOMING') return statusCounts.upcoming;

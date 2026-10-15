@@ -1,6 +1,7 @@
 "use client";
 
 import { clickable } from '@/utils/a11y';
+import { REGION_FILTERS } from '@/constants';
 import React from 'react';
 import { Announcement, ApplicationStatus, Complex } from '@/types';
 import AnnouncementCard from '@/components/features/AnnouncementCard';
@@ -146,8 +147,7 @@ export default function SearchTab({
         
         {/* ① 지역 구분 필터 태그 */}
         <div className={`${styles['region-tags']} ${styles['desktop-only']}`}>
-          {['ALL', '서울', '인천', '경기', '기타'].map((r) => {
-            const label = r === 'ALL' ? '전체 지역' : r;
+          {REGION_FILTERS.map(({ key: r, label }) => {
             return (
               <span 
                 key={r}
@@ -208,43 +208,45 @@ export default function SearchTab({
             </button>
           )}
         </div>
-        <div className={styles['region-tags']}>
-          {['ALL', '서울', '인천', '경기', '기타'].map((r) => {
-            const label = r === 'ALL' ? '전체 지역' : r;
-            return (
-              <span 
-                key={r}
-                className={`${styles['region-tag']} ${activeRegion === r ? styles.active : ''}`}
-                {...clickable(() => setActiveRegion(r), { pressed: activeRegion === r })}
-              >
-                {label}
-              </span>
-            );
-          })}
-        </div>
-        <div className={styles['filter-tags']}>
-          <span className={`${styles['filter-tag']} ${activeTabStatus === 'UPCOMING' ? styles.active : ''}`} {...clickable(() => setActiveTabStatus('UPCOMING'), { pressed: activeTabStatus === 'UPCOMING' })}>
-            예정 ({getStatusCount('UPCOMING')})
-          </span>
-          <span className={`${styles['filter-tag']} ${activeTabStatus === 'ONGOING' ? styles.active : ''}`} {...clickable(() => setActiveTabStatus('ONGOING'), { pressed: activeTabStatus === 'ONGOING' })}>
-            접수중 ({getStatusCount('ONGOING')})
-          </span>
-          <span className={`${styles['filter-tag']} ${activeTabStatus === 'CLOSED' ? styles.active : ''}`} {...clickable(() => setActiveTabStatus('CLOSED'), { pressed: activeTabStatus === 'CLOSED' })}>
-            마감 ({getStatusCount('CLOSED')})
-          </span>
-          <span className={`${styles['filter-tag']} ${activeTabStatus === 'HIDDEN' ? styles.active : ''}`} {...clickable(() => setActiveTabStatus('HIDDEN'), { pressed: activeTabStatus === 'HIDDEN' })}>
-            숨김 ({getHiddenStatusCount()})
-          </span>
-          <span className={`${styles['filter-tag']} ${activeTabStatus === 'FAVORITE' ? styles.active : ''}`} {...clickable(() => setActiveTabStatus('FAVORITE'), { pressed: activeTabStatus === 'FAVORITE' })}>
-            찜 ({getFavoriteStatusCount()})
-          </span>
-        </div>
       </div>
 
       <div 
         ref={listRef} 
         className={styles['sidebar-list']}
       >
+        {/* 모바일: 칩 두 줄을 목록과 함께 스크롤시켜 바텀시트에서 카드가 보이는 영역을 넓힌다 (검색창만 고정) */}
+        <div className={styles['mobile-only-chips']}>
+          <div className={styles['region-tags']}>
+            {REGION_FILTERS.map(({ key: r, label }) => {
+              return (
+                <span 
+                  key={r}
+                  className={`${styles['region-tag']} ${activeRegion === r ? styles.active : ''}`}
+                  {...clickable(() => setActiveRegion(r), { pressed: activeRegion === r })}
+                >
+                  {label}
+                </span>
+              );
+            })}
+          </div>
+          <div className={styles['filter-tags']}>
+            <span className={`${styles['filter-tag']} ${activeTabStatus === 'UPCOMING' ? styles.active : ''}`} {...clickable(() => setActiveTabStatus('UPCOMING'), { pressed: activeTabStatus === 'UPCOMING' })}>
+              예정 ({getStatusCount('UPCOMING')})
+            </span>
+            <span className={`${styles['filter-tag']} ${activeTabStatus === 'ONGOING' ? styles.active : ''}`} {...clickable(() => setActiveTabStatus('ONGOING'), { pressed: activeTabStatus === 'ONGOING' })}>
+              접수중 ({getStatusCount('ONGOING')})
+            </span>
+            <span className={`${styles['filter-tag']} ${activeTabStatus === 'CLOSED' ? styles.active : ''}`} {...clickable(() => setActiveTabStatus('CLOSED'), { pressed: activeTabStatus === 'CLOSED' })}>
+              마감 ({getStatusCount('CLOSED')})
+            </span>
+            <span className={`${styles['filter-tag']} ${activeTabStatus === 'HIDDEN' ? styles.active : ''}`} {...clickable(() => setActiveTabStatus('HIDDEN'), { pressed: activeTabStatus === 'HIDDEN' })}>
+              숨김 ({getHiddenStatusCount()})
+            </span>
+            <span className={`${styles['filter-tag']} ${activeTabStatus === 'FAVORITE' ? styles.active : ''}`} {...clickable(() => setActiveTabStatus('FAVORITE'), { pressed: activeTabStatus === 'FAVORITE' })}>
+              찜 ({getFavoriteStatusCount()})
+            </span>
+          </div>
+        </div>
         {sortedAnnouncements.length === 0 ? (
           <div className={styles['empty-msg']}>결과가 없습니다.</div>
         ) : (

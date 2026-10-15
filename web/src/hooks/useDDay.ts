@@ -86,15 +86,12 @@ export function useDDay(announcement?: Announcement | null): UseDDayResult {
         if (diffTime > 0) {
           const hoursLeft = diffTime / (1000 * 60 * 60);
           if (hoursLeft < 24) {
-            const hours = Math.floor(diffTime / (1000 * 60 * 60));
-            const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diffTime % (1000 * 60)) / 1000);
-
-            const hStr = String(hours).padStart(2, '0');
-            const mStr = String(minutes).padStart(2, '0');
-            const sStr = String(seconds).padStart(2, '0');
-
-            return `마감 ${hStr}:${mStr}:${sStr}`;
+            // 초 단위 카운트다운은 목록 전체를 산만하게 만들어, 마감 시각만 날짜 기준으로 보여준다
+            const endDay = new Date(maxEnd.getFullYear(), maxEnd.getMonth(), maxEnd.getDate());
+            const dayLabel = endDay.getTime() === today.getTime() ? '오늘' : '내일';
+            const hh = String(maxEnd.getHours()).padStart(2, '0');
+            const mm = String(maxEnd.getMinutes()).padStart(2, '0');
+            return `${dayLabel} ${hh}:${mm} 마감`;
           } else {
             const endDate = new Date(maxEnd.getFullYear(), maxEnd.getMonth(), maxEnd.getDate());
             const diffDaysTime = endDate.getTime() - today.getTime();
@@ -113,9 +110,10 @@ export function useDDay(announcement?: Announcement | null): UseDDayResult {
 
     setDDayText(calculateDDay());
 
+    // 표시가 분 단위라 1분마다 갱신하면 충분하다
     const intervalId = setInterval(() => {
       setDDayText(calculateDDay());
-    }, 1000);
+    }, 60 * 1000);
 
     return () => clearInterval(intervalId);
   }, [announcement, minStart, maxEnd]);

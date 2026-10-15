@@ -6,6 +6,7 @@ import Sidebar from '@/components/Sidebar';
 import DetailPanel from '@/components/DetailPanel';
 import NavigationBar, { NavigationTabType } from '@/components/NavigationBar';
 import BookmarkModal from '@/components/ui/BookmarkModal';
+import { useFeedback } from '@/components/ui/Feedback';
 import AuthModal from '@/components/ui/AuthModal';
 import CatRunLoader from '@/components/ui/CatRunLoader';
 import { formatMoney, formatRent, formatTargetGroup } from '@/utils/formatters';
@@ -66,6 +67,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
   });
 
   const { member, bookmarkFolders: memberBookmarkFolders, bookmarkItems: memberBookmarkItems } = useAuth();
+  const { showToast } = useFeedback();
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
   // 로컬스토리지 기반 다크모드/라이트모드 전역 테마 초기화 동기화
@@ -118,15 +120,28 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
       return;
     }
 
-    // 저장되지 않은 단지라면 설정 폴더/메모 선택 팝업 오픈
     const compName = allComplexes.find(c => c.id === complexId)?.name || '알 수 없는 단지';
-    setBookmarkModalState({ isOpen: true, complexId, complexName: compName });
+    const openModal = () => setBookmarkModalState({ isOpen: true, complexId, complexName: compName });
+
+    // 폴더가 있으면 팝업 없이 가장 최근에 쓴 폴더로 바로 저장하고, 폴더 변경·메모는 토스트에서 이어간다.
+    // 폴더가 없으면(기본 폴더 자동 생성은 하지 않음, docs/dev/DECISION.md #7) 이름이 미리 채워진 팝업에서 한 번에 생성·저장한다.
+    const lastUsedFolderId = bookmarkItems[bookmarkItems.length - 1]?.folderId;
+    const targetFolder = bookmarkFolders.find(f => f.id === lastUsedFolderId) ?? bookmarkFolders[0];
+    if (!targetFolder) {
+      openModal();
+      return;
+    }
+    saveBookmark(complexId, targetFolder.id, '');
+    showToast(`'${targetFolder.name}' 폴더에 저장했습니다.`, { label: '폴더·메모 변경', onClick: openModal });
   };
 
   const handleSaveBookmark = (folderId: string, memo: string) => {
     if (bookmarkModalState.complexId === null) return;
-    const targetId = bookmarkModalState.complexId;
+    saveBookmark(bookmarkModalState.complexId, folderId, memo);
+    setBookmarkModalState(prev => ({ ...prev, isOpen: false }));
+  };
 
+  const saveBookmark = (targetId: number, folderId: string, memo: string) => {
     setBookmarkItems((prev) => {
       const exists = prev.some(item => item.complexId === targetId);
       const next: BookmarkItem[] = exists
@@ -141,7 +156,6 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
         body: JSON.stringify({ complex_id: targetId, folder_id: folderId, memo }),
       });
     }
-    setBookmarkModalState(prev => ({ ...prev, isOpen: false }));
   };
 
   const handleRemoveBookmark = () => {
@@ -717,6 +731,14 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
             bookmarkFolders={bookmarkFolders}
           />
           
+          {/* 첫 화면엔 공고를 고르기 전까지 마커가 없어 지도가 비어 보이므로, 무엇을 하면 되는지 안내한다 */}
+          {activeAnnId === null && mapComplexes.length === 0 && currentEffectiveTabForMap === 'SEARCH' && (
+            <div className={styles['map-empty-hint']} role="note">
+              <span className={styles['hint-desktop']}>왼쪽 목록에서 공고를 선택하면 단지 위치가 지도에 표시됩니다</span>
+              <span className={styles['hint-mobile']}>아래 목록에서 공고를 선택하면 단지 위치가 지도에 표시됩니다</span>
+            </div>
+          )}
+
           {isPolicyOnly && activeAnn && (
             <div className={styles['policy-overlay']}>
               <div className={styles['policy-icon']}>
@@ -734,6 +756,8 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
       </main>
 
       <BookmarkModal
+        // 열 때마다 새로 마운트해 이전에 열었던 단지의 폴더 선택·입력값이 남지 않게 한다
+        key={`${bookmarkModalState.complexId}-${bookmarkModalState.isOpen}`}
         isOpen={bookmarkModalState.isOpen}
         complexName={bookmarkModalState.complexName}
         folders={bookmarkFolders}
