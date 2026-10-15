@@ -1,5 +1,5 @@
+import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from '@testing-library/react';
-import { vi } from 'vitest';
 import { clickable } from './a11y';
 
 describe('clickable', () => {
