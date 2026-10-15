@@ -1,13 +1,18 @@
 package com.pleasehome.backend
 
 import com.pleasehome.backend.housing.service.HousingService
+import com.pleasehome.backend.member.repository.MemberRepository
+import com.pleasehome.backend.member.service.AuthService
 import com.pleasehome.backend.member.service.MemberInteractionService
+import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.mock.web.MockHttpServletResponse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.web.server.ResponseStatusException
 
 @SpringBootTest
 class BackendApplicationTests {
@@ -17,6 +22,12 @@ class BackendApplicationTests {
 
     @Autowired
     private lateinit var interactionService: MemberInteractionService
+
+    @Autowired
+    private lateinit var authService: AuthService
+
+    @Autowired
+    private lateinit var memberRepository: MemberRepository
 
     @Test
     fun contextLoads() {
@@ -92,5 +103,61 @@ class BackendApplicationTests {
         val units = housingService.getHousingUnits(445L, 479L)
         assertTrue(units.isNotEmpty())
         assertTrue(units.all { it["announcement_id"] == 479L && it["complex_id"] == 445L })
+    }
+
+    @Test
+    fun testWithdrawDeletesMemberAndAllData() {
+        val id = "test_withdraw_ponytail"
+        if (memberRepository.existsById(id)) memberRepository.deleteById(id)
+        val registerRes = MockHttpServletResponse()
+        authService.register(mapOf("id" to id, "password" to "pw1234", "security_q" to "q", "security_a" to "a"), registerRes)
+        val request = MockHttpServletRequest().apply { setCookies(registerRes.getCookie("pleasehome_session")!!) }
+        interactionService.addFavorite(id, 999998L)
+        interactionService.saveBookmarkFolder(id, "f1", "폴더", "#000000")
+
+        assertThrows(IllegalArgumentException::class.java) {
+            authService.withdraw(mapOf("password" to "wrong"), request, MockHttpServletResponse())
+        }
+        assertTrue(memberRepository.existsById(id), "비밀번호가 틀리면 삭제되면 안 된다")
+
+        val withdrawRes = MockHttpServletResponse()
+        authService.withdraw(mapOf("password" to "pw1234"), request, withdrawRes)
+        assertTrue(!memberRepository.existsById(id))
+        assertTrue(interactionService.getFavorites(id).isEmpty())
+        assertTrue(interactionService.getBookmarkFolders(id).isEmpty())
+        assertTrue(withdrawRes.getHeader("Set-Cookie")!!.contains("Max-Age=0"), "로그인 쿠키가 지워져야 한다")
+    }
+
+    // 없는 아이디도 실제 계정처럼 질문을 돌려주고, 틀린 답변과 같은 오류를 내야 아이디 존재 여부가 새지 않는다
+    @Test
+    fun testFindAccountDoesNotRevealIdExistence() {
+        val ghost = "ghost_id_ponytail_never_registered"
+        val q1 = authService.getSecurityQuestion(ghost)["security_q"]
+        assertTrue(q1 == authService.getSecurityQuestion(ghost)["security_q"], "같은 아이디엔 항상 같은 질문")
+        val e = assertThrows(IllegalArgumentException::class.java) {
+            authService.findAccount(mapOf("id" to ghost, "security_a" to "x"))
+        }
+        assertTrue(e.message == "보안 답변이 올바르지 않습니다.")
+    }
+
+    // 5회 틀리면 정답이어도 잠겨야 무차별 대입을 막는다
+    @Test
+    fun testFindAccountLocksAfterRepeatedWrongAnswers() {
+        val id = "test_lock_ponytail"
+        if (memberRepository.existsById(id)) memberRepository.deleteById(id)
+        authService.register(mapOf("id" to id, "password" to "pw1234", "security_q" to "q", "security_a" to "right"), MockHttpServletResponse())
+        try {
+            repeat(5) {
+                assertThrows(IllegalArgumentException::class.java) {
+                    authService.findAccount(mapOf("id" to id, "security_a" to "wrong$it"))
+                }
+            }
+            val locked = assertThrows(ResponseStatusException::class.java) {
+                authService.findAccount(mapOf("id" to id, "security_a" to "right"))
+            }
+            assertTrue(locked.statusCode.value() == 429)
+        } finally {
+            memberRepository.deleteById(id)
+        }
     }
 }

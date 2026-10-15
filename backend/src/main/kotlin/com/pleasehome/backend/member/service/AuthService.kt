@@ -1,16 +1,20 @@
 package com.pleasehome.backend.member.service
 
 import com.pleasehome.backend.member.entity.Member
+import com.github.benmanes.caffeine.cache.Cache
+import com.github.benmanes.caffeine.cache.Caffeine
 import com.pleasehome.backend.member.repository.MemberRepository
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseCookie
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.server.ResponseStatusException
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -118,6 +122,22 @@ class AuthService(
         )
     }
 
+    /** 회원 탈퇴: 비밀번호를 재확인한 뒤 회원 정보와 모든 이용 데이터를 삭제하고 로그인 쿠키를 지운다 (개인정보처리방침 3·6조) */
+    fun withdraw(body: Map<String, String>, request: HttpServletRequest, response: HttpServletResponse): Map<String, Any> {
+        val memberId = getMemberIdFromCookie(request) ?: throw IllegalArgumentException("로그인이 필요합니다.")
+        val password = body["password"] ?: throw IllegalArgumentException("비밀번호를 입력해주세요.")
+        val member = memberRepository.findById(memberId).orElseThrow { NoSuchElementException("회원 정보를 찾을 수 없습니다.") }
+        if (!passwordEncoder.matches(password, member.pwdHash)) {
+            throw IllegalArgumentException("비밀번호가 올바르지 않습니다.")
+        }
+
+        interactionService.deleteAllMemberData(memberId)
+        memberRepository.deleteLegacyFavorites(memberId)
+        memberRepository.deleteLegacyHiddenAnns(memberId)
+        memberRepository.delete(member)
+        return logout(response)
+    }
+
     fun updateAccount(body: Map<String, Any?>, request: HttpServletRequest): Map<String, Any> {
         val memberId = getMemberIdFromCookie(request) ?: throw IllegalArgumentException("로그인이 필요합니다.")
         val member = memberRepository.findById(memberId).orElseThrow { NoSuchElementException("회원 정보를 찾을 수 없습니다.") }
@@ -151,10 +171,30 @@ class AuthService(
         return mapOf("success" to true)
     }
 
+    // 없는 아이디에도 실제 계정과 같은 형태로 질문을 돌려줘 아이디 존재 여부를 노출하지 않는다 (같은 아이디엔 항상 같은 질문).
+    // 목록은 web/src/constants의 SECURITY_QUESTIONS와 같아야 진짜 질문과 구분되지 않는다.
+    private val securityQuestions = listOf(
+        "어릴 때 키우던 반려동물의 이름은?",
+        "다닌 초등학교 이름은?",
+        "부모님이 처음 만난 도시는?",
+        "가장 좋아하는 음식은?",
+        "나의 첫 번째 차 종류는?",
+        "태어난 병원 이름은?",
+    )
+
+    // 보안 답변 무차별 대입 차단: 같은 아이디로 5회 틀리면 마지막 실패로부터 15분간 잠금.
+    // shortcut: 프로세스 메모리 기준이라 재시작 시 초기화됨, 백엔드를 여러 대로 늘리면 공유 저장소로 옮길 것
+    private val maxFindAttempts = 5
+    private val findFailures: Cache<String, Int> = Caffeine.newBuilder()
+        .expireAfterWrite(Duration.ofMinutes(15))
+        .maximumSize(10_000)
+        .build()
+
     @Transactional(readOnly = true, transactionManager = "memberTransactionManager")
     fun getSecurityQuestion(id: String): Map<String, Any> {
-        val member = memberRepository.findById(id).orElseThrow { NoSuchElementException("존재하지 않는 아이디입니다.") }
-        return mapOf("security_q" to member.securityQ)
+        val question = memberRepository.findById(id).map { it.securityQ }
+            .orElse(securityQuestions[Math.floorMod(id.hashCode(), securityQuestions.size)])
+        return mapOf("security_q" to question)
     }
 
     fun findAccount(body: Map<String, String>): Map<String, Any> {
@@ -162,8 +202,13 @@ class AuthService(
         val securityA = body["security_a"]?.trim() ?: throw IllegalArgumentException("아이디와 보안 답변을 입력해주세요.")
         val newPassword = body["new_password"]
 
-        val member = memberRepository.findById(id).orElseThrow { NoSuchElementException("존재하지 않는 아이디입니다.") }
-        if (member.securityA != securityA) {
+        if ((findFailures.getIfPresent(id) ?: 0) >= maxFindAttempts) {
+            throw ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "보안 답변을 여러 번 틀려 잠시 잠겼습니다. 15분 후 다시 시도해주세요.")
+        }
+        // 없는 아이디도 틀린 답변과 같은 응답을 줘 아이디 존재 여부를 노출하지 않는다
+        val member = memberRepository.findById(id).orElse(null)
+        if (member == null || member.securityA != securityA) {
+            findFailures.asMap().merge(id, 1, Int::plus)
             throw IllegalArgumentException("보안 답변이 올바르지 않습니다.")
         }
 
@@ -177,6 +222,7 @@ class AuthService(
 
         member.pwdHash = passwordEncoder.encode(newPassword) ?: member.pwdHash
         memberRepository.save(member)
+        findFailures.invalidate(id)
         return mapOf("success" to true)
     }
 

@@ -34,6 +34,10 @@ class AuthController(
     fun updateAccount(@RequestBody body: Map<String, Any?>, request: HttpServletRequest): Map<String, Any> =
         authService.updateAccount(body, request)
 
+    @DeleteMapping("/account")
+    fun withdraw(@RequestBody body: Map<String, String>, request: HttpServletRequest, response: HttpServletResponse): Map<String, Any> =
+        authService.withdraw(body, request, response)
+
     @GetMapping("/find-account")
     fun getSecurityQuestion(@RequestParam id: String): Map<String, Any> =
         authService.getSecurityQuestion(id)

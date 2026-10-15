@@ -3,6 +3,7 @@
 import { clickable } from '@/utils/a11y';
 import React from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
 import styles from '../Sidebar.module.css';
 import { UI_SIZES, UI_STROKE_WIDTHS, SECURITY_QUESTIONS } from '@/constants';
 
@@ -181,6 +182,8 @@ export default function MoreTab({
                     {isProfileSubmitting ? '변경 중...' : '질문/답변 변경'}
                   </button>
                 </div>
+
+                <WithdrawForm />
               </div>
             )}
           </div>
@@ -281,6 +284,44 @@ export default function MoreTab({
           <p>&copy; 2026 플리즈홈 All rights reserved.</p>
         </div>
       </div>
+    </div>
+  );
+}
+
+// 회원 탈퇴: 비밀번호 재확인 + 브라우저 확인창을 거쳐 회원 정보와 찜·숨김·저장 데이터를 모두 삭제
+function WithdrawForm() {
+  const { withdraw } = useAuth();
+  const [password, setPassword] = React.useState('');
+  const [error, setError] = React.useState('');
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  const handleWithdraw = async () => {
+    setError('');
+    if (!password) { setError('비밀번호를 입력해주세요.'); return; }
+    if (!window.confirm('탈퇴하면 회원 정보와 찜·숨김·저장한 데이터가 모두 삭제되며 복구할 수 없습니다. 탈퇴하시겠습니까?')) return;
+    setIsSubmitting(true);
+    const result = await withdraw(password);
+    setIsSubmitting(false);
+    if (result.error) { setError(result.error); return; }
+    window.alert('탈퇴가 완료되었습니다.');
+  };
+
+  return (
+    <div className={styles['profile-form-group']}>
+      <p className={styles['profile-form-title']}>회원 탈퇴</p>
+      {error && <div className={styles['profile-error-banner']}>{error}</div>}
+      <label className={styles['profile-label']} htmlFor="withdraw-password">비밀번호 확인</label>
+      <input
+        id="withdraw-password"
+        type="password"
+        className={styles['profile-input']}
+        placeholder="현재 비밀번호"
+        value={password}
+        onChange={e => setPassword(e.target.value)}
+      />
+      <button className={styles['profile-danger-btn']} disabled={isSubmitting} onClick={handleWithdraw}>
+        {isSubmitting ? '처리 중...' : '회원 탈퇴'}
+      </button>
     </div>
   );
 }

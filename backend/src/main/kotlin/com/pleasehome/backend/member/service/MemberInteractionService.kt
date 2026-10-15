@@ -15,6 +15,13 @@ class MemberInteractionService(
     private val itemRepository: MemberBookmarkItemRepository
 ) {
 
+    /** 회원 탈퇴 시 그 회원의 찜·숨김·저장 폴더·저장 단지를 모두 삭제 */
+    fun deleteAllMemberData(memberId: String) {
+        interestRepository.deleteAllByIdMemberId(memberId)
+        itemRepository.deleteAllByIdMemberId(memberId)
+        folderRepository.deleteAllByIdMemberId(memberId)
+    }
+
     // ================= Favorites / Hidden (통합 announcement_interests, docs/dev/DOMAIN_MODEL.md 2.3) =================
     // status 컬럼 하나로 찜/숨김을 표현하므로, 등록 시 상태를 덮어쓰는 것만으로 상호배제가 자동 보장됨
     // (기존처럼 반대쪽 테이블에서 별도 delete를 호출할 필요가 없음).

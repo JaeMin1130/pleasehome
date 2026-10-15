@@ -2,21 +2,34 @@ package com.pleasehome.backend.member.repository
 
 import com.pleasehome.backend.member.entity.*
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
+import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 
 @Repository
-interface MemberRepository : JpaRepository<Member, String>
+interface MemberRepository : JpaRepository<Member, String> {
+    // 007 마이그레이션(announcement_interests 통합) 이전의 레거시 테이블. 엔티티는 없지만 회원 행이 남아 있어 탈퇴 시 함께 지운다.
+    @Modifying
+    @Query(value = "DELETE FROM member_favorites WHERE member_id = :memberId", nativeQuery = true)
+    fun deleteLegacyFavorites(memberId: String)
+
+    @Modifying
+    @Query(value = "DELETE FROM member_hidden_anns WHERE member_id = :memberId", nativeQuery = true)
+    fun deleteLegacyHiddenAnns(memberId: String)
+}
 
 @Repository
 interface AnnouncementInterestRepository : JpaRepository<AnnouncementInterest, AnnouncementInterestId> {
     fun findAllByIdMemberIdAndStatus(memberId: String, status: String): List<AnnouncementInterest>
     fun deleteByIdMemberIdAndIdAnnouncementIdAndStatus(memberId: String, announcementId: Long, status: String)
+    fun deleteAllByIdMemberId(memberId: String)
 }
 
 @Repository
 interface MemberBookmarkFolderRepository : JpaRepository<MemberBookmarkFolder, MemberBookmarkFolderId> {
     fun findAllByIdMemberIdOrderByCreatedAtAsc(memberId: String): List<MemberBookmarkFolder>
     fun deleteByIdMemberIdAndIdId(memberId: String, id: String)
+    fun deleteAllByIdMemberId(memberId: String)
 }
 
 @Repository
@@ -24,4 +37,5 @@ interface MemberBookmarkItemRepository : JpaRepository<MemberBookmarkItem, Membe
     fun findAllByIdMemberIdOrderByCreatedAtAsc(memberId: String): List<MemberBookmarkItem>
     fun deleteByIdMemberIdAndIdComplexId(memberId: String, complexId: Long)
     fun deleteAllByIdMemberIdAndFolderId(memberId: String, folderId: String)
+    fun deleteAllByIdMemberId(memberId: String)
 }

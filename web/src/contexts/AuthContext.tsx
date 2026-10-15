@@ -17,6 +17,7 @@ interface AuthContextValue {
   login: (id: string, password: string) => Promise<{ error?: string }>;
   register: (id: string, password: string, security_q: string, security_a: string) => Promise<{ error?: string }>;
   logout: () => Promise<void>;
+  withdraw: (password: string) => Promise<{ error?: string }>;
   refresh: () => Promise<void>;
 }
 
@@ -99,8 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return {};
   };
 
-  const logout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
+  const clearMemberState = () => {
     setMember(null);
     setFavoriteAnns(EMPTY_FAVORITES);
     setHiddenAnns(EMPTY_HIDDEN);
@@ -108,8 +108,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setBookmarkItems(EMPTY_ITEMS);
   };
 
+  const logout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    clearMemberState();
+  };
+
+  // 서버가 회원·이용 데이터를 삭제하고 로그인 쿠키도 지우므로, 성공 시 화면 상태만 비운다
+  const withdraw = async (password: string) => {
+    const res = await fetch('/api/auth/account', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      return { error: data.error ?? '탈퇴 처리에 실패했습니다.' };
+    }
+    clearMemberState();
+    return {};
+  };
+
   return (
-    <AuthContext.Provider value={{ member, isLoading, favoriteAnns, hiddenAnns, bookmarkFolders, bookmarkItems, login, register, logout, refresh }}>
+    <AuthContext.Provider value={{ member, isLoading, favoriteAnns, hiddenAnns, bookmarkFolders, bookmarkItems, login, register, logout, withdraw, refresh }}>
       {children}
     </AuthContext.Provider>
   );
