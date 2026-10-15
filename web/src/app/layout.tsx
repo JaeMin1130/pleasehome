@@ -1,11 +1,27 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Script from 'next/script';
 import { AuthProvider } from '@/contexts/AuthContext';
 
+export const viewport: Viewport = {
+  themeColor: "#2563eb",
+  width: "device-width",
+  initialScale: 1,
+};
+
 export const metadata: Metadata = {
   title: "공공청약 지도",
   description: "전국 LH, SH, GH 공공임대주택 청약 정보를 지도에서 한눈에 확인하세요.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "플리즈홈",
+  },
+  icons: {
+    icon: "/icon-192.png",
+    apple: "/apple-touch-icon.png",
+  },
   verification: {
     google: "YUZHBi2LfMvirt-ywiRdfTD2TOteXHgnjbHczGX2kXo",
     other: {
@@ -14,6 +30,7 @@ export const metadata: Metadata = {
   },
   other: {
     "google-adsense-account": "ca-pub-7402127086926987",
+    "mobile-web-app-capable": "yes",
   },
   
   openGraph: {
@@ -75,6 +92,22 @@ export default function RootLayout({
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
+        <Script id="register-sw" strategy="afterInteractive">
+          {`
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(
+                  function(registration) {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                  },
+                  function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                  }
+                );
+              });
+            }
+          `}
+        </Script>
         <AuthProvider>
           {children}
         </AuthProvider>
