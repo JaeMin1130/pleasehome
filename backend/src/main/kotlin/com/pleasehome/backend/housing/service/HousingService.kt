@@ -251,9 +251,7 @@ class HousingService(
         "complex_type" to c.complexType,
         "latitude" to c.latitude,
         "longitude" to c.longitude,
-        "is_imprecise" to c.isImprecise,
-        "created_at" to c.createdAt,
-        "updated_at" to c.updatedAt
+        "is_imprecise" to c.isImprecise
     )
 
     private fun announcementToSimpleMap(a: Announcement) = mapOf(
