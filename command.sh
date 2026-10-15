@@ -6,6 +6,8 @@ KEY_PATH="$BASE_DIR/db-pipeline/public-housing-key.pem"
 SERVER_HOST="101.79.19.118"
 SERVER_USER="iru"
 REMOTE_PATH="/home/iru/app/pleasehome"
+# 배포 중 ssh/scp 연결(10여 회)이 첫 인증 1회를 공유하도록 연결 재사용, 120초 유휴 시 자동 종료
+SSH_OPTS=(-i "$KEY_PATH" -o ControlMaster=auto -o ControlPath="$HOME/.ssh/cm-%r@%h:%p" -o ControlPersist=120)
 
 PYTHON_BIN="$BASE_DIR/db-pipeline/.venv/bin/python3"
 if [ ! -f "$PYTHON_BIN" ]; then
@@ -28,7 +30,7 @@ function require_clean_git() {
 
 function remote_health() {
   # $1: 이름, $2: 서버 내부 확인 URL, $3: 실패 시 안내할 롤백 명령
-  if ! ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "for _ in \$(seq 1 90); do curl -sf -o /dev/null $2 && exit 0; sleep 1; done; exit 1"; then
+  if ! ssh "${SSH_OPTS[@]}" "$SERVER_USER@$SERVER_HOST" "for _ in \$(seq 1 90); do curl -sf -o /dev/null $2 && exit 0; sleep 1; done; exit 1"; then
     echo "❌ $1 헬스체크 실패 ($2, 90초 무응답)"
     echo "   롤백: ssh -i $KEY_PATH $SERVER_USER@$SERVER_HOST \"$3\""
     exit 1
@@ -50,11 +52,11 @@ function deploy_db() {
   [ "$(sqlite3 "$snapshot" 'PRAGMA integrity_check')" = "ok" ] || { echo "❌ 스냅샷 무결성 검사 실패"; exit 1; }
 
   echo "📦 [DB 배포 3/3] 스냅샷 전송 후 백엔드 정지 상태에서 교체..."
-  ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "mkdir -p $REMOTE_PATH/db-pipeline"
-  scp -i "$KEY_PATH" "$snapshot" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/db-pipeline/public_housing.db.new"
+  ssh "${SSH_OPTS[@]}" "$SERVER_USER@$SERVER_HOST" "mkdir -p $REMOTE_PATH/db-pipeline"
+  scp "${SSH_OPTS[@]}" "$snapshot" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/db-pipeline/public_housing.db.new"
   rm -f "$snapshot"
   # 열린 DB를 덮어쓰지 않도록 정지 후 교체하고, 옛 DB의 -wal/-shm이 새 DB에 섞이지 않게 지운다
-  ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "
+  ssh "${SSH_OPTS[@]}" "$SERVER_USER@$SERVER_HOST" "
     set -e
     cd $REMOTE_PATH/db-pipeline
     pm2 stop pleasehome-backend 2>/dev/null || true
@@ -65,7 +67,7 @@ function deploy_db() {
 
   # 통합 배포(deploy)에서는 곧이어 새 JAR로 기동하므로 재시작을 건너뛴다
   if [ "$restart" = "restart" ]; then
-    ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "pm2 restart pleasehome-backend"
+    ssh "${SSH_OPTS[@]}" "$SERVER_USER@$SERVER_HOST" "pm2 restart pleasehome-backend"
     remote_health "백엔드" "http://127.0.0.1:8080/api/sitemap/paths" \
       "cd $REMOTE_PATH/db-pipeline && cp -f public_housing.db.prev public_housing.db && rm -f public_housing.db-wal public_housing.db-shm && pm2 restart pleasehome-backend"
   fi
@@ -78,13 +80,13 @@ function upload_backend() {
   "$BASE_DIR/backend/gradlew" -p "$BASE_DIR/backend" build -x test
 
   echo "📦 [백엔드 배포 2/3] JAR 파일 실서버 전송 중..."
-  ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "mkdir -p $REMOTE_PATH/backend"
-  scp -i "$KEY_PATH" "$BASE_DIR/backend/build/libs/backend-0.0.1-SNAPSHOT.jar" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/backend/backend.jar.new"
+  ssh "${SSH_OPTS[@]}" "$SERVER_USER@$SERVER_HOST" "mkdir -p $REMOTE_PATH/backend"
+  scp "${SSH_OPTS[@]}" "$BASE_DIR/backend/build/libs/backend-0.0.1-SNAPSHOT.jar" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/backend/backend.jar.new"
 }
 
 function activate_backend() {
   echo "🔄 [백엔드 배포 3/3] 실서버 Spring Boot PM2 재시작..."
-  ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "
+  ssh "${SSH_OPTS[@]}" "$SERVER_USER@$SERVER_HOST" "
     set -e
     cd $REMOTE_PATH/backend
     [ ! -f backend.jar ] || cp -f backend.jar backend.jar.prev
@@ -124,11 +126,11 @@ function deploy_web() {
   kill "$backend_pid" 2>/dev/null || true
 
   echo "📦 [프론트 배포 2/3] 빌드 번들 실서버 전송 중 (직전 번들은 롤백용으로 보관)..."
-  ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "mkdir -p $REMOTE_PATH/web && cd $REMOTE_PATH/web && { [ ! -f announce_deploy.tar.gz ] || mv -f announce_deploy.tar.gz announce_deploy.prev.tar.gz; }"
-  scp -i "$KEY_PATH" "$BASE_DIR/web/announce_deploy.tar.gz" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/web/announce_deploy.tar.gz"
+  ssh "${SSH_OPTS[@]}" "$SERVER_USER@$SERVER_HOST" "mkdir -p $REMOTE_PATH/web && cd $REMOTE_PATH/web && { [ ! -f announce_deploy.tar.gz ] || mv -f announce_deploy.tar.gz announce_deploy.prev.tar.gz; }"
+  scp "${SSH_OPTS[@]}" "$BASE_DIR/web/announce_deploy.tar.gz" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/web/announce_deploy.tar.gz"
 
   echo "🔄 [프론트 배포 3/3] 실서버 웹(Next.js) 압축 해제 및 PM2 리로드..."
-  ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "
+  ssh "${SSH_OPTS[@]}" "$SERVER_USER@$SERVER_HOST" "
     set -e
     cd $REMOTE_PATH/web
     tar -xzf announce_deploy.tar.gz
