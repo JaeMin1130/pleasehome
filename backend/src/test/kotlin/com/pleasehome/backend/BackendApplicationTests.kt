@@ -84,4 +84,13 @@ class BackendApplicationTests {
         val byAnnouncement = housingService.getHousingUnits(null, firstAnnId)
         assertNotNull(byAnnouncement)
     }
+
+    // Regression: complex_id와 announcement_id를 함께 주면 announcement_id가 무시되어,
+    // 단지 445(공고 33·479·481에 걸침)를 공고 479에서 열면 공고 33의 예비 192명이 섞여 보였다 (2026-10-15 실서버 체험).
+    @Test
+    fun testGetHousingUnitsFiltersByComplexAndAnnouncement() {
+        val units = housingService.getHousingUnits(445L, 479L)
+        assertTrue(units.isNotEmpty())
+        assertTrue(units.all { it["announcement_id"] == 479L && it["complex_id"] == 445L })
+    }
 }

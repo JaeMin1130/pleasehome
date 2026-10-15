@@ -153,6 +153,8 @@ class HousingService(
 
     fun getHousingUnits(complexId: Long?, announcementId: Long?): List<Map<String, Any?>> {
         val list = when {
+            // 단지는 여러 공고에 걸칠 수 있어, 둘 다 주어지면 해당 공고의 세대만 반환 (예전엔 announcement_id를 무시해 타 공고 세대가 섞임)
+            complexId != null && announcementId != null -> unitRepository.findAllByComplexIdAndAnnouncementIdOrderByExclusiveAreaAsc(complexId, announcementId)
             complexId != null -> unitRepository.findAllByComplexIdOrderByExclusiveAreaAsc(complexId)
             announcementId != null -> unitRepository.findAllByAnnouncementIdOrderByExclusiveAreaAsc(announcementId)
             else -> throw IllegalArgumentException("complex_id 또는 announcement_id 중 하나는 필수입니다.")
