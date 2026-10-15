@@ -1,3 +1,4 @@
+import { clickable } from '@/utils/a11y';
 import React from 'react';
 import { Complex, Announcement } from '@/types';
 import Tooltip from '@/components/ui/Tooltip';
@@ -198,7 +199,7 @@ export default function ComplexCard({
   return (
     <div 
       className={`${styles['complex-card']} ${isActive ? styles.active : ''}`}
-      onClick={onClick}
+      {...clickable(onClick, { pressed: isActive })}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >

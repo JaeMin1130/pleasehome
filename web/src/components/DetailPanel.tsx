@@ -19,6 +19,8 @@ interface DetailPanelProps {
   comparisonFolder?: BookmarkFolder | null;
   comparisonComplexes?: Complex[];
   activeTab: 'SEARCH' | 'BOOKMARK' | 'MORE' | null;
+  // 공고를 선택한 상태로 단지를 열면 그 공고의 세대만 보여준다 (단지는 여러 공고에 걸칠 수 있음)
+  announcementId?: number | null;
 }
 
 export default function DetailPanel({ 
@@ -26,7 +28,8 @@ export default function DetailPanel({
   bookmarkedIds, onToggleBookmark,
   comparisonFolder = null,
   comparisonComplexes = [],
-  activeTab
+  activeTab,
+  announcementId = null
 }: DetailPanelProps) {
   const [units, setUnits] = useState<HousingUnit[]>([]);
 
@@ -72,7 +75,7 @@ export default function DetailPanel({
     setSelectedType('ALL');
     setSelectedTarget('ALL');
     setSelectedIncome('ALL');
-    fetch(`/api/housing-units?complex_id=${complex.id}`)
+    fetch(`/api/housing-units?complex_id=${complex.id}${announcementId ? `&announcement_id=${announcementId}` : ''}`)
       .then((res) => res.json())
       .then((data: HousingUnit[]) => {
         setUnits(data);
@@ -85,7 +88,7 @@ export default function DetailPanel({
         console.error('Failed to load housing units', err);
         setLoading(false);
       });
-  }, [complex]);
+  }, [complex, announcementId]);
 
   // 💡 비교 모드 시 각 단지들의 평형 유닛 데이터를 동적으로 로딩
   useEffect(() => {
@@ -148,7 +151,7 @@ export default function DetailPanel({
                 {comparisonFolder.name} 단지 비교
               </h2>
             </div>
-            <button className={styles['panel-close-btn']} onClick={onClose}>✕</button>
+            <button className={styles['panel-close-btn']} onClick={onClose} aria-label="닫기">✕</button>
           </div>
         </div>
 
@@ -384,7 +387,7 @@ export default function DetailPanel({
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
               </svg>
             </button>
-            <button className={styles['panel-close-btn']} onClick={onClose}>✕</button>
+            <button className={styles['panel-close-btn']} onClick={onClose} aria-label="닫기">✕</button>
           </div>
         </div>
       </div>

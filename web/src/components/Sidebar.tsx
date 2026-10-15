@@ -343,7 +343,6 @@ export default function Sidebar({
   };
 
   // 모달 약관 노출 상태
-  const [activeModal, setActiveModal] = useState<'privacy' | 'terms' | null>(null);
 
   // 로그인 모달 (게스트용 유도)
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -537,6 +536,15 @@ export default function Sidebar({
 
   const getSortedAnnouncements = () => sortedAnnouncements;
 
+  // 사용자가 검색어·지역·상태를 바꿔 선택된 공고가 목록에서 사라지면 선택을 해제해, 지도에 그 공고의 마커가 남지 않게 한다.
+  // activeAnnId 변화(딥링크 등)에는 반응하지 않도록 필터 값만 의존한다 — 그 경우는 위의 필터 동기화 effect가 담당.
+  useEffect(() => {
+    if (activeAnnId !== null && !sortedAnnouncements.some(a => a.id === activeAnnId)) {
+      onSelectAnnouncement(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, activeRegion, activeTabStatus]);
+
   // 💡 지역 구분을 연계하여 접수 상태별 개수를 단 1회 순회로 집계 (useMemo)
   const statusCounts = useMemo(() => {
     let upcoming = 0;
@@ -597,28 +605,6 @@ export default function Sidebar({
     c.name.toLowerCase().includes(complexSearchTerm.toLowerCase()) ||
     c.address.toLowerCase().includes(complexSearchTerm.toLowerCase())
   );
-
-  // 약관 상수 텍스트
-  const PRIVACY_POLICY = `제 1 조 (목적)
-본 방침은 공공맵(이하 '서비스')이 제공하는 위치기반 정보 서비스 및 회원 편의 서비스 이용과 관련하여 회사가 수집하는 개인정보의 처리 목적, 항목, 보유 기간 등을 규정함을 목적으로 합니다.
-
-제 2 조 (수집하는 개인정보 항목 및 수집 방법)
-서비스는 회원가입 없이 브라우저 로컬 저장소(localStorage)만을 활용하여 북마크 정보를 저장하므로, 별도의 개인식별정보(이름, 이메일, 전화번호 등)를 서버에 전송하거나 수집하지 않습니다. 다만, 이용 과정에서 IP 주소, 쿠키, 서비스 이용 기록 등이 자동 생성되어 수집될 수 있습니다.
-
-제 3 조 (개인정보의 보유 및 이용기간)
-이용자가 브라우저 캐시 및 로컬 저장소를 삭제할 때까지 북마크 데이터 등은 이용자의 기기에 유지됩니다. 서버에 저장되는 로그 데이터는 통계 분석 및 시스템 안정성 확보를 위해 3개월간 보관 후 복구 불가능한 방법으로 파기됩니다.`;
-
-  const TERMS_OF_SERVICE = `제 1 조 (목적)
-본 약관은 공공맵 서비스의 이용 조건 및 절차, 이용자와 서비스 제공자 간의 권리, 의무 및 책임 사항을 규정함을 목적으로 합니다.
-
-제 2 조 (용어의 정의)
-1. "서비스"란 공공주택 공고문 및 단지 정보를 지도 위에 시각화하여 제공하는 웹 서비스를 의미합니다.
-2. "이용자"란 본 약관에 동의하고 서비스를 이용하는 웹 브라우저 방문자를 의미합니다.
-
-제 3 조 (서비스의 내용 및 변경)
-1. 서비스는 LH, GH 등 공공기관이 공시한 공고문 데이터를 재구성하여 정보 제공 목적으로 제공합니다.
-2. 실제 청약 접수 및 최종 당첨 여부는 해당 시행기관(LH 청약플러스, GH 청약센터 등)의 공식 사이트에서 직접 확인하셔야 하며, 서비스에서 발생하는 정보의 불일치로 인한 불이익에 대해 본 서비스는 법적 책임을 지지 않습니다.`;
-
   const isHiddenFully = activeTab === null;
 
   return (
@@ -742,31 +728,8 @@ export default function Sidebar({
           setAuthModalOpen={setAuthModalOpen}
           toggleTheme={toggleTheme}
           isDarkMode={isDarkMode}
-          setActiveModal={setActiveModal}
         />
       )}
-
-      {activeModal && (
-        <div className="modal-backdrop" onClick={() => setActiveModal(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className={styles['modal-header']}>
-              <h3 className={styles['modal-title']}>
-                {activeModal === 'privacy' ? '개인정보처리방침' : '이용약관'}
-              </h3>
-              <button className={styles['modal-close-btn']} onClick={() => setActiveModal(null)}>✕</button>
-            </div>
-            <div className={styles['modal-body']}>
-              <pre className={styles['modal-pre']}>
-                {activeModal === 'privacy' ? PRIVACY_POLICY : TERMS_OF_SERVICE}
-              </pre>
-            </div>
-            <div className={styles['modal-footer']}>
-              <button className={styles['modal-btn-confirm']} onClick={() => setActiveModal(null)}>확인</button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </aside>
   );

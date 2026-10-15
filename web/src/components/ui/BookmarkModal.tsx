@@ -65,7 +65,7 @@ export default function BookmarkModal({
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className={styles['modal-header']}>
           <h3 className={styles['modal-title']}>저장 및 메모 남기기</h3>
-          <button className={styles['close-btn']} onClick={onClose}>✕</button>
+          <button className={styles['close-btn']} onClick={onClose} aria-label="닫기">✕</button>
         </div>
         
         <div className={styles['modal-body']}>

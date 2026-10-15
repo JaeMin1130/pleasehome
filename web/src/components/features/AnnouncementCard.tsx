@@ -1,3 +1,4 @@
+import { clickable } from '@/utils/a11y';
 import React, { useRef, useState, useEffect } from 'react';
 import { Announcement, Detail } from '@/types';
 import Link from 'next/link';
@@ -28,7 +29,7 @@ export function AccordionSection({ title, isOpen, onToggle, children }: Accordio
 
   return (
     <div className={styles['accordion-section']}>
-      <div className={styles['section-header']} onClick={onToggle}>
+      <div className={styles['section-header']} {...clickable(onToggle, { expanded: isOpen })}>
         <span>{title}</span>
         <span>
           {isOpen ? (
@@ -205,7 +206,7 @@ export default function AnnouncementCard({
     <div 
       id={`ann-card-${ann.id}`}
       className={`${styles['announcement-card']} ${isActive ? styles.active : ''} ${styles[instClass]}`}
-      onClick={onClick}
+      {...clickable(onClick, { expanded: isActive })}
     >
       <div className={styles['card-header']}>
         <div className={styles['header-badges']}>

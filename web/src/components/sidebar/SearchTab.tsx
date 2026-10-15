@@ -1,5 +1,6 @@
 "use client";
 
+import { clickable } from '@/utils/a11y';
 import React from 'react';
 import { Announcement, ApplicationStatus, Complex } from '@/types';
 import AnnouncementCard from '@/components/features/AnnouncementCard';
@@ -151,7 +152,7 @@ export default function SearchTab({
               <span 
                 key={r}
                 className={`${styles['region-tag']} ${activeRegion === r ? styles.active : ''}`}
-                onClick={() => setActiveRegion(r)}
+                {...clickable(() => setActiveRegion(r), { pressed: activeRegion === r })}
               >
                 {label}
               </span>
@@ -161,19 +162,19 @@ export default function SearchTab({
 
         {/* ② 접수 구분 필터 태그 */}
         <div className={`${styles['filter-tags']} ${styles['desktop-only']}`}>
-          <span className={`${styles['filter-tag']} ${activeTabStatus === 'UPCOMING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('UPCOMING')}>
+          <span className={`${styles['filter-tag']} ${activeTabStatus === 'UPCOMING' ? styles.active : ''}`} {...clickable(() => setActiveTabStatus('UPCOMING'), { pressed: activeTabStatus === 'UPCOMING' })}>
             예정 ({getStatusCount('UPCOMING')})
           </span>
-          <span className={`${styles['filter-tag']} ${activeTabStatus === 'ONGOING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('ONGOING')}>
+          <span className={`${styles['filter-tag']} ${activeTabStatus === 'ONGOING' ? styles.active : ''}`} {...clickable(() => setActiveTabStatus('ONGOING'), { pressed: activeTabStatus === 'ONGOING' })}>
             접수중 ({getStatusCount('ONGOING')})
           </span>
-          <span className={`${styles['filter-tag']} ${activeTabStatus === 'CLOSED' ? styles.active : ''}`} onClick={() => setActiveTabStatus('CLOSED')}>
+          <span className={`${styles['filter-tag']} ${activeTabStatus === 'CLOSED' ? styles.active : ''}`} {...clickable(() => setActiveTabStatus('CLOSED'), { pressed: activeTabStatus === 'CLOSED' })}>
             마감 ({getStatusCount('CLOSED')})
           </span>
-          <span className={`${styles['filter-tag']} ${activeTabStatus === 'HIDDEN' ? styles.active : ''}`} onClick={() => setActiveTabStatus('HIDDEN')}>
+          <span className={`${styles['filter-tag']} ${activeTabStatus === 'HIDDEN' ? styles.active : ''}`} {...clickable(() => setActiveTabStatus('HIDDEN'), { pressed: activeTabStatus === 'HIDDEN' })}>
             숨김 ({getHiddenStatusCount()})
           </span>
-          <span className={`${styles['filter-tag']} ${activeTabStatus === 'FAVORITE' ? styles.active : ''}`} onClick={() => setActiveTabStatus('FAVORITE')}>
+          <span className={`${styles['filter-tag']} ${activeTabStatus === 'FAVORITE' ? styles.active : ''}`} {...clickable(() => setActiveTabStatus('FAVORITE'), { pressed: activeTabStatus === 'FAVORITE' })}>
             찜 ({getFavoriteStatusCount()})
           </span>
         </div>
@@ -214,7 +215,7 @@ export default function SearchTab({
               <span 
                 key={r}
                 className={`${styles['region-tag']} ${activeRegion === r ? styles.active : ''}`}
-                onClick={() => setActiveRegion(r)}
+                {...clickable(() => setActiveRegion(r), { pressed: activeRegion === r })}
               >
                 {label}
               </span>
@@ -222,19 +223,19 @@ export default function SearchTab({
           })}
         </div>
         <div className={styles['filter-tags']}>
-          <span className={`${styles['filter-tag']} ${activeTabStatus === 'UPCOMING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('UPCOMING')}>
+          <span className={`${styles['filter-tag']} ${activeTabStatus === 'UPCOMING' ? styles.active : ''}`} {...clickable(() => setActiveTabStatus('UPCOMING'), { pressed: activeTabStatus === 'UPCOMING' })}>
             예정 ({getStatusCount('UPCOMING')})
           </span>
-          <span className={`${styles['filter-tag']} ${activeTabStatus === 'ONGOING' ? styles.active : ''}`} onClick={() => setActiveTabStatus('ONGOING')}>
+          <span className={`${styles['filter-tag']} ${activeTabStatus === 'ONGOING' ? styles.active : ''}`} {...clickable(() => setActiveTabStatus('ONGOING'), { pressed: activeTabStatus === 'ONGOING' })}>
             접수중 ({getStatusCount('ONGOING')})
           </span>
-          <span className={`${styles['filter-tag']} ${activeTabStatus === 'CLOSED' ? styles.active : ''}`} onClick={() => setActiveTabStatus('CLOSED')}>
+          <span className={`${styles['filter-tag']} ${activeTabStatus === 'CLOSED' ? styles.active : ''}`} {...clickable(() => setActiveTabStatus('CLOSED'), { pressed: activeTabStatus === 'CLOSED' })}>
             마감 ({getStatusCount('CLOSED')})
           </span>
-          <span className={`${styles['filter-tag']} ${activeTabStatus === 'HIDDEN' ? styles.active : ''}`} onClick={() => setActiveTabStatus('HIDDEN')}>
+          <span className={`${styles['filter-tag']} ${activeTabStatus === 'HIDDEN' ? styles.active : ''}`} {...clickable(() => setActiveTabStatus('HIDDEN'), { pressed: activeTabStatus === 'HIDDEN' })}>
             숨김 ({getHiddenStatusCount()})
           </span>
-          <span className={`${styles['filter-tag']} ${activeTabStatus === 'FAVORITE' ? styles.active : ''}`} onClick={() => setActiveTabStatus('FAVORITE')}>
+          <span className={`${styles['filter-tag']} ${activeTabStatus === 'FAVORITE' ? styles.active : ''}`} {...clickable(() => setActiveTabStatus('FAVORITE'), { pressed: activeTabStatus === 'FAVORITE' })}>
             찜 ({getFavoriteStatusCount()})
           </span>
         </div>

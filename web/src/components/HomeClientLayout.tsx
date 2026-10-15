@@ -674,7 +674,8 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
           bookmarkedIds={bookmarkedIds}
           onToggleBookmark={toggleBookmark}
           activeTab={activeTab || lastActiveTab}
-          onClose={() => { 
+          announcementId={activeAnnId}
+          onClose={() => {
             setIsPanelOpen(false); 
             setActiveComplexId(null); 
             setSelectedComplex(null);
@@ -755,7 +756,7 @@ export default function HomeClientLayout(props: HomeClientLayoutProps) {
   return (
     <Suspense fallback={
       <div className={styles['loading-container']}>
-        <CatRunLoader label="공공청약 지도를 불러오는 중입니다..." />
+        <CatRunLoader label="플리즈홈을 불러오는 중입니다..." />
       </div>
     }>
       <HomeContent {...props} />

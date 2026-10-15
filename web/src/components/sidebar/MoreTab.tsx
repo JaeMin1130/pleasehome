@@ -1,5 +1,6 @@
 "use client";
 
+import { clickable } from '@/utils/a11y';
 import React from 'react';
 import Link from 'next/link';
 import styles from '../Sidebar.module.css';
@@ -33,7 +34,6 @@ interface MoreTabProps {
   setAuthModalOpen: (open: boolean) => void;
   toggleTheme: () => void;
   isDarkMode: boolean;
-  setActiveModal: (modal: 'privacy' | 'terms' | null) => void;
 }
 
 export default function MoreTab({
@@ -64,7 +64,6 @@ export default function MoreTab({
   setAuthModalOpen,
   toggleTheme,
   isDarkMode,
-  setActiveModal,
 }: MoreTabProps) {
   return (
     <div 
@@ -210,14 +209,12 @@ export default function MoreTab({
               </svg>
             </span>
           </Link>
-          <div className={styles['more-menu-item']} onClick={toggleTheme}>
+          <div className={styles['more-menu-item']} {...clickable(toggleTheme)} role="switch" aria-checked={isDarkMode} aria-label="다크 모드">
             <span className={styles['more-menu-label']}>지도 모드</span>
             <div className={styles['more-menu-value-wrapper']}>
               <span className={styles['more-menu-value']}>{isDarkMode ? "다크 모드" : "라이트 모드"}</span>
               <div
                 className={`${styles['theme-toggle-switch']} ${isDarkMode ? styles['dark'] : ''}`}
-                role="switch"
-                aria-checked={isDarkMode}
                 title={isDarkMode ? "다크 모드로 설정됨" : "라이트 모드로 설정됨"}
               >
                 <div className={styles['theme-toggle-knob']}>
@@ -243,22 +240,22 @@ export default function MoreTab({
             </div>
           </div>
 
-          <div className={styles['more-menu-item']} onClick={() => setActiveModal('terms')}>
+          <Link href="/terms" className={styles['more-menu-item']}>
             <span className={styles['more-menu-label']}>이용약관 및 정책</span>
             <span className={styles['more-menu-chevron']}>
               <svg width={UI_SIZES.ICON_XS} height={UI_SIZES.ICON_XS} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.BOLD} strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="9 18 15 12 9 6"></polyline>
               </svg>
             </span>
-          </div>
-          <div className={styles['more-menu-item']} onClick={() => setActiveModal('privacy')}>
+          </Link>
+          <Link href="/privacy" className={styles['more-menu-item']}>
             <span className={styles['more-menu-label']}>개인정보처리방침</span>
             <span className={styles['more-menu-chevron']}>
               <svg width={UI_SIZES.ICON_XS} height={UI_SIZES.ICON_XS} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.BOLD} strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="9 18 15 12 9 6"></polyline>
               </svg>
             </span>
-          </div>
+          </Link>
         </div>
 
         <div className={styles['more-info-box-wrapper']}>
@@ -281,7 +278,7 @@ export default function MoreTab({
         </div>
 
         <div className={styles['more-footer']}>
-          <p>&copy; 2026 공공맵 All rights reserved.</p>
+          <p>&copy; 2026 플리즈홈 All rights reserved.</p>
         </div>
       </div>
     </div>
