@@ -36,7 +36,7 @@ export interface Announcement {
   dtl_url?: string | null;
   dtl_url_mob?: string | null;
   schedules: Schedule[];
-  details: Detail[];
+  details?: Detail[];
   recruitment_groups?: RecruitmentGroup[];
 }
 

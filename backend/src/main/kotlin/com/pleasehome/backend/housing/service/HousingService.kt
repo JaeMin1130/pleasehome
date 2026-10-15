@@ -25,7 +25,6 @@ class HousingService(
 
         val annIds = announcements.mapNotNull { it.id }
         val schedulesMap = scheduleRepository.findAllByAnnouncementIdIn(annIds).groupBy { it.announcementId }
-        val detailsMap = detailRepository.findAllByAnnouncementIdInOrderBySortOrderAscIdAsc(annIds).groupBy { it.announcementId }
 
         return announcements.map { ann ->
             val id = ann.id ?: 0
@@ -41,8 +40,7 @@ class HousingService(
                 "region" to ann.region,
                 "created_at" to ann.createdAt,
                 "updated_at" to ann.updatedAt,
-                "schedules" to (schedulesMap[id]?.map { scheduleToMap(it) } ?: emptyList<Any>()),
-                "details" to (detailsMap[id]?.map { detailToMap(it) } ?: emptyList<Any>())
+                "schedules" to (schedulesMap[id]?.map { scheduleToMap(it) } ?: emptyList<Any>())
             )
         }
     }

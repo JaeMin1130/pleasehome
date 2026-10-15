@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Announcement } from '@/types';
+import { Announcement, Detail } from '@/types';
 import Link from 'next/link';
 import Tooltip from '@/components/ui/Tooltip';
 import Badge from '@/components/ui/Badge';
@@ -89,6 +89,37 @@ export default function AnnouncementCard({
   onFavoriteToggle
 }: AnnouncementCardProps) {
   const { dDayText, status: announcementStatus, applySchedules } = useDDay(ann);
+
+  const [details, setDetails] = useState<Detail[] | null>(ann.details && ann.details.length > 0 ? ann.details : null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
+
+  useEffect(() => {
+    if (ann.details && ann.details.length > 0) {
+      setDetails(ann.details);
+    }
+  }, [ann.details]);
+
+  useEffect(() => {
+    if (isActive && !details && !loadingDetails) {
+      setLoadingDetails(true);
+      fetch(`/api/announcements/${ann.id}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data && data.details) {
+            setDetails(data.details);
+          } else {
+            setDetails([]);
+          }
+        })
+        .catch((err) => {
+          console.error(`Failed to fetch details for announcement ${ann.id}:`, err);
+          setDetails([]);
+        })
+        .finally(() => {
+          setLoadingDetails(false);
+        });
+    }
+  }, [isActive, ann.id, details, loadingDetails]);
 
   const instClass = ann.institution.includes('SH') 
     ? 'sh' 
@@ -409,7 +440,13 @@ export default function AnnouncementCard({
               </AccordionSection>
             )}
 
-            {ann.details && ann.details.length > 0 && ann.details.map((d) => {
+            {loadingDetails && (
+              <div style={{ padding: '16px 12px', fontSize: '13px', color: 'var(--text-secondary, #666)', textAlign: 'center' }}>
+                상세 공고 내용을 불러오는 중입니다...
+              </div>
+            )}
+
+            {details && details.length > 0 && details.map((d) => {
                const lines = d.section_content ? d.section_content.split('\n') : [];
                const firstLine = lines[0] || '';
                const cleanTitle = superClean(d.section_title || '');
