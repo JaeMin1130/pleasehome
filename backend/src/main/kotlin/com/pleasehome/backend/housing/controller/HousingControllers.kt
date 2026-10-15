@@ -1,6 +1,8 @@
 package com.pleasehome.backend.housing.controller
 
 import com.pleasehome.backend.housing.service.HousingService
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -73,19 +75,18 @@ class CacheController(
 ) {
 
     @PostMapping("/evict")
-    fun evictCache(request: jakarta.servlet.http.HttpServletRequest): Map<String, Any> {
+    fun evictCache(request: jakarta.servlet.http.HttpServletRequest): ResponseEntity<Map<String, Any>> {
         val remoteAddr = request.remoteAddr
         val forwardedFor = request.getHeader("X-Forwarded-For")
         val isLocal = (remoteAddr == "127.0.0.1" || remoteAddr == "0:0:0:0:0:0:0:1") && forwardedFor.isNullOrEmpty()
 
+        // 예외로 던지면 GlobalExceptionHandler의 Exception 핸들러가 500으로 바꾼다
         if (!isLocal) {
-            throw org.springframework.web.server.ResponseStatusException(
-                org.springframework.http.HttpStatus.FORBIDDEN,
-                "Access denied: cache eviction is only allowed from localhost"
-            )
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(mapOf("error" to "Access denied: cache eviction is only allowed from localhost"))
         }
 
         housingService.evictHousingCaches()
-        return mapOf("success" to true, "message" to "All housing caches evicted successfully.")
+        return ResponseEntity.ok(mapOf("success" to true, "message" to "All housing caches evicted successfully."))
     }
 }
