@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "build:pack": "rm -rf deploy .next && next build && mkdir -p deploy && cp -r .next/standalone/. deploy/ && cp -r public deploy/ && cp -r .next/static deploy/.next/ && rm -f deploy/public_housing.db deploy/user_data.db && cd deploy && tar -czf ../announce_deploy.tar.gz . && cd .. && rm -rf deploy"
+    "build:pack": "rm -rf deploy .next && next build && mkdir -p deploy && cp -r .next/standalone/. deploy/ && cp -r public deploy/ && sed -i \"s/pleasehome-pwa-v1/pleasehome-pwa-$(date +%s)/\" deploy/public/sw.js && cp -r .next/static deploy/.next/ && rm -f deploy/public_housing.db deploy/user_data.db && cd deploy && tar -czf ../announce_deploy.tar.gz . && cd .. && rm -rf deploy"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",
