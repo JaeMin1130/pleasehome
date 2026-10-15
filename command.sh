@@ -17,59 +17,135 @@ function geocode() {
   NODE_PATH="$BASE_DIR/web/node_modules" node "$BASE_DIR/db-pipeline/scripts/migrate_coords.js"
 }
 
+function require_clean_git() {
+  # 배포물 = 특정 커밋이 되도록, 커밋되지 않은 변경이 있으면 중단
+  if [ -n "$(git -C "$BASE_DIR" status --porcelain)" ]; then
+    echo "❌ 커밋되지 않은 변경이 있어 배포를 중단합니다. 커밋 후 다시 실행하세요."
+    git -C "$BASE_DIR" status --short
+    exit 1
+  fi
+}
+
+function remote_health() {
+  # $1: 이름, $2: 서버 내부 확인 URL, $3: 실패 시 안내할 롤백 명령
+  if ! ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "for _ in \$(seq 1 90); do curl -sf -o /dev/null $2 && exit 0; sleep 1; done; exit 1"; then
+    echo "❌ $1 헬스체크 실패 ($2, 90초 무응답)"
+    echo "   롤백: ssh -i $KEY_PATH $SERVER_USER@$SERVER_HOST \"$3\""
+    exit 1
+  fi
+  echo "💚 $1 헬스체크 통과"
+}
+
 function deploy_db() {
-  echo "📍 [DB 배포 1/2] 신규 단지 네이버 지오코딩 확인 및 갱신..."
+  local restart="${1:-restart}"
+  local snapshot="$BASE_DIR/db-pipeline/public_housing.snapshot.db"
+
+  echo "📍 [DB 배포 1/3] 신규 단지 네이버 지오코딩 확인 및 갱신..."
   geocode
 
-  echo "📦 [DB 배포 2/2] SQLite DB 파일 실서버 전송 중..."
-  ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "mkdir -p $REMOTE_PATH/db-pipeline"
-  scp -i "$KEY_PATH" "$BASE_DIR/db-pipeline/public_housing.db" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/db-pipeline/public_housing.db"
+  echo "📸 [DB 배포 2/3] 일관 스냅샷 생성 및 무결성 검사..."
+  # .db만 복사하면 -wal에 남은 최근 적재분이 빠지므로 SQLite 백업 API로 스냅샷을 뜬다
+  rm -f "$snapshot"
+  sqlite3 "$BASE_DIR/db-pipeline/public_housing.db" ".backup '$snapshot'"
+  [ "$(sqlite3 "$snapshot" 'PRAGMA integrity_check')" = "ok" ] || { echo "❌ 스냅샷 무결성 검사 실패"; exit 1; }
 
-  echo "🔄 실서버 백엔드 DB 커넥션 리프레시를 위해 백엔드 재시작..."
-  ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "pm2 restart pleasehome-backend 2>/dev/null || true"
+  echo "📦 [DB 배포 3/3] 스냅샷 전송 후 백엔드 정지 상태에서 교체..."
+  ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "mkdir -p $REMOTE_PATH/db-pipeline"
+  scp -i "$KEY_PATH" "$snapshot" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/db-pipeline/public_housing.db.new"
+  rm -f "$snapshot"
+  # 열린 DB를 덮어쓰지 않도록 정지 후 교체하고, 옛 DB의 -wal/-shm이 새 DB에 섞이지 않게 지운다
+  ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "
+    set -e
+    cd $REMOTE_PATH/db-pipeline
+    pm2 stop pleasehome-backend 2>/dev/null || true
+    [ ! -f public_housing.db ] || cp -f public_housing.db public_housing.db.prev
+    mv -f public_housing.db.new public_housing.db
+    rm -f public_housing.db-wal public_housing.db-shm
+  "
+
+  # 통합 배포(deploy)에서는 곧이어 새 JAR로 기동하므로 재시작을 건너뛴다
+  if [ "$restart" = "restart" ]; then
+    ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "pm2 restart pleasehome-backend"
+    remote_health "백엔드" "http://127.0.0.1:8080/api/sitemap/paths" \
+      "cd $REMOTE_PATH/db-pipeline && cp -f public_housing.db.prev public_housing.db && rm -f public_housing.db-wal public_housing.db-shm && pm2 restart pleasehome-backend"
+  fi
   echo "✅ 데이터베이스(public_housing.db) 배포가 완료되었습니다!"
 }
 
-function deploy_backend() {
+function upload_backend() {
+  require_clean_git
   echo "☕ [백엔드 배포 1/3] Spring Boot JAR 패키징 빌드..."
   "$BASE_DIR/backend/gradlew" -p "$BASE_DIR/backend" build -x test
 
   echo "📦 [백엔드 배포 2/3] JAR 파일 실서버 전송 중..."
   ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "mkdir -p $REMOTE_PATH/backend"
   scp -i "$KEY_PATH" "$BASE_DIR/backend/build/libs/backend-0.0.1-SNAPSHOT.jar" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/backend/backend.jar.new"
+}
 
+function activate_backend() {
   echo "🔄 [백엔드 배포 3/3] 실서버 Spring Boot PM2 재시작..."
   ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "
+    set -e
     cd $REMOTE_PATH/backend
+    [ ! -f backend.jar ] || cp -f backend.jar backend.jar.prev
     mv -f backend.jar.new backend.jar
     pm2 delete pleasehome-backend 2>/dev/null || true
     [ -s .session_secret ] || (umask 077 && openssl rand -hex 32 > .session_secret)
     SESSION_SECRET=\$(cat .session_secret) pm2 start 'java -Xms128m -Xmx256m -XX:+UseSerialGC -XX:ReservedCodeCacheSize=48m -XX:MaxMetaspaceSize=128m -Xss512k -jar backend.jar' --name pleasehome-backend --cwd $REMOTE_PATH/backend
     pm2 save
+    echo $(git -C "$BASE_DIR" rev-parse --short HEAD) > .deployed_rev
   "
+  remote_health "백엔드" "http://127.0.0.1:8080/api/sitemap/paths" \
+    "cd $REMOTE_PATH/backend && cp -f backend.jar.prev backend.jar && pm2 restart pleasehome-backend"
   echo "✅ 백엔드(Spring Boot) 배포가 완료되었습니다!"
 }
 
-function deploy_web() {
-  echo "🚀 [프론트 배포 1/3] Next.js Standalone 배포 패키지 빌드..."
-  fuser 8080/tcp >/dev/null 2>&1 || (nohup java -Xms256m -Xmx512m -jar "$BASE_DIR/backend/build/libs/backend-0.0.1-SNAPSHOT.jar" >/dev/null 2>&1 &)
-  # 홈 페이지는 빌드 시 백엔드 데이터로 미리 그려지므로, 응답할 때까지 기다린다 (고정 sleep은 Spring 기동보다 짧았음)
-  for _ in $(seq 1 60); do curl -sf http://127.0.0.1:8080/api/sitemap/paths >/dev/null && break; sleep 1; done
-  npm --prefix "$BASE_DIR/web" run build:pack
+function deploy_backend() {
+  upload_backend
+  activate_backend
+}
 
-  echo "📦 [프론트 배포 2/3] 빌드 번들 실서버 전송 중..."
-  ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "mkdir -p $REMOTE_PATH/web"
+function deploy_web() {
+  require_clean_git
+  echo "🚀 [프론트 배포 1/3] Next.js Standalone 배포 패키지 빌드..."
+  # 홈 페이지는 빌드 시 백엔드 데이터로 미리 그려지므로, 현재 코드로 만든 백엔드를 직접 띄워 빌드한다
+  if fuser 8080/tcp >/dev/null 2>&1; then
+    echo "❌ 로컬 8080 포트가 이미 사용 중입니다. 옛 코드의 백엔드로 빌드되는 것을 막기 위해 중단합니다. 해당 프로세스를 종료 후 다시 실행하세요."
+    exit 1
+  fi
+  "$BASE_DIR/backend/gradlew" -p "$BASE_DIR/backend" build -x test
+  # DB 경로(../db-pipeline)가 실행 위치 기준이라 backend/에서 띄운다
+  (cd "$BASE_DIR/backend" && exec java -Xms256m -Xmx512m -jar build/libs/backend-0.0.1-SNAPSHOT.jar >/dev/null 2>&1) &
+  local backend_pid=$!
+  trap "kill $backend_pid 2>/dev/null || true" EXIT
+  for _ in $(seq 1 60); do curl -sf http://127.0.0.1:8080/api/sitemap/paths >/dev/null && break; sleep 1; done
+  curl -sf -o /dev/null http://127.0.0.1:8080/api/sitemap/paths || { echo "❌ 로컬 백엔드가 60초 안에 응답하지 않습니다."; exit 1; }
+  npm --prefix "$BASE_DIR/web" run build:pack
+  kill "$backend_pid" 2>/dev/null || true
+
+  echo "📦 [프론트 배포 2/3] 빌드 번들 실서버 전송 중 (직전 번들은 롤백용으로 보관)..."
+  ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "mkdir -p $REMOTE_PATH/web && cd $REMOTE_PATH/web && { [ ! -f announce_deploy.tar.gz ] || mv -f announce_deploy.tar.gz announce_deploy.prev.tar.gz; }"
   scp -i "$KEY_PATH" "$BASE_DIR/web/announce_deploy.tar.gz" "$SERVER_USER@$SERVER_HOST:$REMOTE_PATH/web/announce_deploy.tar.gz"
 
-  echo "🔄 [프론트 배포 3/3] 실서버 웹(Next.js) 압축 해제 및 PM2 무중단 리로드..."
-  ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "cd $REMOTE_PATH/web && tar -xzf announce_deploy.tar.gz && pm2 reload pleasehome"
+  echo "🔄 [프론트 배포 3/3] 실서버 웹(Next.js) 압축 해제 및 PM2 리로드..."
+  ssh -i "$KEY_PATH" "$SERVER_USER@$SERVER_HOST" "
+    set -e
+    cd $REMOTE_PATH/web
+    tar -xzf announce_deploy.tar.gz
+    pm2 reload pleasehome
+    echo $(git -C "$BASE_DIR" rev-parse --short HEAD) > .deployed_rev
+  "
+  remote_health "웹" "http://127.0.0.1:3000/" \
+    "cd $REMOTE_PATH/web && tar -xzf announce_deploy.prev.tar.gz && pm2 reload pleasehome"
   echo "✅ 프론트엔드(Next.js) 배포가 완료되었습니다!"
 }
 
 function deploy() {
-  echo "🚀 [통합 배포 시작] DB -> 백엔드 -> 프론트엔드 순차 배포..."
-  deploy_db
-  deploy_backend
+  echo "🚀 [통합 배포 시작] 백엔드 업로드 -> DB 교체 -> 백엔드 기동 -> 프론트엔드 순차 배포..."
+  # 백엔드 재시작을 1회로 줄이고 새 DB를 옛 JAR이 읽는 구간을 없애기 위해, JAR을 먼저 올려 두고 DB 교체 직후 새 JAR로 기동한다
+  upload_backend
+  deploy_db no-restart
+  activate_backend
   deploy_web
   echo "🎉 프론트엔드 + 백엔드 + DB 전체 통합 배포가 성공적으로 완료되었습니다!"
 }
