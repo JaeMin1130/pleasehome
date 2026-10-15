@@ -14,18 +14,17 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  let announcements: Announcement[] = [];
-  let complexes: Complex[] = [];
+  const [annData, compData] = await Promise.all([
+    fetchAnnouncements(),
+    fetchComplexes()
+  ]);
+  const announcements = annData as Announcement[];
+  const complexes = compData as Complex[];
 
-  try {
-    const [annData, compData] = await Promise.all([
-      fetchAnnouncements(),
-      fetchComplexes()
-    ]);
-    announcements = annData as Announcement[];
-    complexes = compData as Complex[];
-  } catch (error) {
-    console.error('Failed to fetch initial SSR data in page.tsx:', error);
+  // 💡 api.ts는 실패 시 []를 돌려준다. 빈 목록으로 그리면 ISR이 그 빈 페이지를 1시간 캐시하고
+  // SEO 섹션도 비므로, 던져서 빌드는 실패시키고 재생성 시에는 이전 페이지를 유지시킨다.
+  if (announcements.length === 0 || complexes.length === 0) {
+    throw new Error('홈 SSR 데이터를 받지 못했습니다 (백엔드 :8080 확인)');
   }
 
   return (

@@ -52,7 +52,9 @@ function deploy_backend() {
 
 function deploy_web() {
   echo "🚀 [프론트 배포 1/3] Next.js Standalone 배포 패키지 빌드..."
-  fuser 8080/tcp >/dev/null 2>&1 || (nohup java -Xms256m -Xmx512m -jar "$BASE_DIR/backend/build/libs/backend-0.0.1-SNAPSHOT.jar" >/dev/null 2>&1 & sleep 4)
+  fuser 8080/tcp >/dev/null 2>&1 || (nohup java -Xms256m -Xmx512m -jar "$BASE_DIR/backend/build/libs/backend-0.0.1-SNAPSHOT.jar" >/dev/null 2>&1 &)
+  # 홈 페이지는 빌드 시 백엔드 데이터로 미리 그려지므로, 응답할 때까지 기다린다 (고정 sleep은 Spring 기동보다 짧았음)
+  for _ in $(seq 1 60); do curl -sf http://127.0.0.1:8080/api/sitemap/paths >/dev/null && break; sleep 1; done
   npm --prefix "$BASE_DIR/web" run build:pack
 
   echo "📦 [프론트 배포 2/3] 빌드 번들 실서버 전송 중..."
