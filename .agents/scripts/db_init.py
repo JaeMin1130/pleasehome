@@ -168,6 +168,7 @@ def init_db():
         "CREATE INDEX IF NOT EXISTS idx_complexes_announcement ON complexes (announcement_id);",
         "CREATE INDEX IF NOT EXISTS idx_recruitment_groups_ann_id ON announcement_recruitment_groups (announcement_id);",
         "CREATE INDEX IF NOT EXISTS idx_units_lookup ON housing_units (complex_id, announcement_id);",
+        "CREATE INDEX IF NOT EXISTS idx_units_announcement_id ON housing_units (announcement_id);",
         "CREATE INDEX IF NOT EXISTS idx_units_recruitment_group ON housing_units (recruitment_group_id);",
         "CREATE INDEX IF NOT EXISTS idx_target_tags_tag ON housing_unit_target_tags (tag);",
         # 전역 단지 중복 방지 (docs/dev/DOMAIN_MODEL.md 3.3) -- 새 환경에서도 처음부터 강제됨
