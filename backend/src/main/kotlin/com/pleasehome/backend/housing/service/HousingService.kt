@@ -2,8 +2,10 @@ package com.pleasehome.backend.housing.service
 
 import com.pleasehome.backend.housing.entity.*
 import com.pleasehome.backend.housing.repository.*
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
+import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -17,6 +19,10 @@ class HousingService(
     private val complexRepository: ComplexRepository,
     private val unitRepository: HousingUnitRepository
 ) {
+
+    @Autowired
+    @Lazy
+    private lateinit var self: HousingService
 
     @Cacheable("announcements")
     fun getAllAnnouncements(): List<Map<String, Any?>> {
@@ -70,7 +76,7 @@ class HousingService(
 
     @Cacheable("announcementDetails", key = "#id")
     fun getAnnouncementFullDetails(id: Long): Map<String, Any?> {
-        val ann = getAnnouncementById(id)
+        val ann = self.getAnnouncementById(id)
         val rgs = recruitmentGroupRepository.findAllByAnnouncementId(id)
         val complexList = complexRepository.findAllByHousingUnitAnnouncementId(id)
         val summaries = unitRepository.findUnitSummaryByAnnouncementId(id).associateBy { it.getComplexId() ?: 0L }
