@@ -9,40 +9,86 @@ export default function PrivacyPolicy() {
       <Link href="/" className={styles['back-link']}>
         ← 메인 지도로 돌아가기
       </Link>
-      
+
       <h1 className={styles['policy-title']}>
         개인정보처리방침
       </h1>
 
       <p className={styles['policy-intro']}>
-        본 개인정보처리방침은 사용자가 본 서비스를 이용할 때 개인정보가 어떻게 관리되고 보호되는지 설명합니다. 본 서비스는 구글 애드센스 등 타사 광고 및 분석 도구를 활용할 수 있습니다.
+        플리즈홈(이하 &apos;서비스&apos;)은 이용자의 개인정보를 소중히 다루며, 어떤 정보를 왜 수집하고 어떻게 보관·파기하는지 아래와 같이 안내합니다.
+        공고 및 지도 조회는 회원가입 없이 이용할 수 있으며, 회원가입은 찜·숨김·저장 기능을 쓰려는 경우에만 필요합니다.
       </p>
 
       <section className={styles['policy-section']}>
         <h2 className={styles['section-title']}>1. 수집하는 개인정보 항목</h2>
         <p className={styles['section-content']}>
-          본 서비스는 기본적으로 회원가입 없이 이용이 가능하며, 사용자의 개인 식별 정보를 직접 수집하거나 저장하지 않습니다. 단, 서비스 최적화 및 광고 게재를 위해 쿠키(Cookie)나 접속 로그 정보가 자동 생성되어 수집될 수 있습니다.
+          ① 회원가입 시: 아이디, 비밀번호, 비밀번호 찾기용 보안 질문과 답변<br />
+          ② 회원 기능 이용 시: 찜하거나 숨긴 공고, 저장한 단지와 저장 폴더 정보<br />
+          ③ 서비스 이용 과정에서 자동 생성·수집되는 정보: 접속 IP 주소, 브라우저 정보, 접속 일시 등 접속 기록, 쿠키
         </p>
       </section>
 
       <section className={styles['policy-section']}>
-        <h2 className={styles['section-title']}>2. 쿠키 및 타사 광고(구글 애드센스) 사용에 관한 안내</h2>
+        <h2 className={styles['section-title']}>2. 개인정보의 처리 목적</h2>
         <p className={styles['section-content']}>
-          본 사이트는 사용자의 방문 기록을 분석하고 최적화된 맞춤형 광고를 제공하기 위해 쿠키를 사용합니다. 
-          구글(Google)을 포함한 제3자 제공업체는 쿠키를 사용하여 사용자의 이전 방문 정보를 기반으로 광고를 게재합니다.
-          사용자는 브라우저 설정에서 쿠키 제공을 거부할 수 있습니다.
+          수집한 정보는 회원 식별 및 로그인 상태 유지, 비밀번호 재설정, 찜·숨김·저장 기능 제공, 서비스 오류 대응 및 이용 통계 분석, 광고 게재에만 이용합니다.
         </p>
       </section>
 
       <section className={styles['policy-section']}>
-        <h2 className={styles['section-title']}>3. 개인정보의 보호 및 문의</h2>
+        <h2 className={styles['section-title']}>3. 개인정보의 보유 기간 및 파기</h2>
         <p className={styles['section-content']}>
-          본 서비스는 사용자의 개인정보 안전성 확보를 위해 최선을 다하고 있습니다. 방침 변경 시 본 페이지를 통해 공지합니다. 문의 사항이 있으실 경우 개발자 연락처로 연락해 주시기 바랍니다.
+          회원 정보와 회원 기능 이용 정보는 회원이 삭제(탈퇴)를 요청할 때까지 보유하며, 요청을 받으면 지체 없이 복구할 수 없는 방법으로 삭제합니다.
+          접속 기록은 보안 및 장애 대응에 필요한 기간 동안만 보관한 뒤 삭제합니다.
+        </p>
+      </section>
+
+      <section className={styles['policy-section']}>
+        <h2 className={styles['section-title']}>4. 쿠키 및 브라우저 저장소 사용</h2>
+        <p className={styles['section-content']}>
+          서비스는 로그인 상태 유지를 위해 로그인 쿠키(유효기간 30일)를 사용하며, 화면 테마(라이트/다크) 설정은 이용자의 브라우저 저장소에만 보관합니다.
+          이용자는 브라우저 설정에서 쿠키 저장을 거부할 수 있으나, 이 경우 로그인이 필요한 기능을 이용할 수 없습니다.
+        </p>
+      </section>
+
+      <section className={styles['policy-section']}>
+        <h2 className={styles['section-title']}>5. 외부 서비스 이용 및 맞춤형 광고</h2>
+        <p className={styles['section-content']}>
+          서비스는 개인정보를 제3자에게 판매하거나 제공하지 않습니다. 다만 아래 외부 서비스를 이용하며, 각 서비스는 자체 정책에 따라 쿠키 등으로 정보를 수집할 수 있습니다.<br />
+          · Google Analytics: 방문 통계 분석<br />
+          · Google AdSense: 광고 게재. 구글을 포함한 제3자 제공업체는 쿠키를 사용하여 이용자의 이전 방문 정보를 기반으로 광고를 게재합니다.
+          이용자는 <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer">구글 광고 설정</a>에서 맞춤형 광고를 해제할 수 있습니다.<br />
+          · 네이버 지도: 지도 표시
+        </p>
+      </section>
+
+      <section className={styles['policy-section']}>
+        <h2 className={styles['section-title']}>6. 이용자의 권리</h2>
+        <p className={styles['section-content']}>
+          이용자는 언제든지 자신의 개인정보 열람, 정정, 삭제(회원 탈퇴), 처리 정지를 요청할 수 있습니다.
+          비밀번호는 서비스 내 계정 설정에서 직접 변경할 수 있으며, 그 밖의 요청은 아래 문의처로 연락해 주시면 지체 없이 처리합니다.
+        </p>
+      </section>
+
+      <section className={styles['policy-section']}>
+        <h2 className={styles['section-title']}>7. 개인정보의 안전성 확보 조치</h2>
+        <p className={styles['section-content']}>
+          비밀번호는 복호화할 수 없는 단방향 암호화(해시)로 저장하며, 로그인 쿠키는 위·변조를 막기 위해 서명하고 스크립트에서 읽을 수 없도록(HttpOnly) 설정합니다.
+          서비스와 이용자 간 통신은 HTTPS로 암호화됩니다.
+        </p>
+      </section>
+
+      <section className={styles['policy-section']}>
+        <h2 className={styles['section-title']}>8. 개인정보 보호책임자 및 문의처</h2>
+        <p className={styles['section-content']}>
+          개인정보 관련 문의, 삭제(회원 탈퇴) 요청, 불만 처리는 아래 연락처로 접수해 주시기 바랍니다.<br />
+          이메일: <a href="mailto:ija06598@gmail.com">ija06598@gmail.com</a><br />
+          본 방침이 변경되는 경우 이 페이지를 통해 공지합니다.
         </p>
       </section>
 
       <footer className={styles['policy-footer']}>
-        시행일자: 2026년 6월 16일
+        시행일자: 2026년 10월 15일
       </footer>
     </div>
   );
