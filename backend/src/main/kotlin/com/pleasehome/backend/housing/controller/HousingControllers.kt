@@ -73,7 +73,18 @@ class CacheController(
 ) {
 
     @PostMapping("/evict")
-    fun evictCache(): Map<String, Any> {
+    fun evictCache(request: jakarta.servlet.http.HttpServletRequest): Map<String, Any> {
+        val remoteAddr = request.remoteAddr
+        val forwardedFor = request.getHeader("X-Forwarded-For")
+        val isLocal = (remoteAddr == "127.0.0.1" || remoteAddr == "0:0:0:0:0:0:0:1") && forwardedFor.isNullOrEmpty()
+
+        if (!isLocal) {
+            throw org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.FORBIDDEN,
+                "Access denied: cache eviction is only allowed from localhost"
+            )
+        }
+
         housingService.evictHousingCaches()
         return mapOf("success" to true, "message" to "All housing caches evicted successfully.")
     }
