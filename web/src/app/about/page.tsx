@@ -3,8 +3,8 @@ import { Metadata } from 'next';
 import styles from '../policy.module.css';
 
 export const metadata: Metadata = {
-  title: '서비스 소개 | 공공청약 지도',
-  description: 'LH, SH, GH 공공임대주택 공고를 지도로 정리해 보여주는 공공청약 지도(플리즈홈)의 운영 목적, 데이터 출처, 데이터 가공 방식을 소개합니다.',
+  title: '서비스 소개 | 플리즈홈',
+  description: 'LH, SH, GH 공공임대주택 공고를 지도로 정리해 보여주는 플리즈홈의 운영 목적, 데이터 출처, 데이터 가공 방식을 소개합니다.',
   alternates: { canonical: 'https://pleasehome.com/about' },
 };
 
@@ -16,11 +16,11 @@ export default function AboutPage() {
       </Link>
 
       <h1 className={styles['policy-title']}>
-        공공청약 지도 소개
+        플리즈홈 소개
       </h1>
 
       <p className={styles['policy-intro']}>
-        공공청약 지도(플리즈홈)는 LH, SH, GH 등 공공기관이 공시하는 임대주택 입주자 모집 공고를 한곳에 모아 지도 위에서 확인할 수 있게 만든 서비스입니다.
+        플리즈홈은 LH, SH, GH 등 공공기관이 공시하는 임대주택 입주자 모집 공고를 한곳에 모아 지도 위에서 확인할 수 있게 만든 서비스입니다.
       </p>
 
       <section className={styles['policy-section']}>
@@ -63,7 +63,7 @@ export default function AboutPage() {
       </section>
 
       <footer className={styles['policy-footer']}>
-        공공청약 지도 (플리즈홈)
+        플리즈홈
       </footer>
     </div>
   );

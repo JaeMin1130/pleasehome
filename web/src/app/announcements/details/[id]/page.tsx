@@ -25,18 +25,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { id } = await params;
   const annId = parseInt(id, 10);
   const canonical = `https://pleasehome.com/announcements/details/${id}`;
-  if (isNaN(annId)) return { title: '공고 상세 정보 | PleaseHome', alternates: { canonical } };
+  if (isNaN(annId)) return { title: '공고 상세 정보 | 플리즈홈', alternates: { canonical } };
 
   try {
     const data = await fetchAnnouncementDetails(annId);
-    if (!data) return { title: '공고를 찾을 수 없습니다 | PleaseHome', alternates: { canonical } };
+    if (!data) return { title: '공고를 찾을 수 없습니다 | 플리즈홈', alternates: { canonical } };
     return {
-      title: `${data.title} - ${data.institution} | PleaseHome`,
+      title: `${data.title} - ${data.institution} | 플리즈홈`,
       description: `${data.institution}에서 공급하는 ${data.subscription_type} 청약 공고의 상세 입주 기준 및 신청 정보 가이드입니다.`,
       alternates: { canonical },
     };
   } catch {
-    return { title: '공고 상세 정보 | PleaseHome', alternates: { canonical } };
+    return { title: '공고 상세 정보 | 플리즈홈', alternates: { canonical } };
   }
 }
 

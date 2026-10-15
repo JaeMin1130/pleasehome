@@ -15,7 +15,7 @@ export default function TermsOfService() {
       </h1>
 
       <p className={styles['policy-intro']}>
-        본 약관은 사용자가 본 공공청약 지도 서비스를 이용함에 있어 필요한 조건과 규정을 정의합니다.
+        본 약관은 사용자가 본 플리즈홈 서비스를 이용함에 있어 필요한 조건과 규정을 정의합니다.
       </p>
 
       <section className={styles['policy-section']}>

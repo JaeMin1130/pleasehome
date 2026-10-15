@@ -24,19 +24,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { complexId } = await params;
   const compId = parseInt(complexId, 10);
   const canonical = `https://pleasehome.com/complexes/${complexId}`;
-  if (isNaN(compId)) return { title: '주택 단지 상세 정보 | PleaseHome', alternates: { canonical } };
+  if (isNaN(compId)) return { title: '주택 단지 상세 정보 | 플리즈홈', alternates: { canonical } };
 
   try {
     const data = await fetchComplexDetails(compId);
-    if (!data || !data.complex) return { title: '단지를 찾을 수 없습니다 | PleaseHome', alternates: { canonical } };
+    if (!data || !data.complex) return { title: '단지를 찾을 수 없습니다 | 플리즈홈', alternates: { canonical } };
     const complex = data.complex;
     return {
-      title: `${complex.name} - 청약 단지 상세 정보 및 평형별 임대 조건 | PleaseHome`,
+      title: `${complex.name} - 청약 단지 상세 정보 및 평형별 임대 조건 | 플리즈홈`,
       description: `${complex.address}에 위치한 ${complex.name}의 세부 평형별 임대보증금, 월세 정보 및 과거 청약 히스토리 모음입니다.`,
       alternates: { canonical },
     };
   } catch {
-    return { title: '주택 단지 상세 정보 | PleaseHome', alternates: { canonical } };
+    return { title: '주택 단지 상세 정보 | 플리즈홈', alternates: { canonical } };
   }
 }
 

@@ -10,7 +10,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "공공청약 지도",
+  title: "공공청약 지도 | 플리즈홈",
   description: "전국 LH, SH, GH 공공임대주택 청약 정보를 지도에서 한눈에 확인하세요.",
   manifest: "/manifest.json",
   appleWebApp: {
@@ -34,10 +34,10 @@ export const metadata: Metadata = {
   },
   
   openGraph: {
-    title: "공공청약 지도",
+    title: "공공청약 지도 | 플리즈홈",
     description: "전국 LH, SH, GH 공공임대주택 청약 정보를 지도에서 한눈에 확인하세요.",
     url: "https://pleasehome.com",
-    siteName: "공공맵",
+    siteName: "플리즈홈",
     locale: "ko_KR",
     type: "website",
   },
@@ -51,13 +51,13 @@ export default function RootLayout({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'PleaseHome (플리즈홈)',
-    alternateName: ['공공청약 지도', '플리즈홈'],
+    name: '플리즈홈',
+    alternateName: ['PleaseHome', '공공청약 지도'],
     url: 'https://pleasehome.com',
     description: '전국 LH, SH, GH 공공임대주택 청약 정보를 지도에서 한눈에 확인하세요.',
     publisher: {
       '@type': 'Organization',
-      name: 'PleaseHome',
+      name: '플리즈홈',
       url: 'https://pleasehome.com',
     },
   };
