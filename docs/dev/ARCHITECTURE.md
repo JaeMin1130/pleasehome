@@ -9,7 +9,7 @@
 안정적인 대규모 공고 데이터 가공과 실시간 웹 서비스의 신뢰성을 위해 **데이터 파이프라인(db-pipeline) - 백엔드 코어(backend) - 프론트엔드 대시보드(web)**의 책임을 엄격하게 3단계로 격리합니다.
 
 * **1. 데이터 적재 계층 (`db-pipeline`)**: 무거운 비정형 데이터(PDF/Excel) 파싱, 지오코딩 및 데이터 정합성 검증을 담당하며, 정제된 SQLite DB(`public_housing.db`)로 데이터를 영속화합니다.
-* **2. 백엔드 코어 계층 (`backend`)**: Kotlin + Spring Boot 3.x 기반으로 구동되며, Spring Data JPA와 QueryDSL을 통해 영속 계층을 추상화하고, 회원 인증/인가(Spring Security) 및 찜/숨김 상호 배제 비즈니스 트랜잭션(@Transactional)을 안전하게 처리하며 23개 RESTful API를 서빙합니다.
+* **2. 백엔드 코어 계층 (`backend`)**: Kotlin + Spring Boot 3.x 기반으로 구동되며, Spring Data JPA와 QueryDSL을 통해 영속 계층을 추상화하고, 회원 인증/인가(Spring Security) 및 찜/숨김 상호 배제 비즈니스 트랜잭션(@Transactional)을 안전하게 처리하며, Caffeine 인메모리 캐시(상한 1000) 및 엔드포인트 보안 제어를 통해 23개 RESTful API를 경량 서빙합니다.
 * **3. 프론트엔드 대시보드 계층 (`web`)**: Next.js 15 (App Router) + React 19 기반으로 구동되며, 검색엔진 최적화(SEO) 및 구글 애드센스를 위한 정적 SSR/ISR 렌더링과 클라이언트 사이드 대화형 지도(Naver Maps SDK) 및 슬라이딩 패널 UI를 제공합니다. 모든 데이터 통신은 백엔드 REST API로 단일화됩니다.
 
 ---

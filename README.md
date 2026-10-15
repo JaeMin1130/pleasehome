@@ -105,6 +105,10 @@ flowchart TB
 * **문제**: 로그인 시 북마크 목록 로드 후 의존성 누수로 인한 수십~수백 건의 불필요한 O(N²) 캐스케이딩 fetch 폭풍 발생 및 매 리렌더링마다 공고 정렬/카운트 전수 재연산으로 화면 프리징 발생.
 * **해결**: 미사용 `bookmarkUnits` 상태와 fetch 이펙트를 전면 제거하고, `useMemo`를 적용해 전체 공고 단 1회 순회로 5대 상태 카운트 집계 및 정렬 결과를 캐싱하여 렌더링 부하를 원천 차단함. ([TROUBLESHOOTING](docs/dev/TROUBLESHOOTING.md))
 
+### 7. 공고 목록 details 분리 및 Caffeine 캐시(상한 1000) 도입
+* **문제**: 공고 목록 API가 190만 자에 달하는 본문(details)을 포함하여 초기 HTML이 8MB에 달하고, 캐시 무제한 누적으로 1GB RAM 서버에서 심각한 프리징 및 스왑 병목 발생.
+* **해결**: 목록 API에서 details를 제외하고 카드 펼침 시 온디맨드 fetch로 전환하여 **홈 HTML 크기를 8MB → 3.9MB(gzip 420KB, 70% 감축)**로 줄이고, Caffeine 캐시(상한 1000) 및 외부 캐시 무효화 차단을 적용하여 메모리 안정성을 확보함. ([ADR #18](docs/dev/DECISION.md))
+
 ---
 
 ## 📋 REST API 엔드포인트 규격 (23 Endpoints)
