@@ -93,7 +93,7 @@ function activate_backend() {
     mv -f backend.jar.new backend.jar
     pm2 delete pleasehome-backend 2>/dev/null || true
     [ -s .session_secret ] || (umask 077 && openssl rand -hex 32 > .session_secret)
-    SESSION_SECRET=\$(cat .session_secret) pm2 start 'java -Xms128m -Xmx256m -XX:+UseSerialGC -XX:ReservedCodeCacheSize=48m -XX:MaxMetaspaceSize=128m -Xss512k -jar backend.jar' --name pleasehome-backend --cwd $REMOTE_PATH/backend
+    SESSION_SECRET=\$(cat .session_secret) pm2 start 'java -Djava.security.egd=file:/dev/./urandom -Xms128m -Xmx256m -XX:+UseSerialGC -XX:ReservedCodeCacheSize=48m -XX:MaxMetaspaceSize=128m -Xss512k -jar backend.jar' --name pleasehome-backend --cwd $REMOTE_PATH/backend
     pm2 save
     echo $(git -C "$BASE_DIR" rev-parse --short HEAD) > .deployed_rev
   "

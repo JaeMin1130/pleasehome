@@ -8,11 +8,14 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.context.event.EventListener
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseCookie
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 import java.time.Duration
@@ -39,6 +42,14 @@ class AuthService(
         LoggerFactory.getLogger(AuthService::class.java).warn("SESSION_SECRET 미설정: 재시작 시 모든 세션이 만료됩니다.")
         UUID.randomUUID().toString() + UUID.randomUUID()
     }.toByteArray()
+
+    // 실서버(1GB·스왑)에서 기동 후 첫 회원가입이 10.9초 걸렸다(로컬은 0.3초, 2026-10-15). 첫 해시 시 난수 시드·bcrypt 코드 로딩 비용을
+    // 사용자 대신 기동 직후에 치르게 한다. DB를 쓰지 않으므로 트랜잭션 밖에서 실행.
+    @EventListener(ApplicationReadyEvent::class)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    fun warmUpPasswordEncoder() {
+        passwordEncoder.encode("warm-up")
+    }
 
     fun register(body: Map<String, String>, response: HttpServletResponse): Map<String, Any> {
         val id = body["id"]?.trim() ?: throw IllegalArgumentException("모든 항목을 입력해주세요.")
