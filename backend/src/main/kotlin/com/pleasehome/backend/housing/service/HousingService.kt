@@ -80,7 +80,7 @@ class HousingService(
         val rgs = recruitmentGroupRepository.findAllByAnnouncementId(id)
         val complexList = complexRepository.findAllByHousingUnitAnnouncementId(id)
         val summaries = unitRepository.findUnitSummaryByAnnouncementId(id).associateBy { it.getComplexId() ?: 0L }
-        val complexRgMap = fetchComplexRecruitmentGroups(complexList.mapNotNull { it.id })
+        val complexRgMap = fetchComplexRecruitmentGroups(complexList.mapNotNull { it.id }, id)
         val complexes = complexList.map {
             complexToMap(it, complexRgMap[it.id] ?: emptyList(), summaries[it.id])
         }
@@ -108,7 +108,7 @@ class HousingService(
         } else {
             unitRepository.findUnitSummaryGroupedByComplex().associateBy { it.getComplexId() ?: 0L }
         }
-        val complexRgMap = fetchComplexRecruitmentGroups(list.mapNotNull { it.id })
+        val complexRgMap = fetchComplexRecruitmentGroups(list.mapNotNull { it.id }, announcementId)
 
         return list.map { complexToMap(it, complexRgMap[it.id] ?: emptyList(), summaries[it.id]) }
     }
@@ -163,12 +163,13 @@ class HousingService(
         return list.map { unitToMap(it, tagsMap[it.id] ?: emptyList()) }
     }
 
-    /** 단지별로 걸쳐있는 신청단위(모집단위) 목록을 일괄 조회 (N+1 방지) */
-    private fun fetchComplexRecruitmentGroups(complexIds: List<Long>): Map<Long, List<AnnouncementRecruitmentGroup>> {
+    /** 단지별로 걸쳐있는 신청단위(모집단위) 목록을 일괄 조회 (N+1 방지). announcementId가 주어지면 그 공고의 신청단위만 남긴다 */
+    private fun fetchComplexRecruitmentGroups(complexIds: List<Long>, announcementId: Long? = null): Map<Long, List<AnnouncementRecruitmentGroup>> {
         if (complexIds.isEmpty()) return emptyMap()
         val links = unitRepository.findDistinctRecruitmentGroupsByComplexIds(complexIds)
         if (links.isEmpty()) return emptyMap()
         val rgMap = recruitmentGroupRepository.findAllById(links.map { it.getRecruitmentGroupId() }.distinct())
+            .filter { announcementId == null || it.announcementId == announcementId }
             .associateBy { it.id ?: 0L }
         return links.groupBy({ it.getComplexId() }, { rgMap[it.getRecruitmentGroupId()] })
             .mapValues { (_, v) -> v.filterNotNull() }

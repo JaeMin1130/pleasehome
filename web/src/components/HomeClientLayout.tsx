@@ -39,6 +39,8 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
   const [announcements, setAnnouncements] = useState<Announcement[]>(initialAnnouncements);
   const [allComplexes, setAllComplexes] = useState<Complex[]>(initialComplexes);
   const [announcementUnits, setAnnouncementUnits] = useState<any[]>([]);
+  // 공고 기준으로 집계된 단지 목록 (allComplexes의 공급/주택군 수치는 전 공고 합산이라 공고 상세에서 쓰면 섞임)
+  const [announcementComplexes, setAnnouncementComplexes] = useState<Complex[]>([]);
   const [isAnnouncementUnitsLoading, setIsAnnouncementUnitsLoading] = useState(false);
   
   const [activeAnnId, setActiveAnnId] = useState<number | null>(null);
@@ -299,14 +301,17 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
   }, [allComplexes]);
 
   useEffect(() => {
-    if (activeAnnId === null) { setAnnouncementUnits([]); setIsAnnouncementUnitsLoading(false); return; }
+    if (activeAnnId === null) { setAnnouncementUnits([]); setAnnouncementComplexes([]); setIsAnnouncementUnitsLoading(false); return; }
     let cancelled = false;
     setIsAnnouncementUnitsLoading(true);
-    fetch(`/api/housing-units?announcement_id=${activeAnnId}`)
-      .then(res => res.json())
-      .then(data => {
+    Promise.all([
+      fetch(`/api/housing-units?announcement_id=${activeAnnId}`).then(res => res.json()),
+      fetch(`/api/complexes?announcement_id=${activeAnnId}`).then(res => res.json()),
+    ])
+      .then(([data, complexes]) => {
         if (cancelled) return;
         setAnnouncementUnits(data);
+        setAnnouncementComplexes(complexes);
         setIsAnnouncementUnitsLoading(false);
         if (data && data.length > 0) {
           setFilterState({
@@ -320,7 +325,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
           });
         }
       })
-      .catch(() => { if (!cancelled) { setAnnouncementUnits([]); setIsAnnouncementUnitsLoading(false); } });
+      .catch(() => { if (!cancelled) { setAnnouncementUnits([]); setAnnouncementComplexes([]); setIsAnnouncementUnitsLoading(false); } });
     return () => { cancelled = true; };
   }, [activeAnnId]);
 
@@ -353,8 +358,8 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
     // (docs/dev/DOMAIN_MODEL.md 3.3). 실제 소속은 이 공고의 housing_units가 가리키는 complex_id로 판단.
     if (!activeAnnId) return [];
     const complexIds = new Set(announcementUnits.map(u => u.complex_id));
-    return allComplexes.filter(c => complexIds.has(c.id));
-  }, [activeAnnId, allComplexes, announcementUnits]);
+    return announcementComplexes.filter(c => complexIds.has(c.id));
+  }, [activeAnnId, announcementComplexes, announcementUnits]);
 
   const filteredComplexes = useMemo(() => {
     return displayComplexes.filter(complex => {
@@ -681,7 +686,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
         />
 
         <DetailPanel 
-          complex={selectedComplex} 
+          complex={displayComplexes.find(c => c.id === selectedComplex?.id) ?? selectedComplex} 
           isOpen={isPanelOpen} 
           filterState={filterState} 
           announcements={announcements} 
