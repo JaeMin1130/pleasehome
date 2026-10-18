@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import AboutPage from '@/app/about/page';
+import AboutPage from '@/app/about/AboutContent';
 import TermsOfService from '@/app/terms/page';
 import PrivacyPolicy from '@/app/privacy/page';
 import authStyles from './AuthModal.module.css';
