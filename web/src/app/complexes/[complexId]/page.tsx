@@ -2,18 +2,16 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Script from 'next/script';
-import { fetchComplexDetails, fetchSitemapPaths } from '@/lib/api';
+import { fetchComplexDetails } from '@/lib/api';
 import { formatMoney, formatTargetGroup } from '@/utils/formatters';
 import ComplexBookmarkButton from '@/components/features/ComplexBookmarkButton';
 import styles from './complex.module.css';
 
 export const revalidate = 3600; // 1시간 주기로 점진적 정적 재생성(ISR) 활성화
 
+// 단지 3천여 개를 빌드 때 전부 그리면 빌드·배포 번들이 수백 MB가 되므로, 빈 배열로 두어 첫 방문 시 생성 후 ISR(revalidate)로 캐시한다.
 export async function generateStaticParams() {
-  const { complexes } = await fetchSitemapPaths();
-  return complexes.map((id: number) => ({
-    complexId: String(id),
-  }));
+  return [];
 }
 
 interface PageProps {
