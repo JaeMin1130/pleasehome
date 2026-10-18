@@ -736,14 +736,6 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
             bookmarkFolders={bookmarkFolders}
           />
           
-          {/* 첫 화면엔 공고를 고르기 전까지 마커가 없어 지도가 비어 보이므로, 무엇을 하면 되는지 안내한다 */}
-          {activeAnnId === null && mapComplexes.length === 0 && currentEffectiveTabForMap === 'SEARCH' && (
-            <div className={styles['map-empty-hint']} role="note">
-              <span className={styles['hint-desktop']}>왼쪽 목록에서 공고를 선택하면 단지 위치가 지도에 표시됩니다</span>
-              <span className={styles['hint-mobile']}>아래 목록에서 공고를 선택하면 단지 위치가 지도에 표시됩니다</span>
-            </div>
-          )}
-
           {isPolicyOnly && activeAnn && (
             <div className={styles['policy-overlay']}>
               <div className={styles['policy-icon']}>

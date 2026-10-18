@@ -310,36 +310,3 @@
     margin-top: calc(var(--spacing-xs) * -2);
   }
 }
-/* 공고 미선택 시 빈 지도 위 안내 문구 (지도 조작을 막지 않도록 pointer-events 해제) */
-.map-empty-hint {
-    position: absolute;
-    top: var(--spacing-md);
-    left: var(--position-center);
-    transform: translateX(var(--transform-half));
-    max-width: calc(100% - var(--spacing-md) * 2);
-    padding: var(--spacing-xs) var(--spacing-md);
-    background-color: var(--bg-surface);
-    border: var(--spacing-3xs) solid var(--border-light);
-    border-radius: var(--radius-full);
-    box-shadow: var(--shadow-md);
-    color: var(--text-secondary);
-    font-size: var(--font-size-sm);
-    text-align: center;
-    word-break: keep-all;
-    pointer-events: none;
-    z-index: var(--z-index-base);
-}
-
-.hint-mobile {
-    display: none;
-}
-
-@media (max-width: 768px) {
-    .hint-desktop {
-        display: none;
-    }
-
-    .hint-mobile {
-        display: inline;
-    }
-}

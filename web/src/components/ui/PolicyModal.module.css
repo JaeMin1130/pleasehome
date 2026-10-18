@@ -1,0 +1,26 @@
+.modal {
+  max-width: 720px;
+  max-height: 85dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+}
+
+.content {
+  overflow-y: auto;
+}
+
+/* 페이지 본문을 그대로 쓰므로 팝업에선 바깥 여백과 "메인 지도로 돌아가기" 링크·중복 제목을 숨긴다 */
+.content > div {
+  margin: 0;
+}
+
+.content a[href="/"],
+.content h1 {
+  display: none;
+}

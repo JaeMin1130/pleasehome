@@ -2,7 +2,7 @@
 
 import { clickable } from '@/utils/a11y';
 import React from 'react';
-import Link from 'next/link';
+import PolicyModal, { PolicyPage } from '@/components/ui/PolicyModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFeedback } from '@/components/ui/Feedback';
 import styles from '../Sidebar.module.css';
@@ -67,6 +67,7 @@ export default function MoreTab({
   toggleTheme,
   isDarkMode,
 }: MoreTabProps) {
+  const [policyPage, setPolicyPage] = React.useState<PolicyPage | null>(null);
   return (
     <div 
       className={styles['more-panel-container']}
@@ -205,15 +206,6 @@ export default function MoreTab({
         )}
 
         <div className={styles['more-menu-group']}>
-          {/* 소개·약관은 새 탭으로 열어, 돌아왔을 때 보던 지도·필터 상태가 초기화되지 않게 한다 */}
-          <Link href="/about" className={styles['more-menu-item']} target="_blank" rel="noopener">
-            <span className={styles['more-menu-label']}>서비스 소개</span>
-            <span className={styles['more-menu-chevron']}>
-              <svg width={UI_SIZES.ICON_XS} height={UI_SIZES.ICON_XS} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.BOLD} strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 18 15 12 9 6"></polyline>
-              </svg>
-            </span>
-          </Link>
           <div className={styles['more-menu-item']} {...clickable(toggleTheme)} role="switch" aria-checked={isDarkMode} aria-label="다크 모드">
             <span className={styles['more-menu-label']}>화면 테마</span>
             <div className={styles['more-menu-value-wrapper']}>
@@ -245,22 +237,32 @@ export default function MoreTab({
             </div>
           </div>
 
-          <Link href="/terms" className={styles['more-menu-item']} target="_blank" rel="noopener">
+          {/* 소개·약관은 지도 위 팝업으로 열어, 보던 지도·필터 상태가 초기화되지 않게 한다 */}
+          <div className={styles['more-menu-item']} {...clickable(() => setPolicyPage('about'))}>
+            <span className={styles['more-menu-label']}>서비스 소개</span>
+            <span className={styles['more-menu-chevron']}>
+              <svg width={UI_SIZES.ICON_XS} height={UI_SIZES.ICON_XS} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.BOLD} strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </span>
+          </div>
+          <div className={styles['more-menu-item']} {...clickable(() => setPolicyPage('terms'))}>
             <span className={styles['more-menu-label']}>이용약관 및 정책</span>
             <span className={styles['more-menu-chevron']}>
               <svg width={UI_SIZES.ICON_XS} height={UI_SIZES.ICON_XS} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.BOLD} strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="9 18 15 12 9 6"></polyline>
               </svg>
             </span>
-          </Link>
-          <Link href="/privacy" className={styles['more-menu-item']} target="_blank" rel="noopener">
+          </div>
+          <div className={styles['more-menu-item']} {...clickable(() => setPolicyPage('privacy'))}>
             <span className={styles['more-menu-label']}>개인정보처리방침</span>
             <span className={styles['more-menu-chevron']}>
               <svg width={UI_SIZES.ICON_XS} height={UI_SIZES.ICON_XS} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.BOLD} strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="9 18 15 12 9 6"></polyline>
               </svg>
             </span>
-          </Link>
+          </div>
+          <PolicyModal page={policyPage} onClose={() => setPolicyPage(null)} />
         </div>
 
         <div className={styles['more-info-box-wrapper']}>
