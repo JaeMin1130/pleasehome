@@ -1,18 +1,12 @@
 # PleaseHome (플리즈홈) - 통합 공공임대주택 대시보드 🏠
 
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.3.21-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white&labelColor=1B1B1F)](https://kotlinlang.org/) [![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.1.1-6DB33F?style=for-the-badge&logo=springboot&logoColor=6DB33F&labelColor=23272F)](https://spring.io/projects/spring-boot) [![SQLite](https://img.shields.io/badge/SQLite-3.x-003B57?style=for-the-badge&logo=sqlite&logoColor=white&labelColor=0F172A)](https://sqlite.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white&labelColor=1E293B)](https://www.typescriptlang.org/) [![React](https://img.shields.io/badge/React-19.2.4-61DAFB?style=for-the-badge&logo=react&logoColor=61DAFB&labelColor=20232A)](https://react.dev/) [![Next.js](https://img.shields.io/badge/Next.js-16.2.9-000000?style=for-the-badge&logo=nextdotjs&logoColor=white&labelColor=171717)](https://nextjs.org/)
+
 > 🌐 **실제 서비스 URL**: [https://pleasehome.com](https://pleasehome.com)
-
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.3.21-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org/)
-[![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.1.1-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Next.js](https://img.shields.io/badge/Next.js-16.2.9-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19.2.4-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
-[![SQLite](https://img.shields.io/badge/SQLite-3.x-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
-
 ---
 
-## 1. 프로젝트 개요 및 데모 (Overview & Demo)
+## 1. 프로젝트 개요 및 데모
 
 ### 📌 한 줄 소개 및 핵심 목적
 * **한 줄 소개**: **PleaseHome(플리즈홈)**은 LH, SH, GH 등 여러 공공기관에 흩어져 있는 비정형 임대주택 모집 공고를 정밀 수집·분석하여, 지도 기반 대화형 인터페이스로 제공하는 **3-Tier 풀스택 웹 대시보드**입니다.
@@ -21,29 +15,12 @@
   - **직관적 주거 탐색 경험 제공**: 수백 개 공급 단지의 위치를 네이버 지도 위 마커로 한눈에 파악하고, 단지별 상세 공급 평형, 보증금/월세 조건, 최대 상호전환 모의 계산기를 원클릭으로 제공합니다.
   - **청약 일정 관리 및 개인화 지원**: 공고 접수부터 당첨자 발표까지의 생애주기 D-Day 타임라인과 관심 단지 드래그앤드롭(DnD) 폴더 관리 및 찜/숨김 기능을 제공합니다.
 
-### 🌟 주요 기능 목록 (Key Features)
-* 🗺️ **대화형 지도 인터페이스 (Naver Maps SDK)**: 전국 및 수도권 공급 단지 마커 시각화 및 클러스터링, 카드-마커 양방향 호버 인터랙션
-* 🔍 **다차원 맞춤 필터링**: 공급 기관(LH/SH/GH), 임대 유형(행복주택, 국민임대 등), 보증금/월세 범위 실시간 슬라이더 필터
-* 📊 **평형별 임대 조건 & 전환보증금 계산기**: 단지별 상세 공급 평형 및 보증금 ↔ 월세 최대 상호전환 모의 계산기 실시간 제공
-* ⏱️ **청약 생애주기 타임라인 & D-Day 알림**: 접수 ➔ 서류제출 ➔ 당첨자발표 ➔ 계약 단계별 진행 게이지 바 및 카운트다운 타이머
-* 📂 **드래그앤드롭(DnD) 관심 단지 폴더 관리**: 북마크 탭에서 단지 카드를 마우스로 드래그하여 맞춤형 폴더별 분류 및 메모 작성
-* ⚡ **원자적 찜 ↔ 숨김 상호 배제 토글**: 관심 공고(찜)와 차단 공고(숨김)를 `@Transactional` 기반으로 원자적 상호 배제 관리
-* 🌙 **전역 다크모드 (Dark Mode)**: 네이버 지도 타일 반전 및 시스템 반응형 야간 인터페이스 지원
-
-### 🖼️ 시스템 아키텍처 및 데이터 흐름도 (Architecture Flow)
-
+### 🖼️ 시스템 아키텍처
 ![PleaseHome 시스템 & 데이터 흐름도](docs/images/architecture_flow.png)
-
-### 🖥️ 핵심 화면 미리보기 (Demo Preview)
-
-![PleaseHome 메인 대시보드 화면](image.png)
-*(실제 서비스 접속: [https://pleasehome.com](https://pleasehome.com))*
 
 ---
 
-## 2. 기술 스택 (Tech Stack)
-
-### 🛠️ 프론트엔드 / 백엔드 / 데이터베이스 / 배포 환경
+## 2. 기술 스택
 
 | 계층 (Layer) | 기술 스택 | 설명 및 핵심 역할 |
 | :--- | :--- | :--- |
@@ -51,7 +28,7 @@
 | **Backend** | **Kotlin, Spring Boot 4.x (3.x 호환), Spring Data JPA** | 23개 규격 RESTful API 코어 서버, `@Transactional` 비즈니스 무결성, Caffeine 캐싱 |
 | **Database** | **SQLite 3.x (Dual DataSource 물리 분리)** | `public_housing.db`(공고 원장, Read-Only) + `user_data.db`(회원/트랜잭션, Read-Write) |
 | **Data Pipeline** | **Python 3.12, BeautifulSoup, Stateful Row Parser** | LH/SH/GH OpenAPI 수집, PDF 표 파싱 및 전수 수치 교차 검증, 네이버 지오코딩 |
-| **Infra & Deploy** | **Nginx, PM2, Linux (Ubuntu), GitHub Actions** | Nginx 리버스 프록시(`/api/*` 다이렉트 바이패스), SSL/TLS 종단, PM2 무중단 프로세스 관리 |
+| **Infra & Deploy** | **Nginx, PM2, Linux (Ubuntu)** | Nginx 리버스 프록시(`/api/*` 다이렉트 바이패스), SSL/TLS 종단, PM2 무중단 프로세스 관리 |
 
 ### 📦 주요 라이브러리 및 런타임 버전
 
@@ -72,9 +49,9 @@
 
 ---
 
-## 3. 시작하기 (Getting Started)
+## 3. 시작하기
 
-### 📋 사전 요구사항 (Prerequisites)
+### 📋 사전 요구사항
 프로젝트 실행을 위해 다음 런타임 환경이 설치되어 있어야 합니다:
 * **Java**: OpenJDK 17 이상
 * **Node.js**: v20.x 이상 (npm v10 이상)
@@ -99,7 +76,7 @@ LH_NOTICE_LIST_API_KEY=your_lh_list_decoded_api_key
 LH_NOTICE_DTL_API_KEY=your_lh_detail_decoded_api_key
 ```
 
-### 🚀 설치 및 실행 명령어 (Installation & Run)
+### 🚀 설치 및 실행 명령어
 PleaseHome은 통합 제어 스크립트([`command.sh`](file:///home/iru/app/pleasehome/command.sh))를 통해 손쉽게 서버를 가동하고 테스트할 수 있습니다.
 
 #### 1. 백엔드 (Spring Boot) 실행
@@ -142,7 +119,7 @@ cd web && npm run test
 ./command.sh web:build
 ```
 
-#### 4. 실서버 무중단 통합 배포 (Deploy)
+#### 4. 실서버 무중단 통합 배포
 ```bash
 # DB 스냅샷 무결성 검사 + 백엔드 + 프론트엔드 원클릭 전체 배포
 ./command.sh deploy
@@ -150,7 +127,7 @@ cd web && npm run test
 
 ---
 
-## 4. API 명세 (API Endpoints)
+## 4. API 명세
 
 Spring Boot 코어 백엔드 서버(`backend/`)에서 서빙하는 23개 RESTful API 전체 명세입니다. Nginx 리버스 프록시를 통해 `/api/*` 경로로 다이렉트 라우팅됩니다.
 
@@ -194,7 +171,7 @@ Spring Boot 코어 백엔드 서버(`backend/`)에서 서빙하는 23개 RESTful
 
 ---
 
-## 5. 프로젝트 구조 (Project Structure)
+## 5. 프로젝트 구조
 
 ### 📂 핵심 디렉터리 트리 및 역할 설명
 
