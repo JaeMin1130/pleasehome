@@ -24,7 +24,7 @@
 
 | 계층 (Layer) | 기술 스택 | 설명 및 핵심 역할 |
 | :--- | :--- | :--- |
-| **Frontend** | **Next.js 16, React 19, TypeScript, TailwindCSS v4** | App Router 기반 SSR/ISR 검색엔진 최적화, 반응형 UI, Naver Maps 대화형 지도 연동 |
+| **Frontend** | **Next.js 16, React 19, TypeScript** | App Router 기반 SSR/ISR 검색엔진 최적화, 반응형 UI, Naver Maps 대화형 지도 연동 |
 | **Backend** | **Kotlin, Spring Boot 4.x (3.x 호환), Spring Data JPA** | 23개 규격 RESTful API 코어 서버, `@Transactional` 비즈니스 무결성, Caffeine 캐싱 |
 | **Database** | **SQLite 3.x (Dual DataSource 물리 분리)** | `public_housing.db`(공고 원장, Read-Only) + `user_data.db`(회원/트랜잭션, Read-Write) |
 | **Data Pipeline** | **Python 3.12, BeautifulSoup, Stateful Row Parser** | LH/SH/GH OpenAPI 수집, PDF 표 파싱 및 전수 수치 교차 검증, 네이버 지오코딩 |
@@ -44,8 +44,6 @@
 | | Spring Security Crypto | 6.x | 사용자 비밀번호 BCrypt 단방향 암호화 |
 | **Frontend** | Next.js | 16.2.9 | App Router 프레임워크 (Standalone) |
 | | React / React DOM | 19.2.4 | UI 컴포넌트 렌더링 라이브러리 |
-| | TailwindCSS | 4.x | 유틸리티 퍼스트 CSS 스타일링 |
-| | Vitest | 5.0.1 | 프론트엔드 단위/통합 테스트 프레임워크 |
 
 ---
 
