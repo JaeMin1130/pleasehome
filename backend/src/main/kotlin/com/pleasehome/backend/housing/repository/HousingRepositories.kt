@@ -87,22 +87,6 @@ interface HousingUnitRepository : JpaRepository<HousingUnit, Long> {
                SUM(u.supplyCount) as totalSupplyCount,
                SUM(u.reserveCount) as totalReserveCount
         FROM HousingUnit u
-        GROUP BY u.complexId
-    """)
-    fun findUnitSummaryGroupedByComplex(): List<UnitSummaryProjection>
-
-    @Query("""
-        SELECT u.complexId as complexId, 
-               MIN(u.deposit) as minDeposit, 
-               MAX(u.deposit) as maxDeposit,
-               MIN(u.monthlyRent) as minMonthlyRent, 
-               MAX(u.monthlyRent) as maxMonthlyRent,
-               MIN(u.exclusiveArea) as minExclusiveArea, 
-               MAX(u.exclusiveArea) as maxExclusiveArea,
-               COUNT(u.id) as unitCount,
-               SUM(u.supplyCount) as totalSupplyCount,
-               SUM(u.reserveCount) as totalReserveCount
-        FROM HousingUnit u
         WHERE u.announcementId = :announcementId
         GROUP BY u.complexId
     """)
@@ -124,6 +108,23 @@ interface HousingUnitRepository : JpaRepository<HousingUnit, Long> {
         GROUP BY u.complexId
     """)
     fun findUnitSummaryByComplexId(complexId: Long): UnitSummaryProjection?
+
+    @Query("""
+        SELECT u.complexId as complexId,
+               MIN(u.deposit) as minDeposit,
+               MAX(u.deposit) as maxDeposit,
+               MIN(u.monthlyRent) as minMonthlyRent,
+               MAX(u.monthlyRent) as maxMonthlyRent,
+               MIN(u.exclusiveArea) as minExclusiveArea,
+               MAX(u.exclusiveArea) as maxExclusiveArea,
+               COUNT(u.id) as unitCount,
+               SUM(u.supplyCount) as totalSupplyCount,
+               SUM(u.reserveCount) as totalReserveCount
+        FROM HousingUnit u
+        WHERE u.complexId IN :complexIds
+        GROUP BY u.complexId
+    """)
+    fun findUnitSummaryByComplexIds(complexIds: List<Long>): List<UnitSummaryProjection>
 
     @Query("""
         SELECT DISTINCT u.complexId as complexId, u.recruitmentGroupId as recruitmentGroupId

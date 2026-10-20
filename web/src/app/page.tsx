@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
 import HomeClientLayout from '@/components/HomeClientLayout';
-import { fetchAnnouncements, fetchComplexes } from '@/lib/api';
+import { fetchAnnouncements, fetchComplexesByIds, fetchSitemapPaths } from '@/lib/api';
 import { Announcement, Complex } from '@/types';
 
 export const revalidate = 3600; // 1시간 주기 점진적 정적 재생성(ISR)
@@ -14,12 +14,14 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [annData, compData] = await Promise.all([
+  // 💡 전체 단지(약 3.3MB)를 HTML에 싣지 않는다. 지도는 공고 선택 시 그 공고의 단지만 받으므로,
+  // 여기선 SEO 링크용 30개만 조회한다.
+  const [annData, sitemap] = await Promise.all([
     fetchAnnouncements(),
-    fetchComplexes()
+    fetchSitemapPaths()
   ]);
   const announcements = annData as Announcement[];
-  const complexes = compData as Complex[];
+  const complexes = (await fetchComplexesByIds((sitemap.complexes as number[]).slice(0, 30))) as Complex[];
 
   // 💡 api.ts는 실패 시 []를 돌려준다. 빈 목록으로 그리면 ISR이 그 빈 페이지를 1시간 캐시하고
   // SEO 섹션도 비므로, 던져서 빌드는 실패시키고 재생성 시에는 이전 페이지를 유지시킨다.
@@ -92,7 +94,7 @@ export default async function HomePage() {
       </section>
 
       {/* 실시간 반응형 지도 대시보드 (클라이언트 컴포넌트) */}
-      <HomeClientLayout initialAnnouncements={announcements} initialComplexes={complexes} />
+      <HomeClientLayout initialAnnouncements={announcements} />
     </>
   );
 }

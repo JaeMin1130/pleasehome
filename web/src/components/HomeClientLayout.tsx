@@ -32,14 +32,19 @@ const Map = dynamic(() => import('@/components/Map'), {
 
 interface HomeClientLayoutProps {
   initialAnnouncements?: Announcement[];
-  initialComplexes?: Complex[];
 }
 
-function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeClientLayoutProps) {
+const fetchComplex = (id: number): Promise<Complex | null> =>
+  fetch(`/api/complexes/${id}`)
+    .then(res => (res.ok ? res.json() : null))
+    .catch(() => null);
+
+function HomeContent({ initialAnnouncements = [] }: HomeClientLayoutProps) {
   const [announcements, setAnnouncements] = useState<Announcement[]>(initialAnnouncements);
-  const [allComplexes, setAllComplexes] = useState<Complex[]>(initialComplexes);
+  // 저장 탭·비교 화면용. 전체 단지 대신 저장한 단지만 받는다.
+  const [bookmarkedComplexes, setBookmarkedComplexes] = useState<Complex[]>([]);
   const [announcementUnits, setAnnouncementUnits] = useState<any[]>([]);
-  // 공고 기준으로 집계된 단지 목록 (allComplexes의 공급/주택군 수치는 전 공고 합산이라 공고 상세에서 쓰면 섞임)
+  // 공고 기준으로 집계된 단지 목록 (bookmarkedComplexes의 공급/주택군 수치는 전 공고 합산이라 공고 상세에서 쓰면 섞임)
   const [announcementComplexes, setAnnouncementComplexes] = useState<Complex[]>([]);
   const [isAnnouncementUnitsLoading, setIsAnnouncementUnitsLoading] = useState(false);
   
@@ -100,6 +105,20 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
   }, [member, memberBookmarkFolders, memberBookmarkItems]);
 
   const bookmarkedIds = bookmarkItems.map(item => item.complexId);
+  const bookmarkedIdsKey = [...new Set(bookmarkedIds)].sort((a, b) => a - b).join(',');
+
+  useEffect(() => {
+    if (!bookmarkedIdsKey) {
+      setBookmarkedComplexes([]);
+      return;
+    }
+    let cancelled = false;
+    fetch(`/api/complexes?ids=${bookmarkedIdsKey}`)
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => { if (!cancelled && data) setBookmarkedComplexes(data); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [bookmarkedIdsKey]);
 
   // 북마크 클릭 시 설정 팝업 호출 (이름 유지)
   const toggleBookmark = (complexId: number) => {
@@ -122,7 +141,8 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
       return;
     }
 
-    const compName = allComplexes.find(c => c.id === complexId)?.name || '알 수 없는 단지';
+    const compName = [selectedComplex, ...announcementComplexes, ...bookmarkedComplexes]
+      .find(c => c?.id === complexId)?.name || '알 수 없는 단지';
     const openModal = () => setBookmarkModalState({ isOpen: true, complexId, complexName: compName });
 
     // 폴더가 있으면 팝업 없이 가장 최근에 쓴 폴더로 바로 저장하고, 폴더 변경·메모는 토스트에서 이어간다.
@@ -236,16 +256,13 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
     if (initialAnnouncements.length === 0) {
       fetch('/api/announcements').then(res => res.json()).then(data => setAnnouncements(data));
     }
-    if (initialComplexes.length === 0) {
-      fetch('/api/complexes').then(res => res.json()).then(data => setAllComplexes(data));
-    }
-  }, [initialAnnouncements, initialComplexes]);
+  }, [initialAnnouncements]);
 
   // 💡 URL 쿼리 파라미터(딥링크) 초기 동기화 (새로고침 또는 외부 링크 유입 시 복원)
   const isInitialSyncDone = useRef(false);
   useEffect(() => {
     if (isInitialSyncDone.current) return;
-    if (allComplexes.length === 0 && announcements.length === 0) return;
+    if (announcements.length === 0) return;
 
     isInitialSyncDone.current = true;
     const params = new URLSearchParams(window.location.search);
@@ -253,16 +270,16 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
     const compParam = params.get('complex_id');
 
     if (compParam) {
-      const compId = Number(compParam);
-      const targetComp = allComplexes.find(c => c.id === compId);
-      if (targetComp) {
-        setSelectedComplex(targetComp);
-        setActiveComplexId(targetComp.id);
-        setIsPanelOpen(true);
-        if (targetComp.announcement_id) {
-          setActiveAnnId(targetComp.announcement_id);
+      fetchComplex(Number(compParam)).then(targetComp => {
+        if (targetComp) {
+          setSelectedComplex(targetComp);
+          setActiveComplexId(targetComp.id);
+          setIsPanelOpen(true);
+          if (targetComp.announcement_id) {
+            setActiveAnnId(targetComp.announcement_id);
+          }
         }
-      }
+      });
     } else if (annParam) {
       const annId = Number(annParam);
       const targetAnn = announcements.find(a => a.id === annId);
@@ -270,7 +287,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
         setActiveAnnId(annId);
       }
     }
-  }, [allComplexes, announcements]);
+  }, [announcements]);
 
   // 💡 브라우저 뒤로가기 / 앞으로가기(popstate) 이벤트 연동
   useEffect(() => {
@@ -285,10 +302,11 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
       setActiveAnnId(annId);
 
       if (compId !== null) {
-        const comp = allComplexes.find(c => c.id === compId) || null;
-        setSelectedComplex(comp);
         setActiveComplexId(compId);
-        setIsPanelOpen(comp !== null);
+        fetchComplex(compId).then(comp => {
+          setSelectedComplex(comp);
+          setIsPanelOpen(comp !== null);
+        });
       } else {
         setSelectedComplex(null);
         setActiveComplexId(null);
@@ -298,7 +316,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [allComplexes]);
+  }, []);
 
   useEffect(() => {
     if (activeAnnId === null) { setAnnouncementUnits([]); setAnnouncementComplexes([]); setIsAnnouncementUnitsLoading(false); return; }
@@ -382,13 +400,13 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
     if (activeFolderIds.length === 0) {
       // 1단계: 전체 저장 단지
       const allBookmarkedIds = bookmarkItems.map(item => item.complexId);
-      mapComplexes = allComplexes.filter(c => allBookmarkedIds.includes(c.id));
+      mapComplexes = bookmarkedComplexes.filter(c => allBookmarkedIds.includes(c.id));
     } else {
       // 2단계: 열려 있는 폴더 내 저장 단지들
       const folderBookmarkedIds = bookmarkItems
         .filter(item => activeFolderIds.includes(item.folderId))
         .map(item => item.complexId);
-      mapComplexes = allComplexes.filter(c => folderBookmarkedIds.includes(c.id));
+      mapComplexes = bookmarkedComplexes.filter(c => folderBookmarkedIds.includes(c.id));
     }
   }
 
@@ -601,7 +619,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
           announcements={announcements} activeAnnId={activeAnnId} onSelectAnnouncement={handleSelectAnnouncement} 
           width={SIDEBAR_DEFAULT_WIDTH} isCollapsed={isSidebarCollapsed} onCollapseChange={setIsSidebarCollapsed}
           displayComplexes={activeTab === 'BOOKMARK' ? mapComplexes : filteredComplexes} isComplexesLoading={isAnnouncementUnitsLoading} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex}
-          activeTab={activeTab} onTabSelect={handleTabSelect} allComplexes={allComplexes}
+          activeTab={activeTab} onTabSelect={handleTabSelect} bookmarkedComplexes={bookmarkedComplexes}
           bookmarkedIds={bookmarkedIds} onToggleBookmark={toggleBookmark}
           bookmarkFolders={bookmarkFolders}
           bookmarkItems={bookmarkItems}
@@ -714,7 +732,7 @@ function HomeContent({ initialAnnouncements = [], initialComplexes = [] }: HomeC
           }
           comparisonComplexes={
             activeComparisonFolderId 
-              ? allComplexes.filter(c => 
+              ? bookmarkedComplexes.filter(c => 
                   bookmarkItems
                     .filter(item => item.folderId === activeComparisonFolderId)
                     .map(item => item.complexId)

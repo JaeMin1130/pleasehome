@@ -22,16 +22,14 @@ export async function fetchAnnouncementDetails(id: string | number) {
   }
 }
 
-export async function fetchComplexes(announcementId?: string | number) {
+export async function fetchComplexesByIds(ids: number[]) {
+  if (ids.length === 0) return [];
   try {
-    const url = announcementId
-      ? `${API_BASE_URL}/api/complexes?announcement_id=${announcementId}`
-      : `${API_BASE_URL}/api/complexes`;
-    const res = await fetch(url, { next: { revalidate: 3600 } });
+    const res = await fetch(`${API_BASE_URL}/api/complexes?ids=${ids.join(',')}`, { next: { revalidate: 3600 } });
     if (!res.ok) return [];
     return await res.json();
   } catch (error) {
-    console.error('Failed to fetch complexes from backend:', error);
+    console.error('Failed to fetch complexes by ids from backend:', error);
     return [];
   }
 }

@@ -34,7 +34,7 @@ interface SidebarProps {
   onSelectComplex: (complex: Complex) => void;
   activeTab: 'SEARCH' | 'BOOKMARK' | 'MORE' | null;
   onTabSelect?: (tab: 'SEARCH' | 'BOOKMARK' | 'MORE' | null) => void;
-  allComplexes: Complex[];
+  bookmarkedComplexes: Complex[];
   style?: React.CSSProperties;
   bookmarkedIds: number[];
   onToggleBookmark: (complexId: number) => void;
@@ -55,7 +55,7 @@ export default function Sidebar({
   announcements, activeAnnId, onSelectAnnouncement, 
   width, isCollapsed, onCollapseChange,
   displayComplexes, isComplexesLoading, activeComplexId, onSelectComplex,
-  activeTab, onTabSelect, allComplexes, style,
+  activeTab, onTabSelect, bookmarkedComplexes, style,
   bookmarkedIds, onToggleBookmark,
   bookmarkFolders, bookmarkItems, activeFolderIds, setActiveFolderIds,
   onAddFolder, onRemoveFolder, onUpdateFolder, onMoveBookmarkItem,
@@ -690,7 +690,7 @@ export default function Sidebar({
           activeFolderIds={activeFolderIds}
           setActiveFolderIds={setActiveFolderIds}
           bookmarkItems={bookmarkItems}
-          allComplexes={allComplexes}
+          bookmarkedComplexes={bookmarkedComplexes}
           announcements={announcements}
           dragOverFolderId={dragOverFolderId}
           setDragOverFolderId={setDragOverFolderId}

@@ -46,7 +46,7 @@ class BackendApplicationTests {
         assertNotNull(singleAnn["title"])
         assertNotNull(singleAnn["schedules"])
 
-        val complexes = housingService.getComplexes(null)
+        val complexes = housingService.getComplexes(firstAnnId)
         println("Loaded ${complexes.size} complexes from SQLite")
         assertTrue(complexes.isNotEmpty(), "Complexes should not be empty")
 

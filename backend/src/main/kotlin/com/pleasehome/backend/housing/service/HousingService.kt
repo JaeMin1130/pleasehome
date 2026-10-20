@@ -95,21 +95,21 @@ class HousingService(
         )
     }
 
-    @Cacheable("complexes", key = "#announcementId ?: 'all'")
-    fun getComplexes(announcementId: Long?): List<Map<String, Any?>> {
-        val list = if (announcementId != null) {
-            complexRepository.findAllByHousingUnitAnnouncementId(announcementId)
-        } else {
-            complexRepository.findAll()
-        }
-
-        val summaries = if (announcementId != null) {
-            unitRepository.findUnitSummaryByAnnouncementId(announcementId).associateBy { it.getComplexId() ?: 0L }
-        } else {
-            unitRepository.findUnitSummaryGroupedByComplex().associateBy { it.getComplexId() ?: 0L }
-        }
+    @Cacheable("complexes", key = "#announcementId")
+    fun getComplexes(announcementId: Long): List<Map<String, Any?>> {
+        val list = complexRepository.findAllByHousingUnitAnnouncementId(announcementId)
+        val summaries = unitRepository.findUnitSummaryByAnnouncementId(announcementId).associateBy { it.getComplexId() ?: 0L }
         val complexRgMap = fetchComplexRecruitmentGroups(list.mapNotNull { it.id }, announcementId)
 
+        return list.map { complexToMap(it, complexRgMap[it.id] ?: emptyList(), summaries[it.id]) }
+    }
+
+    // 저장(북마크) 단지 조회용. 사용자마다 조합이 달라 캐시하지 않는다.
+    fun getComplexesByIds(ids: List<Long>): List<Map<String, Any?>> {
+        if (ids.isEmpty()) return emptyList()
+        val list = complexRepository.findAllById(ids)
+        val summaries = unitRepository.findUnitSummaryByComplexIds(ids).associateBy { it.getComplexId() ?: 0L }
+        val complexRgMap = fetchComplexRecruitmentGroups(list.mapNotNull { it.id })
         return list.map { complexToMap(it, complexRgMap[it.id] ?: emptyList(), summaries[it.id]) }
     }
 

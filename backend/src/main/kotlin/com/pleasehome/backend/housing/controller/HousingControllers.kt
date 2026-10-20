@@ -31,8 +31,18 @@ class ComplexController(
 ) {
 
     @GetMapping
-    fun getComplexes(@RequestParam(required = false, name = "announcement_id") announcementId: Long?): List<Map<String, Any?>> =
-        housingService.getComplexes(announcementId)
+    fun getComplexes(
+        @RequestParam(required = false, name = "announcement_id") announcementId: Long?,
+        @RequestParam(required = false) ids: List<Long>?
+    ): List<Map<String, Any?>> {
+        if (ids != null) {
+            require(ids.size <= 500) { "한 번에 조회할 수 있는 단지는 500개까지입니다." }
+            return housingService.getComplexesByIds(ids.distinct())
+        }
+        // 전체 목록(약 3.3MB)은 쓰는 화면이 없고 반복 호출 시 서버 부담만 커서 막는다.
+        requireNotNull(announcementId) { "announcement_id 또는 ids 파라미터가 필요합니다." }
+        return housingService.getComplexes(announcementId)
+    }
 
     @GetMapping("/{id}")
     fun getComplexById(@PathVariable id: Long): Map<String, Any?> =

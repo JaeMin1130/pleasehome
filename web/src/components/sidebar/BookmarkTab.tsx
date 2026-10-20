@@ -26,7 +26,7 @@ interface BookmarkTabProps {
   activeFolderIds: string[];
   setActiveFolderIds: (ids: string[]) => void;
   bookmarkItems: BookmarkItem[];
-  allComplexes: Complex[];
+  bookmarkedComplexes: Complex[];
   announcements: Announcement[];
   dragOverFolderId: string | null;
   setDragOverFolderId: (id: string | null) => void;
@@ -67,7 +67,7 @@ export default function BookmarkTab({
   activeFolderIds,
   setActiveFolderIds,
   bookmarkItems,
-  allComplexes,
+  bookmarkedComplexes,
   announcements,
   dragOverFolderId,
   setDragOverFolderId,
@@ -272,7 +272,7 @@ export default function BookmarkTab({
           const isExpanded = activeFolderIds.includes(folder.id);
           const folderItems = bookmarkItems.filter(item => item.folderId === folder.id);
           const folderCount = folderItems.length;
-          const folderComplexes = allComplexes.filter(c => folderItems.map(i => i.complexId).includes(c.id));
+          const folderComplexes = bookmarkedComplexes.filter(c => folderItems.map(i => i.complexId).includes(c.id));
 
           return (
             <div 
