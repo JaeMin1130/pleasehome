@@ -164,6 +164,53 @@ c.execute('SELECT COUNT(*) FROM housing_units'); print('Housing Units:', c.fetch
 "
 }
 
+function log_stats() {
+  # 실서버 pm2 로그의 WARN/ERROR를 일자별·메시지 유형별로 집계 (읽기 전용)
+  local days="${1:-1}"
+  if ! [[ "$days" =~ ^[0-9]+$ ]]; then
+    echo "❌ 일수는 숫자여야 합니다. 사용법: ./command.sh logs:stats [최근 일수, 기본 1]"
+    return 1
+  fi
+  ssh "${SSH_OPTS[@]}" "$SERVER_USER@$SERVER_HOST" bash -s -- "$days" <<'REMOTE'
+days="$1"
+since=$(date -d "-$days days" +%F)
+log_dir="$HOME/.pm2/logs"
+backend_log="$log_dir/pleasehome-backend-out.log"
+web_log="$log_dir/pleasehome-error.log"
+
+echo "📊 [백엔드] $since 이후 WARN/ERROR ($backend_log)"
+if [ -f "$backend_log" ]; then
+  # Spring 기본 형식: "2026-10-13T19:55:24.734+09:00  WARN 475622 --- [app] [thread] logger : 메시지"
+  # 메시지의 숫자는 N으로 바꿔 같은 유형끼리 묶는다 (스택 트레이스 줄은 제외)
+  awk -v since="$since" '
+    /^20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]T/ && ($2 == "WARN" || $2 == "ERROR") && substr($1, 1, 10) >= since {
+      daily[substr($1, 1, 10) " " $2]++
+      msg = substr($0, index($0, " : ") + 3)
+      gsub(/[0-9][0-9a-zµ]*/, "N", msg)
+      types[$2 " | " substr(msg, 1, 110)]++
+    }
+    END {
+      print "  - 일자별"
+      for (k in daily) print "    " k ": " daily[k] | "sort"
+      close("sort")
+      print "  - 유형별 상위 15개"
+      for (k in types) print types[k] "\t" k | "sort -rn | head -15 | sed \"s/^/    /\""
+    }' "$backend_log"
+else
+  echo "  로그 파일 없음"
+fi
+
+echo ""
+echo "📊 [웹] 에러 로그 유형별 상위 10개 ($web_log, 타임스탬프가 없어 파일 전체 기간)"
+if [ -f "$web_log" ]; then
+  # 들여쓰기된 줄(스택·객체 덤프)은 제외
+  grep -vE '^\s|^\s*[}{]' "$web_log" | sed -E 's/[0-9]+/N/g' | cut -c1-110 | sort | uniq -c | sort -rn | head -10 | sed 's/^/  /'
+else
+  echo "  로그 파일 없음"
+fi
+REMOTE
+}
+
 function fetch_notices() {
   local start_date="$1"
   local end_date="$2"
@@ -236,6 +283,9 @@ case "$1" in
   status|db:status)
     db_status
     ;;
+  logs:stats|log:stats)
+    log_stats "$2"
+    ;;
   *)
     echo "사용법: ./command.sh [명령어]"
     echo ""
@@ -260,5 +310,8 @@ case "$1" in
     echo "    deploy           : DB + 백엔드 + 프론트엔드 원클릭 전체 통합 배포"
     echo "    geocode          : 좌표 누락 신규 단지 네이버 지오코딩 실행"
     echo "    db:status        : 로컬 SQLite 공고/단지 적재 현황 요약"
+    echo ""
+    echo "  [모니터링]"
+    echo "    logs:stats [일수] : 실서버 백엔드/웹 로그의 WARN·ERROR 일자별·유형별 통계 (기본 최근 1일)"
     ;;
 esac
