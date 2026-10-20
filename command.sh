@@ -177,6 +177,8 @@ since=$(date -d "-$days days" +%F)
 log_dir="$HOME/.pm2/logs"
 backend_log="$log_dir/pleasehome-backend-out.log"
 web_log="$log_dir/pleasehome-error.log"
+# 현재 파일 + 아직 logs:pull로 받아 가지 않은 날짜별 교체본(*.log-YYYY-MM-DD.gz)을 날짜순으로 이어 읽는다
+read_log() { zcat -f "$1"-*.gz "$1" 2>/dev/null; }
 
 echo "📊 [백엔드] $since 이후 WARN/ERROR ($backend_log)"
 if [ -f "$backend_log" ]; then
@@ -195,20 +197,73 @@ if [ -f "$backend_log" ]; then
       close("sort")
       print "  - 유형별 상위 15개"
       for (k in types) print types[k] "\t" k | "sort -rn | head -15 | sed \"s/^/    /\""
-    }' "$backend_log"
+    }' <(read_log "$backend_log")
 else
   echo "  로그 파일 없음"
 fi
 
 echo ""
-echo "📊 [웹] 에러 로그 유형별 상위 10개 ($web_log, 타임스탬프가 없어 파일 전체 기간)"
+echo "📊 [웹] $since 이후 에러 ($web_log)"
 if [ -f "$web_log" ]; then
-  # 들여쓰기된 줄(스택·객체 덤프)은 제외
-  grep -vE '^\s|^\s*[}{]' "$web_log" | sed -E 's/[0-9]+/N/g' | cut -c1-110 | sort | uniq -c | sort -rn | head -10 | sed 's/^/  /'
+  # pm2 --time 형식: "2026-10-20T21:08:15: 메시지". 시각 없는 줄은 앞 줄에 이어진 스택·객체 덤프로 보고 제외하되,
+  # --time 적용(2026-10-20) 이전에 쌓인 줄(첫 시각 줄보다 앞)은 날짜를 알 수 없어 건수만 따로 센다
+  awk -v since="$since" '
+    /^20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]: / {
+      seen = 1
+      day = substr($0, 1, 10)
+      msg = substr($0, 22)
+      if (day < since || msg ~ /^[ \t{}]/) next
+      daily[day]++
+      gsub(/[0-9][0-9a-zµ]*/, "N", msg)
+      types[substr(msg, 1, 110)]++
+      next
+    }
+    !seen && !/^[ \t{}]/ { legacy++ }
+    END {
+      print "  - 일자별"
+      for (k in daily) print "    " k ": " daily[k] | "sort"
+      close("sort")
+      print "  - 유형별 상위 10개"
+      for (k in types) print types[k] "\t" k | "sort -rn | head -10 | sed \"s/^/    /\""
+      close("sort -rn | head -10 | sed \"s/^/    /\"")
+      if (legacy) print "  (시각 기록 이전 줄 " legacy "건은 날짜를 알 수 없어 집계 제외)"
+    }' <(read_log "$web_log")
 else
   echo "  로그 파일 없음"
 fi
 REMOTE
+}
+
+function log_pull() {
+  # 서버 logrotate가 날짜별로 떼어 둔 로그(*.log-YYYY-MM-DD.gz)를 logs/archive/<날짜>/로 받고,
+  # 크기 일치와 gzip 무결성을 확인한 파일만 서버에서 지운다. 지금 쓰이는 *.log는 건드리지 않는다.
+  local remote_dir="/home/$SERVER_USER/.pm2/logs"
+  local dest="$BASE_DIR/logs/archive"
+  local files
+  files=$(ssh "${SSH_OPTS[@]}" "$SERVER_USER@$SERVER_HOST" \
+    "cd $remote_dir && ls -1 -- *.log-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9].gz 2>/dev/null" || true)
+  if [ -z "$files" ]; then
+    echo "📭 받을 날짜별 로그가 없습니다. (서버 logrotate가 아직 돌지 않았거나 이미 모두 받음)"
+    return 0
+  fi
+
+  local f day remote_size local_size pulled=0
+  for f in $files; do
+    day="${f##*.log-}"
+    day="${day%.gz}"
+    mkdir -p "$dest/$day"
+    scp -q "${SSH_OPTS[@]}" "$SERVER_USER@$SERVER_HOST:$remote_dir/$f" "$dest/$day/$f"
+    remote_size=$(ssh "${SSH_OPTS[@]}" "$SERVER_USER@$SERVER_HOST" "stat -c %s $remote_dir/$f")
+    local_size=$(stat -c %s "$dest/$day/$f")
+    if [ "$remote_size" = "$local_size" ] && gzip -t "$dest/$day/$f"; then
+      ssh "${SSH_OPTS[@]}" "$SERVER_USER@$SERVER_HOST" "rm -f -- $remote_dir/$f"
+      echo "✅ $day/$f ($local_size bytes) 받음 → 서버에서 삭제"
+      pulled=$((pulled + 1))
+    else
+      echo "⚠️  $f 검증 실패(서버 $remote_size / 로컬 $local_size bytes) → 서버 파일 유지"
+    fi
+  done
+  echo "📦 $pulled개 파일을 $dest 에 보관했습니다."
 }
 
 function fetch_notices() {
@@ -286,6 +341,9 @@ case "$1" in
   logs:stats|log:stats)
     log_stats "$2"
     ;;
+  logs:pull|log:pull)
+    log_pull
+    ;;
   *)
     echo "사용법: ./command.sh [명령어]"
     echo ""
@@ -312,6 +370,7 @@ case "$1" in
     echo "    db:status        : 로컬 SQLite 공고/단지 적재 현황 요약"
     echo ""
     echo "  [모니터링]"
-    echo "    logs:stats [일수] : 실서버 백엔드/웹 로그의 WARN·ERROR 일자별·유형별 통계 (기본 최근 1일)"
+    echo "    logs:stats [일수] : 실서버 백엔드/웹 로그의 WARN·ERROR 일자별·유형별 통계 (기본 최근 1일, 서버에 남은 로그 기준)"
+    echo "    logs:pull         : 서버에서 날짜별로 교체된 로그를 logs/archive/<날짜>/로 받고 서버에서 삭제"
     ;;
 esac
