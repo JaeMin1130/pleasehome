@@ -3,6 +3,7 @@ package com.pleasehome.backend.member.service
 import com.pleasehome.backend.member.entity.*
 import com.pleasehome.backend.member.repository.*
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -26,7 +27,7 @@ class MemberInteractionService(
     // status 컬럼 하나로 찜/숨김을 표현하므로, 등록 시 상태를 덮어쓰는 것만으로 상호배제가 자동 보장됨
     // (기존처럼 반대쪽 테이블에서 별도 delete를 호출할 필요가 없음).
 
-    @Transactional(readOnly = true, transactionManager = "memberTransactionManager")
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, transactionManager = "memberTransactionManager")
     fun getFavorites(memberId: String): List<Map<String, Any?>> =
         interestRepository.findAllByIdMemberIdAndStatus(memberId, "FAVORITE").map {
             mapOf(
@@ -46,7 +47,7 @@ class MemberInteractionService(
     }
 
     // ================= Hidden Announcements =================
-    @Transactional(readOnly = true, transactionManager = "memberTransactionManager")
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, transactionManager = "memberTransactionManager")
     fun getHiddenAnns(memberId: String): List<Map<String, Any?>> =
         interestRepository.findAllByIdMemberIdAndStatus(memberId, "HIDDEN").map {
             mapOf(
@@ -79,7 +80,7 @@ class MemberInteractionService(
     }
 
     // ================= Bookmark Folders =================
-    @Transactional(readOnly = true, transactionManager = "memberTransactionManager")
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, transactionManager = "memberTransactionManager")
     fun getBookmarkFolders(memberId: String): List<Map<String, Any?>> =
         folderRepository.findAllByIdMemberIdOrderByCreatedAtAsc(memberId).map {
             mapOf(
@@ -113,7 +114,7 @@ class MemberInteractionService(
     }
 
     // ================= Bookmark Items =================
-    @Transactional(readOnly = true, transactionManager = "memberTransactionManager")
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, transactionManager = "memberTransactionManager")
     fun getBookmarkItems(memberId: String): List<Map<String, Any?>> =
         itemRepository.findAllByIdMemberIdOrderByCreatedAtAsc(memberId).map {
             mapOf(

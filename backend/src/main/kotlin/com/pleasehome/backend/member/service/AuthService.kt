@@ -83,7 +83,7 @@ class AuthService(
         return mapOf("success" to true, "memberId" to id)
     }
 
-    @Transactional(readOnly = true, transactionManager = "memberTransactionManager")
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, transactionManager = "memberTransactionManager")
     fun login(body: Map<String, String>, response: HttpServletResponse): Map<String, Any> {
         val id = body["id"]?.trim() ?: throw IllegalArgumentException("아이디와 비밀번호를 입력해주세요.")
         val password = body["password"] ?: throw IllegalArgumentException("아이디와 비밀번호를 입력해주세요.")
@@ -110,7 +110,7 @@ class AuthService(
         return mapOf("success" to true)
     }
 
-    @Transactional(readOnly = true, transactionManager = "memberTransactionManager")
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, transactionManager = "memberTransactionManager")
     fun getMe(request: HttpServletRequest, response: HttpServletResponse): Map<String, Any?> {
         val memberId = getMemberIdFromCookie(request) ?: return mapOf("member" to null)
         val member = memberRepository.findById(memberId).orElse(null) ?: return mapOf("member" to null)
@@ -201,7 +201,7 @@ class AuthService(
         .maximumSize(10_000)
         .build()
 
-    @Transactional(readOnly = true, transactionManager = "memberTransactionManager")
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, transactionManager = "memberTransactionManager")
     fun getSecurityQuestion(id: String): Map<String, Any> {
         val question = memberRepository.findById(id).map { it.securityQ }
             .orElse(securityQuestions[Math.floorMod(id.hashCode(), securityQuestions.size)])
@@ -238,6 +238,8 @@ class AuthService(
     }
 
     // 쿠키 값은 "아이디.HMAC서명" 형식이며, 서명이 맞지 않으면 비로그인으로 취급한다.
+    // 쿠키 서명만 검사하고 DB는 쓰지 않는다. 클래스 기본 트랜잭션(IMMEDIATE)이 걸리면 호출마다 쓰기 잠금을 잡는다.
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     fun getMemberIdFromCookie(request: HttpServletRequest): String? {
         val value = request.cookies?.firstOrNull { it.name == cookieName }?.value ?: return null
         val dot = value.lastIndexOf('.')
