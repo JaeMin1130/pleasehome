@@ -30,7 +30,7 @@
   - **내용:** 에이전트는 사용자가 지시한 작업의 범위를 명확히 준수하며, 명시적으로 승인받지 않은 후속 작업(예: 자의적 테스트 실행, 임의의 Git 커밋 등)을 독단적으로 수행(오버액션)하지 않는다.
 
 * **[누적 규칙 #7]**
-  - **내용:** 에이전트는 공고 데이터 추출(`extract-data`) 시 마크다운 표의 병합/공백 셀을 직전 행의 유효한 값으로 자동 상속받는 상태 보존형 파서(Stateful Row Parser)를 사용해야 하며, 공고문 원본의 총 모집규모(공가+예비자)와 추출된 유닛 데이터 세대수 합계(`sum(supply_count + reserve_count)`)의 1:1 전수 수치 교차 검증을 통과하기 전에는 절대 DB에 적재해서는 안 된다. 또한 수식 기호는 LaTeX(`$\rightarrow$`) 대신 유니코드 표준 기호(`→`)를 사용하고, 공급 대상(`target_group`)은 자의적 수식어 없이 표준 규격명으로 엄격히 정규화한다.
+  - **내용:** 에이전트는 공고 데이터 추출(`extract-data`) 시 원본 공고 PDF의 시각적 표 레이아웃과 병합/공백 셀을 직전 행의 유효한 값으로 자동 상속받는 상태 보존형 파서(Stateful Row Parser)를 사용해야 하며, 공고문 원본의 총 모집규모(공가+예비자)와 추출된 유닛 데이터 세대수 합계(`sum(supply_count + reserve_count)`)의 1:1 전수 수치 교차 검증을 통과하기 전에는 절대 DB에 적재해서는 안 된다. 또한 수식 기호는 LaTeX(`$\rightarrow$`) 대신 유니코드 표준 기호(`→`)를 사용하고, 공급 대상(`target_group`)은 자의적 수식어 없이 표준 규격명으로 엄격히 정규화한다.
 
 * **[누적 규칙 #8]**
   - **내용:** 에이전트는 공고 데이터 정합성 검증 시 `data.json`의 6대 핵심 필드(`announcement`, `schedules`, `recruitment_groups`, `complexes`, `units`, `details`) 중 단 하나라도 비어 있거나 누락된 경우(배열 길이 0건 포함) 절대 검증을 통과시키거나 DB에 적재해서는 안 된다. 또한 공고 재적재 및 패치 시 기존에 발급된 공고 식별자(`announcements.id`)와 단지 식별자(`complexes.id`)는 URL 링크 및 외부 참조 보존을 위해 영구히 보존되어야 한다.
@@ -45,7 +45,7 @@
     3. **2단계 (독립 감사 위임 및 FAIL 루프):** 메인 에이전트는 `invoke_subagent(TypeName="self", Role="audit-data 독립감사")`로 별도의 서브에이전트를 호출하여 6대 테이블 1:1 전수 감사를 위임한다.
        - **FAIL 판정 시:** 메인 에이전트가 직접 손을 대는 행위를 엄단하며, 오류 지적 사항을 담아 `extract-data` 서브에이전트를 재호출하여 수정하게 한다.
        - **100% PASS 판정 시:** 감사 서브에이전트가 해당 공고 폴더에 `audit_passed.token`을 발급한다.
-    4. **3단계 (게이트 검증 후 적재):** 메인 에이전트는 물리적으로 `audit_passed.token`이 발급되었음을 확인한 후, 비로소 `python3 .agents/scripts/insert_loader.py db-pipeline/docs/md/{공고_폴더}/data.json`을 단 1회 실행하여 적재를 완료한다.
+    4. **3단계 (게이트 검증 후 적재):** 메인 에이전트는 물리적으로 `audit_passed.token`이 발급되었음을 확인한 후, 비로소 `python3 .agents/scripts/insert_loader.py db-pipeline/docs/pdf/{공고_폴더}/data.json (또는 docs/md/)`을 단 1회 실행하여 적재를 완료한다.
 
 * **[누적 규칙 #11]**
   - **내용:** 에이전트는 `db-pipeline/migrations/`에 단지(complex) ID 병합 마이그레이션(기존 행을 canonical 행으로 흡수·삭제하는 스크립트)을 작성·실행할 때, 소멸되는 `old_id → 생존하는 canonical_id` 매핑을 해당 마이그레이션 실행 직후 반드시 `db-pipeline/migrations/complex_redirect_map.json`에도 함께 반영해야 한다(기존 매핑 로드 → 신규 항목 병합 → 재저장). 이 파일은 `web/next.config.ts`의 301 리다이렉트 규칙이 참조하는 유일한 소스이며 자동 갱신 로직이 없어서, 누락 시 이미 검색엔진에 색인된 옛 단지 URL이 그대로 404가 되어 SEO 점수 하락 및 사용자 이탈로 직결된다. (2026-09-23 실제 발생: `011_merge_residual_complex_duplicates.py` 병합분 2건이 누락되어 있다가 뒤늦게 발견 및 보정됨. 상세는 [TROUBLESHOOTING.md](docs/dev/TROUBLESHOOTING.md) 참고.)
