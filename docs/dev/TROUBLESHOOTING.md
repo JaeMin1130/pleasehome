@@ -175,5 +175,11 @@
 * **원인 (Cause)**: 공고 목록 API가 본문 190만 자를 포함해 8MB HTML이 전송되고, 기본 캐시에 크기 상한이 없어 1GB RAM이 고갈됨
 * **해결 (Solution)**: 목록 API에서 details를 제외해 카드 펼침 시 온디맨드로 로딩하고, Caffeine 캐시(상한 1000) 및 외부 캐시 무효화 차단을 적용함
 
+### [2026-10-25] 파이프라인 서브에이전트의 임의 DB 접속으로 인한 0바이트 고스트 DB 파일 생성 해결
+* **분류**: 데이터 파이프라인
+* **현상 (Problem)**: `db-pipeline/` 하위에 `data.db`, `database.sqlite` 등 의도치 않은 0바이트 빈 DB 파일이 지속적으로 자동 생성됨
+* **원인 (Cause)**: 추출 및 감사 서브에이전트가 공고 계보 및 단지 정보를 확인할 때, Python `sqlite3.connect()`로 임의의 가상 DB 경로(`data.db` 등)를 호출함. SQLite는 대상 파일 부재 시 즉시 0바이트 빈 파일을 생성하므로, 조회 실패 후 실제 DB(`public_housing.db`)로 전환하더라도 빈 파일이 잔류함
+* **해결 (Solution)**: 기존 0바이트 고스트 파일들을 전수 정리하고, 스킬 명세(`extract-data`, `audit-data`)에 서브에이전트의 임의 DB 직접 `connect()`를 전면 금지하며 0단계 공식 판별기(`detect_announcement_type.py`)의 출력 JSON 결과만을 단일 소스로 참조하도록 규칙을 명문화함
+
 
 

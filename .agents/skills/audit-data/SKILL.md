@@ -8,7 +8,8 @@ description: 원본 공고 PDF와 data.json을 6대 테이블 전 컬럼 1:1로 
 이 스킬은 `extract-data` 에이전트가 생성한 `data.json`이 원본 공고 PDF 및 `api_meta.json`과 **단 1개의 컬럼 오차도 없이 100% 무결한지 독립적으로 전수 감사(Full-Audit)**하고, 합격 리포트 발행 후 SQLite DB에 안전하게 최종 적재하는 검수·적재 통합 가이드라인입니다.
 
 ⚠️ **절대 주의 (감사자 철칙)**:
-- **[서브에이전트 독립 감사 원칙 (Mandatory Independent Subagent)]**: 메인 에이전트는 메인 세션에서 감사를 직접 흉내 내거나 셀프 검증할 수 없으며, 반드시 `invoke_subagent`를 통해 `audit-data` 전용 독립 서브에이전트를 호출하여 1:1 전수 감사를 수행해야 합니다.
+- **[서브에이전트 독립 감사 및 병렬 검수 원칙 (Mandatory Independent Subagent)]**: 메인 에이전트는 메인 세션에서 감사를 직접 흉내 내거나 셀프 검증할 수 없으며, 반드시 `invoke_subagent`를 통해 `audit-data` 전용 독립 서브에이전트를 호출하여 1:1 전수 감사를 수행해야 합니다. 다건 공고 시 메인 에이전트는 공고별 감사 서브에이전트를 동시에 병렬로 가동할 수 있습니다.
+- **[임의 DB 직접 접속 금지 (No Direct DB Connect)]**: 감사 서브에이전트가 `sqlite3.connect()` 등으로 DB 파일에 임의 직접 접속하여 쿼리하는 행위를 전면 금지합니다. (경로 오판 시 0바이트 빈 DB 파일이 자동 생성되는 부작용 원천 차단) 기존 공고 계보 및 단지 주소 검증은 오직 0단계 공식 판별 도구(`python3 .agents/scripts/detect_announcement_type.py`)가 출력한 JSON 결과(`existing_announcement`, `existing_complexes`)만을 참조해야 합니다.
 - 감사자는 절대로 스스로 데이터를 날조하거나 지레짐작으로 승인해서는 안 됩니다.
 - 아래 **6대 테이블 전 컬럼 체크리스트 중 단 1건이라도 불합격이 발생하면 즉시 불합격 사유를 출력하고 DB 적재를 영구 차단(반려)**해야 합니다.
 
@@ -149,10 +150,10 @@ touch db-pipeline/docs/pdf/{공고_폴더}/audit_passed.token
 
 ## 5. DB 최종 적재 절차
 
-토큰이 발급된 것을 확인한 후, 비로소 메인 에이전트가 최종 적재를 실행합니다:
+토큰이 발급된 것을 확인한 후, 비로소 메인 에이전트가 최종 적재를 실행합니다 (SQLite 동시성 충돌 방지를 위해 적재는 1건씩 직렬 실행):
 ```bash
 # 2. SQLite DB 최종 적재 (토큰 미발급 시 스크립트 강제 차단됨)
 python3 .agents/scripts/insert_loader.py db-pipeline/docs/pdf/{공고_폴더}/data.json
 ```
-적재 완료 후 DB에서 직접 레코드를 SELECT하여 사후 검증을 수행합니다.
+적재 완료 후 DB에서 직접 레코드를 SELECT하여 사후 검증을 수행하고, 즉시 해당 공고 폴더를 `!old/`로 아카이빙합니다.
 
