@@ -3,7 +3,7 @@ import argparse
 import requests
 import json
 from dotenv import load_dotenv
-from api import get_lease_notice_list, get_lease_notice_detail
+from api import get_lease_notice_list, get_lease_notice_detail, get_lease_supply_info
 
 # 환경변수 설정
 env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env.local")
@@ -201,6 +201,29 @@ def main():
                             merged_meta[key] = val
             merged_meta["_institution"] = "LH"
             merged_meta["_files"] = []
+
+            # 분양임대공고별 공급정보(dsSplInfo: 주택형/면적/호수/금액) 조회 및 병합
+            merged_meta["dsSplInfo"] = []
+            try:
+                supply_data = get_lease_supply_info(
+                    spl_inf_tp_cd=spl_inf_tp_cd,
+                    ccr_cnnt_sys_ds_cd=sys_ds_cd,
+                    pan_id=pan_id,
+                    upp_ais_tp_cd=upp_ais_tp_cd,
+                    ais_tp_cd=ais_tp_cd
+                )
+                for item in supply_data:
+                    if isinstance(item, dict):
+                        for k, v in item.items():
+                            if isinstance(v, list) and v and not k.endswith("Nm") and k != "dsSch" and k != "resHeader":
+                                merged_meta["dsSplInfo"] = v
+                                break
+                        if merged_meta["dsSplInfo"]:
+                            break
+                if merged_meta["dsSplInfo"]:
+                    print(f" -> 공급정보(dsSplInfo) 수집 완료: {len(merged_meta['dsSplInfo'])}건")
+            except Exception as se:
+                print(f" -> [안내] 공급정보 조회 건너뜀 (미제공 또는 오류: {se})")
             
             # 첨부파일 추출 및 다운로드
             attachments = []

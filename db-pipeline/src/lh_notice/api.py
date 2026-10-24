@@ -115,9 +115,9 @@ def get_lease_notice_detail(spl_inf_tp_cd, ccr_cnnt_sys_ds_cd, pan_id, upp_ais_t
 def get_lease_supply_info(spl_inf_tp_cd, ccr_cnnt_sys_ds_cd, pan_id, upp_ais_tp_cd=None, ais_tp_cd=None):
     url = "http://apis.data.go.kr/B552555/lhLeaseNoticeSplInfo1/getLeaseNoticeSplInfo1"
     
-    service_key = os.getenv("LH_SUPPLY_INFO_API_KEY")
+    service_key = os.getenv("LH_SUPPLY_INFO_API_KEY") or os.getenv("LH_ROA_DTL_API_KEY") or os.getenv("LH_ROA_INFO_API_KEY")
     if not service_key:
-        raise ValueError("LH_SUPPLY_INFO_API_KEY is not set.")
+        raise ValueError("LH_SUPPLY_INFO_API_KEY or LH_ROA_DTL_API_KEY is not set.")
         
     params = {
         "serviceKey": urllib.parse.unquote(service_key),
