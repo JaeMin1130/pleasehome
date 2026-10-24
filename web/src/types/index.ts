@@ -127,4 +127,5 @@ export interface Member {
   id: string;
   security_q: string;
   created_at: string;
+  preferred_regions: string; // '11,41'처럼 쉼표로 이은 지역코드, 미선택은 ''
 }

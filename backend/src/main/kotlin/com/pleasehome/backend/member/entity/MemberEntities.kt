@@ -21,7 +21,11 @@ class Member(
     var securityA: String = "",
 
     @Column(name = "created_at")
-    var createdAt: String? = null
+    var createdAt: String? = null,
+
+    // 관심 공고 지역(LH 지역코드 CNP_CD)을 '11,41'처럼 쉼표로 이은 값. 미선택은 ''
+    @Column(name = "preferred_regions", nullable = false)
+    var preferredRegions: String = ""
 )
 
 // 찜/숨김 통합 (docs/dev/DOMAIN_MODEL.md 2.3). 기존 member_favorites/member_hidden_anns

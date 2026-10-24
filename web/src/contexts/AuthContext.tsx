@@ -15,7 +15,7 @@ interface AuthContextValue {
   bookmarkFolders: BookmarkFolder[];
   bookmarkItems: BookmarkItem[];
   login: (id: string, password: string) => Promise<{ error?: string }>;
-  register: (id: string, password: string, security_q: string, security_a: string) => Promise<{ error?: string }>;
+  register: (id: string, password: string, security_q: string, security_a: string, preferred_regions: string) => Promise<{ error?: string }>;
   logout: () => Promise<void>;
   withdraw: (password: string) => Promise<{ error?: string }>;
   refresh: () => Promise<void>;
@@ -96,8 +96,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = (id: string, password: string) =>
     submitAuth('/api/auth/login', { id, password });
 
-  const register = (id: string, password: string, security_q: string, security_a: string) =>
-    submitAuth('/api/auth/register', { id, password, security_q, security_a });
+  const register = (id: string, password: string, security_q: string, security_a: string, preferred_regions: string) =>
+    submitAuth('/api/auth/register', { id, password, security_q, security_a, preferred_regions });
 
   const clearMemberState = () => {
     setMember(null);

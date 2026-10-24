@@ -64,6 +64,8 @@ class AuthService(
             throw IllegalArgumentException("비밀번호는 3자 이상이어야 합니다.")
         }
 
+        val preferredRegions = normalizeRegions(body["preferred_regions"])
+
         if (memberRepository.existsById(id)) {
             throw IllegalStateException("이미 사용 중인 아이디입니다.")
         }
@@ -75,7 +77,8 @@ class AuthService(
             pwdHash = pwdHash,
             securityQ = securityQ,
             securityA = securityA,
-            createdAt = now
+            createdAt = now,
+            preferredRegions = preferredRegions
         )
         memberRepository.save(member)
 
@@ -124,7 +127,8 @@ class AuthService(
             "member" to mapOf(
                 "id" to member.id,
                 "security_q" to member.securityQ,
-                "created_at" to member.createdAt
+                "created_at" to member.createdAt,
+                "preferred_regions" to member.preferredRegions
             ),
             "favorites" to interactionService.getFavorites(memberId),
             "hidden_anns" to interactionService.getHiddenAnns(memberId),
@@ -178,8 +182,25 @@ class AuthService(
             member.securityA = newA.trim()
         }
 
+        if (body.containsKey("preferred_regions")) {
+            member.preferredRegions = normalizeRegions(body["preferred_regions"] as? String)
+        }
+
         memberRepository.save(member)
         return mapOf("success" to true)
+    }
+
+    // LH 지역코드(CNP_CD). 목록은 web/src/constants의 PREFERRED_REGIONS와 같아야 한다.
+    private val regionCodes = listOf(
+        "11", "26", "27", "28", "29", "30", "31", "36110", "41",
+        "42", "43", "44", "52", "46", "47", "48", "50",
+    )
+
+    /** '41, 11,41' → '11,41': 목록에 없는 코드는 거부하고, 중복 제거 후 목록 순서로 맞춘다. 미선택은 '' */
+    private fun normalizeRegions(raw: String?): String {
+        val codes = raw.orEmpty().split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet()
+        if (!regionCodes.containsAll(codes)) throw IllegalArgumentException("관심 지역 값이 올바르지 않습니다.")
+        return regionCodes.filter { it in codes }.joinToString(",")
     }
 
     // 없는 아이디에도 실제 계정과 같은 형태로 질문을 돌려줘 아이디 존재 여부를 노출하지 않는다 (같은 아이디엔 항상 같은 질문).

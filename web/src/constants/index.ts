@@ -89,6 +89,27 @@ export const SECURITY_QUESTIONS = [
   '태어난 병원 이름은?',
 ];
 
+// 회원 관심 공고 지역 (LH 지역코드 CNP_CD). 백엔드 AuthService.regionCodes와 같아야 한다.
+export const PREFERRED_REGIONS = [
+  { code: '11', name: '서울특별시' },
+  { code: '26', name: '부산광역시' },
+  { code: '27', name: '대구광역시' },
+  { code: '28', name: '인천광역시' },
+  { code: '29', name: '광주광역시' },
+  { code: '30', name: '대전광역시' },
+  { code: '31', name: '울산광역시' },
+  { code: '36110', name: '세종특별자치시' },
+  { code: '41', name: '경기도' },
+  { code: '42', name: '강원도' },
+  { code: '43', name: '충청북도' },
+  { code: '44', name: '충청남도' },
+  { code: '52', name: '전북특별자치도' },
+  { code: '46', name: '전라남도' },
+  { code: '47', name: '경상북도' },
+  { code: '48', name: '경상남도' },
+  { code: '50', name: '제주특별자치도' },
+];
+
 // 공고 지역 필터 칩. 공고 region 값(예: '충청남도', '대전광역시')의 접두어로 묶는다.
 // 예전엔 서울·인천·경기 외 전부가 '기타'여서 전체 공고의 절반 이상이 한 칩에 몰렸다.
 export const REGION_FILTERS: { key: string; label: string; prefixes: string[] }[] = [

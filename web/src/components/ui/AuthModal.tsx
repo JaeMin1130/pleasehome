@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { SECURITY_QUESTIONS } from '@/constants';
+import RegionPicker from './RegionPicker';
 import styles from './AuthModal.module.css';
 
 type AuthView = 'login' | 'register' | 'find';
@@ -29,6 +30,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [regPwdConfirm, setRegPwdConfirm] = useState('');
   const [regQ, setRegQ] = useState(SECURITY_QUESTIONS[0]);
   const [regA, setRegA] = useState('');
+  const [regRegions, setRegRegions] = useState('');
 
   // 비밀번호 찾기 폼
   const [findId, setFindId] = useState('');
@@ -43,7 +45,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setView('login');
     setFindStep('input-id');
     setLoginId(''); setLoginPwd('');
-    setRegId(''); setRegPwd(''); setRegPwdConfirm(''); setRegA('');
+    setRegId(''); setRegPwd(''); setRegPwdConfirm(''); setRegA(''); setRegRegions('');
     setFindId(''); setFindQ(''); setFindA(''); setFindNewPwd(''); setFindNewPwdConfirm('');
   };
 
@@ -82,7 +84,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     if (regPwd !== regPwdConfirm) { setError('비밀번호가 일치하지 않습니다.'); return; }
     if (!regA.trim()) { setError('보안 답변을 입력해주세요.'); return; }
     setIsSubmitting(true);
-    const result = await register(regId.trim(), regPwd, regQ, regA.trim());
+    const result = await register(regId.trim(), regPwd, regQ, regA.trim(), regRegions);
     setIsSubmitting(false);
     if (result.error) { setError(result.error); return; }
     handleClose();
@@ -200,6 +202,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               <label className={styles.label}>답변</label>
               <input id="reg-security-a" className={styles.input} type="text" value={regA}
                 onChange={e => setRegA(e.target.value)} placeholder="보안 질문 답변" required />
+              <label className={styles.label}>관심 공고 지역 <span className={styles.hint}>(선택, 여러 개 가능)</span></label>
+              <RegionPicker value={regRegions} onChange={setRegRegions} />
               <button id="register-submit" className={styles.submitBtn} type="submit" disabled={isSubmitting}>
                 {isSubmitting ? '가입 중...' : '회원가입'}
               </button>

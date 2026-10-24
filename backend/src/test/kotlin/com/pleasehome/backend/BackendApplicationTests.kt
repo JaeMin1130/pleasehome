@@ -128,6 +128,30 @@ class BackendApplicationTests {
         assertTrue(withdrawRes.getHeader("Set-Cookie")!!.contains("Max-Age=0"), "로그인 쿠키가 지워져야 한다")
     }
 
+    // 관심 지역은 선택 사항이며, 목록에 없는 코드는 거부하고 저장 값은 중복 없이 목록 순서로 맞춘다
+    @Test
+    fun testPreferredRegionsOnRegisterAndUpdate() {
+        val id = "test_regions_ponytail"
+        if (memberRepository.existsById(id)) memberRepository.deleteById(id)
+        val base = mapOf("id" to id, "password" to "pw1234", "security_q" to "q", "security_a" to "a")
+        try {
+            assertThrows(IllegalArgumentException::class.java) {
+                authService.register(base + ("preferred_regions" to "11,99"), MockHttpServletResponse())
+            }
+            assertTrue(!memberRepository.existsById(id), "잘못된 지역 코드면 가입되면 안 된다")
+
+            val registerRes = MockHttpServletResponse()
+            authService.register(base + ("preferred_regions" to "41, 11,41"), registerRes)
+            assertTrue(memberRepository.findById(id).get().preferredRegions == "11,41")
+
+            val request = MockHttpServletRequest().apply { setCookies(registerRes.getCookie("pleasehome_session")!!) }
+            authService.updateAccount(mapOf("preferred_regions" to ""), request)
+            assertTrue(memberRepository.findById(id).get().preferredRegions == "", "전부 해제할 수 있어야 한다")
+        } finally {
+            if (memberRepository.existsById(id)) memberRepository.deleteById(id)
+        }
+    }
+
     // 없는 아이디도 실제 계정처럼 질문을 돌려주고, 틀린 답변과 같은 오류를 내야 아이디 존재 여부가 새지 않는다
     @Test
     fun testFindAccountDoesNotRevealIdExistence() {

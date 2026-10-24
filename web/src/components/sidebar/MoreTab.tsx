@@ -3,6 +3,7 @@
 import { clickable } from '@/utils/a11y';
 import React from 'react';
 import PolicyModal, { PolicyPage } from '@/components/ui/PolicyModal';
+import RegionPicker from '@/components/ui/RegionPicker';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFeedback } from '@/components/ui/Feedback';
 import styles from '../Sidebar.module.css';
@@ -185,6 +186,8 @@ export default function MoreTab({
                   </button>
                 </div>
 
+                <RegionForm />
+
                 <WithdrawForm />
               </div>
             )}
@@ -293,6 +296,40 @@ export default function MoreTab({
 }
 
 // 회원 탈퇴: 비밀번호 재확인 + 브라우저 확인창을 거쳐 회원 정보와 찜·숨김·저장 데이터를 모두 삭제
+function RegionForm() {
+  const { member, refresh } = useAuth();
+  const { showToast } = useFeedback();
+  const [regions, setRegions] = React.useState(member?.preferred_regions ?? '');
+  const [error, setError] = React.useState('');
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  const handleSave = async () => {
+    setError('');
+    setIsSubmitting(true);
+    const res = await fetch('/api/auth/update', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ preferred_regions: regions }),
+    }).catch(() => null);
+    const data = await res?.json().catch(() => ({}));
+    setIsSubmitting(false);
+    if (!res?.ok) { setError(data?.error ?? '저장에 실패했습니다. 잠시 후 다시 시도해 주세요.'); return; }
+    await refresh();
+    showToast('관심 지역을 저장했습니다.');
+  };
+
+  return (
+    <div className={styles['profile-form-group']}>
+      <p className={styles['profile-form-title']}>관심 공고 지역</p>
+      {error && <div className={styles['profile-error-banner']}>{error}</div>}
+      <RegionPicker value={regions} onChange={setRegions} />
+      <button className={styles['profile-submit-btn']} disabled={isSubmitting} onClick={handleSave}>
+        {isSubmitting ? '저장 중...' : '관심 지역 저장'}
+      </button>
+    </div>
+  );
+}
+
 function WithdrawForm() {
   const { withdraw } = useAuth();
   const { confirm, showToast } = useFeedback();
