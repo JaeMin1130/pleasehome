@@ -76,29 +76,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refresh();
   }, [refresh]);
 
-  const login = async (id: string, password: string) => {
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, password }),
-    });
-    const data = await res.json();
-    if (!res.ok) return { error: data.error };
+  const submitAuth = async (path: string, body: object): Promise<{ error?: string }> => {
+    try {
+      const res = await fetch(path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) return { error: data.error ?? '요청에 실패했습니다.' };
+    } catch {
+      // 게이트웨이 오류 페이지(HTML)·네트워크 끊김에서 예외가 새면 모달이 '로그인 중...'에 멈춘다
+      return { error: '서버와 통신하지 못했습니다. 잠시 후 다시 시도해 주세요.' };
+    }
     await refresh();
     return {};
   };
 
-  const register = async (id: string, password: string, security_q: string, security_a: string) => {
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, password, security_q, security_a }),
-    });
-    const data = await res.json();
-    if (!res.ok) return { error: data.error };
-    await refresh();
-    return {};
-  };
+  const login = (id: string, password: string) =>
+    submitAuth('/api/auth/login', { id, password });
+
+  const register = (id: string, password: string, security_q: string, security_a: string) =>
+    submitAuth('/api/auth/register', { id, password, security_q, security_a });
 
   const clearMemberState = () => {
     setMember(null);
