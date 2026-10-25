@@ -121,6 +121,7 @@ def main():
     results_summary = {
         "success": [],
         "failed": [],
+        "already_collected": [],
         "skipped": []
     }
     is_map_updated = False
@@ -191,6 +192,11 @@ def main():
 
                 if seq in existing_pan_ids or seq in map_data["SH"]:
                     print(f"\n[{title}] 이미 수집된 공고입니다 (ID: {seq}). 건너뜁니다.")
+                    results_summary["already_collected"].append({
+                        "title": title,
+                        "id": seq,
+                        "dept": dept
+                    })
                     continue
 
                 view_url = f"https://www.i-sh.co.kr/app/lay2/program/{prog_id}/www/brd/{brd_id}/view.do?seq={seq}"
@@ -313,16 +319,27 @@ def main():
     print("\n" + "=" * 80)
     print(f"📊 [SH 서울주택도시공사] 공고 수집 결과 리포트 ({start_date} ~ {end_date})")
     print("=" * 80)
-    total_inspected = len(results_summary["success"]) + len(results_summary["failed"]) + len(results_summary["skipped"])
+    total_inspected = (
+        len(results_summary["success"])
+        + len(results_summary["failed"])
+        + len(results_summary["already_collected"])
+        + len(results_summary["skipped"])
+    )
     print(f"- 총 검토 게시물: {total_inspected}건")
-    print(f"- ✅ 모집공고 수집 성공 (PDF 확보): {len(results_summary['success'])}건")
+    print(f"- ✅ 모집공고 신규 수집 성공 (PDF 확보): {len(results_summary['success'])}건")
     print(f"- ⚠️ 수집 주의/실패 (PDF 미확보): {len(results_summary['failed'])}건")
-    print(f"- ⏭️ 일반 게시물 스킵: {len(results_summary['skipped'])}건")
+    print(f"- ⏭️ 기 수집(중복) 공고 스킵: {len(results_summary['already_collected'])}건")
+    print(f"- 🚫 일반 게시물(비모집) 스킵: {len(results_summary['skipped'])}건")
 
     if results_summary["success"]:
         print("\n[수집 성공 공고 목록]")
         for idx, s_item in enumerate(results_summary["success"], 1):
             print(f" {idx}. [{s_item['dept']}] {s_item['title']} (ID: {s_item['id']}, 파일 {len(s_item['files'])}개)")
+
+    if results_summary["already_collected"]:
+        print("\n[기 수집 공고 스킵 목록]")
+        for idx, a_item in enumerate(results_summary["already_collected"], 1):
+            print(f" {idx}. [{a_item['dept']}] {a_item['title']} (ID: {a_item['id']})")
 
     if results_summary["failed"]:
         print("\n[수집 주의/실패 상세 내역]")
