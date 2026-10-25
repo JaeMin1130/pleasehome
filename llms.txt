@@ -10,6 +10,8 @@
 - [db-pipeline/](db-pipeline/): 데이터 수집, 가공, 마크다운 변환 및 SQLite DB 적재 파이프라인.
   - [PROJECT.md](db-pipeline/PROJECT.md): 파이프라인 전역 개발 환경 및 SQLite 스키마 물리 명세서 (SSOT).
   - [src/lh_notice/main.py](db-pipeline/src/lh_notice/main.py): LH OpenAPI 수집 및 공고문 원천 PDF/Excel 다운로드 실행 모듈.
+  - [src/sh_notice/main.py](db-pipeline/src/sh_notice/main.py): SH 서울주택도시공사 공고 및 첨부파일 크롤링 모듈.
+  - [src/gh_notice/main.py](db-pipeline/src/gh_notice/main.py): GH 경기주택도시공사 공고 및 첨부파일 크롤링 모듈.
   - [public_housing.db](db-pipeline/public_housing.db): 최종 수집·가공된 SQLite3 공고 데이터베이스 파일.
   - [user_data.db](db-pipeline/user_data.db): 실서버 회원/찜/숨김/북마크 전용 독립 SQLite3 데이터베이스 파일.
 - [backend/](backend/): Kotlin + Spring Boot 3.x 기반 RESTful API 코어 서버.

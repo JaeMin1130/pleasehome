@@ -267,19 +267,38 @@ function log_pull() {
 }
 
 function fetch_notices() {
+  local target="all"
+  if [[ "$1" =~ ^(lh|sh|gh|all|LH|SH|GH|ALL)$ ]]; then
+    target="${1,,}"
+    shift
+  fi
+
   local start_date="$1"
   local end_date="$2"
   shift 2 2>/dev/null || true
 
   if [ -z "$start_date" ] || [ -z "$end_date" ]; then
     echo "❌ 시작일과 종료일이 필요합니다."
-    echo "사용법: ./command.sh notice:fetch <시작일(YYYY-MM-DD)> <종료일(YYYY-MM-DD)> [추가옵션...]"
-    echo "예시:   ./command.sh notice:fetch 2026-09-01 2026-09-03"
+    echo "사용법: ./command.sh notice:fetch [lh|sh|gh|all] <시작일(YYYY-MM-DD)> <종료일(YYYY-MM-DD)> [추가옵션...]"
+    echo "예시:   ./command.sh notice:fetch 2026-10-01 2026-10-25"
+    echo "        ./command.sh notice:fetch sh 2026-10-01 2026-10-25"
     return 1
   fi
 
-  echo "📥 [공고 수집] LH OpenAPI 공고 및 첨부파일 다운로드 ($start_date ~ $end_date, 수도권: 서울/경기/인천)..."
-  "$PYTHON_BIN" "$BASE_DIR/db-pipeline/src/lh_notice/main.py" --start-date "$start_date" --end-date "$end_date" "$@"
+  if [ "$target" = "lh" ] || [ "$target" = "all" ]; then
+    echo "📥 [공고 수집: LH] LH OpenAPI 공고 및 첨부파일 다운로드 ($start_date ~ $end_date, 수도권: 서울/경기/인천)..."
+    "$PYTHON_BIN" "$BASE_DIR/db-pipeline/src/lh_notice/main.py" --start-date "$start_date" --end-date "$end_date" "$@" || true
+  fi
+
+  if [ "$target" = "sh" ] || [ "$target" = "all" ]; then
+    echo "📥 [공고 수집: SH] SH 서울주택도시공사 공고 및 첨부파일 크롤링 ($start_date ~ $end_date)..."
+    "$PYTHON_BIN" "$BASE_DIR/db-pipeline/src/sh_notice/main.py" --start-date "$start_date" --end-date "$end_date" "$@" || true
+  fi
+
+  if [ "$target" = "gh" ] || [ "$target" = "all" ]; then
+    echo "📥 [공고 수집: GH] GH 경기주택도시공사 공고 및 첨부파일 크롤링 ($start_date ~ $end_date)..."
+    "$PYTHON_BIN" "$BASE_DIR/db-pipeline/src/gh_notice/main.py" --start-date "$start_date" --end-date "$end_date" "$@" || true
+  fi
 }
 
 function convert_pdf() {
@@ -358,7 +377,7 @@ case "$1" in
     echo "    web:start        : Next.js 프로덕션 서버 실행"
     echo ""
     echo "  [데이터 수집 & 변환]"
-    echo "    notice:fetch <시작일 yyyy-MM-dd> <종료일 yyyy-MM-dd> [추가옵션...] : LH OpenAPI 공고 및 원본 PDF/Excel 다운로드 (기본: 서울/경기/인천)"
+    echo "    notice:fetch [lh|sh|gh|all] <시작일 yyyy-MM-dd> <종료일 yyyy-MM-dd> [추가옵션...] : 기관별(LH/SH/GH/전체) 공고 및 원본 문서 자동 수집"
     echo "    pdf:convert [대상폴더/파일]   : PDF 공고문을 마크다운(document.md)으로 변환"
     echo ""
     echo "  [배포 & 데이터 파이프라인]"
