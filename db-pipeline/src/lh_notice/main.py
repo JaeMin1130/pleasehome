@@ -18,7 +18,8 @@ def download_file(url, save_path):
     with open(save_path, 'wb') as f:
         for chunk in response.iter_content(chunk_size=8192):
             f.write(chunk)
-    print(f"[완료] 다운로드: {save_path}")
+    size = os.path.getsize(save_path)
+    print(f"    [완료] 다운로드: {os.path.basename(save_path)} ({size:,} bytes)")
 
 # 지역 명칭과 공식 지역코드 매핑 테이블
 REGION_CODE_MAP = {
@@ -100,7 +101,7 @@ def main():
             if args.pan_ss:
                 extra_log += f", 상태필터: '{args.pan_ss}'"
                 
-            print(f"\n1. 분양임대공고 목록 조회 중... (지역: {region_desc}, 유형: {type_desc}, 기간: {start_date_formatted} ~ {end_date_formatted}{extra_log})")
+            print(f"\n📂 [LH {type_desc}] 공고 목록 조회 중... (지역: {region_desc}, 기간: {args.start_date} ~ {args.end_date}{extra_log})")
             try:
                 list_data = get_lease_notice_list(
                     page_no=1, 
@@ -154,13 +155,20 @@ def main():
     # 매핑 데이터 변경 여부 추적 변수
     is_map_updated = False
 
+    results_summary = {
+        "success": [],
+        "failed": [],
+        "skipped": []
+    }
+
     for notice in notices_list:
         pan_id = notice.get("PAN_ID")
         title = notice.get("PAN_NM", "")
         
         # 이미 수집된 공고 ID인 경우 상세 조회 및 파일 다운로드 전체 패스
         if pan_id in existing_pan_ids:
-            print(f"\n[{title}] 이미 수집된 공고입니다. 건너뜁니다.")
+            print(f"\n[{title}] 이미 수집된 공고입니다 (ID: {pan_id}). 건너뜁니다.")
+            results_summary["skipped"].append({"title": title, "id": pan_id, "reason": "이미 수집된 공고"})
             continue
             
         cnp_nm = notice.get("CNP_CD_NM", "")
@@ -176,7 +184,7 @@ def main():
         upp_ais_tp_cd = notice.get("UPP_AIS_TP_CD")
         ais_tp_cd = notice.get("AIS_TP_CD")
             
-        print(f"\n[{title}] 상세 조회 중...")
+        print(f"\n[{title}] 상세 페이지 조회 중 (ID: {pan_id}, 게시일: {pan_dt})...")
         
         try:
             detail_data = get_lease_notice_detail(
@@ -253,21 +261,50 @@ def main():
                         continue
                         
                     save_path = os.path.join(notice_dir, file_name)
-                    print(f" -> 파일 발견: {file_name}")
-                    if os.path.exists(save_path):
-                        print("    이미 존재하는 파일입니다. 건너뜁니다.")
+                    if os.path.exists(save_path) and os.path.getsize(save_path) > 0:
+                        print(f" -> 이미 존재하는 파일입니다: {file_name}")
                     else:
-                        download_file(download_url, save_path)
+                        print(f" -> 첨부파일 다운로드 시도: {file_name}")
+                        try:
+                            download_file(download_url, save_path)
+                        except Exception as de:
+                            print(f"    [오류] 다운로드 실패 ({file_name}): {de}")
+                            continue
                     
                     if file_name not in merged_meta["_files"]:
                         merged_meta["_files"].append(file_name)
             
+            # PDF 확보 여부 검증
+            has_pdf = any(fn.lower().endswith(".pdf") for fn in merged_meta["_files"])
+            if has_pdf:
+                status_flag = "SUCCESS"
+                error_reason = ""
+                results_summary["success"].append({
+                    "title": title,
+                    "id": pan_id,
+                    "region": cnp_nm,
+                    "files": merged_meta["_files"],
+                    "spl_info_cnt": len(merged_meta["dsSplInfo"])
+                })
+            else:
+                status_flag = "FAILED"
+                error_reason = "공고문 PDF 부재 또는 다운로드 실패"
+                results_summary["failed"].append({
+                    "title": title,
+                    "id": pan_id,
+                    "region": cnp_nm,
+                    "reason": error_reason
+                })
+
+            merged_meta["_status"] = status_flag
+            merged_meta["_error_reason"] = error_reason
+
             # 공고별 download_meta.json 저장
             meta_path = os.path.join(notice_dir, "download_meta.json")
             try:
                 with open(meta_path, "w", encoding="utf-8") as f:
                     json.dump(merged_meta, f, ensure_ascii=False, indent=2)
-                print(f" -> download_meta.json 저장 완료: {meta_path}")
+                print(f" -> download_meta.json 저장 완료 (상태: {status_flag}): {meta_path}")
             except Exception as me:
                 print(f"[경고] download_meta.json 작성 실패: {me}")
             
@@ -279,9 +316,9 @@ def main():
                 else:
                     inst_key = "기타"
             
-            map_data[inst_key][pan_id] = title
+            map_data[inst_key][pan_id] = title if has_pdf else f"[PDF부재] {title}"
+            existing_pan_ids.add(pan_id)
             is_map_updated = True
-            print(f" -> announcement_map.json 메모리 매핑 기록 완료 (기관: {inst_key})")
                     
         except Exception as e:
             print(f"상세 조회/다운로드 실패: {e}")
@@ -291,11 +328,33 @@ def main():
         try:
             with open(map_path, "w", encoding="utf-8") as f:
                 json.dump(map_data, f, ensure_ascii=False, indent=2)
-            print(f"\n[완료] announcement_map.json 최종 갱신 완료 완료")
+            print(f"\n[완료] announcement_map.json 최종 갱신 완료 (LH 반영)")
         except Exception as we:
             print(f"[경고] announcement_map.json 최종 쓰기 실패: {we}")
-    else:
-        print("\n새로 추가된 공고가 없어 announcement_map.json을 갱신하지 않습니다.")
+
+    # 최종 결과 요약 리포트 출력
+    print("\n" + "=" * 80)
+    print(f"📊 [LH 한국토지주택공사] 공고 수집 결과 리포트 ({args.start_date} ~ {args.end_date})")
+    print("=" * 80)
+    total_inspected = len(results_summary["success"]) + len(results_summary["failed"]) + len(results_summary["skipped"])
+    print(f"- 총 검토 공고: {total_inspected}건")
+    print(f"- ✅ 모집공고 수집 성공 (PDF 확보): {len(results_summary['success'])}건")
+    print(f"- ⚠️ 수집 주의/실패 (PDF 미확보): {len(results_summary['failed'])}건")
+    print(f"- ⏭️ 기 수집 공고 스킵: {len(results_summary['skipped'])}건")
+
+    if results_summary["success"]:
+        print("\n[수집 성공 공고 목록]")
+        for idx, s_item in enumerate(results_summary["success"], 1):
+            spl_desc = f", 공급정보 {s_item['spl_info_cnt']}건" if s_item.get("spl_info_cnt") else ""
+            print(f" {idx}. [{s_item['region']}] {s_item['title']} (ID: {s_item['id']}, 파일 {len(s_item['files'])}개{spl_desc})")
+
+    if results_summary["failed"]:
+        print("\n[수집 주의/실패 상세 내역]")
+        for idx, f_item in enumerate(results_summary["failed"], 1):
+            print(f" {idx}. [{f_item['region']}] {f_item['title']} (ID: {f_item['id']})")
+            print(f"    - 사유: {f_item['reason']}")
+            print(f"    - 상태: download_meta.json에 실패 플래그 기록 완료 (수동 확인 필요)")
+    print("=" * 80 + "\n")
 
 if __name__ == "__main__":
     main()
