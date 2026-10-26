@@ -178,18 +178,63 @@
           </div>
         </div>
 
-        <!-- 테이블 영역 -->
-        <div class="overflow-x-auto">
+        <!-- 모바일 전용 정렬 알약 필터 (PC 숨김) -->
+        <div class="sm:hidden px-4 py-2.5 border-b border-slate-700/50 flex items-center space-x-1.5 overflow-x-auto text-[11px] font-medium whitespace-nowrap bg-slate-900/30">
+          <span class="text-slate-400 mr-1 text-[10px] flex items-center"><i class="fa-solid fa-arrow-down-short-wide mr-1 text-emerald-400"></i>정렬:</span>
+          <button id="m-sort-createdAt" onclick="sortMembers('createdAt')" class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition">가입일순</button>
+          <button id="m-sort-bookmarkItemCount" onclick="sortMembers('bookmarkItemCount')" class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700 transition">북마크순</button>
+          <button id="m-sort-favoriteCount" onclick="sortMembers('favoriteCount')" class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700 transition">찜순</button>
+          <button id="m-sort-hiddenCount" onclick="sortMembers('hiddenCount')" class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700 transition">숨김순</button>
+          <button id="m-sort-id" onclick="sortMembers('id')" class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700 transition">ID순</button>
+        </div>
+
+        <!-- 데스크톱 전용 테이블 영역 (sm 이상) -->
+        <div class="hidden sm:block overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-700/60">
-                <th class="py-3 px-4">회원 ID (계정)</th>
-                <th class="py-3 px-4">가입일시</th>
-                <th class="py-3 px-4">관심 지역</th>
-                <th class="py-3 px-4 text-center">북마크 폴더</th>
-                <th class="py-3 px-4 text-center">저장 단지</th>
-                <th class="py-3 px-4 text-center">찜 공고</th>
-                <th class="py-3 px-4 text-center">숨김 공고</th>
+              <tr class="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-700/60 select-none">
+                <th onclick="sortMembers('id')" class="py-3 px-4 cursor-pointer hover:text-white transition group">
+                  <div class="flex items-center space-x-1">
+                    <span>회원 ID</span>
+                    <span id="sort-icon-id" class="text-[10px] text-slate-500 group-hover:text-slate-300"><i class="fa-solid fa-sort"></i></span>
+                  </div>
+                </th>
+                <th onclick="sortMembers('createdAt')" class="py-3 px-4 cursor-pointer hover:text-white transition group">
+                  <div class="flex items-center space-x-1">
+                    <span>가입일시</span>
+                    <span id="sort-icon-createdAt" class="text-[10px] text-slate-500 group-hover:text-slate-300"><i class="fa-solid fa-sort"></i></span>
+                  </div>
+                </th>
+                <th onclick="sortMembers('preferredRegions')" class="py-3 px-4 cursor-pointer hover:text-white transition group">
+                  <div class="flex items-center space-x-1">
+                    <span>관심 지역</span>
+                    <span id="sort-icon-preferredRegions" class="text-[10px] text-slate-500 group-hover:text-slate-300"><i class="fa-solid fa-sort"></i></span>
+                  </div>
+                </th>
+                <th onclick="sortMembers('bookmarkFolderCount')" class="py-3 px-4 text-center cursor-pointer hover:text-white transition group">
+                  <div class="flex items-center justify-center space-x-1">
+                    <span>북마크 폴더</span>
+                    <span id="sort-icon-bookmarkFolderCount" class="text-[10px] text-slate-500 group-hover:text-slate-300"><i class="fa-solid fa-sort"></i></span>
+                  </div>
+                </th>
+                <th onclick="sortMembers('bookmarkItemCount')" class="py-3 px-4 text-center cursor-pointer hover:text-white transition group">
+                  <div class="flex items-center justify-center space-x-1">
+                    <span>저장 단지</span>
+                    <span id="sort-icon-bookmarkItemCount" class="text-[10px] text-slate-500 group-hover:text-slate-300"><i class="fa-solid fa-sort"></i></span>
+                  </div>
+                </th>
+                <th onclick="sortMembers('favoriteCount')" class="py-3 px-4 text-center cursor-pointer hover:text-white transition group">
+                  <div class="flex items-center justify-center space-x-1">
+                    <span>찜 공고</span>
+                    <span id="sort-icon-favoriteCount" class="text-[10px] text-slate-500 group-hover:text-slate-300"><i class="fa-solid fa-sort"></i></span>
+                  </div>
+                </th>
+                <th onclick="sortMembers('hiddenCount')" class="py-3 px-4 text-center cursor-pointer hover:text-white transition group">
+                  <div class="flex items-center justify-center space-x-1">
+                    <span>숨김 공고</span>
+                    <span id="sort-icon-hiddenCount" class="text-[10px] text-slate-500 group-hover:text-slate-300"><i class="fa-solid fa-sort"></i></span>
+                  </div>
+                </th>
                 <th class="py-3 px-4 text-right">상세 활동</th>
               </tr>
             </thead>
@@ -199,6 +244,11 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- 모바일 전용 회원 카드 리스트 (sm 미만) -->
+        <div id="member-card-list" class="sm:hidden p-3 space-y-3">
+          <p class="py-8 text-center text-slate-500 text-sm">회원 데이터를 불러오는 중...</p>
         </div>
 
         <!-- 페이징 바 -->

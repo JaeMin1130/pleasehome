@@ -3,6 +3,9 @@
 let currentMemberPage = 0;
 let totalMemberPages = 1;
 let currentSearchQuery = "";
+let currentMemberList = [];
+let currentSortCol = null;
+let currentSortDir = "desc";
 let currentJobId = null;
 let currentEventSource = null;
 
@@ -135,10 +138,14 @@ async function loadAdminStats() {
 async function loadMembers(page = 0) {
   currentMemberPage = page;
   const tbody = document.getElementById("member-table-body");
+  const cardList = document.getElementById("member-card-list");
   tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-500">불러오는 중...</td></tr>`;
+  if (cardList) {
+    cardList.innerHTML = `<p class="py-8 text-center text-slate-500 text-sm">회원 데이터를 불러오는 중...</p>`;
+  }
 
   try {
-    let url = `/api/proxy/users?page=${page}&size=15`;
+    let url = `/api/proxy/users?page=${page}&size=20`;
     if (currentSearchQuery) {
       url += `&search=${encodeURIComponent(currentSearchQuery)}`;
     }
@@ -153,41 +160,186 @@ async function loadMembers(page = 0) {
     document.getElementById("btn-prev-page").disabled = (data.currentPage <= 0);
     document.getElementById("btn-next-page").disabled = (data.currentPage >= data.totalPages - 1);
 
-    if (!data.items || data.items.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-500">가입된 회원이 없습니다.</td></tr>`;
-      return;
+    currentMemberList = data.items || [];
+    if (currentSortCol) {
+      applyMemberSort();
+    } else {
+      renderMemberTable(currentMemberList);
     }
-
-    tbody.innerHTML = data.items.map(m => `
-      <tr class="hover:bg-slate-800/40 transition">
-        <td class="py-3.5 px-4 font-mono font-medium text-slate-200">
-          <div class="flex items-center space-x-2">
-            <div class="w-7 h-7 rounded-full bg-slate-700 text-slate-300 flex items-center justify-center text-xs">
-              <i class="fa-solid fa-user"></i>
-            </div>
-            <span>${escapeHtml(m.id)}</span>
-          </div>
-        </td>
-        <td class="py-3.5 px-4 text-xs text-slate-400 font-mono">${formatDate(m.createdAt)}</td>
-        <td class="py-3.5 px-4 text-xs text-slate-300">
-          ${formatRegions(m.preferredRegions)}
-        </td>
-        <td class="py-3.5 px-4 text-center font-semibold text-slate-300">${m.bookmarkFolderCount}개</td>
-        <td class="py-3.5 px-4 text-center font-semibold text-amber-400">${m.bookmarkItemCount}건</td>
-        <td class="py-3.5 px-4 text-center font-semibold text-rose-400">${m.favoriteCount}건</td>
-        <td class="py-3.5 px-4 text-center font-semibold text-purple-400">${m.hiddenCount}건</td>
-        <td class="py-3.5 px-4 text-right">
-          <button onclick="openMemberModal('${escapeHtml(m.id)}')"
-            class="px-3 py-1.5 bg-slate-700/80 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg transition">
-            활동 보기
-          </button>
-        </td>
-      </tr>
-    `).join("");
 
   } catch (err) {
     tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-rose-400">회원 목록 조회 실패: ${escapeHtml(err.message)}</td></tr>`;
+    if (cardList) {
+      cardList.innerHTML = `<p class="py-8 text-center text-rose-400 text-sm">회원 목록 조회 실패: ${escapeHtml(err.message)}</p>`;
+    }
   }
+}
+
+function renderMemberTable(items) {
+  const tbody = document.getElementById("member-table-body");
+  const cardList = document.getElementById("member-card-list");
+
+  if (!items || items.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-500">가입된 회원이 없습니다.</td></tr>`;
+    if (cardList) {
+      cardList.innerHTML = `<p class="py-8 text-center text-slate-500 text-sm">가입된 회원이 없습니다.</p>`;
+    }
+    return;
+  }
+
+  // 데스크톱 테이블 렌더링
+  tbody.innerHTML = items.map(m => `
+    <tr class="hover:bg-slate-800/40 transition">
+      <td class="py-3.5 px-4 font-mono font-medium text-slate-200">
+        <div class="flex items-center space-x-2">
+          <div class="w-7 h-7 rounded-full bg-slate-700 text-slate-300 flex items-center justify-center text-xs">
+            <i class="fa-solid fa-user"></i>
+          </div>
+          <span>${escapeHtml(m.id)}</span>
+        </div>
+      </td>
+      <td class="py-3.5 px-4 text-xs text-slate-400 font-mono">${formatDate(m.createdAt)}</td>
+      <td class="py-3.5 px-4 text-xs text-slate-300">
+        ${formatRegions(m.preferredRegions)}
+      </td>
+      <td class="py-3.5 px-4 text-center font-semibold text-slate-300">${m.bookmarkFolderCount}개</td>
+      <td class="py-3.5 px-4 text-center font-semibold text-amber-400">${m.bookmarkItemCount}건</td>
+      <td class="py-3.5 px-4 text-center font-semibold text-rose-400">${m.favoriteCount}건</td>
+      <td class="py-3.5 px-4 text-center font-semibold text-purple-400">${m.hiddenCount}건</td>
+      <td class="py-3.5 px-4 text-right">
+        <button onclick="openMemberModal('${escapeHtml(m.id)}')"
+          class="px-3 py-1.5 bg-slate-700/80 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg transition">
+          활동 보기
+        </button>
+      </td>
+    </tr>
+  `).join("");
+
+  // 모바일 전용 카드 뷰 렌더링
+  if (cardList) {
+    cardList.innerHTML = items.map(m => `
+      <div class="bg-slate-900/60 border border-slate-700/60 rounded-xl p-3.5 space-y-3 shadow-sm">
+        <!-- 상단 헤더: 회원 정보 & 가입일 -->
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex items-center space-x-2 min-w-0">
+            <div class="w-7 h-7 rounded-full bg-slate-700 text-slate-300 flex items-center justify-center text-xs flex-shrink-0">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs font-semibold text-white truncate font-mono">${escapeHtml(m.id)}</div>
+              <div class="text-[10px] text-slate-400 flex items-center mt-0.5">
+                <i class="fa-regular fa-clock mr-1 text-slate-500"></i>${formatDate(m.createdAt)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 관심 지역 -->
+        <div class="text-[11px] text-slate-300 bg-slate-800/40 px-2.5 py-1.5 rounded-lg border border-slate-700/40">
+          <span class="text-slate-400 mr-1.5 text-[10px]">관심지역:</span>
+          ${formatRegions(m.preferredRegions)}
+        </div>
+
+        <!-- 활동 통계 4종 그리드 -->
+        <div class="grid grid-cols-4 gap-2 text-center text-xs">
+          <div class="bg-slate-800/70 p-2 rounded-lg border border-slate-700/50">
+            <div class="text-[10px] text-slate-400 mb-0.5">폴더</div>
+            <div class="font-bold text-slate-200">${m.bookmarkFolderCount}<span class="text-[9px] font-normal text-slate-400 ml-0.5">개</span></div>
+          </div>
+          <div class="bg-slate-800/70 p-2 rounded-lg border border-slate-700/50">
+            <div class="text-[10px] text-amber-400/80 mb-0.5">북마크</div>
+            <div class="font-bold text-amber-400">${m.bookmarkItemCount}<span class="text-[9px] font-normal text-slate-400 ml-0.5">건</span></div>
+          </div>
+          <div class="bg-slate-800/70 p-2 rounded-lg border border-slate-700/50">
+            <div class="text-[10px] text-rose-400/80 mb-0.5">찜</div>
+            <div class="font-bold text-rose-400">${m.favoriteCount}<span class="text-[9px] font-normal text-slate-400 ml-0.5">건</span></div>
+          </div>
+          <div class="bg-slate-800/70 p-2 rounded-lg border border-slate-700/50">
+            <div class="text-[10px] text-purple-400/80 mb-0.5">숨김</div>
+            <div class="font-bold text-purple-400">${m.hiddenCount}<span class="text-[9px] font-normal text-slate-400 ml-0.5">건</span></div>
+          </div>
+        </div>
+
+        <!-- 상세 활동 보기 버튼 -->
+        <button onclick="openMemberModal('${escapeHtml(m.id)}')"
+          class="w-full py-2 bg-slate-800 hover:bg-slate-700 active:bg-slate-650 border border-slate-700/80 text-slate-200 text-xs font-semibold rounded-lg flex items-center justify-center space-x-1.5 transition">
+          <span>활동 상세 보기</span>
+          <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
+        </button>
+      </div>
+    `).join("");
+  }
+}
+
+function sortMembers(columnKey) {
+  if (currentSortCol === columnKey) {
+    currentSortDir = (currentSortDir === "asc") ? "desc" : "asc";
+  } else {
+    currentSortCol = columnKey;
+    currentSortDir = "desc";
+  }
+
+  updateSortIcons();
+  applyMemberSort();
+}
+
+function updateSortIcons() {
+  const columns = ["id", "createdAt", "preferredRegions", "bookmarkFolderCount", "bookmarkItemCount", "favoriteCount", "hiddenCount"];
+  columns.forEach(col => {
+    // 1. PC 테이블 헤더 아이콘
+    const iconSpan = document.getElementById(`sort-icon-${col}`);
+    if (iconSpan) {
+      if (col === currentSortCol) {
+        iconSpan.className = "text-[11px] text-emerald-400";
+        iconSpan.innerHTML = currentSortDir === "asc"
+          ? '<i class="fa-solid fa-sort-up"></i>'
+          : '<i class="fa-solid fa-sort-down"></i>';
+      } else {
+        iconSpan.className = "text-[10px] text-slate-500 group-hover:text-slate-300";
+        iconSpan.innerHTML = '<i class="fa-solid fa-sort"></i>';
+      }
+    }
+
+    // 2. 모바일 알약 버튼 스타일
+    const mBtn = document.getElementById(`m-sort-${col}`);
+    if (mBtn) {
+      const baseLabel = mBtn.getAttribute("data-label") || mBtn.textContent.replace(/ [▲▼↑↓]/g, "").trim();
+      mBtn.setAttribute("data-label", baseLabel);
+      if (col === currentSortCol) {
+        const arrow = currentSortDir === "asc" ? "▲" : "▼";
+        mBtn.className = "px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 transition font-semibold";
+        mBtn.textContent = `${baseLabel} ${arrow}`;
+      } else {
+        mBtn.className = "px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700/60 transition";
+        mBtn.textContent = baseLabel;
+      }
+    }
+  });
+}
+
+function applyMemberSort() {
+  if (!currentSortCol || !currentMemberList) return;
+
+  const numericCols = ["bookmarkFolderCount", "bookmarkItemCount", "favoriteCount", "hiddenCount"];
+  const isNumeric = numericCols.includes(currentSortCol);
+
+  currentMemberList.sort((a, b) => {
+    let valA = a[currentSortCol];
+    let valB = b[currentSortCol];
+
+    if (isNumeric) {
+      valA = Number(valA || 0);
+      valB = Number(valB || 0);
+      return currentSortDir === "asc" ? (valA - valB) : (valB - valA);
+    } else {
+      valA = String(valA || "");
+      valB = String(valB || "");
+      const cmp = valA.localeCompare(valB, "ko");
+      return currentSortDir === "asc" ? cmp : -cmp;
+    }
+  });
+
+  renderMemberTable(currentMemberList);
 }
 
 function searchMembers() {
