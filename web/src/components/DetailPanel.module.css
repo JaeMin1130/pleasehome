@@ -17,11 +17,18 @@
     width: var(--layout-panel-width);
     left: calc(var(--layout-nav-width) + var(--sidebar-offset-width, 0px) + var(--spacing-md));
     transform: translateX(-100%);
-    transition: var(--transition-panel);
+    /* left: 사이드바 폭 변화와 같은 곡선으로 따라 움직이게 */
+    transition: var(--transition-panel), width 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .app-detail-panel.open {
     transform: translateX(0);
+  }
+
+  /* 펼침: 네비·사이드바를 뺀 지도 영역의 2/3를 차지하고 1/3은 지도로 남김 */
+  .app-detail-panel.expanded {
+    width: max(var(--layout-panel-width),
+      calc((100vw - var(--layout-nav-width) - var(--sidebar-offset-width, 0px)) * 2 / 3));
   }
 }
 

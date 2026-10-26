@@ -1,0 +1,44 @@
+/* 평소엔 얇은 손잡이 막대, 호버 시 아이콘이 든 알약으로 커짐 */
+.panel-edge-toggle {
+  position: absolute;
+  top: 50%;
+  right: var(--spacing-xs);
+  transform: translateY(-50%);
+  width: var(--spacing-xs);
+  height: calc(var(--spacing-md) * 2.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  /* --border-strong은 대비 1.5~1.9:1로 흐려서 text-muted 사용 (라이트 2.56 / 다크 5.71) */
+  background-color: var(--text-muted);
+  border: none;
+  border-radius: var(--radius-pill);
+  color: transparent;
+  cursor: pointer;
+  z-index: 1;
+  transition: width 0.2s ease, height 0.2s ease, background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* 막대가 얇아도 잡기 쉽게 클릭 영역 확장 */
+.panel-edge-toggle::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--spacing-sm) * -1);
+}
+
+.panel-edge-toggle:hover,
+.panel-edge-toggle:focus-visible {
+  width: calc(var(--spacing-md) * 1.25);
+  height: calc(var(--spacing-md) * 3);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  /* 알약 배경이 패널과 같은 색이라(다크 1.0:1) 테두리 링으로 윤곽을 그림 */
+  box-shadow: var(--shadow-md), 0 0 0 var(--spacing-3xs) var(--border-strong);
+}
+
+@media (max-width: 768px) {
+  .panel-edge-toggle {
+    display: none;
+  }
+}

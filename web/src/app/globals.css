@@ -39,6 +39,8 @@
      ========================================= */
     --layout-sidebar-width: 380px;
     --layout-panel-width: 500px;
+    /* 사이드바 펼침 폭: 네비를 뺀 화면의 2/3, 1/3은 지도로 남김 */
+    --layout-sidebar-expanded-width: calc((100vw - var(--layout-nav-width)) * 2 / 3);
     --layout-nav-width: calc(var(--spacing-md) * 3.5);
    --layout-overlay-max: 480px;
    --layout-modal-width: 90%;

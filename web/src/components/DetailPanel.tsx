@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useBottomSheetGesture } from '@/hooks/useBottomSheetGesture';
 import { Complex, HousingUnit, Announcement, FilterState, BookmarkFolder } from '@/types';
 import UnitTable from '@/components/features/UnitTable';
+import PanelEdgeToggle from '@/components/ui/PanelEdgeToggle';
 import { formatTargetGroup, formatMoney, formatRent } from '@/utils/formatters';
 import styles from './DetailPanel.module.css';
 
@@ -21,6 +22,8 @@ interface DetailPanelProps {
   activeTab: 'SEARCH' | 'BOOKMARK' | 'MORE' | null;
   // 공고를 선택한 상태로 단지를 열면 그 공고의 세대만 보여준다 (단지는 여러 공고에 걸칠 수 있음)
   announcementId?: number | null;
+  isExpanded?: boolean;
+  onExpandToggle?: () => void;
 }
 
 export default function DetailPanel({ 
@@ -29,7 +32,8 @@ export default function DetailPanel({
   comparisonFolder = null,
   comparisonComplexes = [],
   activeTab,
-  announcementId = null
+  announcementId = null,
+  isExpanded = false, onExpandToggle
 }: DetailPanelProps) {
   const [units, setUnits] = useState<HousingUnit[]>([]);
 
@@ -134,7 +138,7 @@ export default function DetailPanel({
   if (comparisonFolder) {
     return (
       <aside 
-        className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''}`}
+        className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''} ${isExpanded ? styles.expanded : ''}`}
         style={{
           ...style,
           height: sheetHeight ? `${sheetHeight}px` : undefined
@@ -143,6 +147,7 @@ export default function DetailPanel({
       >
         {/* 모바일 화면 전용 상단 드래그 핸들바 */}
         <div className={styles['drag-handle-bar']} />
+        {onExpandToggle && <PanelEdgeToggle isExpanded={isExpanded} onToggle={onExpandToggle} />}
         {/* 헤더 영역을 스크롤 바깥으로 분리 */}
         <div className={styles['panel-header-fixed']}>
           <div className={styles['basic-info-header']}>
@@ -364,7 +369,7 @@ export default function DetailPanel({
 
   return (
     <div 
-      className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''}`} 
+      className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''} ${isExpanded ? styles.expanded : ''}`} 
       style={{
         ...style,
         height: sheetHeight ? `${sheetHeight}px` : undefined
@@ -373,6 +378,7 @@ export default function DetailPanel({
     >
       {/* 모바일 화면 전용 상단 드래그 핸들바 */}
       <div className={styles['drag-handle-bar']} />
+      {onExpandToggle && <PanelEdgeToggle isExpanded={isExpanded} onToggle={onExpandToggle} />}
       {/* 헤더 영역을 스크롤 바깥으로 분리 */}
       <div className={styles['panel-header-fixed']}>
         <div className={styles['basic-info-header']}>

@@ -216,6 +216,18 @@ function HomeContent({ initialAnnouncements = [] }: HomeClientLayoutProps) {
   };
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  // 웹에서 사이드바/상세 패널 중 하나만 펼침 (둘 다 2/3이면 화면을 넘침)
+  const [expandedPanel, setExpandedPanel] = useState<'SIDEBAR' | 'DETAIL' | null>(null);
+  const toggleExpandedPanel = (panel: 'SIDEBAR' | 'DETAIL') => setExpandedPanel(prev => prev === panel ? null : panel);
+  // 패널이 닫히면 펼침도 해제해 다시 열 때 기본 폭으로 시작,
+  // 단지를 골라 패널이 열리면 펼친 사이드바는 기본 폭으로 (패널이 남은 1/3에 끼지 않게)
+  useEffect(() => {
+    if (!isPanelOpen) setExpandedPanel(prev => prev === 'DETAIL' ? null : prev);
+    else if (selectedComplex) setExpandedPanel(prev => prev === 'SIDEBAR' ? null : prev);
+  }, [isPanelOpen, selectedComplex?.id]);
+  useEffect(() => {
+    if (isSidebarCollapsed) setExpandedPanel(prev => prev === 'SIDEBAR' ? null : prev);
+  }, [isSidebarCollapsed]);
 
 
   const [activeComparisonFolderId, setActiveComparisonFolderId] = useState<string | null>(null);
@@ -618,6 +630,7 @@ function HomeContent({ initialAnnouncements = [] }: HomeClientLayoutProps) {
         <Sidebar 
           announcements={announcements} activeAnnId={activeAnnId} onSelectAnnouncement={handleSelectAnnouncement} 
           width={SIDEBAR_DEFAULT_WIDTH} isCollapsed={isSidebarCollapsed} onCollapseChange={setIsSidebarCollapsed}
+          isExpanded={expandedPanel === 'SIDEBAR'} onExpandToggle={() => toggleExpandedPanel('SIDEBAR')}
           displayComplexes={activeTab === 'BOOKMARK' ? mapComplexes : filteredComplexes} isComplexesLoading={isAnnouncementUnitsLoading} activeComplexId={activeComplexId} onSelectComplex={handleSelectComplex}
           activeTab={activeTab} onTabSelect={handleTabSelect} bookmarkedComplexes={bookmarkedComplexes}
           bookmarkedIds={bookmarkedIds} onToggleBookmark={toggleBookmark}
@@ -712,6 +725,8 @@ function HomeContent({ initialAnnouncements = [] }: HomeClientLayoutProps) {
           onToggleBookmark={toggleBookmark}
           activeTab={activeTab || lastActiveTab}
           announcementId={activeAnnId}
+          isExpanded={expandedPanel === 'DETAIL'}
+          onExpandToggle={() => toggleExpandedPanel('DETAIL')}
           onClose={() => {
             setIsPanelOpen(false); 
             setActiveComplexId(null); 
@@ -725,7 +740,8 @@ function HomeContent({ initialAnnouncements = [] }: HomeClientLayoutProps) {
             updateUrl(activeAnnId, null, true);
           }} 
           style={{ 
-            '--sidebar-offset-width': isSidebarCollapsed ? '0px' : `${SIDEBAR_DEFAULT_WIDTH}px`
+            '--sidebar-offset-width': isSidebarCollapsed ? '0px'
+              : expandedPanel === 'SIDEBAR' ? 'var(--layout-sidebar-expanded-width)' : `${SIDEBAR_DEFAULT_WIDTH}px`
           } as React.CSSProperties}
           comparisonFolder={
             bookmarkFolders.find(f => f.id === activeComparisonFolderId) || null

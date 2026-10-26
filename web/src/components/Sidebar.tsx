@@ -20,6 +20,7 @@ import AuthModal from '@/components/ui/AuthModal';
 import SearchTab from '@/components/sidebar/SearchTab';
 import BookmarkTab from '@/components/sidebar/BookmarkTab';
 import MoreTab from '@/components/sidebar/MoreTab';
+import PanelEdgeToggle from '@/components/ui/PanelEdgeToggle';
 
 interface SidebarProps {
   announcements: Announcement[];
@@ -28,6 +29,8 @@ interface SidebarProps {
   width?: number;
   isCollapsed?: boolean;
   onCollapseChange?: (isCollapsed: boolean) => void;
+  isExpanded?: boolean;
+  onExpandToggle?: () => void;
   displayComplexes: Complex[];
   isComplexesLoading?: boolean;
   activeComplexId: number | null;
@@ -53,7 +56,7 @@ interface SidebarProps {
 
 export default function Sidebar({ 
   announcements, activeAnnId, onSelectAnnouncement, 
-  width, isCollapsed, onCollapseChange,
+  width, isCollapsed, onCollapseChange, isExpanded = false, onExpandToggle,
   displayComplexes, isComplexesLoading, activeComplexId, onSelectComplex,
   activeTab, onTabSelect, bookmarkedComplexes, style,
   bookmarkedIds, onToggleBookmark,
@@ -625,10 +628,11 @@ export default function Sidebar({
     <aside 
       className={`${styles['app-sidebar']} ${isCollapsed ? styles.collapsed : ''} ${isHiddenFully ? styles.hidden : ''}`} 
       style={{ 
-        width: width ? `${width}px` : undefined,
+        width: isExpanded ? 'var(--layout-sidebar-expanded-width)' : width ? `${width}px` : undefined,
         ...style
       }}
     >
+      {onExpandToggle && <PanelEdgeToggle isExpanded={isExpanded} onToggle={onExpandToggle} />}
       {/* 탭 분기 렌더링 */}
       {activeTab === "SEARCH" && (
         <SearchTab
