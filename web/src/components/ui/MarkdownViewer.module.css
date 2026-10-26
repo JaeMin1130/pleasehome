@@ -48,6 +48,13 @@
   color: var(--text-primary);
 }
 
+/* 한글은 글자 단위로 줄바꿈되어 표가 컨테이너 폭에 짓눌림 → 단어 단위 줄바꿈 + 최소 폭으로 넘치면 가로 스크롤 */
+.md-th,
+.md-td {
+  word-break: keep-all;
+  min-width: 4.5em;
+}
+
 .md-tr {
   border-bottom: var(--spacing-3xs) solid var(--border-light);
 }
