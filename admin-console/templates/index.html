@@ -30,32 +30,39 @@
 
   <!-- 상단 네비게이션 헤더 -->
   <header class="bg-slate-800/90 border-b border-slate-700/60 sticky top-0 z-40 backdrop-blur-md">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <span class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">
-          PleaseHome
-        </span>
-        <span class="text-xs px-2.5 py-1 bg-emerald-500/10 text-emerald-400 font-semibold rounded-full border border-emerald-500/20">
-          Admin Console
-        </span>
+    <div class="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-2.5 sm:py-0 sm:h-16 flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-0">
+      <div class="flex items-center justify-between w-full sm:w-auto">
+        <div class="flex items-center space-x-2">
+          <span class="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">
+            PleaseHome
+          </span>
+          <span class="text-[10px] sm:text-xs px-2 py-0.5 sm:px-2.5 sm:py-1 bg-emerald-500/10 text-emerald-400 font-semibold rounded-full border border-emerald-500/20">
+            Admin
+          </span>
+        </div>
+        <!-- 모바일 전용 서버 상태 뱃지 -->
+        <div class="flex sm:hidden items-center space-x-1.5 text-xs">
+          <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span id="server-status-label-m" class="text-slate-300 font-mono text-[11px]">확인 중...</span>
+        </div>
       </div>
 
       <!-- 탭 스위처 -->
-      <nav class="flex space-x-1 bg-slate-900/60 p-1 rounded-xl border border-slate-700/50">
+      <nav class="flex w-full sm:w-auto space-x-1 bg-slate-900/60 p-1 rounded-xl border border-slate-700/50">
         <button id="tab-btn-users" onclick="switchTab('users')"
-          class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-150 flex items-center space-x-2 bg-emerald-500 text-white shadow-sm">
+          class="flex-1 sm:flex-none px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-150 flex items-center justify-center space-x-1.5 bg-emerald-500 text-white shadow-sm">
           <i class="fa-solid fa-users"></i>
           <span>회원 모니터링</span>
         </button>
         <button id="tab-btn-pipeline" onclick="switchTab('pipeline')"
-          class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-150 flex items-center space-x-2 text-slate-400 hover:text-slate-200">
+          class="flex-1 sm:flex-none px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-150 flex items-center justify-center space-x-1.5 text-slate-400 hover:text-slate-200">
           <i class="fa-solid fa-boxes-stacked"></i>
-          <span>공고 파이프라인 제어</span>
+          <span>파이프라인 제어</span>
         </button>
       </nav>
 
-      <!-- 서버 상태 뱃지 -->
-      <div class="flex items-center space-x-2 text-xs">
+      <!-- 데스크톱 전용 서버 상태 뱃지 -->
+      <div class="hidden sm:flex items-center space-x-2 text-xs">
         <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
         <span class="text-slate-400">서버: <span id="server-status-label" class="text-slate-200 font-mono">연결 확인 중...</span></span>
       </div>
@@ -63,63 +70,63 @@
   </header>
 
   <!-- 메인 본문 컨테이너 -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <main class="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-5 sm:py-8">
 
     <!-- ========================================================= -->
     <!-- 1. [탭 1] 회원 모니터링 섹션 -->
     <!-- ========================================================= -->
-    <div id="section-users" class="space-y-8">
-      <!-- 상단 요약 카드 그리드 -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 shadow-sm">
+    <div id="section-users" class="space-y-6 sm:space-y-8">
+      <!-- 상단 요약 카드 그리드 (모바일 2열, PC 4열) -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 sm:p-5 shadow-sm">
           <div class="flex items-center justify-between">
-            <span class="text-sm font-medium text-slate-400">총 가입 회원</span>
-            <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center">
-              <i class="fa-solid fa-user-group text-lg"></i>
+            <span class="text-xs sm:text-sm font-medium text-slate-400">총 회원</span>
+            <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center">
+              <i class="fa-solid fa-user-group text-sm sm:text-lg"></i>
             </div>
           </div>
-          <div class="mt-4 flex items-baseline">
-            <span id="stat-total-members" class="text-3xl font-extrabold text-white">-</span>
-            <span class="ml-2 text-sm text-slate-400">명</span>
+          <div class="mt-2 sm:mt-4 flex items-baseline">
+            <span id="stat-total-members" class="text-2xl sm:text-3xl font-extrabold text-white">-</span>
+            <span class="ml-1.5 text-xs sm:text-sm text-slate-400">명</span>
           </div>
         </div>
 
-        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 shadow-sm">
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 sm:p-5 shadow-sm">
           <div class="flex items-center justify-between">
-            <span class="text-sm font-medium text-slate-400">총 저장된 북마크 단지</span>
-            <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
-              <i class="fa-solid fa-bookmark text-lg"></i>
+            <span class="text-xs sm:text-sm font-medium text-slate-400">북마크 단지</span>
+            <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
+              <i class="fa-solid fa-bookmark text-sm sm:text-lg"></i>
             </div>
           </div>
-          <div class="mt-4 flex items-baseline">
-            <span id="stat-total-bookmarks" class="text-3xl font-extrabold text-white">-</span>
-            <span class="ml-2 text-sm text-slate-400">건</span>
+          <div class="mt-2 sm:mt-4 flex items-baseline">
+            <span id="stat-total-bookmarks" class="text-2xl sm:text-3xl font-extrabold text-white">-</span>
+            <span class="ml-1.5 text-xs sm:text-sm text-slate-400">건</span>
           </div>
         </div>
 
-        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 shadow-sm">
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 sm:p-5 shadow-sm">
           <div class="flex items-center justify-between">
-            <span class="text-sm font-medium text-slate-400">관심 공고 (찜)</span>
-            <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center">
-              <i class="fa-solid fa-heart text-lg"></i>
+            <span class="text-xs sm:text-sm font-medium text-slate-400">찜 공고</span>
+            <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center">
+              <i class="fa-solid fa-heart text-sm sm:text-lg"></i>
             </div>
           </div>
-          <div class="mt-4 flex items-baseline">
-            <span id="stat-total-favorites" class="text-3xl font-extrabold text-white">-</span>
-            <span class="ml-2 text-sm text-slate-400">건</span>
+          <div class="mt-2 sm:mt-4 flex items-baseline">
+            <span id="stat-total-favorites" class="text-2xl sm:text-3xl font-extrabold text-white">-</span>
+            <span class="ml-1.5 text-xs sm:text-sm text-slate-400">건</span>
           </div>
         </div>
 
-        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 shadow-sm">
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 sm:p-5 shadow-sm">
           <div class="flex items-center justify-between">
-            <span class="text-sm font-medium text-slate-400">숨김 공고</span>
-            <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center">
-              <i class="fa-solid fa-eye-slash text-lg"></i>
+            <span class="text-xs sm:text-sm font-medium text-slate-400">숨김 공고</span>
+            <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center">
+              <i class="fa-solid fa-eye-slash text-sm sm:text-lg"></i>
             </div>
           </div>
-          <div class="mt-4 flex items-baseline">
-            <span id="stat-total-hidden" class="text-3xl font-extrabold text-white">-</span>
-            <span class="ml-2 text-sm text-slate-400">건</span>
+          <div class="mt-2 sm:mt-4 flex items-baseline">
+            <span id="stat-total-hidden" class="text-2xl sm:text-3xl font-extrabold text-white">-</span>
+            <span class="ml-1.5 text-xs sm:text-sm text-slate-400">건</span>
           </div>
         </div>
       </div>
@@ -217,66 +224,74 @@
     <!-- ========================================================= -->
     <div id="section-pipeline" class="space-y-8 hidden">
       <!-- 제어 액션 툴바 -->
-      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-6 shadow-sm">
-        <h2 class="text-base font-bold text-white mb-2 flex items-center space-x-2">
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 sm:p-6 shadow-sm">
+        <h2 class="text-sm sm:text-base font-bold text-white mb-1.5 sm:mb-2 flex items-center space-x-2">
           <i class="fa-solid fa-bolt text-emerald-400"></i>
           <span>공고 수집 및 배포 원클릭 제어</span>
         </h2>
-        <p class="text-xs text-slate-400 mb-4">
+        <p class="text-[11px] sm:text-xs text-slate-400 mb-3.5 sm:mb-4">
           노트북 서버의 파이프라인 CLI를 웹에서 직접 실행하고 결과를 실시간 모니터링합니다.
         </p>
 
-        <!-- 수집 기간 설정 필터 -->
-        <div class="flex flex-wrap items-center gap-2.5 mb-5 p-3 bg-slate-900/60 rounded-xl border border-slate-700/50 text-xs">
-          <span class="text-slate-300 font-medium flex items-center space-x-1">
+        <!-- 수집 기간 설정 필터 (모바일 100% 방탄 그리드, PC 가로 인라인) -->
+        <div class="space-y-2 sm:space-y-0 sm:flex sm:items-center sm:gap-2.5 mb-4 p-3 bg-slate-900/60 rounded-xl border border-slate-700/50 text-xs">
+          <div class="flex items-center space-x-1.5 text-slate-300 font-medium">
             <i class="fa-regular fa-calendar text-emerald-400"></i>
             <span>수집 기간:</span>
-          </span>
-          <input type="date" id="pipeline-start-date" class="bg-slate-800 border border-slate-700 text-slate-200 px-3 py-1.5 rounded-lg focus:outline-none focus:border-emerald-500 font-mono">
-          <span class="text-slate-500 font-bold">~</span>
-          <input type="date" id="pipeline-end-date" class="bg-slate-800 border border-slate-700 text-slate-200 px-3 py-1.5 rounded-lg focus:outline-none focus:border-emerald-500 font-mono">
-          <div class="flex space-x-1.5 ml-1">
-            <button onclick="setDateRangePreset(7)" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition">최근 7일</button>
-            <button onclick="setDateRangePreset(14)" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition">최근 14일</button>
-            <button onclick="setDateRangePreset(30)" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition">최근 30일</button>
+          </div>
+
+          <!-- 달력 2분할 (모바일 50/50, PC 자동) -->
+          <div class="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-1.5 w-full sm:w-auto">
+            <div class="relative w-full min-w-0">
+              <input type="date" id="pipeline-start-date" class="w-full min-w-0 bg-slate-800 border border-slate-700 text-slate-200 px-2 py-1.5 rounded-lg focus:outline-none focus:border-emerald-500 font-mono text-[11px] sm:text-xs">
+            </div>
+            <div class="relative w-full min-w-0">
+              <input type="date" id="pipeline-end-date" class="w-full min-w-0 bg-slate-800 border border-slate-700 text-slate-200 px-2 py-1.5 rounded-lg focus:outline-none focus:border-emerald-500 font-mono text-[11px] sm:text-xs">
+            </div>
+          </div>
+
+          <!-- 프리셋 버튼 3분할 (모바일 3열 그리드, PC 가로 플렉스) -->
+          <div class="grid grid-cols-3 gap-1.5 w-full sm:w-auto sm:flex sm:space-x-1.5">
+            <button onclick="setDateRangePreset(7)" class="w-full sm:w-auto px-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-center text-[11px] sm:text-xs transition">최근 7일</button>
+            <button onclick="setDateRangePreset(14)" class="w-full sm:w-auto px-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-center text-[11px] sm:text-xs transition">최근 14일</button>
+            <button onclick="setDateRangePreset(30)" class="w-full sm:w-auto px-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-center text-[11px] sm:text-xs transition">최근 30일</button>
           </div>
         </div>
 
-        <div class="flex flex-wrap gap-3">
+        <!-- 액션 버튼 그리드 (모바일 2열, PC 플렉스) -->
+        <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2.5 sm:gap-3">
           <button onclick="triggerPipeline('fetch:lh', 'LH 공고 수집')"
-            class="px-4 py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-sm font-semibold flex items-center space-x-2 shadow-sm transition">
+            class="px-3.5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center space-x-2 shadow-sm transition">
             <i class="fa-solid fa-download"></i>
             <span>LH 공고 수집</span>
           </button>
 
           <button onclick="triggerPipeline('fetch:sh', 'SH 공고 수집')"
-            class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold flex items-center space-x-2 shadow-sm transition">
+            class="px-3.5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center space-x-2 shadow-sm transition">
             <i class="fa-solid fa-download"></i>
             <span>SH 공고 수집</span>
           </button>
 
           <button onclick="triggerPipeline('fetch:gh', 'GH 공고 수집')"
-            class="px-4 py-2.5 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-sm font-semibold flex items-center space-x-2 shadow-sm transition">
+            class="px-3.5 py-2.5 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center space-x-2 shadow-sm transition">
             <i class="fa-solid fa-download"></i>
             <span>GH 공고 수집</span>
           </button>
 
           <button onclick="triggerPipeline('fetch:all', '전체 공고 일괄 수집')"
-            class="px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-sm font-semibold flex items-center space-x-2 transition">
+            class="px-3.5 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center space-x-2 transition">
             <i class="fa-solid fa-layer-group"></i>
             <span>전체 일괄 수집</span>
           </button>
 
           <button onclick="triggerPipeline('status', 'DB 적재 현황 조회')"
-            class="px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-sm font-semibold flex items-center space-x-2 transition">
+            class="px-3.5 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center space-x-2 transition">
             <i class="fa-solid fa-database"></i>
             <span>DB 현황 요약</span>
           </button>
 
-          <div class="border-l border-slate-700 mx-1 hidden sm:block"></div>
-
           <button onclick="triggerPipeline('deploy:db', '실서버 DB 배포 (rsync)')"
-            class="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-sm font-bold flex items-center space-x-2 shadow-sm transition">
+            class="col-span-2 sm:col-span-1 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center space-x-2 shadow-sm transition">
             <i class="fa-solid fa-cloud-arrow-up"></i>
             <span>실서버 DB 배포</span>
           </button>
@@ -369,16 +384,16 @@ PleaseHome Admin Console Terminal 준비 완료.
   <!-- ========================================================= -->
   <!-- 회원 상세 활동 모달 -->
   <!-- ========================================================= -->
-  <div id="modal-member-activity" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+  <div id="modal-member-activity" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
       <!-- 모달 헤더 -->
-      <div class="p-5 border-b border-slate-700 flex items-center justify-between">
+      <div class="p-4 sm:p-5 border-b border-slate-700 flex items-center justify-between">
         <div>
-          <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+          <h3 class="text-base sm:text-lg font-bold text-white flex items-center space-x-2">
             <i class="fa-solid fa-user-gear text-emerald-400"></i>
-            <span id="modal-member-id">회원 활동 상세</span>
+            <span id="modal-member-id" class="truncate max-w-[200px] sm:max-w-none">회원 활동 상세</span>
           </h3>
-          <p class="text-xs text-slate-400 mt-1">
+          <p class="text-[11px] sm:text-xs text-slate-400 mt-1">
             가입일: <span id="modal-member-created" class="font-mono text-slate-300">-</span> |
             관심 지역: <span id="modal-member-regions" class="font-mono text-slate-300">-</span>
           </p>
@@ -388,31 +403,31 @@ PleaseHome Admin Console Terminal 준비 완료.
         </button>
       </div>
 
-      <!-- 모달 탭 스위처 -->
-      <div class="px-5 pt-3 border-b border-slate-700/60 flex space-x-4 text-xs font-medium">
+      <!-- 모달 탭 스위처 (모바일 가로 스크롤 가능) -->
+      <div class="px-4 sm:px-5 pt-3 border-b border-slate-700/60 flex space-x-3 sm:space-x-4 text-xs font-medium overflow-x-auto whitespace-nowrap">
         <button id="modal-tab-bookmarks" onclick="switchModalTab('bookmarks')"
-          class="pb-3 border-b-2 border-emerald-400 text-emerald-400 font-bold">
+          class="pb-3 border-b-2 border-emerald-400 text-emerald-400 font-bold flex-shrink-0">
           북마크 폴더 및 단지 (<span id="modal-count-bookmarks">0</span>)
         </button>
         <button id="modal-tab-favorites" onclick="switchModalTab('favorites')"
-          class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200">
+          class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex-shrink-0">
           찜한 공고 (<span id="modal-count-favorites">0</span>)
         </button>
         <button id="modal-tab-hidden" onclick="switchModalTab('hidden')"
-          class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200">
+          class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex-shrink-0">
           숨김 공고 (<span id="modal-count-hidden">0</span>)
         </button>
       </div>
 
       <!-- 모달 본문 (스크롤) -->
-      <div class="p-6 overflow-y-auto flex-1 space-y-4 text-sm">
-        <div id="modal-tab-content-bookmarks" class="space-y-3">
+      <div class="p-4 sm:p-6 overflow-y-auto flex-1 space-y-3 sm:space-y-4 text-xs sm:text-sm">
+        <div id="modal-tab-content-bookmarks" class="space-y-2.5 sm:space-y-3">
           <p class="text-slate-500 text-xs">로딩 중...</p>
         </div>
-        <div id="modal-tab-content-favorites" class="space-y-3 hidden">
+        <div id="modal-tab-content-favorites" class="space-y-2.5 sm:space-y-3 hidden">
           <p class="text-slate-500 text-xs">로딩 중...</p>
         </div>
-        <div id="modal-tab-content-hidden" class="space-y-3 hidden">
+        <div id="modal-tab-content-hidden" class="space-y-2.5 sm:space-y-3 hidden">
           <p class="text-slate-500 text-xs">로딩 중...</p>
         </div>
       </div>

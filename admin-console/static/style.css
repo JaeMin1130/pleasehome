@@ -19,6 +19,18 @@
 /* 터미널 폰트 및 스타일 */
 #terminal-body {
   font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Menlo, Monaco, Consolas, monospace;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 모바일 터치 최적화 */
+@media (max-width: 640px) {
+  table th, table td {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  input[type="date"] {
+    min-height: 2.25rem;
+  }
 }
 
 /* 뱃지 반짝임 효과 */

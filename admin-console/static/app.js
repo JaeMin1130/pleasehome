@@ -57,13 +57,18 @@ function switchTab(tab) {
 // -------------------------------------------------------------
 async function loadAdminStats() {
   const statusLabel = document.getElementById("server-status-label");
+  const statusLabelM = document.getElementById("server-status-label-m");
+  const setStatus = (text, cls) => {
+    if (statusLabel) { statusLabel.textContent = text; statusLabel.className = cls; }
+    if (statusLabelM) { statusLabelM.textContent = text; statusLabelM.className = cls; }
+  };
+
   try {
     const res = await fetch("/api/proxy/stats");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
 
-    statusLabel.textContent = "실서버 백엔드 정상";
-    statusLabel.className = "text-emerald-400 font-mono";
+    setStatus("실서버 백엔드 정상", "text-emerald-400 font-mono");
 
     // 통계 카드
     document.getElementById("stat-total-members").textContent = Number(data.totalMembers || 0).toLocaleString();
@@ -120,8 +125,7 @@ async function loadAdminStats() {
     }
 
   } catch (err) {
-    statusLabel.textContent = "백엔드 응답 대기/오프라인";
-    statusLabel.className = "text-amber-400 font-mono";
+    setStatus("백엔드 응답 대기/오프라인", "text-amber-400 font-mono");
   }
 }
 
