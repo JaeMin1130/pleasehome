@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useBottomSheetGesture } from '@/hooks/useBottomSheetGesture';
 import { Complex, HousingUnit, Announcement, FilterState, BookmarkFolder } from '@/types';
 import UnitTable from '@/components/features/UnitTable';
+import UnitCard from '@/components/features/UnitCard';
 import PanelEdgeToggle from '@/components/ui/PanelEdgeToggle';
 import { formatTargetGroup, formatMoney, formatRent } from '@/utils/formatters';
 import styles from './DetailPanel.module.css';
@@ -584,11 +585,28 @@ export default function DetailPanel({
           ) : filteredUnits.length === 0 ? (
             <div className={styles['empty-msg']}>조건에 맞는 공급 주택형이 없습니다.</div>
           ) : (
-            <UnitTable
-              units={filteredUnits}
-              sliderValues={sliderValues}
-              onSliderChange={handleSliderChange}
-            />
+            <>
+              {/* PC 전용: 테이블 뷰 */}
+              <div className={styles['units-desktop']}>
+                <UnitTable
+                  units={filteredUnits}
+                  sliderValues={sliderValues}
+                  onSliderChange={handleSliderChange}
+                />
+              </div>
+
+              {/* 모바일 전용: 카드 리스트 뷰 */}
+              <div className={styles['units-mobile']}>
+                {filteredUnits.map((unit) => (
+                  <UnitCard
+                    key={unit.id}
+                    unit={unit}
+                    sliderVal={sliderValues[unit.id] ?? unit.deposit}
+                    onSliderChange={handleSliderChange}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </div>
       </div>

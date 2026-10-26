@@ -252,3 +252,147 @@
 .details[open] .toggleIcon {
   transform: rotate(180deg);
 }
+
+/* PC 전용 및 모바일 전용 분기 */
+.desktopOnly {
+  display: block;
+}
+
+.mobileOnly {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktopOnly {
+    display: none !important;
+  }
+
+  .mobileOnly {
+    display: block !important;
+  }
+
+  .container {
+    padding: 0 var(--spacing-sm);
+    margin: var(--spacing-md) auto;
+  }
+
+  .header {
+    padding: var(--spacing-md);
+  }
+
+  .title {
+    font-size: var(--font-size-xl);
+  }
+
+  .detailContent {
+    padding: var(--spacing-sm);
+  }
+}
+
+/* 모바일 일정 타임라인 카드 */
+.scheduleTimeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.scheduleCard {
+  background-color: var(--bg-surface-hover);
+  border: var(--spacing-3xs) solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.scheduleType {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.scheduleDate {
+  font-size: var(--font-size-xs);
+  color: var(--primary);
+  font-weight: var(--font-weight-semibold);
+  background-color: var(--primary-bg);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  display: inline-block;
+  align-self: flex-start;
+}
+
+.scheduleNotes {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  line-height: var(--line-height-normal);
+  margin-top: var(--spacing-2xs);
+}
+
+/* 모바일 단지 카드 리스트 */
+.complexListMobile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.complexCardMobile {
+  background-color: var(--bg-surface-hover);
+  border: var(--spacing-3xs) solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.complexCardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xs);
+}
+
+.complexCardTitle {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.complexCardTitle:hover {
+  text-decoration: underline;
+}
+
+.complexCardAddress {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.complexGridSpecs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-xs);
+  background-color: var(--bg-surface);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  border: var(--spacing-3xs) solid var(--border-light);
+  margin-top: var(--spacing-xs);
+}
+
+.specItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.specLabel {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.specValue {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+

@@ -145,7 +145,8 @@ export default async function AnnouncementDetailPage({ params }: PageProps) {
                 </span>
               </summary>
               <div className={styles.detailContent} style={{ borderTop: 'none' }}>
-                <div className={styles.tableWrapper} style={{ marginBottom: 0 }}>
+                {/* PC 전용: 테이블 뷰 */}
+                <div className={`${styles.tableWrapper} ${styles.desktopOnly}`} style={{ marginBottom: 0 }}>
                   <table className={styles.table}>
                     <thead>
                       <tr>
@@ -171,6 +172,27 @@ export default async function AnnouncementDetailPage({ params }: PageProps) {
                     </tbody>
                   </table>
                 </div>
+
+                {/* 모바일 전용: 세로형 타임라인 카드 뷰 */}
+                <div className={`${styles.scheduleTimeline} ${styles.mobileOnly}`}>
+                  {schedules.map((sch) => (
+                    <div key={sch.id} className={styles.scheduleCard}>
+                      <div className={styles.scheduleType}>{sch.schedule_type}</div>
+                      <div className={styles.scheduleDate}>
+                        {sch.start_date || sch.end_date ? (
+                          `${formatDateWithTime(sch.start_date)} ~ ${formatDateWithTime(sch.end_date)}`
+                        ) : (
+                          sch.raw_text || '-'
+                        )}
+                      </div>
+                      {sch.notes && (
+                        <div className={styles.scheduleNotes}>
+                          ℹ️ {sch.notes}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </details>
           </section>
@@ -191,7 +213,8 @@ export default async function AnnouncementDetailPage({ params }: PageProps) {
                 </span>
               </summary>
               <div className={styles.detailContent} style={{ borderTop: 'none' }}>
-                <div className={styles.tableWrapper} style={{ marginBottom: 0 }}>
+                {/* PC 전용: 테이블 뷰 */}
+                <div className={`${styles.tableWrapper} ${styles.desktopOnly}`} style={{ marginBottom: 0 }}>
                   <table className={styles.table}>
                     <thead>
                       <tr>
@@ -248,6 +271,66 @@ export default async function AnnouncementDetailPage({ params }: PageProps) {
                       })}
                     </tbody>
                   </table>
+                </div>
+
+                {/* 모바일 전용: 단지 요약 카드 리스트 */}
+                <div className={`${styles.complexListMobile} ${styles.mobileOnly}`}>
+                  {complexes.map((complex) => {
+                    const complexUnits = units.filter((u) => u.complex_id === complex.id);
+                    
+                    const totalSupply = complexUnits.reduce((sum, u) => sum + (u.supply_count || 0), 0);
+                    const totalReserve = complexUnits.reduce((sum, u) => sum + (u.reserve_count || 0), 0);
+                    const hasCount = totalSupply > 0 || totalReserve > 0;
+                    
+                    const countText = [
+                      totalSupply > 0 ? `${totalSupply}호` : '0호',
+                      totalReserve > 0 ? ` / ${totalReserve}호` : '0호'
+                    ].filter(Boolean).join(' ');
+
+                    const areas = complexUnits.map((u) => u.exclusive_area).filter(Boolean);
+                    const minArea = areas.length > 0 ? Math.min(...areas) : 0;
+                    const maxArea = areas.length > 0 ? Math.max(...areas) : 0;
+                    const areaText = minArea === maxArea 
+                      ? `${minArea} ㎡` 
+                      : `${minArea} ㎡ ~ ${maxArea} ㎡`;
+
+                    const deposits = complexUnits.map((u) => u.deposit).filter(Boolean);
+                    const minDeposit = deposits.length > 0 ? Math.min(...deposits) : 0;
+                    const maxDeposit = deposits.length > 0 ? Math.max(...deposits) : 0;
+                    const depositText = minDeposit === maxDeposit
+                      ? formatMoney(minDeposit)
+                      : `${formatMoney(minDeposit)} ~ ${formatMoney(maxDeposit)}`;
+
+                    return (
+                      <div key={complex.id} className={styles.complexCardMobile}>
+                        <div className={styles.complexCardHeader}>
+                          <Link href={`/complexes/${complex.id}`} className={styles.complexCardTitle}>
+                            🏢 {complex.name}
+                          </Link>
+                          <div className={styles.complexCardAddress}>
+                            📍 {complex.address ? complex.address.replace(/\([^)]*\)/g, '').replace(/\s+/g, ' ').trim() : '-'}
+                          </div>
+                        </div>
+
+                        <div className={styles.complexGridSpecs}>
+                          <div className={styles.specItem}>
+                            <span className={styles.specLabel}>공급면적</span>
+                            <span className={styles.specValue}>{areas.length > 0 ? areaText : '-'}</span>
+                          </div>
+                          <div className={styles.specItem}>
+                            <span className={styles.specLabel}>공급 / 예비</span>
+                            <span className={styles.specValue}>{hasCount ? countText : '-'}</span>
+                          </div>
+                          <div className={styles.specItem} style={{ gridColumn: 'span 2' }}>
+                            <span className={styles.specLabel}>보증금 범위</span>
+                            <span className={styles.specValue} style={{ color: 'var(--primary)' }}>
+                              {deposits.length > 0 ? depositText : '-'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </details>

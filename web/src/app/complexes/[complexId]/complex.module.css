@@ -246,3 +246,105 @@ button.docBtn {
   color: var(--primary-hover);
   text-decoration: underline;
 }
+
+/* PC 전용 및 모바일 전용 분기 */
+.desktopOnly {
+  display: block;
+}
+
+.mobileOnly {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktopOnly {
+    display: none !important;
+  }
+
+  .mobileOnly {
+    display: block !important;
+  }
+
+  .container {
+    padding: 0 var(--spacing-sm);
+    margin: var(--spacing-md) auto;
+  }
+
+  .header {
+    padding: var(--spacing-md);
+  }
+
+  .title {
+    font-size: var(--font-size-xl);
+  }
+
+  .contentSection, .historySection {
+    padding: var(--spacing-md);
+  }
+}
+
+/* 모바일 세부 공급 평형 카드 리스트 */
+.unitListMobile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.unitCardMobile {
+  background-color: var(--bg-surface-hover);
+  border: var(--spacing-3xs) solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.unitCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.unitCardArea {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.unitCardTarget {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  background-color: var(--primary-bg);
+  color: var(--primary);
+  padding: var(--spacing-2xs) var(--spacing-xs);
+  border-radius: var(--radius-sm);
+}
+
+.unitGridSpecs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-xs);
+  background-color: var(--bg-surface);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  border: var(--spacing-3xs) solid var(--border-light);
+  margin-top: var(--spacing-2xs);
+}
+
+.specItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.specLabel {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.specValue {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+

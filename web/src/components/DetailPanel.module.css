@@ -572,3 +572,24 @@
   border-radius: var(--radius-md);
   border: var(--spacing-3xs) solid var(--border-light);
 }
+
+/* PC 전용 테이블 및 모바일 전용 카드 뷰 분기 */
+.units-desktop {
+  display: block;
+}
+
+.units-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .units-desktop {
+    display: none;
+  }
+
+  .units-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+}

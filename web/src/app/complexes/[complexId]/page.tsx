@@ -126,45 +126,97 @@ export default async function ComplexDetailPage({ params }: PageProps) {
           {units.length === 0 ? (
             <div className={styles.noData}>등록된 세부 평형 정보가 없습니다.</div>
           ) : (
-            <div className={styles.tableWrapper}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>전용면적</th>
-                    <th>공급대상</th>
-                    <th>공급 / 예비</th>
-                    <th>임대보증금</th>
-                    <th>월임대료</th>
-                    <th>비고</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {units.map((unit) => {
-                    const hasCount = (unit.supply_count && unit.supply_count > 0) || (unit.reserve_count && unit.reserve_count > 0);
-                    const countText = [
-                      unit.supply_count > 0 ? `${unit.supply_count}호` : '0호',
-                      unit.reserve_count > 0 ? ` / ${unit.reserve_count}호` : '0호'
-                    ].filter(Boolean).join(' ');
+            <>
+              {/* PC 전용: 테이블 뷰 */}
+              <div className={`${styles.tableWrapper} ${styles.desktopOnly}`}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>전용면적</th>
+                      <th>공급대상</th>
+                      <th>공급 / 예비</th>
+                      <th>임대보증금</th>
+                      <th>월임대료</th>
+                      <th>비고</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {units.map((unit) => {
+                      const hasCount = (unit.supply_count && unit.supply_count > 0) || (unit.reserve_count && unit.reserve_count > 0);
+                      const countText = [
+                        unit.supply_count > 0 ? `${unit.supply_count}호` : '0호',
+                        unit.reserve_count > 0 ? ` / ${unit.reserve_count}호` : '0호'
+                      ].filter(Boolean).join(' ');
 
-                    return (
-                      <tr key={unit.id}>
-                        <td>
-                          <strong>{unit.exclusive_area ? `${unit.exclusive_area} ㎡ (${Math.round(unit.exclusive_area * 0.3025)}평)` : '-'}</strong>
-                        </td>
-                        <td>{formatTargetGroup(unit.target_group)}</td>
-                        <td>{hasCount ? countText : '-'}</td>
-                        <td>{formatMoney(unit.deposit)}</td>
-                        <td>{formatMoney(unit.monthly_rent)}</td>
-                        <td>
-                          {unit.supply_type || ''}
-                          {unit.income_group ? ` [${unit.income_group}]` : ''}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                      return (
+                        <tr key={unit.id}>
+                          <td>
+                            <strong>{unit.exclusive_area ? `${unit.exclusive_area} ㎡ (${Math.round(unit.exclusive_area * 0.3025)}평)` : '-'}</strong>
+                          </td>
+                          <td>{formatTargetGroup(unit.target_group)}</td>
+                          <td>{hasCount ? countText : '-'}</td>
+                          <td>{formatMoney(unit.deposit)}</td>
+                          <td>{formatMoney(unit.monthly_rent)}</td>
+                          <td>
+                            {unit.supply_type || ''}
+                            {unit.income_group ? ` [${unit.income_group}]` : ''}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* 모바일 전용: 세부 공급 평형 카드 리스트 */}
+              <div className={`${styles.unitListMobile} ${styles.mobileOnly}`}>
+                {units.map((unit) => {
+                  const hasCount = (unit.supply_count && unit.supply_count > 0) || (unit.reserve_count && unit.reserve_count > 0);
+                  const countText = [
+                    unit.supply_count > 0 ? `${unit.supply_count}호` : '0호',
+                    unit.reserve_count > 0 ? ` / ${unit.reserve_count}호` : '0호'
+                  ].filter(Boolean).join(' ');
+
+                  return (
+                    <div key={unit.id} className={styles.unitCardMobile}>
+                      <div className={styles.unitCardHeader}>
+                        <div className={styles.unitCardArea}>
+                          {unit.exclusive_area ? `${unit.exclusive_area}㎡ (${Math.round(unit.exclusive_area * 0.3025)}평)` : '-'}
+                        </div>
+                        <div className={styles.unitCardTarget}>
+                          {formatTargetGroup(unit.target_group)}
+                        </div>
+                      </div>
+
+                      <div className={styles.unitGridSpecs}>
+                        <div className={styles.specItem}>
+                          <span className={styles.specLabel}>보증금</span>
+                          <span className={styles.specValue} style={{ color: 'var(--primary)' }}>
+                            {formatMoney(unit.deposit)}
+                          </span>
+                        </div>
+                        <div className={styles.specItem}>
+                          <span className={styles.specLabel}>월임대료</span>
+                          <span className={styles.specValue}>
+                            {formatMoney(unit.monthly_rent)}
+                          </span>
+                        </div>
+                        <div className={styles.specItem}>
+                          <span className={styles.specLabel}>공급 / 예비</span>
+                          <span className={styles.specValue}>{hasCount ? countText : '-'}</span>
+                        </div>
+                        <div className={styles.specItem}>
+                          <span className={styles.specLabel}>공급구분 / 소득</span>
+                          <span className={styles.specValue}>
+                            {unit.supply_type || '-'} {unit.income_group ? `[${unit.income_group}]` : ''}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
         </section>
 
