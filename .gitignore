@@ -15,6 +15,7 @@
 !/web/
 !/db-pipeline/
 !/backend/
+!/admin-console/
 
 # Blacklist
 /docs/reference

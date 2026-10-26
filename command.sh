@@ -306,6 +306,63 @@ function convert_pdf() {
   "$PYTHON_BIN" "$BASE_DIR/.agents/scripts/convert_pdf_to_md.py" "$@"
 }
 
+function admin_run() {
+  echo "🛡️ [관리자 콘솔] PleaseHome Admin Console 실행 중... (포트 3001)"
+  (cd "$BASE_DIR/admin-console" && exec "$BASE_DIR/db-pipeline/.venv/bin/uvicorn" main:app --host 0.0.0.0 --port 3001 --reload)
+}
+
+function deploy_admin() {
+  local target="kis-server"
+  echo "🚀 [홈서버 배포 1/3] 대상 머신($target) 연결 확인..."
+  if ! ssh -o BatchMode=yes "$target" "true" 2>/dev/null; then
+    echo "❌ $target 연결 실패. ~/.ssh/config 또는 Tailscale/네트워크 상태를 확인하세요."
+    exit 1
+  fi
+
+  echo "📦 [홈서버 배포 2/3] 관리자 콘솔 및 파이프라인 파일 rsync 동기화 → $target..."
+  ssh "$target" "mkdir -p /home/iru/app/pleasehome"
+  rsync -avz --delete \
+    --exclude '.git' \
+    --exclude '.venv' \
+    --exclude '__pycache__' \
+    --exclude 'node_modules' \
+    --exclude '.next' \
+    --exclude 'backend' \
+    --exclude 'web' \
+    --exclude 'docs' \
+    --exclude 'logs' \
+    --exclude 'db-pipeline/.venv' \
+    --exclude 'db-pipeline/scratch' \
+    --exclude 'db-pipeline/docs/pdf/*/*' \
+    --exclude 'db-pipeline/docs/md' \
+    "$BASE_DIR/" "$target:/home/iru/app/pleasehome/"
+
+  echo "🔄 [홈서버 배포 3/3] 파이썬 가상환경 구성 및 systemd 서비스 재시작..."
+  ssh -t "$target" "
+    set -e
+    export PATH=\$HOME/.local/bin:\$PATH
+    cd /home/iru/app/pleasehome
+    if [ ! -d db-pipeline/.venv ]; then
+      uv venv db-pipeline/.venv
+    fi
+    uv pip install --python db-pipeline/.venv fastapi uvicorn httpx jinja2 playwright requests python-dotenv pydantic lxml
+    sudo cp admin-console/service/pleasehome-admin.service /etc/systemd/system/
+    sudo systemctl daemon-reload
+    sudo systemctl enable --now pleasehome-admin
+    sudo systemctl restart pleasehome-admin
+    for _ in \$(seq 1 15); do
+      if curl -sf http://127.0.0.1:3001/ >/dev/null 2>&1; then
+        echo '💚 홈서버 관리자 콘솔 (3001) 정상 가동 중!'
+        exit 0
+      fi
+      sleep 1
+    done
+    echo '⚠️ 헬스체크 대기 시간 초과. 서비스 로그를 확인하세요: journalctl -u pleasehome-admin -n 20'
+  "
+  echo "✅ 홈서버($target) 관리자 콘솔 배포가 완료되었습니다!"
+  echo "   접속: http://192.168.219.104:3001 또는 Tailscale 사설 서브도메인"
+}
+
 case "$1" in
   # --- 백엔드 (Kotlin + Spring Boot) ---
   backend:run|backend:dev)
@@ -327,6 +384,14 @@ case "$1" in
     ;;
   web:start)
     npm --prefix "$BASE_DIR/web" run start
+    ;;
+
+  # --- 관리자 콘솔 (FastAPI + 실시간 모니터링) ---
+  admin:run|admin:dev|admin)
+    admin_run
+    ;;
+  deploy:admin|admin:deploy)
+    deploy_admin
     ;;
 
   # --- 데이터 파이프라인 & 배포 ---
@@ -375,6 +440,10 @@ case "$1" in
     echo "    web:run          : Next.js 프론트엔드 개발 서버 실행 (포트 3000)"
     echo "    web:build        : Next.js 프로덕션 빌드"
     echo "    web:start        : Next.js 프로덕션 서버 실행"
+    echo ""
+    echo "  [관리자 콘솔 - PleaseHome Admin]"
+    echo "    admin:run        : PleaseHome 관리자 콘솔 실행 (포트 3001, 회원 모니터링 + 파이프라인 제어)"
+    echo "    deploy:admin     : 노트북 홈서버(kis-server)로 관리자 콘솔 원클릭 배포 및 systemd 등록"
     echo ""
     echo "  [데이터 수집 & 변환]"
     echo "    notice:fetch [lh|sh|gh|all] <시작일 yyyy-MM-dd> <종료일 yyyy-MM-dd> [추가옵션...] : 기관별(LH/SH/GH/전체) 공고 및 원본 문서 자동 수집"
