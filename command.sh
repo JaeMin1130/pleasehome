@@ -345,7 +345,7 @@ function deploy_admin() {
     if [ ! -d db-pipeline/.venv ]; then
       uv venv db-pipeline/.venv
     fi
-    uv pip install --python db-pipeline/.venv fastapi uvicorn httpx jinja2 playwright requests python-dotenv pydantic lxml
+    uv pip install --python db-pipeline/.venv fastapi uvicorn httpx jinja2 playwright requests python-dotenv pydantic lxml google-genai
     sudo cp admin-console/service/pleasehome-admin.service /etc/systemd/system/
     sudo systemctl daemon-reload
     sudo systemctl enable --now pleasehome-admin
@@ -406,6 +406,10 @@ case "$1" in
     ;;
   notice:fetch|fetch:notice|fetch)
     fetch_notices "$2" "$3" "${@:4}"
+    ;;
+  notice:ingest|ingest)
+    echo "🤖 [AI 공고 적재 파이프라인] PDF 분석 → 정밀 감사 → DB 적재 시작..."
+    "$PYTHON_BIN" "$BASE_DIR/db-pipeline/src/auto_pipeline/ingest.py" "${@:2}"
     ;;
   pdf:convert|convert:pdf|convert)
     convert_pdf "${@:2}"

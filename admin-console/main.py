@@ -199,7 +199,7 @@ async def run_pipeline(payload: dict):
     start_date = payload.get("start_date")
     end_date = payload.get("end_date")
 
-    valid_commands = ["fetch:lh", "fetch:sh", "fetch:gh", "fetch:all", "deploy:db", "status"]
+    valid_commands = ["fetch:lh", "fetch:sh", "fetch:gh", "fetch:all", "deploy:db", "status", "ingest:all"]
     if cmd_key not in valid_commands:
         raise HTTPException(status_code=400, detail="허용되지 않은 명령어입니다.")
 
@@ -220,6 +220,8 @@ async def run_pipeline(payload: dict):
         cmd_list = ["./command.sh", "notice:fetch"]
         if start_date and end_date:
             cmd_list.extend(["all", start_date, end_date])
+    elif cmd_key == "ingest:all":
+        cmd_list = ["./command.sh", "notice:ingest", "all"]
     elif cmd_key == "status":
         cmd_list = ["./command.sh", "db:status"]
     elif cmd_key == "deploy:db":

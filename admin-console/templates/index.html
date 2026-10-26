@@ -284,6 +284,12 @@
             <span>전체 일괄 수집</span>
           </button>
 
+          <button onclick="triggerPipeline('ingest:all', '미적재 공고 AI 자동 추출·감사·적재')"
+            class="px-3.5 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center space-x-2 shadow-sm transition">
+            <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
+            <span>AI 자동 적재</span>
+          </button>
+
           <button onclick="triggerPipeline('status', 'DB 적재 현황 조회')"
             class="px-3.5 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center space-x-2 transition">
             <i class="fa-solid fa-database"></i>
