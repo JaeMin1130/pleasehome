@@ -1,14 +1,17 @@
 package com.pleasehome.backend.config
 
+import com.pleasehome.backend.admin.AdminSecurityInterceptor
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.config.annotation.CorsRegistry
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Configuration
 class WebConfig(
     @Value("\${cors.allowed-origins:http://localhost:3000,http://127.0.0.1:3000}")
-    private val allowedOrigins: String
+    private val allowedOrigins: String,
+    private val adminSecurityInterceptor: AdminSecurityInterceptor
 ) : WebMvcConfigurer {
 
     override fun addCorsMappings(registry: CorsRegistry) {
@@ -19,5 +22,10 @@ class WebConfig(
             .allowedHeaders("*")
             .allowCredentials(true)
             .maxAge(3600)
+    }
+
+    override fun addInterceptors(registry: InterceptorRegistry) {
+        registry.addInterceptor(adminSecurityInterceptor)
+            .addPathPatterns("/api/admin/**")
     }
 }
