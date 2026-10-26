@@ -147,7 +147,7 @@ export default function DetailPanel({
       >
         {/* 모바일 화면 전용 상단 드래그 핸들바 */}
         <div className={styles['drag-handle-bar']} />
-        {onExpandToggle && <PanelEdgeToggle isExpanded={isExpanded} onToggle={onExpandToggle} />}
+        {isOpen && onExpandToggle && <PanelEdgeToggle isExpanded={isExpanded} onToggle={onExpandToggle} />}
         {/* 헤더 영역을 스크롤 바깥으로 분리 */}
         <div className={styles['panel-header-fixed']}>
           <div className={styles['basic-info-header']}>
@@ -378,7 +378,7 @@ export default function DetailPanel({
     >
       {/* 모바일 화면 전용 상단 드래그 핸들바 */}
       <div className={styles['drag-handle-bar']} />
-      {onExpandToggle && <PanelEdgeToggle isExpanded={isExpanded} onToggle={onExpandToggle} />}
+      {isOpen && onExpandToggle && <PanelEdgeToggle isExpanded={isExpanded} onToggle={onExpandToggle} />}
       {/* 헤더 영역을 스크롤 바깥으로 분리 */}
       <div className={styles['panel-header-fixed']}>
         <div className={styles['basic-info-header']}>

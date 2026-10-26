@@ -632,7 +632,7 @@ export default function Sidebar({
         ...style
       }}
     >
-      {onExpandToggle && <PanelEdgeToggle isExpanded={isExpanded} onToggle={onExpandToggle} />}
+      {!isCollapsed && !isHiddenFully && onExpandToggle && <PanelEdgeToggle isExpanded={isExpanded} onToggle={onExpandToggle} />}
       {/* 탭 분기 렌더링 */}
       {activeTab === "SEARCH" && (
         <SearchTab

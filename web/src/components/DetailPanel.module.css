@@ -25,6 +25,19 @@
     transform: translateX(0);
   }
 
+  /* 우측변 토글 원이 패널 밖으로 나가야 해서 자르지 않고, 둥근 모서리는 헤더·본문이 직접 깎음 */
+  .app-detail-panel {
+    overflow: visible;
+  }
+
+  .app-detail-panel .panel-header-fixed {
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .app-detail-panel .panel-body {
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  }
+
   /* 펼침: 네비·사이드바를 뺀 지도 영역의 2/3를 차지하고 1/3은 지도로 남김 */
   .app-detail-panel.expanded {
     width: max(var(--layout-panel-width),
