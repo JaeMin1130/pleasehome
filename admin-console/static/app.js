@@ -8,10 +8,27 @@ let currentEventSource = null;
 
 // 초기화
 document.addEventListener("DOMContentLoaded", () => {
+  initDatePresets();
   loadAdminStats();
   loadMembers(0);
   loadPipelineStatus();
 });
+
+function initDatePresets() {
+  setDateRangePreset(10);
+}
+
+function setDateRangePreset(days) {
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setDate(endDate.getDate() - days);
+
+  const format = (d) => d.toISOString().split("T")[0];
+  const startInput = document.getElementById("pipeline-start-date");
+  const endInput = document.getElementById("pipeline-end-date");
+  if (startInput) startInput.value = format(startDate);
+  if (endInput) endInput.value = format(endDate);
+}
 
 // 탭 전환
 function switchTab(tab) {
@@ -384,11 +401,20 @@ async function triggerPipeline(command, title) {
   terminalBody.textContent += `======================================================\n`;
   terminalBody.scrollTop = terminalBody.scrollHeight;
 
+  const startDateInput = document.getElementById("pipeline-start-date");
+  const endDateInput = document.getElementById("pipeline-end-date");
+  const startDate = startDateInput ? startDateInput.value : "";
+  const endDate = endDateInput ? endDateInput.value : "";
+
   try {
     const res = await fetch("/api/pipeline/run", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ command })
+      body: JSON.stringify({
+        command,
+        start_date: startDate,
+        end_date: endDate
+      })
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();

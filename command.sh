@@ -277,12 +277,12 @@ function fetch_notices() {
   local end_date="$2"
   shift 2 2>/dev/null || true
 
-  if [ -z "$start_date" ] || [ -z "$end_date" ]; then
-    echo "❌ 시작일과 종료일이 필요합니다."
-    echo "사용법: ./command.sh notice:fetch [lh|sh|gh|all] <시작일(YYYY-MM-DD)> <종료일(YYYY-MM-DD)> [추가옵션...]"
-    echo "예시:   ./command.sh notice:fetch 2026-10-01 2026-10-25"
-    echo "        ./command.sh notice:fetch sh 2026-10-01 2026-10-25"
-    return 1
+  # 시작일/종료일 미입력 시 최근 10일치 자동 기본값 설정
+  if [ -z "$end_date" ]; then
+    end_date=$(date +%Y-%m-%d)
+  fi
+  if [ -z "$start_date" ]; then
+    start_date=$(date -d "10 days ago" +%Y-%m-%d)
   fi
 
   if [ "$target" = "lh" ] || [ "$target" = "all" ]; then
@@ -395,6 +395,15 @@ case "$1" in
     ;;
 
   # --- 데이터 파이프라인 & 배포 ---
+  notice:fetch:lh|fetch:lh)
+    fetch_notices lh "$2" "$3" "${@:4}"
+    ;;
+  notice:fetch:sh|fetch:sh)
+    fetch_notices sh "$2" "$3" "${@:4}"
+    ;;
+  notice:fetch:gh|fetch:gh)
+    fetch_notices gh "$2" "$3" "${@:4}"
+    ;;
   notice:fetch|fetch:notice|fetch)
     fetch_notices "$2" "$3" "${@:4}"
     ;;

@@ -17,7 +17,7 @@ DB_PATH = BASE_DIR / "db-pipeline" / "public_housing.db"
 PDF_DIR = BASE_DIR / "db-pipeline" / "docs" / "pdf"
 
 # 실서버 또는 로컬 백엔드 주소 (환경변수로 재정의 가능)
-REMOTE_BACKEND_URL = os.getenv("REMOTE_BACKEND_URL", "http://101.79.19.118:8080")
+REMOTE_BACKEND_URL = os.getenv("REMOTE_BACKEND_URL", "https://pleasehome.com")
 LOCAL_BACKEND_URL = os.getenv("LOCAL_BACKEND_URL", "http://127.0.0.1:8080")
 ADMIN_API_KEY = os.getenv("ADMIN_API_KEY", "plzhome-secret-adm-key-9f8a7e6b5c4d3e2a1")
 
@@ -193,24 +193,39 @@ async def get_pipeline_status():
 # -------------------------------------------------------------
 # 3. 파이프라인 실행 및 실시간 터미널 스트리밍 (SSE)
 # -------------------------------------------------------------
-ALLOWED_COMMANDS = {
-    "fetch:lh": ["./command.sh", "notice:fetch:lh"],
-    "fetch:sh": ["./command.sh", "notice:fetch:sh"],
-    "fetch:gh": ["./command.sh", "notice:fetch:gh"],
-    "fetch:all": ["./command.sh", "notice:fetch"],
-    "deploy:db": ["./command.sh", "deploy:db"],
-    "status": ["./command.sh", "db:status"],
-}
-
 @app.post("/api/pipeline/run")
 async def run_pipeline(payload: dict):
     cmd_key = payload.get("command")
-    if cmd_key not in ALLOWED_COMMANDS:
+    start_date = payload.get("start_date")
+    end_date = payload.get("end_date")
+
+    valid_commands = ["fetch:lh", "fetch:sh", "fetch:gh", "fetch:all", "deploy:db", "status"]
+    if cmd_key not in valid_commands:
         raise HTTPException(status_code=400, detail="허용되지 않은 명령어입니다.")
 
-    job_id = str(uuid.uuid4())[:8]
-    cmd_list = ALLOWED_COMMANDS[cmd_key]
+    cmd_list = []
+    if cmd_key == "fetch:lh":
+        cmd_list = ["./command.sh", "notice:fetch:lh"]
+        if start_date and end_date:
+            cmd_list.extend([start_date, end_date])
+    elif cmd_key == "fetch:sh":
+        cmd_list = ["./command.sh", "notice:fetch:sh"]
+        if start_date and end_date:
+            cmd_list.extend([start_date, end_date])
+    elif cmd_key == "fetch:gh":
+        cmd_list = ["./command.sh", "notice:fetch:gh"]
+        if start_date and end_date:
+            cmd_list.extend([start_date, end_date])
+    elif cmd_key == "fetch:all":
+        cmd_list = ["./command.sh", "notice:fetch"]
+        if start_date and end_date:
+            cmd_list.extend(["all", start_date, end_date])
+    elif cmd_key == "status":
+        cmd_list = ["./command.sh", "db:status"]
+    elif cmd_key == "deploy:db":
+        cmd_list = ["./command.sh", "deploy:db"]
 
+    job_id = str(uuid.uuid4())[:8]
     job = JobProcess(job_id=job_id, command=cmd_key, cmd_list=cmd_list)
     jobs[job_id] = job
 

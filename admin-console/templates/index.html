@@ -222,9 +222,25 @@
           <i class="fa-solid fa-bolt text-emerald-400"></i>
           <span>공고 수집 및 배포 원클릭 제어</span>
         </h2>
-        <p class="text-xs text-slate-400 mb-5">
+        <p class="text-xs text-slate-400 mb-4">
           노트북 서버의 파이프라인 CLI를 웹에서 직접 실행하고 결과를 실시간 모니터링합니다.
         </p>
+
+        <!-- 수집 기간 설정 필터 -->
+        <div class="flex flex-wrap items-center gap-2.5 mb-5 p-3 bg-slate-900/60 rounded-xl border border-slate-700/50 text-xs">
+          <span class="text-slate-300 font-medium flex items-center space-x-1">
+            <i class="fa-regular fa-calendar text-emerald-400"></i>
+            <span>수집 기간:</span>
+          </span>
+          <input type="date" id="pipeline-start-date" class="bg-slate-800 border border-slate-700 text-slate-200 px-3 py-1.5 rounded-lg focus:outline-none focus:border-emerald-500 font-mono">
+          <span class="text-slate-500 font-bold">~</span>
+          <input type="date" id="pipeline-end-date" class="bg-slate-800 border border-slate-700 text-slate-200 px-3 py-1.5 rounded-lg focus:outline-none focus:border-emerald-500 font-mono">
+          <div class="flex space-x-1.5 ml-1">
+            <button onclick="setDateRangePreset(7)" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition">최근 7일</button>
+            <button onclick="setDateRangePreset(14)" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition">최근 14일</button>
+            <button onclick="setDateRangePreset(30)" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition">최근 30일</button>
+          </div>
+        </div>
 
         <div class="flex flex-wrap gap-3">
           <button onclick="triggerPipeline('fetch:lh', 'LH 공고 수집')"
