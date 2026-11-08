@@ -323,6 +323,8 @@ function deploy_admin() {
   ssh "$target" "mkdir -p /home/iru/app/pleasehome"
   rsync -avz --delete \
     --exclude '.git' \
+    --exclude '.env' \
+    --exclude 'db-pipeline/.env' \
     --exclude '.venv' \
     --exclude '__pycache__' \
     --exclude 'node_modules' \

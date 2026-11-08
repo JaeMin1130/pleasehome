@@ -4,6 +4,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -189,9 +190,9 @@ def extract_with_gemini(folder: Path, feedback: Optional[str] = None) -> Optiona
     if feedback:
         user_prompt += f"\n\n⚠️ [이전 감사 불합격 피드백 - 반드시 수정할 사항]:\n{feedback}\n위의 지적된 오류를 완벽히 바로잡아 정정된 JSON을 반환하세요."
 
-    # Gemini 2.5 Flash 호출
+    # Gemini 3.8 Flash 호출
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-3.8-flash",
         contents=[uploaded_file, user_prompt],
         config=types.GenerateContentConfig(
             system_instruction=SYSTEM_PROMPT,
@@ -230,12 +231,21 @@ def process_single_folder(folder: Path) -> bool:
         print("❌ GEMINI_API_KEY가 설정되어 있지 않습니다. (.env 파일을 확인하세요)")
         return False
 
+    from google.genai import errors as genai_errors
+
     feedback = None
     max_retries = 3
 
     for attempt in range(1, max_retries + 1):
         print(f"\n🔄 [1단계: AI 추출] 시도 {attempt}/{max_retries}...")
-        data = extract_with_gemini(folder, feedback)
+        try:
+            data = extract_with_gemini(folder, feedback)
+        except genai_errors.APIError as e:
+            # 503 과부하 등 일시 장애 한 번에 배치 전체가 죽지 않도록 이 시도만 실패 처리
+            print(f"⚠️ Gemini API 오류: {e}")
+            if attempt < max_retries:
+                time.sleep(30)
+            continue
         if not data:
             print(f"⚠️ 추출 실패. 재시도합니다.")
             continue
