@@ -160,7 +160,8 @@ def main():
                 title_elem = tds[1].xpath(".//a")
                 if not title_elem:
                     continue
-                title = title_elem[0].text_content().strip()
+                raw_title = title_elem[0].text_content()
+                title = re.sub(r"^(NEW\s*)+", "", re.sub(r"\s+", " ", raw_title)).strip()
                 onclick = title_elem[0].get("onclick", "")
                 seq_match = re.search(r"getDetailView\('(\d+)'\)", onclick)
                 if not seq_match:
