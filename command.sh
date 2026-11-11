@@ -333,9 +333,11 @@ function deploy_admin() {
     --exclude 'web' \
     --exclude 'docs' \
     --exclude 'logs' \
+    --exclude 'db-pipeline/*.db*' \
+    --exclude 'db-pipeline/*.snapshot.db' \
+    --exclude 'db-pipeline/docs/pdf' \
     --exclude 'db-pipeline/.venv' \
     --exclude 'db-pipeline/scratch' \
-    --exclude 'db-pipeline/docs/pdf/*/*' \
     --exclude 'db-pipeline/docs/md' \
     "$BASE_DIR/" "$target:/home/iru/app/pleasehome/"
 
