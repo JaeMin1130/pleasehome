@@ -22,6 +22,12 @@
   -webkit-overflow-scrolling: touch;
 }
 
+/* 어두운 배경에서 달력 아이콘·팝업이 보이도록 */
+input[type="date"] {
+  color-scheme: dark;
+  cursor: pointer;
+}
+
 /* 모바일 터치 최적화 */
 @media (max-width: 640px) {
   table th, table td {
@@ -40,4 +46,43 @@
 }
 .pulse-subtle {
   animation: pulse-subtle 2s infinite ease-in-out;
+}
+
+/* 🐱 달리는 고양이 '이루' 스프라이트 로더 (4프레임 steps(4)) */
+.cat-loader-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 1.5rem;
+}
+
+.cat-loader-sprite {
+  --cat-scale: 0.6;
+  width: calc(215px * var(--cat-scale));
+  height: calc(120px * var(--cat-scale));
+  background-image: url('/static/images/cat-run-sheet.webp');
+  background-repeat: no-repeat;
+  background-size: calc(860px * var(--cat-scale)) calc(120px * var(--cat-scale));
+  animation: cat-run 0.6s steps(4) infinite;
+}
+
+.cat-loader-label {
+  color: #94a3b8;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+@keyframes cat-run {
+  from { background-position: 0 0; }
+  to { background-position: calc(-860px * var(--cat-scale)) 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cat-loader-sprite {
+    animation: none;
+    background-position: 0 0;
+  }
 }
