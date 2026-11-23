@@ -115,13 +115,11 @@ class MemberInteractionController(
     @DeleteMapping("/bookmark-folders")
     fun deleteBookmarkFolderBody(@RequestBody body: Map<String, String>, request: HttpServletRequest): Map<String, Any> {
         val id = body["id"] ?: throw IllegalArgumentException("id가 필요합니다.")
-        if (id == "default") throw IllegalArgumentException("기본 폴더는 삭제할 수 없습니다.")
         return interactionService.deleteBookmarkFolder(getRequiredMemberId(request), id)
     }
 
     @DeleteMapping("/bookmark-folders/{id}")
     fun deleteBookmarkFolderPath(@PathVariable id: String, request: HttpServletRequest): Map<String, Any> {
-        if (id == "default") throw IllegalArgumentException("기본 폴더는 삭제할 수 없습니다.")
         return interactionService.deleteBookmarkFolder(getRequiredMemberId(request), id)
     }
 

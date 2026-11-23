@@ -96,7 +96,6 @@ class AdminService(
         } else emptyMap()
 
         val interestCounts = if (memberIds.isNotEmpty()) {
-            memberBookmarkFolderRepository.countByMemberIdIn(memberIds) // placeholder
             val map = mutableMapOf<Pair<String, String>, Long>()
             announcementInterestRepository.countByMemberIdInGroupByStatus(memberIds).forEach { row ->
                 val mId = row[0] as? String
