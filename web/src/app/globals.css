@@ -148,7 +148,7 @@
    --color-private-bg: #fef3c7;
    /* 민간 연한 배경 (부드러운 파스텔 골드) */
 
-   --color-gold: var(--color-gold);
+   --color-gold: #f59e0b;
    /* 골드 (즐겨찾기, 포인트) */
    --color-up: #e11d48;
    /* 상승/증가 레드 */
@@ -617,11 +617,26 @@ body.dark {
   color: var(--text-primary);
 }
 
+/* =========================================
+   [ 전역 접근성 유틸리티 (Accessibility) ]
+   ========================================= */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* 3. 주택형별 공급 및 가격 정보 아래 필터 탭 버튼 다크모드 조화 */
 body.dark [class*="filter-tab-btn"] {
-  background-color: #334155;
-  color: #cbd5e1;
-  border-color: #475569;
+  background-color: var(--bg-light-gray);
+  color: var(--text-secondary);
+  border-color: var(--border-strong);
 }
 
 body.dark [class*="filter-tab-btn"]:not(:disabled):hover {
@@ -632,16 +647,16 @@ body.dark [class*="filter-tab-btn"]:not(:disabled):hover {
 
 body.dark [class*="filter-tab-btn"].active {
   background-color: rgba(59, 130, 246, 0.3);
-  color: #f8fafc;
+  color: var(--text-primary);
   border-color: #60a5fa;
 }
 
 /* 4. 공고 상세 열기, 신청 페이지 열기 버튼 다크모드 조화 */
 body.dark [class*="detail-link-btn"],
 body.dark [class*="docBtn"] {
-  background-color: #334155;
-  color: #cbd5e1;
-  border-color: #475569;
+  background-color: var(--bg-light-gray);
+  color: var(--text-secondary);
+  border-color: var(--border-strong);
 }
 
 body.dark [class*="detail-link-btn"]:hover,

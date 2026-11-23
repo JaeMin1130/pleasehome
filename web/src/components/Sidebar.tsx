@@ -626,9 +626,9 @@ export default function Sidebar({
 
   return (
     <aside 
-      className={`${styles['app-sidebar']} ${isCollapsed ? styles.collapsed : ''} ${isHiddenFully ? styles.hidden : ''}`} 
+      className={`${styles['app-sidebar']} ${isCollapsed ? styles.collapsed : ''} ${isHiddenFully ? styles.hidden : ''} ${isExpanded ? styles.expanded : ''}`} 
       style={{ 
-        width: isExpanded ? 'var(--layout-sidebar-expanded-width)' : width ? `${width}px` : undefined,
+        width: !isExpanded && width ? `${width}px` : undefined,
         ...style
       }}
     >

@@ -64,7 +64,7 @@ export default function NavigationBar({
                 <div className={styles['avatar']}>
                   {member.id.charAt(0).toUpperCase()}
                 </div>
-                <span className={styles['nav-label']} style={{ maxWidth: 40, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11 }}>
+                <span className={`${styles['nav-label']} ${styles['profile-label']}`}>
                   {member.id}
                 </span>
               </button>

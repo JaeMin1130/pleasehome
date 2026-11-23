@@ -19,6 +19,7 @@ import {
   NAVIGATION_BAR_WIDTH,
   SIDEBAR_DEFAULT_WIDTH,
   LAYOUT_GAP,
+  BOOKMARK_PRESET_COLORS,
 } from '@/constants';
 
 const Map = dynamic(() => import('@/components/Map'), {
@@ -197,8 +198,7 @@ function HomeContent({ initialAnnouncements = [] }: HomeClientLayoutProps) {
 
   const handleAddFolder = (name: string, customColor?: string): string => {
     const newId = `folder_${Date.now()}`;
-    const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
-    const color = customColor || colors[bookmarkFolders.length % colors.length];
+    const color = customColor || BOOKMARK_PRESET_COLORS[bookmarkFolders.length % BOOKMARK_PRESET_COLORS.length];
     const newFolder: BookmarkFolder = { id: newId, name, color, createdAt: new Date().toISOString() };
 
     setBookmarkFolders(prev => {
@@ -739,10 +739,7 @@ function HomeContent({ initialAnnouncements = [] }: HomeClientLayoutProps) {
 
             updateUrl(activeAnnId, null, true);
           }} 
-          style={{ 
-            '--sidebar-offset-width': isSidebarCollapsed ? '0px'
-              : expandedPanel === 'SIDEBAR' ? 'var(--layout-sidebar-expanded-width)' : `${SIDEBAR_DEFAULT_WIDTH}px`
-          } as React.CSSProperties}
+          sidebarState={isSidebarCollapsed ? 'collapsed' : expandedPanel === 'SIDEBAR' ? 'expanded' : 'default'}
           comparisonFolder={
             bookmarkFolders.find(f => f.id === activeComparisonFolderId) || null
           }

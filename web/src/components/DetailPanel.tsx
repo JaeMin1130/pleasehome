@@ -25,6 +25,7 @@ interface DetailPanelProps {
   announcementId?: number | null;
   isExpanded?: boolean;
   onExpandToggle?: () => void;
+  sidebarState?: 'collapsed' | 'expanded' | 'default';
 }
 
 export default function DetailPanel({ 
@@ -34,7 +35,8 @@ export default function DetailPanel({
   comparisonComplexes = [],
   activeTab,
   announcementId = null,
-  isExpanded = false, onExpandToggle
+  isExpanded = false, onExpandToggle,
+  sidebarState = 'default'
 }: DetailPanelProps) {
   const [units, setUnits] = useState<HousingUnit[]>([]);
 
@@ -139,7 +141,7 @@ export default function DetailPanel({
   if (comparisonFolder) {
     return (
       <aside 
-        className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''} ${isExpanded ? styles.expanded : ''}`}
+        className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''} ${isExpanded ? styles.expanded : ''} ${sidebarState === 'collapsed' ? styles.sidebarCollapsed : sidebarState === 'expanded' ? styles.sidebarExpanded : ''}`}
         style={{
           ...style,
           height: sheetHeight ? `${sheetHeight}px` : undefined
@@ -190,7 +192,7 @@ export default function DetailPanel({
                     {comparisonComplexes.map((c) => (
                       <td key={c.id} className={styles['comp-val']}>
                         {c.recruitment_group_name ? (
-                          <span style={{ fontWeight: 600, color: '#1d4ed8' }}>{c.recruitment_group_name}</span>
+                          <span style={{ fontWeight: 600, color: 'var(--primary)' }}>{c.recruitment_group_name}</span>
                         ) : '-'}
                       </td>
                     ))}
@@ -370,7 +372,7 @@ export default function DetailPanel({
 
   return (
     <div 
-      className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''} ${isExpanded ? styles.expanded : ''}`} 
+      className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''} ${isExpanded ? styles.expanded : ''} ${sidebarState === 'collapsed' ? styles.sidebarCollapsed : sidebarState === 'expanded' ? styles.sidebarExpanded : ''}`} 
       style={{
         ...style,
         height: sheetHeight ? `${sheetHeight}px` : undefined
@@ -423,10 +425,10 @@ export default function DetailPanel({
             {complex.recruitment_group_name && (
               <div className={`${styles['info-card']} ${styles['full-width']}`}>
                 <span className={styles['info-label']}>신청 모집단위 (주택군)</span>
-                <span className={styles['info-val']} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1d4ed8', fontWeight: 600, flexWrap: 'wrap' }}>
+                <span className={styles['info-val']} style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', color: 'var(--primary)', fontWeight: 600, flexWrap: 'wrap' }}>
                   <span>{complex.recruitment_group_name}</span>
                   {complex.recruitment_group_supply_count != null && (
-                    <span style={{ fontSize: '0.825rem', fontWeight: 500, color: '#4b5563' }}>
+                    <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 500, color: 'var(--text-secondary)' }}>
                       (주택군 총 공급 {complex.recruitment_group_supply_count}호 / 모집 예비자 {complex.recruitment_group_reserve_count}명)
                     </span>
                   )}

@@ -273,19 +273,6 @@
     z-index: 2;
 }
 
-/* 웹 접근성 스크린 리더용 숨김 텍스트 */
-.sr-only {
-    position: absolute;
-    width: var(--spacing-3xs);
-    height: var(--spacing-3xs);
-    padding: 0;
-    margin: calc(var(--spacing-3xs) * -1);
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-}
-
 /* 단지명 및 지역 뱃지 */
 .card-title-group {
   display: flex;

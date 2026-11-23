@@ -394,7 +394,7 @@ export default function AnnouncementCard({
                       </Tooltip>
                       <span className={styles['node-label']}>
                         {step.label}
-                        {step.status === 'completed' && <span className={styles['sr-only']}> (완료됨)</span>}
+                        {step.status === 'completed' && <span className="sr-only"> (완료됨)</span>}
                       </span>
                     </li>
 
@@ -443,7 +443,7 @@ export default function AnnouncementCard({
             )}
 
             {loadingDetails && (
-              <div style={{ padding: '16px 12px', fontSize: '13px', color: 'var(--text-secondary, #666)', textAlign: 'center' }}>
+              <div className={styles['loading-details-msg']}>
                 상세 공고 내용을 불러오는 중입니다...
               </div>
             )}
