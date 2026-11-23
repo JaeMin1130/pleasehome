@@ -25,9 +25,9 @@
 | 계층 (Layer) | 기술 스택 | 설명 및 핵심 역할 |
 | :--- | :--- | :--- |
 | **Frontend** | **Next.js 16, React 19, TypeScript** | App Router 기반 SSR/ISR 검색엔진 최적화, 반응형 UI, Naver Maps 대화형 지도 연동 |
-| **Backend** | **Kotlin, Spring Boot 4.x (3.x 호환), Spring Data JPA** | 23개 규격 RESTful API 코어 서버, `@Transactional` 비즈니스 무결성, Caffeine 캐싱 |
+| **Backend** | **Kotlin, Spring Boot 4.1.1, Spring Data JPA** | 23개 규격 RESTful API 코어 서버, `@Transactional(readOnly = true)` 동시성 락 방어, Caffeine 캐싱(상한 1000) |
 | **Database** | **SQLite 3.x (Dual DataSource 물리 분리)** | `public_housing.db`(공고 원장, Read-Only) + `user_data.db`(회원/트랜잭션, Read-Write) |
-| **Data Pipeline** | **Python 3.12, BeautifulSoup, Stateful Row Parser** | LH/SH/GH OpenAPI 수집, PDF 표 파싱 및 전수 수치 교차 검증, 네이버 지오코딩 |
+| **Data Pipeline** | **Python 3.12, Stateful Row Parser, Subagents** | LH OpenAPI 공급정보 우선 바인딩, PDF 표 파싱 및 1:1 독립 전수감사 하드 게이트(`audit_passed.token`) |
 | **Infra & Deploy** | **Nginx, PM2, Linux (Ubuntu)** | Nginx 리버스 프록시(`/api/*` 다이렉트 바이패스), SSL/TLS 종단, PM2 무중단 프로세스 관리 |
 
 ### 📦 주요 라이브러리 및 런타임 버전

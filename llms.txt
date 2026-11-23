@@ -14,7 +14,8 @@
   - [src/gh_notice/main.py](db-pipeline/src/gh_notice/main.py): GH 경기주택도시공사 공고 및 첨부파일 크롤링 모듈.
   - [public_housing.db](db-pipeline/public_housing.db): 최종 수집·가공된 SQLite3 공고 데이터베이스 파일.
   - [user_data.db](db-pipeline/user_data.db): 실서버 회원/찜/숨김/북마크 전용 독립 SQLite3 데이터베이스 파일.
-- [backend/](backend/): Kotlin + Spring Boot 3.x 기반 RESTful API 코어 서버.
+- [backend/](backend/): Kotlin + Spring Boot 4.1.1 기반 RESTful API 코어 서버.
+  - [PROJECT.md](backend/PROJECT.md): 백엔드 전역 개발 환경, Dual DataSource, 동시성 락 방어 및 REST API 명세서 (SSOT).
   - Spring Data JPA, QueryDSL, Spring Security Crypto 기반 23개 REST API 엔드포인트 및 @Transactional 비즈니스 트랜잭션 관리.
 - [web/](web/): Next.js App Router 기반의 프론트엔드 대시보드.
   - [PROJECT.md](web/PROJECT.md): 웹 서비스 설계 사양, UI 컴포넌트 물리 규격 및 배포 가이드 문서.
