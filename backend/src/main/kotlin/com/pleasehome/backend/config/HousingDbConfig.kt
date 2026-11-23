@@ -33,11 +33,11 @@ class HousingDbConfig(
         val config = HikariConfig().apply {
             driverClassName = "org.sqlite.JDBC"
             jdbcUrl = dbUrl
-            maximumPoolSize = 10
-            minimumIdle = 2
+            maximumPoolSize = 5
+            minimumIdle = 1
             idleTimeout = 600000
             connectionTimeout = 30000
-            connectionInitSql = "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA busy_timeout=15000; PRAGMA cache_size=-64000; PRAGMA temp_store=MEMORY;"
+            connectionInitSql = "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA busy_timeout=15000; PRAGMA cache_size=-16000; PRAGMA temp_store=MEMORY;"
             poolName = "HousingHikariPool"
         }
         return HikariDataSource(config)
