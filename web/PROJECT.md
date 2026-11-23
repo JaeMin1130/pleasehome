@@ -67,7 +67,7 @@ web/
 
 프론트엔드는 `src/lib/api.ts`를 통해 다음 주요 엔드포인트와 통신합니다:
 * **공고 목록**: `GET /api/announcements` (본문 제외 경량 목록)
-* **공고 본문 (온디맨드)**: `GET /api/announcements/{id}/details`
+* **공고 본문 (온디맨드)**: `GET /api/announcements/{id}` (카드 확장 시 해당 공고 본문 온디맨드 fetch, `/api/announcements/{id}/details`는 SSR 종합 상세 번들)
 * **단지 및 평형**: `GET /api/complexes`, `GET /api/housing-units`
 * **회원/인증**: `/api/auth/*` (로그인, 회원가입, 세션 확인)
 * **인터랙션**: `/api/member/favorites`, `/api/member/hidden-anns`, `/api/member/bookmark-*`
