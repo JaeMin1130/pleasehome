@@ -2,7 +2,8 @@ import { clickable } from '@/utils/a11y';
 import React from 'react';
 import { Complex, Announcement } from '@/types';
 import Tooltip from '@/components/ui/Tooltip';
-import { formatDateWithTime } from '@/utils/formatters';
+import { formatDateWithTime, formatMoney } from '@/utils/formatters';
+import { calculateTimelineSteps, getTimelineConnectorWidth } from '@/utils/timeline';
 import styles from './ComplexCard.module.css';
 import Badge from '@/components/ui/Badge';
 import { useDDay } from '@/hooks/useDDay';
@@ -19,18 +20,6 @@ interface ComplexCardProps {
   announcement?: Announcement;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
-}
-
-function formatMoney(amount: number): string {
-  if (amount >= 100_000_000) {
-    const eok = Math.floor(amount / 100_000_000);
-    const man = Math.round((amount % 100_000_000) / 10_000);
-    return man > 0 ? `${eok}억 ${man.toLocaleString()}만` : `${eok}억`;
-  }
-  if (amount >= 10_000) {
-    return `${Math.round(amount / 10_000).toLocaleString()}만`;
-  }
-  return `${amount.toLocaleString()}원`;
 }
 
 function formatMoneyRange(min?: number | null, max?: number | null): string | null {
@@ -91,110 +80,6 @@ export default function ComplexCard({
   onMouseLeave
 }: ComplexCardProps) {
   const { dDayText, status: announcementStatusVal } = useDDay(announcement);
-
-  const getTimelineSteps = () => {
-    if (!announcement) return { steps: [], sortedScheds: [] };
-    const sortedScheds = [...announcement.schedules].sort((a, b) => {
-      const dateA = a.start_date ? new Date(a.start_date) : (a.end_date ? new Date(a.end_date) : null);
-      const dateB = b.start_date ? new Date(b.start_date) : (b.end_date ? new Date(b.end_date) : null);
-      if (!dateA && !dateB) return 0;
-      if (!dateA) return 1;
-      if (!dateB) return -1;
-      return dateA.getTime() - dateB.getTime();
-    });
-
-    const now = new Date();
-
-    const getStepStatus = (s: any) => {
-      const start = s.start_date ? new Date(s.start_date) : null;
-      const end = s.end_date ? new Date(s.end_date) : null;
-
-      const hasStart = start && !isNaN(start.getTime());
-      const hasEnd = end && !isNaN(end.getTime());
-
-      if (hasStart && hasEnd) {
-        if (now > end) return { status: 'completed', statusText: '완료' };
-        if (now >= start && now <= end) return { status: 'active', statusText: '진행중' };
-        return { status: 'upcoming', statusText: '대기' };
-      } else if (hasStart) {
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-        
-        if (today > startDay) return { status: 'completed', statusText: '완료' };
-        if (today.getTime() === startDay.getTime()) return { status: 'active', statusText: '진행중' };
-        return { status: 'upcoming', statusText: '대기' };
-      } else if (hasEnd) {
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
-        
-        if (today > endDay) return { status: 'completed', statusText: '완료' };
-        if (today.getTime() === endDay.getTime()) return { status: 'active', statusText: '진행중' };
-        return { status: 'upcoming', statusText: '대기' };
-      }
-      return { status: 'upcoming', statusText: '대기' };
-    };
-
-    const steps = sortedScheds.map((s) => {
-      const { status, statusText } = getStepStatus(s);
-
-      let dateDetail = '';
-      if (s.start_date || s.end_date) {
-        dateDetail = `${formatDateWithTime(s.start_date)} ~ ${formatDateWithTime(s.end_date)}`;
-      } else {
-        dateDetail = s.raw_text || '공고 본문 참고';
-      }
-
-      let label = s.schedule_type;
-      if (label.length > 10) {
-        label = label.substring(0, 10) + '...';
-      }
-
-      return {
-        id: s.id,
-        label,
-        fullLabel: s.schedule_type,
-        status,
-        statusText,
-        dateDetail,
-        notes: s.notes
-      };
-    });
-
-    const activeIdx = steps.findIndex(s => s.status === 'active');
-    const lastCompletedIdx = steps.map(s => s.status).lastIndexOf('completed');
-    if (activeIdx === -1 && lastCompletedIdx !== -1) {
-      const nextIdx = lastCompletedIdx + 1;
-      if (nextIdx < steps.length) {
-        const nextStepData = sortedScheds[nextIdx];
-        const start = nextStepData.start_date ? new Date(nextStepData.start_date) : null;
-        const end = nextStepData.end_date ? new Date(nextStepData.end_date) : null;
-        const hasValidDate = (start && !isNaN(start.getTime())) || (end && !isNaN(end.getTime()));
-
-        if (!hasValidDate) {
-          steps[nextIdx].status = 'active';
-        }
-      }
-    }
-
-    return { steps, sortedScheds };
-  };
-
-  const getConnectorWidth = (idx: number, steps: any[]) => {
-    const currentActiveIdx = steps.findIndex(s => s.status === 'active');
-    const currentLastCompletedIdx = steps.map(s => s.status).lastIndexOf('completed');
-
-    if (currentActiveIdx !== -1) {
-      if (idx < currentActiveIdx) return 100;
-      return 0;
-    } else if (currentLastCompletedIdx !== -1) {
-      if (idx < currentLastCompletedIdx) return 100;
-      if (idx === currentLastCompletedIdx) {
-        return 30;
-      }
-      return 0;
-    }
-    return 0;
-  };
 
   return (
     <div 
@@ -303,7 +188,7 @@ export default function ComplexCard({
       {announcement && (() => {
         if (announcementStatusVal !== 'CLOSED') return null;
 
-        const { steps } = getTimelineSteps();
+        const { steps } = calculateTimelineSteps(announcement.schedules);
         if (steps.length === 0) return null;
 
         return (
@@ -340,7 +225,7 @@ export default function ComplexCard({
                     </li>
 
                     {!isLast && (() => {
-                      const fillWidth = getConnectorWidth(idx, steps);
+                      const fillWidth = getTimelineConnectorWidth(idx, steps);
                       return (
                         <li className={styles['connector-line']} aria-hidden="true">
                           <div 

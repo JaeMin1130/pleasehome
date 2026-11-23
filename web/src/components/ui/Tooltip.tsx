@@ -6,10 +6,7 @@ export interface TooltipProps {
   label: React.ReactNode;
   children: React.ReactNode;
   position?: 'top' | 'bottom';
-  withArrow?: boolean;
-  color?: string;
   offset?: number;
-  transitionProps?: any;
 }
 
 export default function Tooltip({ label, children, position = 'top', offset = 6 }: TooltipProps) {
