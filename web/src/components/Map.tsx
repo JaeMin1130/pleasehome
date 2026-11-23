@@ -40,7 +40,7 @@ export default function Map({ complexes, activeComplexId, hoveredComplexId, onSe
   const mapRef = useRef<HTMLDivElement>(null);
   const [naverMap, setNaverMap] = useState<any>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [markers, setMarkers] = useState<any[]>([]);
+  const markersRef = useRef<any[]>([]);
 
   // 지도가 중복 마운트 및 재생성되어 초기 좌표로 리셋되는 것을 방지하기 위한 영구 인스턴스 Ref
   const mapInstanceRef = useRef<any>(null);
@@ -75,16 +75,21 @@ export default function Map({ complexes, activeComplexId, hoveredComplexId, onSe
     }
   }, []);
 
-  // 2. 주택 단지 마커 생성 및 갱신 (마커 재사용 최적화)
+  // 2. 주택 단지 마커 생성 및 갱신 (마커 재사용 및 O(1) 맵 룩업 최적화)
   useEffect(() => {
     if (!mapLoaded || !naverMap || !window.naver || !window.naver.maps || !window.naver.maps.Marker) return;
 
-    const currentMap = new globalThis.Map<number, any>(markers.map(m => [m.id, m.marker]));
+    const currentMap = new globalThis.Map<number, any>(markersRef.current.map(m => [m.id, m.marker]));
     const nextComplexIds = new globalThis.Set(complexes.map(c => c.id));
     const newMarkersList: any[] = [];
 
+    // O(1) 조회를 위한 Set 및 Map 사전 생성
+    const bookmarkedIdSet = new globalThis.Set(bookmarkedIds);
+    const bookmarkItemMap = new globalThis.Map(bookmarkItems.map(item => [item.complexId, item]));
+    const folderColorMap = new globalThis.Map(bookmarkFolders.map(f => [f.id, f.color]));
+
     // 더 이상 화면 목록에 존재하지 않는 마커만 지움
-    markers.forEach(m => {
+    markersRef.current.forEach(m => {
       if (!nextComplexIds.has(m.id)) {
         m.marker.setMap(null);
       }
@@ -100,11 +105,11 @@ export default function Map({ complexes, activeComplexId, hoveredComplexId, onSe
         return;
       }
 
-      const isBookmarked = bookmarkedIds.includes(mapped.id);
+      const isBookmarked = bookmarkedIdSet.has(mapped.id);
       const isActive = mapped.id === activeComplexId;
-      const bookmarkItem = bookmarkItems.find(item => item.complexId === mapped.id);
+      const bookmarkItem = bookmarkItemMap.get(mapped.id);
       const folderColor = bookmarkItem
-        ? (bookmarkFolders.find(f => f.id === bookmarkItem.folderId)?.color || 'var(--primary, #3B82F6)')
+        ? (folderColorMap.get(bookmarkItem.folderId) || 'var(--primary, #3B82F6)')
         : 'var(--primary, #3B82F6)';
 
       const iconContent = `
@@ -157,9 +162,9 @@ export default function Map({ complexes, activeComplexId, hoveredComplexId, onSe
       newMarkersList.push({ id: mapped.id, marker });
     });
 
-    setMarkers(newMarkersList);
+    markersRef.current = newMarkersList;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [complexes, mapLoaded, naverMap, bookmarkedIds, bookmarkItems, bookmarkFolders, activeComplexId]);
+  }, [complexes, mapLoaded, naverMap, bookmarkedIds, bookmarkItems, bookmarkFolders]);
 
 
 
@@ -191,28 +196,27 @@ export default function Map({ complexes, activeComplexId, hoveredComplexId, onSe
 
   // 4. 외부 활성화 단지 변경 및 사이드바 토글 시 마커 상태 동기화 및 시점 이동 (부드러운 이동 + 동적 오프셋)
   useEffect(() => {
-    if (!naverMap || markers.length === 0 || !activeComplexId) return;
+    if (!naverMap || markersRef.current.length === 0) return;
 
-    // 마커를 직접 클릭한 경우도 아래 가시성 검사를 그대로 거친다: 이미 보이는 위치면 지도를 움직이지 않고,
-    // 새로 열리는 상세 패널 밑에 깔리는 위치일 때만 패널 오른쪽으로 옮긴다.
-    // (예전엔 마커 클릭 시 이동을 전면 차단해, 패널 쪽 마커를 누르면 그 마커가 패널에 가려졌다)
+    // 마커 엘리먼트의 CSS 클래스 강제 토글 (active 디자인 적용 및 해제)
+    markersRef.current.forEach(m => {
+      const el = m.marker.getElement();
+      if (el) {
+        const innerMarker = el.querySelector('.custom-marker');
+        if (activeComplexId && m.id === activeComplexId) {
+          innerMarker?.classList.add('active');
+        } else {
+          innerMarker?.classList.remove('active');
+        }
+      }
+    });
 
-    const target = markers.find(m => m.id === activeComplexId);
+    if (!activeComplexId) return;
+
+    const target = markersRef.current.find(m => m.id === activeComplexId);
     let timerId: NodeJS.Timeout; // 비동기 타이머 참조 보관
 
     if (target) {
-      // 마커 엘리먼트의 CSS 클래스 강제 토글 (active 디자인 적용)
-      markers.forEach(m => {
-        const el = m.marker.getElement();
-        if (el) {
-          const innerMarker = el.querySelector('.custom-marker');
-          if (m.id === activeComplexId) {
-            innerMarker?.classList.add('active');
-          } else {
-            innerMarker?.classList.remove('active');
-          }
-        }
-      });
 
       // 줌 레벨 조정 없이 오직 시점 오프셋 이동만 수행 (150ms 레이아웃 지연 타이밍 반영)
       const markerPosition = target.marker.getPosition();
@@ -311,13 +315,13 @@ export default function Map({ complexes, activeComplexId, hoveredComplexId, onSe
         clearTimeout(timerId);
       }
     };
-  }, [activeComplexId, markers, naverMap, isSidebarCollapsed]);
+  }, [activeComplexId, naverMap, isSidebarCollapsed]);
 
   // 5. 호버 중인 단지 마커 상태 동기화 및 최상위 레이어 노출 (Z-Index 제어)
   useEffect(() => {
-    if (!naverMap || markers.length === 0) return;
+    if (!naverMap || markersRef.current.length === 0) return;
 
-    markers.forEach(m => {
+    markersRef.current.forEach(m => {
       const el = m.marker.getElement();
       if (el) {
         const innerMarker = el.querySelector('.custom-marker');
@@ -330,7 +334,7 @@ export default function Map({ complexes, activeComplexId, hoveredComplexId, onSe
         }
       }
     });
-  }, [hoveredComplexId, markers, naverMap, activeComplexId]);
+  }, [hoveredComplexId, naverMap, activeComplexId]);
 
   const naverClientId = process.env.NEXT_PUBLIC_NAVER_CLIENT_ID;
 

@@ -272,7 +272,8 @@ export default function BookmarkTab({
           const isExpanded = activeFolderIds.includes(folder.id);
           const folderItems = bookmarkItems.filter(item => item.folderId === folder.id);
           const folderCount = folderItems.length;
-          const folderComplexes = bookmarkedComplexes.filter(c => folderItems.map(i => i.complexId).includes(c.id));
+          const folderComplexIdSet = new Set(folderItems.map(i => i.complexId));
+          const folderComplexes = bookmarkedComplexes.filter(c => folderComplexIdSet.has(c.id));
 
           return (
             <div 

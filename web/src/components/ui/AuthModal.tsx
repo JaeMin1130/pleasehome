@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { SECURITY_QUESTIONS } from '@/constants';
 import RegionPicker from './RegionPicker';
@@ -40,16 +40,16 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [findNewPwdConfirm, setFindNewPwdConfirm] = useState('');
   const [findStep, setFindStep] = useState<FindStep>('input-id');
 
-  const resetAll = () => {
+  const resetAll = useCallback(() => {
     setError('');
     setView('login');
     setFindStep('input-id');
     setLoginId(''); setLoginPwd('');
     setRegId(''); setRegPwd(''); setRegPwdConfirm(''); setRegA(''); setRegRegions('');
     setFindId(''); setFindQ(''); setFindA(''); setFindNewPwd(''); setFindNewPwdConfirm('');
-  };
+  }, []);
 
-  const handleClose = () => { resetAll(); onClose(); };
+  const handleClose = useCallback(() => { resetAll(); onClose(); }, [resetAll, onClose]);
 
   useEffect(() => {
     if (!isOpen) return;

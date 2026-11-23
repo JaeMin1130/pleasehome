@@ -165,11 +165,13 @@ export default function Sidebar({
   const [disabledAnns, setDisabledAnns] = useState<{ id: number; disabledAt: string }[]>([]);
 
   // 파생 상태: 기존 단수 ID 배열 참조 로직과의 호환용
-  const disabledAnnIds = disabledAnns.map((x) => x.id);
+  const disabledAnnIds = useMemo(() => disabledAnns.map((x) => x.id), [disabledAnns]);
+  const disabledAnnIdsSet = useMemo(() => new Set(disabledAnnIds), [disabledAnnIds]);
 
   // 찜한 공고 목록 관리 상태
   const [favoriteAnns, setFavoriteAnns] = useState<{ id: number; favoritedAt: string }[]>([]);
-  const favoriteAnnIds = favoriteAnns.map((x) => x.id);
+  const favoriteAnnIds = useMemo(() => favoriteAnns.map((x) => x.id), [favoriteAnns]);
+  const favoriteAnnIdsSet = useMemo(() => new Set(favoriteAnnIds), [favoriteAnnIds]);
 
   // 💡 로그인 상태 확인(/api/auth/me)에 번들링되어 온 숨김 공고 스냅샷을 그대로 동기화
   // (과거엔 여기서 별도 fetch('/api/member/hidden-anns')를 호출해 2-hop 대기가 있었음)
@@ -483,15 +485,15 @@ export default function Sidebar({
 
       // ③ 접수 상태 및 숨김/찜 필터 분기
       if (activeTabStatus === 'HIDDEN') {
-        const isHidden = disabledAnnIds.includes(ann.id);
+        const isHidden = disabledAnnIdsSet.has(ann.id);
         return matchesSearch && matchesRegion && isHidden;
       } else if (activeTabStatus === 'FAVORITE') {
-        const isFavorite = favoriteAnnIds.includes(ann.id);
-        const isNotHidden = !disabledAnnIds.includes(ann.id);
+        const isFavorite = favoriteAnnIdsSet.has(ann.id);
+        const isNotHidden = !disabledAnnIdsSet.has(ann.id);
         return matchesSearch && matchesRegion && isFavorite && isNotHidden;
       } else {
         const matchesStatus = getAnnouncementStatus(ann) === activeTabStatus;
-        const isNotHidden = !disabledAnnIds.includes(ann.id);
+        const isNotHidden = !disabledAnnIdsSet.has(ann.id);
         return matchesSearch && matchesRegion && matchesStatus && isNotHidden;
       }
     });
@@ -574,13 +576,13 @@ export default function Sidebar({
       if (!matchesRegion) return;
       if (!matchesSearchTerm(ann)) return;
 
-      const isHidden = disabledAnnIds.includes(ann.id);
+      const isHidden = disabledAnnIdsSet.has(ann.id);
       if (isHidden) {
         hidden++;
         return;
       }
 
-      if (favoriteAnnIds.includes(ann.id)) {
+      if (favoriteAnnIdsSet.has(ann.id)) {
         favorite++;
       }
 

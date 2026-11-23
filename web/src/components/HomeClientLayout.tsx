@@ -391,10 +391,20 @@ function HomeContent({ initialAnnouncements = [] }: HomeClientLayoutProps) {
     return announcementComplexes.filter(c => complexIds.has(c.id));
   }, [activeAnnId, announcementComplexes, announcementUnits]);
 
+  const unitsByComplexId = useMemo(() => {
+    const map = new Map<number, any[]>();
+    for (const u of announcementUnits) {
+      const list = map.get(u.complex_id);
+      if (list) list.push(u);
+      else map.set(u.complex_id, [u]);
+    }
+    return map;
+  }, [announcementUnits]);
+
   const filteredComplexes = useMemo(() => {
+    if (announcementUnits.length === 0) return displayComplexes;
     return displayComplexes.filter(complex => {
-      const complexUnits = announcementUnits.filter(u => u.complex_id === complex.id);
-      if (announcementUnits.length === 0) return true;
+      const complexUnits = unitsByComplexId.get(complex.id) || [];
       return complexUnits.some(unit => {
         if (filterState.targetGroup !== 'ALL' && unit.target_group !== filterState.targetGroup) return false;
         if (unit.exclusive_area < filterState.minArea || unit.exclusive_area > filterState.maxArea) return false;
@@ -403,7 +413,7 @@ function HomeContent({ initialAnnouncements = [] }: HomeClientLayoutProps) {
         return true;
       });
     });
-  }, [displayComplexes, announcementUnits, filterState]);
+  }, [displayComplexes, announcementUnits.length, unitsByComplexId, filterState]);
 
   // 저장 탭(BOOKMARK) 필터 조건 분기: 상세 필터와 무관하게 저장된 단지만 매핑
   const currentEffectiveTabForMap = activeTab || lastActiveTab;
@@ -514,10 +524,10 @@ function HomeContent({ initialAnnouncements = [] }: HomeClientLayoutProps) {
     }
   };
 
-  const availableTargetGroups = [
+  const availableTargetGroups = useMemo(() => [
     'ALL',
     ...Array.from(new Set(announcementUnits.map((u) => u.target_group).filter(Boolean) as string[]))
-  ];
+  ], [announcementUnits]);
 
   return (
     <div className="app-container">
