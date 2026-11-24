@@ -126,8 +126,8 @@ function deploy_web() {
   (cd "$BASE_DIR/backend" && exec java -Xms256m -Xmx512m -jar build/libs/backend-0.0.1-SNAPSHOT.jar >/dev/null 2>&1) &
   local backend_pid=$!
   trap "kill $backend_pid 2>/dev/null || true" EXIT
-  for _ in $(seq 1 60); do curl -sf http://127.0.0.1:8080/api/sitemap/paths >/dev/null && break; sleep 1; done
-  curl -sf -o /dev/null http://127.0.0.1:8080/api/sitemap/paths || { echo "❌ 로컬 백엔드가 60초 안에 응답하지 않습니다."; exit 1; }
+  for _ in $(seq 1 120); do curl -sf http://127.0.0.1:8080/api/sitemap/paths >/dev/null && break; sleep 1; done
+  curl -sf -o /dev/null http://127.0.0.1:8080/api/sitemap/paths || { echo "❌ 로컬 백엔드가 120초 안에 응답하지 않습니다."; exit 1; }
   npm --prefix "$BASE_DIR/web" run build:pack
   kill "$backend_pid" 2>/dev/null || true
 
