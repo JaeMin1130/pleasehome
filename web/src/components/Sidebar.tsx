@@ -463,6 +463,13 @@ export default function Sidebar({
     
     // 전국 대상 공고는 어느 지역을 골라도 보여준다
     if (annRegion.startsWith('전국')) return true;
+
+    // 기타 칩: 수도권(서울·인천·경기)을 제외한 모든 비수도권 공고 매칭
+    if (active === '기타') {
+      const isCapital = ['서울', '인천', '경기'].some((p) => annRegion.startsWith(p));
+      return !isCapital;
+    }
+
     const group = REGION_FILTERS.find((r) => r.key === active);
     return group ? group.prefixes.some((p) => annRegion.startsWith(p)) : annRegion === active;
   };

@@ -8,28 +8,55 @@ interface RegionPickerProps {
   onChange: (value: string) => void;
 }
 
-// 관심 공고 지역 복수 선택 칩 (회원가입·회원정보 수정 공용)
+// 백엔드 비수도권 코드 목록
+const NON_CAPITAL_CODES = ['26', '27', '29', '30', '31', '36110', '42', '43', '44', '52', '46', '47', '48', '50'];
+
+// 관심 공고 지역 복수 선택 칩 (서울, 인천, 경기, 기타 4종)
 export default function RegionPicker({ value, onChange }: RegionPickerProps) {
-  const selected = value.split(',').filter(Boolean);
+  const currentCodes = value.split(',').map(s => s.trim()).filter(Boolean);
+
+  const isChecked = (code: string) => {
+    if (code === 'ETC') {
+      return NON_CAPITAL_CODES.some(c => currentCodes.includes(c));
+    }
+    return currentCodes.includes(code);
+  };
 
   const toggle = (code: string) => {
-    const next = selected.includes(code) ? selected.filter(c => c !== code) : [...selected, code];
-    onChange(PREFERRED_REGIONS.map(r => r.code).filter(c => next.includes(c)).join(','));
+    let next: string[];
+    if (code === 'ETC') {
+      const hasEtc = NON_CAPITAL_CODES.some(c => currentCodes.includes(c));
+      if (hasEtc) {
+        next = currentCodes.filter(c => !NON_CAPITAL_CODES.includes(c));
+      } else {
+        next = [...currentCodes, ...NON_CAPITAL_CODES];
+      }
+    } else {
+      if (currentCodes.includes(code)) {
+        next = currentCodes.filter(c => c !== code);
+      } else {
+        next = [...currentCodes, code];
+      }
+    }
+    onChange(next.join(','));
   };
 
   return (
     <div className={styles.chips}>
-      {PREFERRED_REGIONS.map(r => (
-        <label key={r.code} className={`${styles.chip} ${selected.includes(r.code) ? styles.chipActive : ''}`}>
-          <input
-            type="checkbox"
-            className={styles.checkbox}
-            checked={selected.includes(r.code)}
-            onChange={() => toggle(r.code)}
-          />
-          {r.name}
-        </label>
-      ))}
+      {PREFERRED_REGIONS.map(r => {
+        const active = isChecked(r.code);
+        return (
+          <label key={r.code} className={`${styles.chip} ${active ? styles.chipActive : ''}`}>
+            <input
+              type="checkbox"
+              className={styles.checkbox}
+              checked={active}
+              onChange={() => toggle(r.code)}
+            />
+            {r.name}
+          </label>
+        );
+      })}
     </div>
   );
 }
