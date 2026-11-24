@@ -413,6 +413,27 @@
   flex-direction: column;
   gap: var(--spacing-sm);
   margin-top: var(--spacing-sm);
+  max-height: 420px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: var(--spacing-2xs);
+}
+
+.complexes-list-container::-webkit-scrollbar {
+  width: 5px;
+}
+
+.complexes-list-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.complexes-list-container::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: var(--radius-full);
+}
+
+.complexes-list-container::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
 .complex-clear-btn {
@@ -999,6 +1020,10 @@
 }
 
 @media (max-width: 768px) {
+  .complexes-list-container {
+    max-height: 320px;
+  }
+
   .desktop-only {
     display: none !important;
   }
@@ -1216,6 +1241,31 @@
   border-bottom: var(--spacing-3xs) solid var(--border-light);
 }
 
+.more-profile-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-left: auto;
+}
+
+.more-logout-btn {
+  padding: 4px 10px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-muted);
+  background-color: var(--bg-surface-elevated, #f1f5f9);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.more-logout-btn:hover {
+  color: var(--color-danger, #ef4444);
+  border-color: var(--color-danger, #ef4444);
+  background-color: rgba(239, 68, 68, 0.08);
+}
+
 .more-profile-avatar {
   width: var(--spacing-xl);
   height: var(--spacing-xl);
@@ -1359,7 +1409,78 @@
   cursor: not-allowed;
 }
 
-/* 게스트 로그인 유도 뷰 */
+/* 게스트 로그인 유도 카드 */
+.guest-login-card {
+  margin: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.guest-login-top {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.guest-login-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background-color: var(--primary-bg);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.guest-login-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.guest-login-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.guest-login-sub {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: var(--line-height-base);
+}
+
+.guest-login-btn {
+  width: 100%;
+  padding: 10px var(--spacing-md);
+  background-color: var(--primary);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.guest-login-btn:hover {
+  background-color: var(--primary-hover);
+}
+
+/* 게스트 로그인 유도 뷰 (레거시 호환) */
 .guest-login-prompt {
   display: flex;
   flex-direction: column;

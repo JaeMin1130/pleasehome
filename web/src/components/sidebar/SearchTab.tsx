@@ -268,6 +268,7 @@ export default function SearchTab({
                 onDisableToggle={() => handleToggleDisableAnn(ann.id)}
                 isFavorite={favoriteAnnIds.includes(ann.id)}
                 onFavoriteToggle={() => handleToggleFavoriteAnn(ann.id)}
+                complexCount={isCurrentActive ? filteredComplexes.length : undefined}
               >
                 {isCurrentActive && (
                   <div className={styles['complex-search-container']}>

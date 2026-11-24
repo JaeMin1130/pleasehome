@@ -74,6 +74,7 @@ interface AnnouncementCardProps {
   onDisableToggle?: (e: React.MouseEvent) => void;
   isFavorite?: boolean;
   onFavoriteToggle?: (e: React.MouseEvent) => void;
+  complexCount?: number;
 }
 
 export default function AnnouncementCard({ 
@@ -88,7 +89,8 @@ export default function AnnouncementCard({
   isDisabled,
   onDisableToggle,
   isFavorite,
-  onFavoriteToggle
+  onFavoriteToggle,
+  complexCount
 }: AnnouncementCardProps) {
   const { dDayText, status: announcementStatus, applySchedules } = useDDay(ann);
 
@@ -261,7 +263,12 @@ export default function AnnouncementCard({
           {children && (
             <div className={styles['complex-list-wrapper']} onClick={(e) => e.stopPropagation()}>
               <div className={styles['complex-list-header']}>
-                <span className={styles['complex-list-title']}>공급 주택 (단지)</span>
+                <span className={styles['complex-list-title']}>
+                  공급 주택 (단지)
+                  {typeof complexCount === 'number' && complexCount > 0 && (
+                    <span className={styles['complex-count-badge']}>{complexCount}</span>
+                  )}
+                </span>
               </div>
               {children}
             </div>

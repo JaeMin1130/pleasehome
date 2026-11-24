@@ -184,6 +184,21 @@
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-bold);
     color: var(--text-primary);
+    display: flex;
+    align-items: center;
+}
+
+.complex-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: var(--spacing-xs);
+    padding: 1px 7px;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--primary);
+    background-color: var(--primary-bg);
+    border-radius: var(--radius-full);
 }
 
 .disable-btn {

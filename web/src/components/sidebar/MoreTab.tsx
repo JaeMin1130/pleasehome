@@ -68,6 +68,7 @@ export default function MoreTab({
   toggleTheme,
   isDarkMode,
 }: MoreTabProps) {
+  const { logout } = useAuth();
   const [policyPage, setPolicyPage] = React.useState<PolicyPage | null>(null);
   return (
     <div 
@@ -107,13 +108,26 @@ export default function MoreTab({
                 <span className={styles['more-profile-id']}>{member.id}</span>
                 <span className={styles['more-profile-sub']}>회원정보 수정</span>
               </div>
-              <svg
-                className={`${styles['more-profile-chevron']} ${isProfileOpen ? styles['more-profile-chevron-open'] : ''}`}
-                width={16} height={16} viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"
-              >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
+              <div className={styles['more-profile-actions']}>
+                <button
+                  type="button"
+                  className={styles['more-logout-btn']}
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    await logout();
+                  }}
+                  title="로그아웃"
+                >
+                  로그아웃
+                </button>
+                <svg
+                  className={`${styles['more-profile-chevron']} ${isProfileOpen ? styles['more-profile-chevron-open'] : ''}`}
+                  width={16} height={16} viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </div>
             </div>
 
             {/* 아코디언 펼침 영역: 회원정보 수정 폼 */}
@@ -193,17 +207,25 @@ export default function MoreTab({
             )}
           </div>
         ) : (
-          <div className={styles['guest-login-prompt']}>
-            <svg width={36} height={36} viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="8" r="4" />
-              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-            </svg>
-            <p className={styles['guest-login-text']}>로그인 후 다양한<br />맞춤 서비스를 이용해보세요.</p>
+          <div className={styles['guest-login-card']}>
+            <div className={styles['guest-login-top']}>
+              <div className={styles['guest-login-avatar']}>
+                <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </div>
+              <div className={styles['guest-login-info']}>
+                <p className={styles['guest-login-title']}>로그인이 필요합니다</p>
+                <p className={styles['guest-login-sub']}>로그인 후 맞춤 공고 저장 및 알림을 이용해보세요.</p>
+              </div>
+            </div>
             <button
+              type="button"
               className={styles['guest-login-btn']}
               onClick={() => setAuthModalOpen(true)}
             >
-              로그인하기
+              로그인 / 회원가입
             </button>
           </div>
         )}
