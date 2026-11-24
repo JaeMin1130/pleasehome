@@ -42,8 +42,8 @@ interface BookmarkTabProps {
   onToggleComparison: (folderId: string) => void;
   onRemoveFolder: (folderId: string) => void;
   onSelectAnnouncement: (id: number | null) => void;
-  onSelectComplex: (complex: Complex) => void;
-  onToggleBookmark: (complexId: number) => void;
+  onSelectComplex: (complex: Complex, announcementId?: number) => void;
+  onToggleBookmark: (complexId: number, announcementId?: number) => void;
   getAnnouncementStatus: (ann: Announcement) => any;
   onHoverComplex?: (id: number | null) => void;
 }
@@ -433,7 +433,8 @@ export default function BookmarkTab({
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
                         {folderComplexes.map((complex) => {
                           const item = bookmarkItems.find(i => i.complexId === complex.id);
-                          const ann = announcements.find(a => a.id === complex.announcement_id);
+                          const effectiveAnnId = item?.announcementId || complex.announcement_id;
+                          const ann = announcements.find(a => a.id === effectiveAnnId);
                           return (
                             <div 
                               key={complex.id} 
@@ -451,26 +452,24 @@ export default function BookmarkTab({
                                 complex={complex}
                                 isActive={false}
                                 onClick={async () => {
-                                  // complex.announcement_id는 "최초 발견 공고" 참고용 메타일 뿐이라(단지는
-                                  // 전역 엔티티, docs/dev/DOMAIN_MODEL.md 3.3), 실제로 걸쳐있는 공고 중
-                                  // 가장 최근 것으로 이동한다 (historyList는 최신순 정렬됨).
-                                  let targetAnnId = complex.announcement_id;
-                                  try {
-                                    const res = await fetch(`/api/complexes/${complex.id}/details`);
-                                    if (res.ok) {
-                                      const data = await res.json();
-                                      targetAnnId = data?.historyList?.[0]?.announcement_id ?? targetAnnId;
+                                  // 북마크에 저장된 특정 공고가 있으면 해당 공고로 우선 이동
+                                  let targetAnnId = item?.announcementId;
+                                  if (!targetAnnId) {
+                                    targetAnnId = complex.announcement_id;
+                                    try {
+                                      const res = await fetch(`/api/complexes/${complex.id}/details`);
+                                      if (res.ok) {
+                                        const data = await res.json();
+                                        targetAnnId = data?.historyList?.[0]?.announcement_id ?? targetAnnId;
+                                      }
+                                    } catch {
+                                      // 조회 실패 시 최초 발견 공고로 폴백
                                     }
-                                  } catch {
-                                    // 조회 실패 시 최초 발견 공고로 폴백
                                   }
-                                  onSelectAnnouncement(targetAnnId);
-                                  setTimeout(() => {
-                                    onSelectComplex(complex);
-                                  }, 100);
+                                  onSelectComplex(complex, targetAnnId);
                                 }}
                                 isBookmarked={true}
-                                onBookmarkToggle={() => onToggleBookmark(complex.id)}
+                                onBookmarkToggle={() => onToggleBookmark(complex.id, item?.announcementId)}
                                 announcementTitle={ann?.title}
                                 announcementStatus={ann ? getAnnouncementStatus(ann) : undefined}
                                 announcementInstitution={ann?.institution}

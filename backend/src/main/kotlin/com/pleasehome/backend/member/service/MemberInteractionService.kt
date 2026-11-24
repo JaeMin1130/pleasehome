@@ -119,14 +119,16 @@ class MemberInteractionService(
         itemRepository.findAllByIdMemberIdOrderByCreatedAtAsc(memberId).map {
             mapOf(
                 "complex_id" to it.id.complexId,
+                "announcement_id" to it.id.announcementId,
                 "folder_id" to it.folderId,
                 "memo" to it.memo,
                 "created_at" to it.createdAt
             )
         }
 
-    fun saveBookmarkItem(memberId: String, complexId: Long, folderId: String, memo: String?): Map<String, Any> {
-        val itemId = MemberBookmarkItemId(memberId = memberId, complexId = complexId)
+    fun saveBookmarkItem(memberId: String, complexId: Long, announcementId: Long?, folderId: String, memo: String?): Map<String, Any> {
+        val annId = announcementId ?: 0L
+        val itemId = MemberBookmarkItemId(memberId = memberId, complexId = complexId, announcementId = annId)
         val existing = itemRepository.findById(itemId).orElse(null)
         val now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
 
@@ -140,8 +142,12 @@ class MemberInteractionService(
         return mapOf("success" to true)
     }
 
-    fun deleteBookmarkItem(memberId: String, complexId: Long): Map<String, Any> {
-        itemRepository.deleteByIdMemberIdAndIdComplexId(memberId, complexId)
+    fun deleteBookmarkItem(memberId: String, complexId: Long, announcementId: Long? = null): Map<String, Any> {
+        if (announcementId != null && announcementId > 0) {
+            itemRepository.deleteByIdMemberIdAndIdComplexIdAndIdAnnouncementId(memberId, complexId, announcementId)
+        } else {
+            itemRepository.deleteByIdMemberIdAndIdComplexId(memberId, complexId)
+        }
         return mapOf("success" to true)
     }
 }

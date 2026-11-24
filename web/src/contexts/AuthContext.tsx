@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       );
       setBookmarkItems(
         Array.isArray(data.bookmark_items)
-          ? data.bookmark_items.map((i: any) => ({ complexId: i.complex_id, folderId: i.folder_id, memo: i.memo ?? undefined, createdAt: i.created_at }))
+          ? data.bookmark_items.map((i: any) => ({ complexId: i.complex_id, announcementId: i.announcement_id, folderId: i.folder_id, memo: i.memo ?? undefined, createdAt: i.created_at }))
           : EMPTY_ITEMS
       );
     } catch {

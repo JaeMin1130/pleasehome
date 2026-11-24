@@ -17,7 +17,7 @@ interface DetailPanelProps {
   onClose: () => void;
   style?: React.CSSProperties;
   bookmarkedIds: number[];
-  onToggleBookmark: (complexId: number) => void;
+  onToggleBookmark: (complexId: number, announcementId?: number) => void;
   comparisonFolder?: BookmarkFolder | null;
   comparisonComplexes?: Complex[];
   activeTab: 'SEARCH' | 'BOOKMARK' | 'MORE' | null;
@@ -408,7 +408,7 @@ export default function DetailPanel({
           <div className={styles['panel-header-actions']}>
             <button 
               className={`bookmark-btn ${isBookmarked ? 'bookmarked' : ''}`}
-              onClick={() => onToggleBookmark(complex.id)}
+              onClick={() => onToggleBookmark(complex.id, announcementId ?? complex.announcement_id)}
               title={isBookmarked ? "저장한 단지 해제" : "단지 저장하기"}
             >
               <svg className={styles['star-icon']} width="24" height="24" viewBox="0 0 24 24" fill={isBookmarked ? 'var(--color-warning-text)' : 'none'} stroke={isBookmarked ? 'var(--color-warning-text)' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

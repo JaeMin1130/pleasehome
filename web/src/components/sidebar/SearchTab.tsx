@@ -43,7 +43,7 @@ interface SearchTabProps {
   activeComplexId: number | null;
   onSelectComplex: (complex: Complex) => void;
   bookmarkedIds: number[];
-  onToggleBookmark: (complexId: number) => void;
+  onToggleBookmark: (complexId: number, announcementId?: number) => void;
   onHoverComplex?: (id: number | null) => void;
 }
 
@@ -318,7 +318,7 @@ export default function SearchTab({
                             isActive={activeComplexId === complex.id}
                             onClick={() => onSelectComplex(complex)}
                             isBookmarked={bookmarkedIds.includes(complex.id)}
-                            onBookmarkToggle={() => onToggleBookmark(complex.id)}
+                            onBookmarkToggle={() => onToggleBookmark(complex.id, ann.id)}
                             onMouseEnter={() => onHoverComplex?.(complex.id)}
                             onMouseLeave={() => onHoverComplex?.(null)}
                           />

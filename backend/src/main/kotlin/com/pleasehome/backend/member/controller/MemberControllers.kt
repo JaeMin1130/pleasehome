@@ -132,14 +132,16 @@ class MemberInteractionController(
     fun saveBookmarkItem(@RequestBody body: Map<String, Any?>, request: HttpServletRequest): Map<String, Any> {
         val complexId = (body["complex_id"] as? Number)?.toLong() ?: throw IllegalArgumentException("complex_id, folder_id가 필요합니다.")
         val folderId = body["folder_id"] as? String ?: throw IllegalArgumentException("complex_id, folder_id가 필요합니다.")
+        val announcementId = (body["announcement_id"] as? Number)?.toLong()
         val memo = body["memo"] as? String
-        return interactionService.saveBookmarkItem(getRequiredMemberId(request), complexId, folderId, memo)
+        return interactionService.saveBookmarkItem(getRequiredMemberId(request), complexId, announcementId, folderId, memo)
     }
 
     @DeleteMapping("/bookmark-items")
     fun deleteBookmarkItemBody(@RequestBody body: Map<String, Any?>, request: HttpServletRequest): Map<String, Any> {
         val complexId = (body["complex_id"] as? Number)?.toLong() ?: throw IllegalArgumentException("complex_id가 필요합니다.")
-        return interactionService.deleteBookmarkItem(getRequiredMemberId(request), complexId)
+        val announcementId = (body["announcement_id"] as? Number)?.toLong()
+        return interactionService.deleteBookmarkItem(getRequiredMemberId(request), complexId, announcementId)
     }
 
     @DeleteMapping("/bookmark-items/{complexId}")

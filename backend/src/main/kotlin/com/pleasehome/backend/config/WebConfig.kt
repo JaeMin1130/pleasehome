@@ -9,7 +9,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Configuration
 class WebConfig(
-    @Value("\${cors.allowed-origins:http://localhost:3000,http://127.0.0.1:3000}")
+    @Value("\${cors.allowed-origins:http://localhost:3000,http://127.0.0.1:3000,http://localhost:3005,http://127.0.0.1:3005}")
     private val allowedOrigins: String,
     private val adminSecurityInterceptor: AdminSecurityInterceptor
 ) : WebMvcConfigurer {

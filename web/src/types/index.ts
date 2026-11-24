@@ -118,6 +118,7 @@ export interface BookmarkFolder {
 
 export interface BookmarkItem {
   complexId: number;
+  announcementId?: number;
   folderId: string;
   memo?: string;
   createdAt: string;

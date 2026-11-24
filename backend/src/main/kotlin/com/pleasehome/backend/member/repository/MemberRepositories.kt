@@ -54,6 +54,7 @@ interface MemberBookmarkFolderRepository : JpaRepository<MemberBookmarkFolder, M
 interface MemberBookmarkItemRepository : JpaRepository<MemberBookmarkItem, MemberBookmarkItemId> {
     fun findAllByIdMemberIdOrderByCreatedAtAsc(memberId: String): List<MemberBookmarkItem>
     fun deleteByIdMemberIdAndIdComplexId(memberId: String, complexId: Long)
+    fun deleteByIdMemberIdAndIdComplexIdAndIdAnnouncementId(memberId: String, complexId: Long, announcementId: Long)
     fun deleteAllByIdMemberIdAndFolderId(memberId: String, folderId: String)
     fun deleteAllByIdMemberId(memberId: String)
 

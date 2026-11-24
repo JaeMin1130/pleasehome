@@ -34,13 +34,13 @@ interface SidebarProps {
   displayComplexes: Complex[];
   isComplexesLoading?: boolean;
   activeComplexId: number | null;
-  onSelectComplex: (complex: Complex) => void;
+  onSelectComplex: (complex: Complex, announcementId?: number) => void;
   activeTab: 'SEARCH' | 'BOOKMARK' | 'MORE' | null;
   onTabSelect?: (tab: 'SEARCH' | 'BOOKMARK' | 'MORE' | null) => void;
   bookmarkedComplexes: Complex[];
   style?: React.CSSProperties;
   bookmarkedIds: number[];
-  onToggleBookmark: (complexId: number) => void;
+  onToggleBookmark: (complexId: number, announcementId?: number) => void;
   bookmarkFolders: BookmarkFolder[];
   bookmarkItems: BookmarkItem[];
   activeFolderIds: string[];

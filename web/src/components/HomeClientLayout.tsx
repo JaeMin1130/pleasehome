@@ -67,10 +67,12 @@ function HomeContent({ initialAnnouncements = [] }: HomeClientLayoutProps) {
   const [bookmarkModalState, setBookmarkModalState] = useState<{
     isOpen: boolean;
     complexId: number | null;
+    announcementId?: number | null;
     complexName: string;
   }>({
     isOpen: false,
     complexId: null,
+    announcementId: null,
     complexName: ''
   });
 
@@ -122,21 +124,23 @@ function HomeContent({ initialAnnouncements = [] }: HomeClientLayoutProps) {
   }, [bookmarkedIdsKey]);
 
   // 북마크 클릭 시 설정 팝업 호출 (이름 유지)
-  const toggleBookmark = (complexId: number) => {
+  const toggleBookmark = (complexId: number, announcementId?: number) => {
     if (!member) {
       setAuthModalOpen(true);
       return;
     }
     // 이미 저장되어 있는 단지라면 팝업 없이 즉시 목록에서 제외
-    const isBookmarked = bookmarkItems.some(item => item.complexId === complexId);
-    if (isBookmarked) {
-      const next = bookmarkItems.filter(item => item.complexId !== complexId);
+    const targetItem = bookmarkItems.find(item =>
+      item.complexId === complexId && (announcementId ? item.announcementId === announcementId : true)
+    );
+    if (targetItem) {
+      const next = bookmarkItems.filter(item => item !== targetItem);
       setBookmarkItems(next);
       if (member) {
         fetch('/api/member/bookmark-items', {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ complex_id: complexId }),
+          body: JSON.stringify({ complex_id: complexId, announcement_id: targetItem.announcementId }),
         });
       }
       return;
@@ -144,7 +148,7 @@ function HomeContent({ initialAnnouncements = [] }: HomeClientLayoutProps) {
 
     const compName = [selectedComplex, ...announcementComplexes, ...bookmarkedComplexes]
       .find(c => c?.id === complexId)?.name || '알 수 없는 단지';
-    const openModal = () => setBookmarkModalState({ isOpen: true, complexId, complexName: compName });
+    const openModal = () => setBookmarkModalState({ isOpen: true, complexId, announcementId, complexName: compName });
 
     // 폴더가 있으면 팝업 없이 가장 최근에 쓴 폴더로 바로 저장하고, 폴더 변경·메모는 토스트에서 이어간다.
     // 폴더가 없으면(기본 폴더 자동 생성은 하지 않음, docs/dev/DECISION.md #7) 이름이 미리 채워진 팝업에서 한 번에 생성·저장한다.
@@ -154,29 +158,35 @@ function HomeContent({ initialAnnouncements = [] }: HomeClientLayoutProps) {
       openModal();
       return;
     }
-    saveBookmark(complexId, targetFolder.id, '');
+    saveBookmark(complexId, targetFolder.id, '', announcementId);
     showToast(`'${targetFolder.name}' 폴더에 저장했습니다.`, { label: '폴더·메모 변경', onClick: openModal });
   };
 
   const handleSaveBookmark = (folderId: string, memo: string) => {
     if (bookmarkModalState.complexId === null) return;
-    saveBookmark(bookmarkModalState.complexId, folderId, memo);
+    saveBookmark(bookmarkModalState.complexId, folderId, memo, bookmarkModalState.announcementId ?? undefined);
     setBookmarkModalState(prev => ({ ...prev, isOpen: false }));
   };
 
-  const saveBookmark = (targetId: number, folderId: string, memo: string) => {
+  const saveBookmark = (targetId: number, folderId: string, memo: string, announcementId?: number) => {
     setBookmarkItems((prev) => {
-      const exists = prev.some(item => item.complexId === targetId);
+      const exists = prev.some(item =>
+        item.complexId === targetId && (announcementId ? item.announcementId === announcementId : true)
+      );
       const next: BookmarkItem[] = exists
-        ? prev.map(item => item.complexId === targetId ? { ...item, folderId, memo } : item)
-        : [...prev, { complexId: targetId, folderId, memo, createdAt: new Date().toISOString() }];
+        ? prev.map(item =>
+            item.complexId === targetId && (announcementId ? item.announcementId === announcementId : true)
+              ? { ...item, folderId, memo, announcementId: announcementId ?? item.announcementId }
+              : item
+          )
+        : [...prev, { complexId: targetId, announcementId, folderId, memo, createdAt: new Date().toISOString() }];
       return next;
     });
     if (member) {
       fetch('/api/member/bookmark-items', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ complex_id: targetId, folder_id: folderId, memo }),
+        body: JSON.stringify({ complex_id: targetId, folder_id: folderId, memo, announcement_id: announcementId }),
       });
     }
   };
@@ -184,13 +194,16 @@ function HomeContent({ initialAnnouncements = [] }: HomeClientLayoutProps) {
   const handleRemoveBookmark = () => {
     if (bookmarkModalState.complexId === null) return;
     const targetId = bookmarkModalState.complexId;
-    const next = bookmarkItems.filter(item => item.complexId !== targetId);
+    const targetAnnId = bookmarkModalState.announcementId;
+    const next = bookmarkItems.filter(item =>
+      !(item.complexId === targetId && (targetAnnId ? item.announcementId === targetAnnId : true))
+    );
     setBookmarkItems(next);
     if (member) {
       fetch('/api/member/bookmark-items', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ complex_id: targetId }),
+        body: JSON.stringify({ complex_id: targetId, announcement_id: targetAnnId }),
       });
     }
     setBookmarkModalState(prev => ({ ...prev, isOpen: false }));
@@ -451,14 +464,19 @@ function HomeContent({ initialAnnouncements = [] }: HomeClientLayoutProps) {
     }
   };
 
-  const handleSelectComplex = (complex: Complex) => {
+  const handleSelectComplex = (complex: Complex, announcementId?: number) => {
+    const effectiveAnnId = announcementId ?? activeAnnId ?? complex.announcement_id ?? null;
+    if (announcementId !== undefined && announcementId !== activeAnnId) {
+      setActiveAnnId(announcementId);
+    }
+
     // 💡 비교 표가 열린 상태였다면 비교 모드를 자동 해제하고 해당 단지 상세 정보로 자연스럽게 이행
     if (activeComparisonFolderId !== null) {
       setActiveComparisonFolderId(null);
       setSelectedComplex(complex);
       setActiveComplexId(complex.id);
       setIsPanelOpen(true);
-      updateUrl(activeAnnId || complex.announcement_id || null, complex.id, true);
+      updateUrl(effectiveAnnId, complex.id, true);
       
       // 모바일 뷰인 경우 사이드바 접기 (공고 상태 유지)
       if (typeof window !== 'undefined' && window.innerWidth <= 768) {
@@ -497,7 +515,7 @@ function HomeContent({ initialAnnouncements = [] }: HomeClientLayoutProps) {
       }
 
       // 단지 선택 시: 상위 공고 ID와 단지 ID를 함께 보존
-      updateUrl(activeAnnId || complex.announcement_id || null, complex.id, true);
+      updateUrl(effectiveAnnId, complex.id, true);
     }
   };
 

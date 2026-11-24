@@ -82,7 +82,10 @@ data class MemberBookmarkItemId(
     var memberId: String = "",
 
     @Column(name = "complex_id")
-    var complexId: Long = 0
+    var complexId: Long = 0,
+
+    @Column(name = "announcement_id")
+    var announcementId: Long = 0
 ) : Serializable
 
 @Entity
