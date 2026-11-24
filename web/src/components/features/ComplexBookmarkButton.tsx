@@ -11,11 +11,12 @@ import { useFeedback } from '@/components/ui/Feedback';
 interface ComplexBookmarkButtonProps {
   complexId: number;
   complexName: string;
+  announcementId?: number;
   className?: string;
 }
 
 // 단지 상세 페이지(서버 컴포넌트)용 저장 버튼. 지도 화면과 같은 BookmarkModal을 쓰고, 저장 후 AuthContext를 새로고침해 상태를 맞춘다.
-export default function ComplexBookmarkButton({ complexId, complexName, className }: ComplexBookmarkButtonProps) {
+export default function ComplexBookmarkButton({ complexId, complexName, announcementId, className }: ComplexBookmarkButtonProps) {
   const { member, bookmarkFolders, bookmarkItems, refresh } = useAuth();
   const { showToast } = useFeedback();
   const [authOpen, setAuthOpen] = useState(false);
@@ -23,7 +24,7 @@ export default function ComplexBookmarkButton({ complexId, complexName, classNam
   const [addedFolders, setAddedFolders] = useState<BookmarkFolder[]>([]);
   const [pendingFolder, setPendingFolder] = useState<Promise<Response> | null>(null);
 
-  const isBookmarked = bookmarkItems.some((item) => item.complexId === complexId);
+  const isBookmarked = bookmarkItems.some((item) => item.complexId === complexId && (announcementId ? item.announcementId === announcementId : true));
   const folders = [...bookmarkFolders, ...addedFolders.filter((f) => !bookmarkFolders.some((b) => b.id === f.id))];
 
   const request = async (method: 'POST' | 'DELETE', path: string, body: object) => {
@@ -38,7 +39,7 @@ export default function ComplexBookmarkButton({ complexId, complexName, classNam
 
   const handleClick = () => {
     if (!member) { setAuthOpen(true); return; }
-    if (isBookmarked) { request('DELETE', 'bookmark-items', { complex_id: complexId }); return; }
+    if (isBookmarked) { request('DELETE', 'bookmark-items', { complex_id: complexId, announcement_id: announcementId }); return; }
     setModalOpen(true);
   };
 
@@ -58,7 +59,7 @@ export default function ComplexBookmarkButton({ complexId, complexName, classNam
     setModalOpen(false);
     // 방금 만든 폴더가 서버에 먼저 생성된 뒤 단지를 넣는다.
     await pendingFolder?.catch(() => null);
-    await request('POST', 'bookmark-items', { complex_id: complexId, folder_id: folderId, memo });
+    await request('POST', 'bookmark-items', { complex_id: complexId, announcement_id: announcementId, folder_id: folderId, memo });
   };
 
   return (

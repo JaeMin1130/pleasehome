@@ -678,6 +678,7 @@ export default function Sidebar({
           activeComplexId={activeComplexId}
           onSelectComplex={onSelectComplex}
           bookmarkedIds={bookmarkedIds}
+          bookmarkItems={bookmarkItems}
           onToggleBookmark={onToggleBookmark}
           onHoverComplex={onHoverComplex}
         />

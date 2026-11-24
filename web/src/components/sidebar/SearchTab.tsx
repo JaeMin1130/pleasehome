@@ -3,7 +3,7 @@
 import { clickable } from '@/utils/a11y';
 import { REGION_FILTERS } from '@/constants';
 import React from 'react';
-import { Announcement, ApplicationStatus, Complex } from '@/types';
+import { Announcement, ApplicationStatus, Complex, BookmarkItem } from '@/types';
 import AnnouncementCard from '@/components/features/AnnouncementCard';
 import ComplexCard, { displayedCounts } from '@/components/features/ComplexCard';
 import CatRunLoader from '@/components/ui/CatRunLoader';
@@ -43,6 +43,7 @@ interface SearchTabProps {
   activeComplexId: number | null;
   onSelectComplex: (complex: Complex) => void;
   bookmarkedIds: number[];
+  bookmarkItems?: BookmarkItem[];
   onToggleBookmark: (complexId: number, announcementId?: number) => void;
   onHoverComplex?: (id: number | null) => void;
 }
@@ -81,6 +82,7 @@ export default function SearchTab({
   activeComplexId,
   onSelectComplex,
   bookmarkedIds,
+  bookmarkItems = [],
   onToggleBookmark,
   onHoverComplex,
 }: SearchTabProps) {
@@ -317,7 +319,7 @@ export default function SearchTab({
                             complex={complex}
                             isActive={activeComplexId === complex.id}
                             onClick={() => onSelectComplex(complex)}
-                            isBookmarked={bookmarkedIds.includes(complex.id)}
+                            isBookmarked={bookmarkItems.length > 0 ? bookmarkItems.some(i => i.complexId === complex.id && (ann ? i.announcementId === ann.id : true)) : bookmarkedIds.includes(complex.id)}
                             onBookmarkToggle={() => onToggleBookmark(complex.id, ann.id)}
                             onMouseEnter={() => onHoverComplex?.(complex.id)}
                             onMouseLeave={() => onHoverComplex?.(null)}

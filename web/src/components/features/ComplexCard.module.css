@@ -48,6 +48,23 @@
   margin-top: var(--spacing-xs);
 }
 
+.card-ann-info.clickable {
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  padding: 4px 6px;
+  margin: 2px -6px -2px -6px;
+  transition: background-color var(--transition-fast-all);
+}
+
+.card-ann-info.clickable:hover {
+  background-color: var(--bg-surface-hover);
+}
+
+.card-ann-info.clickable:hover .ann-title {
+  text-decoration: underline;
+  color: var(--primary);
+}
+
 .ann-badge {
   font-size: var(--font-size-xs);
   background-color: var(--primary-bg);

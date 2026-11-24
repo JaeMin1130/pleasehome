@@ -1,5 +1,6 @@
 import { clickable } from '@/utils/a11y';
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { Complex, Announcement } from '@/types';
 import Tooltip from '@/components/ui/Tooltip';
 import { formatDateWithTime, formatMoney } from '@/utils/formatters';
@@ -79,6 +80,7 @@ export default function ComplexCard({
   onMouseEnter,
   onMouseLeave
 }: ComplexCardProps) {
+  const router = useRouter();
   const { dDayText, status: announcementStatusVal } = useDDay(announcement);
 
   return (
@@ -171,9 +173,27 @@ export default function ComplexCard({
       })()}
 
       {announcementTitle && (
-        <div className={styles['card-ann-info']}>
+        <div 
+          className={`${styles['card-ann-info']} ${announcement?.id ? styles.clickable : ''}`}
+          onClick={(e) => {
+            if (announcement?.id) {
+              e.stopPropagation();
+              router.push(`/announcements/details/${announcement.id}`);
+            }
+          }}
+          role={announcement?.id ? "button" : undefined}
+          tabIndex={announcement?.id ? 0 : undefined}
+          onKeyDown={(e) => {
+            if (announcement?.id && (e.key === 'Enter' || e.key === ' ')) {
+              e.preventDefault();
+              e.stopPropagation();
+              router.push(`/announcements/details/${announcement.id}`);
+            }
+          }}
+          title={announcement?.id ? `${announcementTitle} 공고 상세로 이동` : announcementTitle}
+        >
           <Badge institution={announcementInstitution || '공고'} />
-          <span className={styles['ann-title']} title={announcementTitle}>
+          <span className={styles['ann-title']}>
             {announcementTitle}
           </span>
           {announcementStatus && (

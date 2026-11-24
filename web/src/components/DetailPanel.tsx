@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useBottomSheetGesture } from '@/hooks/useBottomSheetGesture';
-import { Complex, HousingUnit, Announcement, FilterState, BookmarkFolder } from '@/types';
+import { Complex, HousingUnit, Announcement, FilterState, BookmarkFolder, BookmarkItem } from '@/types';
 import UnitTable from '@/components/features/UnitTable';
 import UnitCard from '@/components/features/UnitCard';
 import PanelEdgeToggle from '@/components/ui/PanelEdgeToggle';
@@ -17,6 +17,7 @@ interface DetailPanelProps {
   onClose: () => void;
   style?: React.CSSProperties;
   bookmarkedIds: number[];
+  bookmarkItems?: BookmarkItem[];
   onToggleBookmark: (complexId: number, announcementId?: number) => void;
   comparisonFolder?: BookmarkFolder | null;
   comparisonComplexes?: Complex[];
@@ -30,7 +31,7 @@ interface DetailPanelProps {
 
 export default function DetailPanel({ 
   complex, isOpen, filterState, announcements, onClose, style,
-  bookmarkedIds, onToggleBookmark,
+  bookmarkedIds, bookmarkItems = [], onToggleBookmark,
   comparisonFolder = null,
   comparisonComplexes = [],
   activeTab,
@@ -381,7 +382,9 @@ export default function DetailPanel({
     return supplyType || formattedTarget || '정보 없음';
   };
 
-  const isBookmarked = bookmarkedIds.includes(complex.id);
+  const isBookmarked = bookmarkItems && bookmarkItems.length > 0
+    ? bookmarkItems.some(i => i.complexId === complex.id && (announcementId ? i.announcementId === announcementId : true))
+    : bookmarkedIds.includes(complex.id);
 
   return (
     <div 

@@ -431,13 +431,15 @@ export default function BookmarkTab({
                   ) : (
                     <>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
-                        {folderComplexes.map((complex) => {
-                          const item = bookmarkItems.find(i => i.complexId === complex.id);
-                          const effectiveAnnId = item?.announcementId || complex.announcement_id;
+                        {folderItems.map((item) => {
+                          const complex = bookmarkedComplexes.find(c => c.id === item.complexId);
+                          if (!complex) return null;
+                          const effectiveAnnId = item.announcementId || complex.announcement_id;
                           const ann = announcements.find(a => a.id === effectiveAnnId);
+                          const itemKey = `${folder.id}-${item.complexId}-${item.announcementId ?? 'all'}`;
                           return (
                             <div 
-                              key={complex.id} 
+                              key={itemKey} 
                               className={`${styles['bookmark-card-wrapper']} ${draggingComplexId === complex.id ? styles.dragging : ''}`}
                               draggable={true}
                               onDragStart={(e) => {
@@ -453,7 +455,7 @@ export default function BookmarkTab({
                                 isActive={false}
                                 onClick={async () => {
                                   // 북마크에 저장된 특정 공고가 있으면 해당 공고로 우선 이동
-                                  let targetAnnId = item?.announcementId;
+                                  let targetAnnId = item.announcementId;
                                   if (!targetAnnId) {
                                     targetAnnId = complex.announcement_id;
                                     try {
@@ -469,7 +471,7 @@ export default function BookmarkTab({
                                   onSelectComplex(complex, targetAnnId);
                                 }}
                                 isBookmarked={true}
-                                onBookmarkToggle={() => onToggleBookmark(complex.id, item?.announcementId)}
+                                onBookmarkToggle={() => onToggleBookmark(complex.id, item.announcementId)}
                                 announcementTitle={ann?.title}
                                 announcementStatus={ann ? getAnnouncementStatus(ann) : undefined}
                                 announcementInstitution={ann?.institution}
@@ -477,7 +479,7 @@ export default function BookmarkTab({
                                 onMouseEnter={() => onHoverComplex?.(complex.id)}
                                 onMouseLeave={() => onHoverComplex?.(null)}
                               />
-                              {item?.memo && (
+                              {item.memo && (
                                 <div className={styles['bookmark-card-memo']}>
                                   <svg className={styles['memo-icon']} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M12 20h9"></path>

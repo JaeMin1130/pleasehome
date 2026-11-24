@@ -750,6 +750,7 @@ function HomeContent({ initialAnnouncements = [] }: HomeClientLayoutProps) {
           filterState={filterState} 
           announcements={announcements} 
           bookmarkedIds={bookmarkedIds}
+          bookmarkItems={bookmarkItems}
           onToggleBookmark={toggleBookmark}
           activeTab={activeTab || lastActiveTab}
           announcementId={activeAnnId}
