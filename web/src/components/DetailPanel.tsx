@@ -71,6 +71,7 @@ export default function DetailPanel({
   const [selectedType, setSelectedType] = useState<string>('ALL');
   const [selectedTarget, setSelectedTarget] = useState<string>('ALL');
   const [selectedIncome, setSelectedIncome] = useState<string>('ALL');
+  const [isMobileExpanded, setIsMobileExpanded] = useState<boolean>(false);
 
   // 스펙 비교용 단지별 주택형 정보 상태
   const [comparisonUnits, setComparisonUnits] = useState<Record<number, HousingUnit[]>>({});
@@ -131,6 +132,7 @@ export default function DetailPanel({
     setSelectedType('ALL');
     setSelectedTarget('ALL');
     setSelectedIncome('ALL');
+    setIsMobileExpanded(false);
     fetch(`/api/housing-units?complex_id=${complex.id}${announcementId ? `&announcement_id=${announcementId}` : ''}`)
       .then((res) => res.json())
       .then((data: HousingUnit[]) => {
@@ -190,7 +192,7 @@ export default function DetailPanel({
   if (comparisonFolder) {
     return (
       <aside 
-        className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''} ${isExpanded ? styles.expanded : ''} ${sidebarState === 'collapsed' ? styles.sidebarCollapsed : sidebarState === 'expanded' ? styles.sidebarExpanded : ''}`}
+        className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''} ${isExpanded ? styles.expanded : ''} ${sidebarState === 'collapsed' ? styles.sidebarCollapsed : sidebarState === 'expanded' ? styles.sidebarExpanded : ''} ${isMobileExpanded ? styles.mobileExpanded : ''}`}
         style={{
           ...style,
           height: sheetHeight ? `${sheetHeight}px` : undefined
@@ -198,7 +200,13 @@ export default function DetailPanel({
         {...touchHandlers}
       >
         {/* 모바일 화면 전용 상단 드래그 핸들바 */}
-        <div className={styles['drag-handle-bar']} />
+        <div 
+          className={styles['drag-handle-bar']}
+          onClick={() => setIsMobileExpanded(v => !v)}
+          role="button"
+          tabIndex={0}
+          aria-label="상세 패널 크기 전환"
+        />
         {isOpen && onExpandToggle && <PanelEdgeToggle isExpanded={isExpanded} onToggle={onExpandToggle} />}
         {/* 헤더 영역을 스크롤 바깥으로 분리 */}
         <div className={styles['panel-header-fixed']}>
@@ -377,7 +385,7 @@ export default function DetailPanel({
 
   return (
     <div 
-      className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''} ${isExpanded ? styles.expanded : ''} ${sidebarState === 'collapsed' ? styles.sidebarCollapsed : sidebarState === 'expanded' ? styles.sidebarExpanded : ''}`} 
+      className={`${styles['app-detail-panel']} ${isOpen ? styles.open : ''} ${isExpanded ? styles.expanded : ''} ${sidebarState === 'collapsed' ? styles.sidebarCollapsed : sidebarState === 'expanded' ? styles.sidebarExpanded : ''} ${isMobileExpanded ? styles.mobileExpanded : ''}`} 
       style={{
         ...style,
         height: sheetHeight ? `${sheetHeight}px` : undefined
@@ -385,7 +393,13 @@ export default function DetailPanel({
       {...touchHandlers}
     >
       {/* 모바일 화면 전용 상단 드래그 핸들바 */}
-      <div className={styles['drag-handle-bar']} />
+      <div 
+        className={styles['drag-handle-bar']}
+        onClick={() => setIsMobileExpanded(v => !v)}
+        role="button"
+        tabIndex={0}
+        aria-label="상세 패널 크기 전환"
+      />
       {isOpen && onExpandToggle && <PanelEdgeToggle isExpanded={isExpanded} onToggle={onExpandToggle} />}
       {/* 헤더 영역을 스크롤 바깥으로 분리 */}
       <div className={styles['panel-header-fixed']}>

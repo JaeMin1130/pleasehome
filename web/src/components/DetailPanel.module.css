@@ -452,22 +452,26 @@
 }
 
 .direction-btn-naver {
-  background-color: var(--color-brand-naver);
-  color: var(--color-white);
+  background-color: rgba(3, 199, 90, 0.1);
+  color: #03c75a;
+  border: 1px solid rgba(3, 199, 90, 0.3);
 }
 
 .direction-btn-naver:hover {
-  background-color: var(--color-brand-naver-hover);
+  background-color: rgba(3, 199, 90, 0.18);
+  border-color: #03c75a;
   transform: translateY(calc(var(--spacing-3xs) * -2));
 }
 
 .direction-btn-kakao {
-  background-color: var(--color-brand-kakao);
-  color: var(--color-brand-kakao-text);
+  background-color: rgba(254, 229, 0, 0.12);
+  color: var(--text-primary);
+  border: 1px solid rgba(245, 158, 11, 0.35);
 }
 
 .direction-btn-kakao:hover {
-  background-color: var(--color-brand-kakao-hover);
+  background-color: rgba(254, 229, 0, 0.22);
+  border-color: rgba(245, 158, 11, 0.6);
   transform: translateY(calc(var(--spacing-3xs) * -2));
 }
 
@@ -485,16 +489,20 @@
     left: 0;
     right: 0;
     width: 100vw;
-    height: 45dvh; /* 기본 초기높이 */
+    height: 48dvh; /* 기본 초기높이 */
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     z-index: calc(var(--z-index-dropdown) + 10);
     transform: translateY(100%); /* 기본 닫힘 상태 */
-    transition: transform var(--transition-panel), height var(--transition-panel);
+    transition: transform var(--transition-panel), height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overscroll-behavior-y: contain;
   }
 
   .app-detail-panel.open {
     transform: translateY(0); /* 열렸을 때 솟아오름 */
+  }
+
+  .app-detail-panel.mobileExpanded {
+    height: 85dvh;
   }
 
   .drag-handle-bar {
