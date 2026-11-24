@@ -75,6 +75,55 @@ export default function DetailPanel({
   // 스펙 비교용 단지별 주택형 정보 상태
   const [comparisonUnits, setComparisonUnits] = useState<Record<number, HousingUnit[]>>({});
 
+  // 1. 주택형 고유 목록 (useMemo - Rules of Hooks 준수를 위해 early return 이전 최상단 배치)
+  const baseTypes = useMemo(() => Array.from(
+    new Set(units.map((u) => u.room_type?.split(' ')[0]).filter((t): t is string => !!t))
+  ).sort(), [units]);
+
+  // 2. 공급 유형 + 신청 대상 고유 결합 키 목록 추출 (useMemo)
+  const targetCombos = useMemo(() => Array.from(
+    new Set(units.map((u) => `${u.supply_type || ''}_${u.target_group || ''}`))
+  ).filter(combo => combo !== '_').sort(), [units]);
+
+  // 3. 소득/순위 고유 목록 (useMemo)
+  const incomeGroups = useMemo(() => Array.from(
+    new Set(units.map((u) => u.income_group).filter((g): g is string => !!g))
+  ).sort(), [units]);
+
+  // 4. 교차 연동 유효성 체크 함수 (Set 사전 계산으로 O(1) 검사)
+  const { validTypes, validIncomes, validTargets } = useMemo(() => {
+    const types = new Set<string>();
+    const incomes = new Set<string>();
+    const targets = new Set<string>();
+
+    for (const u of units) {
+      const comboKey = `${u.supply_type || ''}_${u.target_group || ''}`;
+      const prefix = u.room_type ? u.room_type.split(' ')[0] : null;
+
+      if ((selectedTarget === 'ALL' || comboKey === selectedTarget) &&
+          (selectedIncome === 'ALL' || u.income_group === selectedIncome) &&
+          prefix) {
+        types.add(prefix);
+      }
+
+      if ((selectedType === 'ALL' || (prefix && prefix.startsWith(selectedType))) &&
+          (selectedTarget === 'ALL' || comboKey === selectedTarget) &&
+          u.income_group) {
+        incomes.add(u.income_group);
+      }
+
+      if ((selectedType === 'ALL' || (prefix && prefix.startsWith(selectedType))) &&
+          (selectedIncome === 'ALL' || u.income_group === selectedIncome)) {
+        targets.add(comboKey);
+      }
+    }
+
+    return { validTypes: types, validIncomes: incomes, validTargets: targets };
+  }, [units, selectedType, selectedTarget, selectedIncome]);
+
+  const totalSupplyCount = useMemo(() => units.reduce((acc, u) => acc + (u.supply_count || 0), 0), [units]);
+  const totalReserveCount = useMemo(() => units.reduce((acc, u) => acc + (u.reserve_count || 0), 0), [units]);
+
   useEffect(() => {
     if (!complex) return;
     setLoading(true);
@@ -306,52 +355,6 @@ export default function DetailPanel({
 
   if (!complex) return null;
 
-  // 1. 주택형 고유 목록 (useMemo)
-  const baseTypes = useMemo(() => Array.from(
-    new Set(units.map((u) => u.room_type?.split(' ')[0]).filter((t): t is string => !!t))
-  ).sort(), [units]);
-
-  // 2. 공급 유형 + 신청 대상 고유 결합 키 목록 추출 (useMemo)
-  const targetCombos = useMemo(() => Array.from(
-    new Set(units.map((u) => `${u.supply_type || ''}_${u.target_group || ''}`))
-  ).filter(combo => combo !== '_').sort(), [units]);
-
-  // 3. 소득/순위 고유 목록 (useMemo)
-  const incomeGroups = useMemo(() => Array.from(
-    new Set(units.map((u) => u.income_group).filter((g): g is string => !!g))
-  ).sort(), [units]);
-
-  // --- 교차 연동 유효성 체크 함수 (Set 사전 계산으로 O(1) 검사) ---
-  const { validTypes, validIncomes, validTargets } = useMemo(() => {
-    const types = new Set<string>();
-    const incomes = new Set<string>();
-    const targets = new Set<string>();
-
-    for (const u of units) {
-      const comboKey = `${u.supply_type || ''}_${u.target_group || ''}`;
-      const prefix = u.room_type ? u.room_type.split(' ')[0] : null;
-
-      if ((selectedTarget === 'ALL' || comboKey === selectedTarget) &&
-          (selectedIncome === 'ALL' || u.income_group === selectedIncome) &&
-          prefix) {
-        types.add(prefix);
-      }
-
-      if ((selectedType === 'ALL' || (prefix && prefix.startsWith(selectedType))) &&
-          (selectedTarget === 'ALL' || comboKey === selectedTarget) &&
-          u.income_group) {
-        incomes.add(u.income_group);
-      }
-
-      if ((selectedType === 'ALL' || (prefix && prefix.startsWith(selectedType))) &&
-          (selectedIncome === 'ALL' || u.income_group === selectedIncome)) {
-        targets.add(comboKey);
-      }
-    }
-
-    return { validTypes: types, validIncomes: incomes, validTargets: targets };
-  }, [units, selectedType, selectedTarget, selectedIncome]);
-
   const isTypeValid = (type: string) => validTypes.has(type);
   const isIncomeValid = (income: string) => validIncomes.has(income);
   const isTargetValid = (combo: string) => validTargets.has(combo);
@@ -371,8 +374,6 @@ export default function DetailPanel({
   };
 
   const isBookmarked = bookmarkedIds.includes(complex.id);
-  const totalSupplyCount = useMemo(() => units.reduce((acc, u) => acc + (u.supply_count || 0), 0), [units]);
-  const totalReserveCount = useMemo(() => units.reduce((acc, u) => acc + (u.reserve_count || 0), 0), [units]);
 
   return (
     <div 
