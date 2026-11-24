@@ -53,48 +53,50 @@ export default function NavigationBar({
               <line x1="15" y1="6" x2="15" y2="21"></line>
             </svg>
           </div>
-                    {member ? (
-            <div className={styles['profile-wrapper']} ref={profileRef}>
+                    <div className={styles['desktop-only-auth']}>
+            {member ? (
+              <div className={styles['profile-wrapper']} ref={profileRef}>
+                <button
+                  id="nav-profile-btn"
+                  className={styles['nav-item']}
+                  onClick={() => setShowProfileMenu(v => !v)}
+                  title={`${member.id} 님`}
+                >
+                  <div className={styles['avatar']}>
+                    {member.id.charAt(0).toUpperCase()}
+                  </div>
+                  <span className={`${styles['nav-label']} ${styles['profile-label']}`}>
+                    {member.id}
+                  </span>
+                </button>
+                {showProfileMenu && (
+                  <div className={styles['profile-menu']}>
+                    <div className={styles['profile-menu-id']}>{member.id}</div>
+                    <button
+                      id="nav-logout-btn"
+                      className={styles['profile-menu-item']}
+                      onClick={async () => { setShowProfileMenu(false); await logout(); }}
+                    >
+                      로그아웃
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
               <button
-                id="nav-profile-btn"
+                id="nav-login-btn"
                 className={styles['nav-item']}
-                onClick={() => setShowProfileMenu(v => !v)}
-                title={`${member.id} 님`}
+                onClick={() => setAuthModalOpen(true)}
+                title="로그인"
               >
-                <div className={styles['avatar']}>
-                  {member.id.charAt(0).toUpperCase()}
-                </div>
-                <span className={`${styles['nav-label']} ${styles['profile-label']}`}>
-                  {member.id}
-                </span>
+                <svg className={styles['nav-icon']} width={UI_SIZES.ICON_XL} height={UI_SIZES.ICON_XL} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.NORMAL} strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="8" r="4"/>
+                  <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                </svg>
+                <span className={styles['nav-label']}>로그인</span>
               </button>
-              {showProfileMenu && (
-                <div className={styles['profile-menu']}>
-                  <div className={styles['profile-menu-id']}>{member.id}</div>
-                  <button
-                    id="nav-logout-btn"
-                    className={styles['profile-menu-item']}
-                    onClick={async () => { setShowProfileMenu(false); await logout(); }}
-                  >
-                    로그아웃
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <button
-              id="nav-login-btn"
-              className={styles['nav-item']}
-              onClick={() => setAuthModalOpen(true)}
-              title="로그인"
-            >
-              <svg className={styles['nav-icon']} width={UI_SIZES.ICON_XL} height={UI_SIZES.ICON_XL} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={UI_STROKE_WIDTHS.NORMAL} strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="8" r="4"/>
-                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-              </svg>
-              <span className={styles['nav-label']}>로그인</span>
-            </button>
-          )}
+            )}
+          </div>
           <button
             className={`${styles['nav-item']} ${activeTab === 'SEARCH' ? styles.active : ''}`}
             onClick={() => onTabSelect(activeTab === 'SEARCH' ? null : 'SEARCH')}
