@@ -59,12 +59,14 @@ export default function UnitCard({
   return (
     <div className={styles['unit-card']}>
       <div className={styles['unit-header']}>
-        <span className={styles['unit-supply-type']}>
-          {unit.room_type || `${unit.exclusive_area}형`} 
-          <span className={styles['area-text']}>
-            ({unit.exclusive_area.toFixed(2)}㎡ / ~{Math.round(unit.exclusive_area * 0.3025)}평)
+        <div className={styles['unit-title-group']}>
+          <span className={styles['unit-room-type']}>
+            {unit.room_type || `${unit.exclusive_area}형`}
           </span>
-        </span>
+          <span className={styles['area-text']}>
+            {unit.exclusive_area.toFixed(1)}㎡ ({Math.round(unit.exclusive_area * 0.3025)}평)
+          </span>
+        </div>
         <div className={styles['unit-header-right']}>
           {unit.supply_type && (
             <span className={`${styles['unit-target']} ${styles['supply-type']}`}>
@@ -78,8 +80,8 @@ export default function UnitCard({
       </div>
 
       <div className={styles['unit-price-box']}>
-        <div className={styles['price-item']}>
-          <span className={styles['price-lbl']}>임대보증금</span>
+        <div className={styles['price-col']}>
+          <span className={styles['price-lbl']}>보증금</span>
           <div className={styles['price-val-wrap']}>
             <span className={styles['price-val']}>
               {converted && diffAmount !== 0 ? formatMoney(converted.deposit) : formatMoney(unit.deposit)}
@@ -101,8 +103,9 @@ export default function UnitCard({
             )}
           </div>
         </div>
-        <div className={styles['price-item']}>
-          <span className={styles['price-lbl']}>월 임대료</span>
+        <div className={styles['price-divider']} />
+        <div className={styles['price-col']}>
+          <span className={styles['price-lbl']}>월세</span>
           <div className={styles['price-val-wrap']}>
             <span className={styles['price-val']}>
               {converted && diffAmount !== 0 ? formatRent(converted.rent) : formatRent(unit.monthly_rent)}
@@ -162,29 +165,19 @@ export default function UnitCard({
         </div>
       )}
 
-      <div className={styles['unit-meta-list']}>
-        <div className={styles['meta-item']}>
-          <span className={styles['meta-lbl']}>공급호수: </span>
-          <span className={styles['meta-val-bold']}>{unit.supply_count}호</span> 
-          {unit.reserve_count > 0 && <span className={styles['meta-lbl']}> (예비 {unit.reserve_count}호)</span>}
-        </div>
+      <div className={styles['unit-meta-inline']}>
+        <span className={styles['meta-chip']}>
+          공급 <strong>{unit.supply_count}호</strong>
+          {unit.reserve_count > 0 && <span className={styles['meta-sub']}> (예비 {unit.reserve_count})</span>}
+        </span>
         {unit.income_group && (
-          <div className={styles['meta-item']}>
-            <span className={styles['meta-lbl']}>소득기준: </span>
-            <span>{unit.income_group}</span>
-          </div>
+          <span className={styles['meta-chip']}>소득: {unit.income_group}</span>
         )}
         {unit.room_number && (
-          <div className={styles['meta-item']}>
-            <span className={styles['meta-lbl']}>동/호수: </span>
-            <span>{unit.room_number}</span>
-          </div>
+          <span className={styles['meta-chip']}>{unit.room_number}</span>
         )}
         {unit.room_count && (
-          <div className={styles['meta-item']}>
-            <span className={styles['meta-lbl']}>방 개수: </span>
-            <span>{unit.room_count}개</span>
-          </div>
+          <span className={styles['meta-chip']}>방 {unit.room_count}개</span>
         )}
       </div>
     </div>

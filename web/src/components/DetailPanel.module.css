@@ -609,6 +609,17 @@
 }
 
 @media (max-width: 768px) {
+  .panel-filter-row {
+    gap: 4px;
+    margin-bottom: var(--spacing-sm);
+    padding-bottom: var(--spacing-sm);
+  }
+
+  .filter-select {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
   .units-desktop {
     display: none;
   }
@@ -616,6 +627,6 @@
   .units-mobile {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-sm);
+    gap: 8px;
   }
 }

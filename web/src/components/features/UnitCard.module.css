@@ -1,112 +1,176 @@
 .unit-card {
     background-color: var(--bg-surface);
-    border: var(--spacing-3xs) solid var(--border-light);
-    border-radius: var(--spacing-sm);
-    padding: var(--spacing-xl);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 12px 14px;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    transition: border-color var(--transition-fast);
+}
+
+.unit-card:hover {
+    border-color: var(--border-strong);
 }
 
 .unit-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 8px;
 }
 
-.unit-supply-type {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
+.unit-title-group {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.unit-room-type {
+    font-size: 16px;
+    font-weight: 700;
     color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.area-text {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.unit-header-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
 }
 
 .unit-target {
-    font-size: var(--font-size-sm);
+    font-size: 11px;
     color: var(--primary);
     background-color: var(--primary-bg);
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-radius: var(--spacing-xs);
-    font-weight: var(--font-weight-semibold);
+    padding: 2px 7px;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    white-space: nowrap;
 }
 
+.unit-target.supply-type {
+    color: var(--text-secondary);
+    background-color: var(--bg-surface-elevated, #f1f5f9);
+    border: 1px solid var(--border-light);
+}
+
+/* 2열 가격 박스: 보증금 / 월세 */
 .unit-price-box {
-    display: flex;
-    gap: calc(var(--spacing-lg) * 1.5);
-    border-top: var(--spacing-3xs) solid var(--border-light);
-    padding-top: var(--spacing-md);
-    margin-top: var(--spacing-xs);
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--bg-surface-elevated, #f8fafc);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 8px 12px;
 }
 
-.price-item {
+.price-col {
     display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.price-divider {
+    width: 1px;
+    height: 18px;
+    background-color: var(--border-light);
+}
+
+.price-lbl {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    flex-shrink: 0;
 }
 
 .price-val-wrap {
     display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-}
-
-.price-lbl {
-    font-size: var(--font-size-sm);
-    color: var(--text-secondary);
+    align-items: baseline;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .price-val {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-bold);
+    font-size: 14px;
+    font-weight: 700;
     color: var(--text-primary);
+    letter-spacing: -0.01em;
 }
 
-.price-val.primary {
-    color: var(--primary);
+.conversion-diff {
+    font-size: 11px;
+    font-weight: 600;
 }
 
-.area-text {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-regular);
-    color: var(--text-secondary);
-    margin-left: var(--spacing-xs);
+.conversion-diff.up {
+    color: var(--color-tomato, #ef4444);
 }
 
-.unit-meta-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-sm);
-    border-top: var(--spacing-3xs) dashed var(--border-light);
-    padding-top: var(--spacing-sm);
-    margin-top: var(--spacing-xs);
+.conversion-diff.down {
+    color: var(--color-down, #10b981);
 }
 
+.diff-icon {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 1px;
+}
+
+/* 전환 슬라이더 박스 */
 .conversion-slider-box {
-    border-top: var(--spacing-3xs) dashed var(--border-strong);
-    margin-top: var(--spacing-sm);
-    padding-top: var(--spacing-lg);
+    border-top: 1px dashed var(--border-light);
+    margin-top: 2px;
+    padding-top: 8px;
 }
 
 .conversion-slider-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: var(--spacing-md);
+    margin-bottom: 6px;
+}
+
+.slider-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
 }
 
 .conversion-slider-title {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
+    font-size: 12px;
+    font-weight: 600;
     color: var(--text-primary);
 }
 
+.slider-diff-text {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
 .conversion-reset-btn {
-    font-size: var(--font-size-sm);
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-radius: var(--spacing-xs);
-    border: var(--spacing-3xs) solid var(--border-light);
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-light);
     background: var(--bg-surface);
     color: var(--text-secondary);
     cursor: pointer;
+    transition: background-color var(--transition-fast);
 }
 
 .conversion-reset-btn:hover {
@@ -117,112 +181,41 @@
 .conversion-slider-track-wrap {
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
+    gap: 8px;
 }
 
 .conversion-slider-label {
-    font-size: var(--font-size-sm);
-    color: var(--text-secondary);
+    font-size: 11px;
+    color: var(--text-muted);
     white-space: nowrap;
 }
 
-
-.conversion-result {
+/* 한 줄 콤팩트 메타 칩 목록 */
+.unit-meta-inline {
     display: flex;
-    gap: calc(var(--spacing-lg) * 1.5);
-    margin-top: var(--spacing-lg);
-    padding: var(--spacing-md) var(--spacing-lg);
-    background: var(--primary-bg);
-    border-radius: var(--radius-md);
-    border: var(--spacing-3xs) solid var(--border-light);
-}
-
-.conversion-result-item {
-    display: flex;
-    flex-direction: column;
-    flex: var(--layout-flex-1);
-    gap: var(--spacing-xs);
-}
-
-.conversion-result-lbl {
-    font-size: var(--font-size-sm);
-    color: var(--primary);
-}
-
-.conversion-result-val {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--text-primary);
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-}
-
-.conversion-diff {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-}
-
-.conversion-diff.up {
-    color: var(--color-tomato);
-}
-
-.conversion-diff.down {
-    color: var(--color-down);
-}
-
-.slider-title-wrap {
-    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: 5px;
 }
 
-.slider-diff-text {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-bold);
-    color: var(--text-muted);
-}
-
-.rate-text-wrap {
-    font-size: var(--font-size-xs);
-    color: var(--text-muted);
-    margin-bottom: var(--spacing-sm);
-    text-align: right;
-}
-
-.conversion-rate-only {
-    font-size: var(--font-size-xs);
+.meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
     color: var(--text-secondary);
-    margin-top: var(--spacing-sm);
-    text-align: right;
+    background-color: var(--bg-surface-elevated, #f1f5f9);
+    padding: 2px 7px;
+    border-radius: var(--radius-sm);
+    line-height: 1.4;
 }
 
-.rate-text-highlight {
-    font-weight: var(--font-weight-bold);
-    color: var(--primary);
+.meta-chip strong {
+    color: var(--text-primary);
+    font-weight: 600;
 }
 
-.diff-icon {
-    display: inline-block;
-    vertical-align: middle;
-    margin-right: var(--spacing-2xs);
-}
-
-.meta-item {
-    flex: var(--layout-flex-basis-45);
-}
-
-.meta-lbl {
+.meta-sub {
     color: var(--text-muted);
-}
-
-.meta-val-bold {
-    font-weight: var(--font-weight-semibold);
-}
-
-.meta-attr {
-    flex: var(--layout-flex-basis-100);
-    font-size: var(--font-size-xs);
-    color: var(--text-muted);
-    margin-top: var(--spacing-xs);
+    font-size: 10px;
 }
