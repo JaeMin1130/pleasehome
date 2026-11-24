@@ -392,7 +392,7 @@ function HomeContent({ initialAnnouncements = [] }: HomeClientLayoutProps) {
   }, [activeAnnId, announcementComplexes, announcementUnits]);
 
   const unitsByComplexId = useMemo(() => {
-    const map = new Map<number, any[]>();
+    const map = new globalThis.Map<number, any[]>();
     for (const u of announcementUnits) {
       const list = map.get(u.complex_id);
       if (list) list.push(u);
