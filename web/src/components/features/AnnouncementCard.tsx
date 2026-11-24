@@ -217,39 +217,56 @@ export default function AnnouncementCard({
               )}
             </button>
           )}
+          <div className={`${styles['expand-chevron']} ${isActive ? styles['expanded'] : ''}`} aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
         </div>
       </div>
       <h3 className={styles['card-title']}>{ann.title}</h3>
       
       {isActive && (
-        <div className={styles['detail-link-row']} onClick={(e) => e.stopPropagation()}>
-          <Link 
-            href={`/announcements/details/${ann.id}`} 
-            className={styles['detail-link-btn']}
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['link-icon']}>
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
-            공고 상세 열기
-          </Link>
-          <OfficialAnnouncementLink
-            institution={ann.institution}
-            dtlUrl={ann.dtl_url}
-            dtlUrlMob={ann.dtl_url_mob}
-            className={styles['detail-link-btn']}
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['link-icon']}>
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-              <polyline points="15 3 21 3 21 9"></polyline>
-              <line x1="10" y1="14" x2="21" y2="3"></line>
-            </svg>
-            신청 페이지 열기
-          </OfficialAnnouncementLink>
-        </div>
+        <>
+          <div className={styles['detail-link-row']} onClick={(e) => e.stopPropagation()}>
+            <Link 
+              href={`/announcements/details/${ann.id}`} 
+              className={styles['detail-link-btn']}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['link-icon']}>
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              공고 상세 열기
+            </Link>
+            <OfficialAnnouncementLink
+              institution={ann.institution}
+              dtlUrl={ann.dtl_url}
+              dtlUrlMob={ann.dtl_url_mob}
+              className={styles['detail-link-btn']}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles['link-icon']}>
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+              신청 페이지 열기
+            </OfficialAnnouncementLink>
+          </div>
+
+          {/* ① 공급 주택 목록 (공고 카드 펼침 시 최우선 노출) */}
+          {children && (
+            <div className={styles['complex-list-wrapper']} onClick={(e) => e.stopPropagation()}>
+              <div className={styles['complex-list-header']}>
+                <span className={styles['complex-list-title']}>공급 주택 (단지)</span>
+              </div>
+              {children}
+            </div>
+          )}
+        </>
       )}
 
       {/* 접수 마감(CLOSED) 상태의 공고에 대해서만 진행 단계 바 렌더링 */}
@@ -367,16 +384,6 @@ export default function AnnouncementCard({
                  </AccordionSection>
                );
              })}
-
-            {children && (
-              <AccordionSection
-                title={`${currentNum++}. 공급 주택 목록`}
-                isOpen={!!isComplexListOpen}
-                onToggle={onToggleComplexList || (() => {})}
-              >
-                {children}
-              </AccordionSection>
-            )}
           </div>
         );
       })()}
