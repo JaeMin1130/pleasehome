@@ -25,6 +25,35 @@ declare global {
 
 import { BookmarkFolder, BookmarkItem } from '@/types';
 
+interface MarkerItem {
+  id: number;
+  marker: any;
+  isBookmarked: boolean;
+  folderColor: string;
+}
+
+function buildMarkerIcon(isActive: boolean, isBookmarked: boolean, folderColor: string): string {
+  return `
+    <div class="custom-marker ${isActive ? 'active' : ''} ${isBookmarked ? 'bookmarked' : ''}" style="cursor: pointer;">
+      <div class="marker-pin" style="${isBookmarked ? `background-color: ${folderColor};` : ''}">
+        ${isBookmarked ? `
+          <svg viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="white" />
+          </svg>
+        ` : `
+          <svg viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3L3 10.5h2v10h14v-10h2L12 3z" fill="white" />
+            <rect x="9" y="11" width="2.5" height="2.5" class="window-hole" />
+            <rect x="12.5" y="11" width="2.5" height="2.5" class="window-hole" />
+            <rect x="9" y="14.5" width="2.5" height="2.5" class="window-hole" />
+            <rect x="12.5" y="14.5" width="2.5" height="2.5" class="window-hole" />
+          </svg>
+        `}
+      </div>
+    </div>
+  `;
+}
+
 interface MapProps {
   complexes: Complex[];
   activeComplexId: number | null;
@@ -40,7 +69,9 @@ export default function Map({ complexes, activeComplexId, hoveredComplexId, onSe
   const mapRef = useRef<HTMLDivElement>(null);
   const [naverMap, setNaverMap] = useState<any>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const markersRef = useRef<any[]>([]);
+  const markersRef = useRef<MarkerItem[]>([]);
+  const prevActiveIdRef = useRef<number | null>(null);
+  const prevHoveredIdRef = useRef<number | null>(null);
 
   // 지도가 중복 마운트 및 재생성되어 초기 좌표로 리셋되는 것을 방지하기 위한 영구 인스턴스 Ref
   const mapInstanceRef = useRef<any>(null);
@@ -112,33 +143,15 @@ export default function Map({ complexes, activeComplexId, hoveredComplexId, onSe
         ? (folderColorMap.get(bookmarkItem.folderId) || 'var(--primary, #3B82F6)')
         : 'var(--primary, #3B82F6)';
 
-      const iconContent = `
-        <div class="custom-marker ${isActive ? 'active' : ''} ${isBookmarked ? 'bookmarked' : ''}" style="cursor: pointer;">
-          <div class="marker-pin" style="${isBookmarked ? `background-color: ${folderColor};` : ''}">
-            ${isBookmarked ? `
-              <svg viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="white" />
-              </svg>
-            ` : `
-              <svg viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 3L3 10.5h2v10h14v-10h2L12 3z" fill="white" />
-                <rect x="9" y="11" width="2.5" height="2.5" class="window-hole" />
-                <rect x="12.5" y="11" width="2.5" height="2.5" class="window-hole" />
-                <rect x="9" y="14.5" width="2.5" height="2.5" class="window-hole" />
-                <rect x="12.5" y="14.5" width="2.5" height="2.5" class="window-hole" />
-              </svg>
-            `}
-          </div>
-        </div>
-      `;
+      const markerOptions = {
+        content: buildMarkerIcon(isActive, isBookmarked, folderColor),
+        size: new window.naver.maps.Size(MAP_MARKER_SIZE.width, MAP_MARKER_SIZE.height),
+        anchor: new window.naver.maps.Point(MAP_MARKER_ANCHOR.x, MAP_MARKER_ANCHOR.y)
+      };
 
       let marker = currentMap.get(mapped.id);
       if (marker) {
-        marker.setIcon({
-          content: iconContent,
-          size: new window.naver.maps.Size(MAP_MARKER_SIZE.width, MAP_MARKER_SIZE.height),
-          anchor: new window.naver.maps.Point(MAP_MARKER_ANCHOR.x, MAP_MARKER_ANCHOR.y)
-        });
+        marker.setIcon(markerOptions);
         if (marker.getMap() !== naverMap) {
           marker.setMap(naverMap);
         }
@@ -147,11 +160,8 @@ export default function Map({ complexes, activeComplexId, hoveredComplexId, onSe
           position: new window.naver.maps.LatLng(mapped.latitude, mapped.longitude),
           map: naverMap,
           title: mapped.name,
-          icon: {
-            content: iconContent,
-            size: new window.naver.maps.Size(MAP_MARKER_SIZE.width, MAP_MARKER_SIZE.height),
-            anchor: new window.naver.maps.Point(MAP_MARKER_ANCHOR.x, MAP_MARKER_ANCHOR.y)
-          }
+          icon: markerOptions,
+          zIndex: isActive ? 100 : (isBookmarked ? 20 : 10)
         });
 
         window.naver.maps.Event.addListener(marker, 'click', () => {
@@ -159,10 +169,11 @@ export default function Map({ complexes, activeComplexId, hoveredComplexId, onSe
         });
       }
 
-      newMarkersList.push({ id: mapped.id, marker });
+      newMarkersList.push({ id: mapped.id, marker, isBookmarked, folderColor });
     });
 
     markersRef.current = newMarkersList;
+    prevActiveIdRef.current = activeComplexId;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [complexes, mapLoaded, naverMap, bookmarkedIds, bookmarkItems, bookmarkFolders]);
 
@@ -198,18 +209,35 @@ export default function Map({ complexes, activeComplexId, hoveredComplexId, onSe
   useEffect(() => {
     if (!naverMap || markersRef.current.length === 0) return;
 
-    // 마커 엘리먼트의 CSS 클래스 강제 토글 (active 디자인 적용 및 해제)
-    markersRef.current.forEach(m => {
-      const el = m.marker.getElement();
-      if (el) {
-        const innerMarker = el.querySelector('.custom-marker');
-        if (activeComplexId && m.id === activeComplexId) {
-          innerMarker?.classList.add('active');
-        } else {
-          innerMarker?.classList.remove('active');
+    // 네이버 공식 setIcon을 활용하여 변경된 타깃 마커만 O(1) 선별 갱신 (전체 순회 및 미지원 getElement 제거)
+    const prevId = prevActiveIdRef.current;
+    if (prevId !== activeComplexId) {
+      if (prevId) {
+        const prevItem = markersRef.current.find(m => m.id === prevId);
+        if (prevItem) {
+          prevItem.marker.setIcon({
+            content: buildMarkerIcon(false, prevItem.isBookmarked, prevItem.folderColor),
+            size: new window.naver.maps.Size(MAP_MARKER_SIZE.width, MAP_MARKER_SIZE.height),
+            anchor: new window.naver.maps.Point(MAP_MARKER_ANCHOR.x, MAP_MARKER_ANCHOR.y)
+          });
+          prevItem.marker.setZIndex(prevItem.isBookmarked ? 20 : 10);
         }
       }
-    });
+
+      if (activeComplexId) {
+        const activeItem = markersRef.current.find(m => m.id === activeComplexId);
+        if (activeItem) {
+          activeItem.marker.setIcon({
+            content: buildMarkerIcon(true, activeItem.isBookmarked, activeItem.folderColor),
+            size: new window.naver.maps.Size(MAP_MARKER_SIZE.width, MAP_MARKER_SIZE.height),
+            anchor: new window.naver.maps.Point(MAP_MARKER_ANCHOR.x, MAP_MARKER_ANCHOR.y)
+          });
+          activeItem.marker.setZIndex(100);
+        }
+      }
+
+      prevActiveIdRef.current = activeComplexId;
+    }
 
     if (!activeComplexId) return;
 
@@ -321,19 +349,22 @@ export default function Map({ complexes, activeComplexId, hoveredComplexId, onSe
   useEffect(() => {
     if (!naverMap || markersRef.current.length === 0) return;
 
-    markersRef.current.forEach(m => {
-      const el = m.marker.getElement();
-      if (el) {
-        const innerMarker = el.querySelector('.custom-marker');
-        if (m.id === hoveredComplexId) {
-          innerMarker?.classList.add('hover');
-          m.marker.setZIndex(1000); // 호버 중인 마커를 가장 최상위 레이어로
-        } else {
-          innerMarker?.classList.remove('hover');
-          m.marker.setZIndex(m.id === activeComplexId ? 100 : 10); // 원래 상태로 원복
-        }
+    const prevHovered = prevHoveredIdRef.current;
+    if (prevHovered && prevHovered !== activeComplexId) {
+      const prevItem = markersRef.current.find(m => m.id === prevHovered);
+      if (prevItem) {
+        prevItem.marker.setZIndex(prevItem.isBookmarked ? 20 : 10);
       }
-    });
+    }
+
+    if (hoveredComplexId && hoveredComplexId !== activeComplexId) {
+      const target = markersRef.current.find(m => m.id === hoveredComplexId);
+      if (target) {
+        target.marker.setZIndex(1000); // 호버 중인 마커를 가장 최상위 레이어로
+      }
+    }
+
+    prevHoveredIdRef.current = hoveredComplexId;
   }, [hoveredComplexId, naverMap, activeComplexId]);
 
   const naverClientId = process.env.NEXT_PUBLIC_NAVER_CLIENT_ID;
