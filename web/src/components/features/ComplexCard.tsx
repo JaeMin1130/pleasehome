@@ -210,10 +210,7 @@ export default function ComplexCard({
                       <Tooltip 
                         label={step.dateDetail} 
                         position="top" 
-                        withArrow 
-                        color="grey"
                         offset={2}
-                        transitionProps={{ transition: 'fade', duration: 150 }}
                       >
                         <div className={styles['node-dot']}>
                           {step.status === 'completed' ? '✓' : ''}
