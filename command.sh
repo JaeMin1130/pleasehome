@@ -14,6 +14,12 @@ if [ ! -f "$PYTHON_BIN" ]; then
   PYTHON_BIN="python3"
 fi
 
+# NVM 환경 자동 로드 (비대화형/서브셸 node 경로 확보)
+if ! command -v node >/dev/null 2>&1; then
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+fi
+
 function geocode() {
   echo "📍 신규 단지 네이버 지오코딩(위경도 좌표) 확인 및 갱신..."
   NODE_PATH="$BASE_DIR/web/node_modules" node "$BASE_DIR/db-pipeline/scripts/migrate_coords.js"
